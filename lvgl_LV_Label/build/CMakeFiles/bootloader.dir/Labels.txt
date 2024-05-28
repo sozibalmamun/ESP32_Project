@@ -1,0 +1,13 @@
+# Target labels
+ bootloader
+# Source files and their labels
+E:/RND/ESP32_lvgl/lvgl_LV_Label/build/CMakeFiles/bootloader
+E:/RND/ESP32_lvgl/lvgl_LV_Label/build/CMakeFiles/bootloader.rule
+E:/RND/ESP32_lvgl/lvgl_LV_Label/build/CMakeFiles/bootloader-complete.rule
+E:/RND/ESP32_lvgl/lvgl_LV_Label/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+E:/RND/ESP32_lvgl/lvgl_LV_Label/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+E:/RND/ESP32_lvgl/lvgl_LV_Label/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+E:/RND/ESP32_lvgl/lvgl_LV_Label/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+E:/RND/ESP32_lvgl/lvgl_LV_Label/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+E:/RND/ESP32_lvgl/lvgl_LV_Label/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+E:/RND/ESP32_lvgl/lvgl_LV_Label/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule

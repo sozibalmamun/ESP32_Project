@@ -23,11 +23,11 @@ static void lvgl_task(void *arg) // GUI任务
 
    /* Example for 1) */
    static lv_disp_draw_buf_t draw_buf;
-   // 初始化缓存
+   // Initialize the cache
    lv_color_t *buf1 = heap_caps_malloc(DISP_BUF_SIZE * 2, MALLOC_CAP_DMA);
    lv_color_t *buf2 = heap_caps_malloc(DISP_BUF_SIZE * 2, MALLOC_CAP_DMA);
 
-   // 添加并注册触摸驱动
+// Add and register touch driver
    lv_disp_draw_buf_init(&draw_buf, buf1, buf2, LV_HOR_RES_MAX * LV_VER_RES_MAX); /*Initialize the display buffer*/
 
    static lv_disp_drv_t disp_drv;         /*A variable to hold the drivers. Must be static or global.*/
@@ -37,26 +37,28 @@ static void lvgl_task(void *arg) // GUI任务
    disp_drv.hor_res = 320;                /*Set the horizontal resolution in pixels*/
    disp_drv.ver_res = 240;                /*Set the vertical resolution in pixels*/
    lv_disp_drv_register(&disp_drv);       /*Register the driver and save the created display objects*/
-                                          /*触摸屏输入接口配置*/
+                                          /*Touch screen input interface configuration*/
+
    lv_indev_drv_t indev_drv;
    lv_indev_drv_init(&indev_drv);
    indev_drv.read_cb = touch_driver_read;
    indev_drv.type = LV_INDEV_TYPE_POINTER;
    lv_indev_drv_register(&indev_drv);
 
-   /* 创建一个10ms定时器*/ // 定期处理GUI回调
+/* Create a 10ms timer */ // Process GUI callbacks periodically
    const esp_timer_create_args_t periodic_timer_args = {
        .callback = &lv_tick_task,
        .name = "periodic_gui"};
    esp_timer_handle_t periodic_timer;
    ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 10 * 1000));
-//背景样式
+//Background Style
 lv_state_t mybg_color;
-lv_style_init(&mybg_color);//背景样式初始化
+lv_style_init(&mybg_color);//Background style initialization
 // lv_style_set_bg_color(&mybg_color,lv_color_make(0,0,0));
-lv_style_set_bg_color(&mybg_color,lv_color_hex(0xf47920));//背景橙色
-lv_obj_add_style(lv_scr_act(),&mybg_color,0);//添加到样式
+lv_style_set_bg_color(&mybg_color,lv_color_hex(0xf47920));//Background orange
+lv_obj_add_style(lv_scr_act(),&mybg_color,0);//Add to Style
+
    while (1)
    {
       /* Delay 1 tick (assumes FreeRTOS tick is 10ms */
@@ -65,13 +67,13 @@ lv_obj_add_style(lv_scr_act(),&mybg_color,0);//添加到样式
       /* Try to take the semaphore, call lvgl related function on success */
       if (pdTRUE == xSemaphoreTake(xGuiSemaphore, portMAX_DELAY))
       {
-         lv_timer_handler();            // 处理LVGL任务
-         xSemaphoreGive(xGuiSemaphore); // 释放信号量
+         lv_timer_handler();            // Handling LVGL tasks
+         xSemaphoreGive(xGuiSemaphore); // Release semaphore
       }
    }
 }
 void app_main(void)
 {
-   // 任务创建
+   // Task creation
    xTaskCreatePinnedToCore(lvgl_task, "gui task", 1024 * 4, NULL, 1, NULL, 0);
 }

@@ -58,9 +58,9 @@ static void lvgl_task(void *arg) // GUI任务
 
  /*Create a LED and switch it OFF*/
     lv_obj_t * led1  = lv_led_create(lv_scr_act());//创建
-    lv_obj_align(led1, LV_ALIGN_CENTER, -80, 0);//设置位置
+    lv_obj_align(led1, LV_ALIGN_CENTER, 0, 0);//设置位置
     // lv_led_off(led1);//LED灯关闭状态
-    // lv_led_set_color(led1, lv_palette_main(LV_PALETTE_RED));//LED灯设为红色
+    lv_led_set_color(led1, lv_palette_main(LV_PALETTE_GREEN));//LED灯设为红色
 
    while (1)
    {

@@ -29,19 +29,19 @@ static const lv_img_dsc_t *anim_imgs[3] = {
 
 void lv_example_animimg_1(void)
 {
-   lv_obj_t *animimg0 = lv_animimg_create(lv_scr_act());//创建动画对象
-   lv_obj_center(animimg0);//将对象置于屏幕中央
-   lv_animimg_set_src(animimg0, (lv_img_dsc_t **)anim_imgs, 3);//加载动画资源
-   lv_animimg_set_duration(animimg0, 1000);//创建动画时间
-   lv_animimg_set_repeat_count(animimg0, LV_ANIM_REPEAT_INFINITE); //设置一直重复时间
-   lv_animimg_start(animimg0);//开启
+   lv_obj_t *animimg0 = lv_animimg_create(lv_scr_act());//Create animation object
+   lv_obj_center(animimg0);//Center the object on the screen
+   lv_animimg_set_src(animimg0, (lv_img_dsc_t **)anim_imgs, 3);//Loading animation resources
+   lv_animimg_set_duration(animimg0, 1000);//Create animation time
+   lv_animimg_set_repeat_count(animimg0, LV_ANIM_REPEAT_INFINITE); //Set the repeat time
+   lv_animimg_start(animimg0);//Open
 }
 
 static void lvgl_task(void *arg) // GUI任务
 {
-   xGuiSemaphore = xSemaphoreCreateMutex(); // 创建GUI信号量
-   lv_init();                               // lvgl初始化
-   lvgl_driver_init();                      // 初始化液晶驱动
+   xGuiSemaphore = xSemaphoreCreateMutex(); // Create GUI signal
+   lv_init();                               // Initialize lvgl
+   lvgl_driver_init();                      // Initialize the LCD driver
 
    /* Example for 1) */
    static lv_disp_draw_buf_t draw_buf;
@@ -66,7 +66,7 @@ static void lvgl_task(void *arg) // GUI任务
    indev_drv.type = LV_INDEV_TYPE_POINTER;
    lv_indev_drv_register(&indev_drv);
 
-   /* 创建一个10ms定时器*/ // 定期处理GUI回调
+/* Create a 10ms timer*/ // Timer handle GUI回调
    const esp_timer_create_args_t periodic_timer_args = {
        .callback = &lv_tick_task,
        .name = "periodic_gui"};
@@ -83,13 +83,13 @@ static void lvgl_task(void *arg) // GUI任务
       /* Try to take the semaphore, call lvgl related function on success */
       if (pdTRUE == xSemaphoreTake(xGuiSemaphore, portMAX_DELAY))
       {
-         lv_timer_handler();            // 处理LVGL任务
-         xSemaphoreGive(xGuiSemaphore); // 释放信号量
+         lv_timer_handler();            // Handle LVGL tasks
+         xSemaphoreGive(xGuiSemaphore); // Release signal
       }
    }
 }
 void app_main(void)
 {
-   // 任务创建
+   // Task creation
    xTaskCreatePinnedToCore(lvgl_task, "gui task", 1024 * 4, NULL, 1, NULL, 0);
 }

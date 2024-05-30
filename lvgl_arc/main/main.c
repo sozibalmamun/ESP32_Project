@@ -53,16 +53,17 @@ static void lvgl_task(void *arg) // GUI任务
    ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 10 * 1000));
    // slider滑块例程
-   // lv_obj_t *slider1 = lv_slider_create(lv_scr_act()); // 创建滑块控件
-   // lv_obj_set_pos(slider1, 20, 120);                   // 设置滑块位置
-   // lv_slider_set_range(slider1, 0, 255);               // 设置滑块范围值
-   // lv_slider_set_value(slider1, 120, 1);               // 设置滑块初始值
+   lv_obj_t *slider1 = lv_slider_create(lv_scr_act()); // Creating a Slider Control
+   lv_obj_set_pos(slider1, 20, 120);                   // Set the slider position
+   lv_slider_set_range(slider1, 0, 255);               // Set the slider range value
+   lv_slider_set_value(slider1, 0, 1);               // Set the initial value of the slider
 
    // arc圆弧例程
-   lv_obj_t *arc1 = lv_arc_create(lv_scr_act()); // 创建arc圆弧控件
-   lv_obj_set_pos(arc1, 80, 60);                   // 设置arc圆弧位置
-   lv_arc_set_range(arc1, 0, 255);               // 设置arc圆弧范围值
-   lv_arc_set_value(arc1, 120);               // 设置arc圆弧初始值
+   //lv_obj_t *arc1 = lv_arc_create(lv_scr_act()); //Create an arc control
+   // lv_obj_set_pos(arc1, 80, 60);                   // Set the arc position
+   // lv_arc_set_range(arc1, 0, 255);               // Set the arc range value
+   // lv_arc_set_value(arc1, 120);               // Set the initial value of the arc
+
 
    while (1)
    {

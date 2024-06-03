@@ -63,7 +63,7 @@ static void lvgl_task(void *arg)// GUI任务
 	lv_obj_set_align(label, LV_FLEX_ALIGN_CENTER);			// 内容居中对齐
    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);		// 标签长内容框，保持控件宽度，内容过长就换行
 
-   lv_label_se  t_text(label, "#0000ff S##ff00ff O##ff0000 Z##ff00ED I#B #ff0000 LVGL#");
+   lv_label_set_text(label, "#0000ff S##ff00ff O##ff0000 Z##ff00ED I#B #ff0000 LVGL#");
 	lv_obj_align(label, LV_ALIGN_CENTER, 0, -60);		// 对齐到中心偏上
            
    lv_obj_t * label2 = lv_label_create(lv_scr_act());	//Create a tab on the home screen

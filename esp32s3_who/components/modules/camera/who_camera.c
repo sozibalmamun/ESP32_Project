@@ -75,8 +75,10 @@ void register_camera(const pixformat_t pixel_fromat,
 
     sensor_t *s = esp_camera_sensor_get();
 
-    s->set_vflip(s, 1); //flip it back//change by sozib due to camera flip
+    s->set_vflip(s, 1); //flip it back//change by sozib due to camera flip  int value was 0
 
+    s->set_hmirror(s, 1);//  miror camera change by sozib 
+    
     //initial sensors are flipped vertically and colors are a bit saturated
     if (s->id.PID == OV3660_PID)
     {

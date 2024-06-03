@@ -75,8 +75,8 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
         .offset_ver = 0,
         .width = 240,
         .height = 320,
-        .rotate = 4,            //SCR_DIR_TBLR, /**< From top to bottom then from left to right */
-
+        //.rotate = 4,            SCR_DIR_TBLR, /**< From top to bottom then from left to right */ 
+        .rotate = SCR_DIR_BTLR,  //  h miror lcd
        // .rotate = SCR_DIR_TBRL,/**< From top to bottom then from right to left change by sozib due to flip the display*/
 
     };

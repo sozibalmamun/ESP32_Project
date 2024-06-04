@@ -76,7 +76,7 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
         .width = 240,
         .height = 320,
         //.rotate = 4,            SCR_DIR_TBLR, /**< From top to bottom then from left to right */ 
-        .rotate = SCR_DIR_BTLR,  //  h miror lcd
+        .rotate = SCR_DIR_BTLR,  //  h miror lcd .
        // .rotate = SCR_DIR_TBRL,/**< From top to bottom then from right to left change by sozib due to flip the display*/
 
     };
@@ -91,9 +91,9 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
     ESP_LOGI(TAG, "Screen name:%s | width:%d | height:%d", g_lcd_info.name, g_lcd_info.width, g_lcd_info.height);
 
     app_lcd_set_color(0x000000);
-    vTaskDelay(pdMS_TO_TICKS(200));
-    app_lcd_draw_wallpaper();
-    vTaskDelay(pdMS_TO_TICKS(200));
+    //vTaskDelay(pdMS_TO_TICKS(200));
+    //app_lcd_draw_wallpaper();
+    //vTaskDelay(pdMS_TO_TICKS(200));
 
     xQueueFrameI = frame_i;
     xQueueFrameO = frame_o;

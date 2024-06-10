@@ -1,0 +1,12 @@
+idf_component_register(SRCS "App_main.cpp"
+					"App_SocketClient.cpp"
+					"blufi_example_main.c"
+					"blufi_security.c"
+					"blufi_init.c"
+					"APP_LVGL910UI.c"
+					"HzLib.c"
+					"APP_OEMScreenDraw.cpp"
+					"APP_OEMparser.cpp"
+					"App_NVS.cpp"
+                    INCLUDE_DIRS "."  "include"
+                     )

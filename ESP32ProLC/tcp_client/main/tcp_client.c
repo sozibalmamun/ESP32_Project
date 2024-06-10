@@ -1,125 +1,171 @@
-/* BSD Socket API Example
+#include <stdio.h>           // For basic printf commands
+#include <string.h>          // For handling strings
+#include "freertos/FreeRTOS.h"  // For delay, mutexes, semaphores, RTOS operations
+#include "esp_system.h"      // For ESP init functions, esp_err_t
+#include "esp_wifi.h"        // For esp_wifi_init functions and Wi-Fi operations
+#include "esp_log.h"         // For showing logs
+#include "esp_event.h"       // For Wi-Fi events
+#include "nvs_flash.h"       // Non-volatile storage
+#include "lwip/err.h"        // Light weight IP packets error handling
+#include "lwip/sys.h"        // System applications for lightweight IP apps
 
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
-#include <string.h>
-#include <sys/param.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/event_groups.h"
-#include "esp_system.h"
-#include "esp_wifi.h"
-#include "esp_event.h"
-#include "esp_log.h"
-#include "nvs_flash.h"
-#include "esp_netif.h"
-#include "protocol_examples_common.h"
-#include "addr_from_stdin.h"
-#include "lwip/err.h"
-#include "lwip/sockets.h"
+#include <sys/unistd.h>
+#include <sys/stat.h>
+#include "esp_err.h"
+#include "esp_vfs.h"
+#include "esp_spiffs.h"
 
 
-#if defined(CONFIG_EXAMPLE_IPV4)
-#define HOST_IP_ADDR CONFIG_EXAMPLE_IPV4_ADDR
-#elif defined(CONFIG_EXAMPLE_IPV6)
-#define HOST_IP_ADDR CONFIG_EXAMPLE_IPV6_ADDR
-#else
-#define HOST_IP_ADDR ""
-#endif
 
-#define PORT CONFIG_EXAMPLE_PORT
+const char *ssid = "SOZIB";
+const char *pass = "123456789";
+const char *TAG_WI_FI = "Wifi Debug";
+const char *TAG_FS   = "FS Debug";
 
 static const char *TAG = "example";
-static const char *payload = "Message from ESP32 ";
 
-static void tcp_client_task(void *pvParameters)
-{
-    char rx_buffer[128];
-    char host_ip[] = HOST_IP_ADDR;
-    int addr_family = 0;
-    int ip_protocol = 0;
 
-    while (1) {
-#if defined(CONFIG_EXAMPLE_IPV4)
-        struct sockaddr_in dest_addr;
-        dest_addr.sin_addr.s_addr = inet_addr(host_ip);
-        dest_addr.sin_family = AF_INET;
-        dest_addr.sin_port = htons(PORT);
-        addr_family = AF_INET;
-        ip_protocol = IPPROTO_IP;
-#elif defined(CONFIG_EXAMPLE_IPV6)
-        struct sockaddr_in6 dest_addr = { 0 };
-        inet6_aton(host_ip, &dest_addr.sin6_addr);
-        dest_addr.sin6_family = AF_INET6;
-        dest_addr.sin6_port = htons(PORT);
-        dest_addr.sin6_scope_id = esp_netif_get_netif_impl_index(EXAMPLE_INTERFACE);
-        addr_family = AF_INET6;
-        ip_protocol = IPPROTO_IPV6;
-#elif defined(CONFIG_EXAMPLE_SOCKET_IP_INPUT_STDIN)
-        struct sockaddr_storage dest_addr = { 0 };
-        ESP_ERROR_CHECK(get_addr_from_stdin(PORT, SOCK_STREAM, &ip_protocol, &addr_family, &dest_addr));
-#endif
-        int sock =  socket(addr_family, SOCK_STREAM, ip_protocol);
-        if (sock < 0) {
-            ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
-            break;
-        }
-        ESP_LOGI(TAG, "Socket created, connecting to %s:%d", host_ip, PORT);
 
-        int err = connect(sock, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr_in6));
-        if (err != 0) {
-            ESP_LOGE(TAG, "Socket unable to connect: errno %d", errno);
-            break;
-        }
-        ESP_LOGI(TAG, "Successfully connected");
+void save_wifi_info(const char* ssid, const char* pass);
+void read_wifi_info(char* ssid, char* pass);
 
-        while (1) {
-            int err = send(sock, payload, strlen(payload), 0);
-            if (err < 0) {
-                ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
-                break;
-            }
 
-            int len = recv(sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
-            // Error occurred during receiving
-            if (len < 0) {
-                ESP_LOGE(TAG, "recv failed: errno %d", errno);
-                break;
-            }
-            // Data received
-            else {
-                rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string
-                ESP_LOGI(TAG, "Received %d bytes from %s:", len, host_ip);
-                ESP_LOGI(TAG, "%s", rx_buffer);
-            }
 
-            vTaskDelay(2000 / portTICK_PERIOD_MS);
-        }
 
-        if (sock != -1) {
-            ESP_LOGE(TAG, "Shutting down socket and restarting...");
-            shutdown(sock, 0);
-            close(sock);
-        }
+static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
+    if (event_id == WIFI_EVENT_STA_START) {
+        printf("WIFI CONNECTING....\n");
+    } else if (event_id == WIFI_EVENT_STA_CONNECTED) {
+        printf("WiFi CONNECTED\n");
+    } else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
+        printf("WiFi lost connection\n");
+        esp_wifi_connect();
+        printf("Retrying to Connect...\n");
+    } else if (event_id == IP_EVENT_STA_GOT_IP) {
+        ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
+        ESP_LOGI(TAG_WI_FI, "WiFi got IP: " IPSTR, IP2STR(&event->ip_info.ip));
+
+        uint8_t mac[6];
+        esp_wifi_get_mac(ESP_IF_WIFI_STA, mac);
+        ESP_LOGI(TAG_WI_FI, "MAC address: %02x:%02x:%02x:%02x:%02x:%02x",
+                 mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     }
-    vTaskDelete(NULL);
 }
 
-void app_main(void)
-{
-    ESP_ERROR_CHECK(nvs_flash_init());
-    ESP_ERROR_CHECK(esp_netif_init());
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
+void wifi_connection() {
 
-    /* This helper function configures Wi-Fi or Ethernet, as selected in menuconfig.
-     * Read "Establishing Wi-Fi or Ethernet Connection" section in
-     * examples/protocols/README.md for more information about this function.
-     */
-    ESP_ERROR_CHECK(example_connect());
+/*
+    char saved_ssid[32] = {0};
+    char saved_pass[64] = {0};
+    read_wifi_info(saved_ssid, saved_pass);
+    
+    if (strlen(saved_ssid) == 0 || strlen(saved_pass) == 0) {
+        strcpy(saved_ssid, ssid);
+        strcpy(saved_pass, pass);
+        save_wifi_info(ssid, pass);
+    }
 
-    xTaskCreate(tcp_client_task, "tcp_client", 4096, NULL, 5, NULL);
+*/
+    // Wi-Fi Configuration Phase
+    esp_netif_init();
+    esp_event_loop_create_default(); // Event loop
+    esp_netif_create_default_wifi_sta(); // Wi-Fi station
+    wifi_init_config_t wifi_initiation = WIFI_INIT_CONFIG_DEFAULT();
+    esp_wifi_init(&wifi_initiation);
+
+    esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, wifi_event_handler, NULL);
+    esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, wifi_event_handler, NULL);
+
+    wifi_config_t wifi_configuration = {
+        .sta = {
+            .ssid = "",
+            .password = "",
+        }
+    };
+    strcpy((char *)wifi_configuration.sta.ssid, ssid);
+    strcpy((char *)wifi_configuration.sta.password, pass);
+
+    esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_configuration);
+
+    // Wi-Fi Start Phase
+    esp_wifi_start();
+    esp_wifi_set_mode(WIFI_MODE_STA);
+
+    // Wi-Fi Connect Phase
+    esp_wifi_connect();
+}
+
+void init_spiffs() {
+
+    ESP_LOGI(TAG, "Initializing SPIFFS");
+
+    esp_vfs_spiffs_conf_t conf = {
+      .base_path = "/spiffs",
+      .partition_label = NULL,
+      .max_files = 5,
+      .format_if_mount_failed = true
+    };
+
+    // Use settings defined above to initialize and mount SPIFFS filesystem.
+    // Note: esp_vfs_spiffs_register is an all-in-one convenience function.
+    esp_err_t ret = esp_vfs_spiffs_register(&conf);
+
+    if (ret != ESP_OK) {
+        if (ret == ESP_FAIL) {
+            ESP_LOGE(TAG, "Failed to mount or format filesystem");
+        } else if (ret == ESP_ERR_NOT_FOUND) {
+            ESP_LOGE(TAG, "Failed to find SPIFFS partition");
+        } else {
+            ESP_LOGE(TAG, "Failed to initialize SPIFFS (%s)", esp_err_to_name(ret));
+        }
+        return;
+    }
+
+
+
+ 
+    size_t total = 0, used = 0;
+    ret = esp_spiffs_info(conf.partition_label, &total, &used);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to get SPIFFS partition information (%s). Formatting...", esp_err_to_name(ret));
+        esp_spiffs_format(conf.partition_label);
+        return;
+    } else {
+        ESP_LOGI(TAG, "Partition size: total: %d, used: %d", total, used);
+    }
+
+
+}
+
+void save_wifi_info(const char* ssid, const char* pass) {
+    FILE* f = fopen("/spiffs/wifi_info.txt", "w");
+    if (f == NULL) {
+        ESP_LOGE(TAG_FS, "Failed to open file for writing");
+        return;
+    }
+    fprintf(f, "%s\n%s\n", ssid, pass);
+    fclose(f);
+    ESP_LOGI(TAG_FS, "Wi-Fi info saved");
+}
+
+void read_wifi_info(char* ssid, char* pass) {
+    FILE* f = fopen("/spiffs/wifi_info.txt", "r");
+    if (f == NULL) {
+        ESP_LOGE(TAG_FS, "Failed to open file for reading");
+        return;
+    }
+    fgets(ssid, 32, f);  // Assuming SSID length is 32
+    ssid[strcspn(ssid, "\n")] = 0;  // Remove newline character
+    fgets(pass, 64, f);  // Assuming password length is 64
+    pass[strcspn(pass, "\n")] = 0;  // Remove newline character
+    fclose(f);
+    ESP_LOGI(TAG_FS, "Wi-Fi info read: SSID: %s, PASS: %s", ssid, pass);
+}
+
+
+
+void app_main(void) {
+    nvs_flash_init();
+    init_spiffs();
+    wifi_connection();
 }

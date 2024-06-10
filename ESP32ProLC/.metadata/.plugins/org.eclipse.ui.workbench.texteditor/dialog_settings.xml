@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
+		<item key="selection" value="CommandLine_NormalReceive"/>
+		<item key="wrap" value="true"/>
+		<item key="casesensitive" value="false"/>
+		<item key="wholeword" value="false"/>
+		<item key="incremental" value="false"/>
+		<item key="isRegEx" value="false"/>
+		<list key="findhistory">
+			<item value="CommandLine_NormalReceive"/>
+			<item value="SCI.sockID"/>
+			<item value="WifiConnectStateMoniterTask"/>
+			<item value="Successfully connected"/>
+			<item value="SCI"/>
+			<item value="BLEReturnValue"/>
+			<item value="2640"/>
+			<item value="delete_id"/>
+			<item value="NVS_SaveFaceinfoQuantity"/>
+			<item value="NVS_SaveNetWorkConfirm"/>
+			<item value="DataParser"/>
+			<item value="DisplayFreeMemory"/>
+			<item value="format:Enroll"/>
+			<item value="delete"/>
+			<item value="NVS_SaveFaceInfo"/>
+		</list>
+		<list key="replacehistory">
+		</list>
+	</section>
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
+		<item key="DIALOG_X_ORIGIN" value="1631"/>
+		<item key="DIALOG_Y_ORIGIN" value="609"/>
+		<item key="DIALOG_WIDTH" value="322"/>
+		<item key="DIALOG_HEIGHT" value="391"/>
+		<item key="DIALOG_FONT_NAME" value="1|Segoe UI|9.0|0|WINDOWS|1|-12|0|0|0|400|0|0|0|1|0|0|5|0|Segoe UI"/>
+	</section>
+</section>

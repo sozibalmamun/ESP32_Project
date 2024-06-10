@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;web/main/APP_BLE.cpp&apos; to &apos;APP_BLE.c&apos;" description="Rename resource &apos;APP_BLE.cpp&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="main/APP_BLE.cpp" name="APP_BLE.c" stamp="1710314836029" updateReferences="true"/>
+</session>

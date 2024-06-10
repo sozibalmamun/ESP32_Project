@@ -19,7 +19,7 @@ static void lv_tick_task(void *arg) // LVGL 时钟任务
 static void button1_event_handler(lv_obj_t * obj, lv_event_t event)
 {
 	
-		ESP_LOGI(TAG,"button1_pressed\n");// 按下
+	ESP_LOGI(TAG,"button1_pressed\n");// 按下
 	
 }
 

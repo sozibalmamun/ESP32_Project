@@ -1,0 +1,284 @@
+/*
+ * APP_SocketClient.cpp
+ *
+ *  Created on: Nov 20, 2023
+ *      Author: sang
+ */
+/* BSD Socket API Example
+
+   This example code is in the Public Domain (or CC0 licensed, at your option.)
+
+   Unless required by applicable law or agreed to in writing, this
+   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+   CONDITIONS OF ANY KIND, either express or implied.
+*/
+#include <string.h>
+#include <sys/param.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/event_groups.h"
+#include "esp_system.h"
+#include "esp_wifi.h"
+#include "esp_event.h"
+#include "esp_log.h"
+#include "nvs_flash.h"
+#include "esp_netif.h"
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "APP_OEMType.h"
+#include "esp_interface.h"
+#include "esp_event_loop.h"
+#include "sdkconfig.h"
+#include "mdns.h"
+
+
+static EXT_RAM_ATTR TaskHandle_t Task_HandleIPMoniter;
+void WifiConnectStateMoniterTask(void *pvParameters);
+static EXT_RAM_ATTR  SocketClientInstance SCI;
+static EXT_RAM_ATTR WIFIInfo WifiInfosang={0};
+static void state_task(void *pvParameters)
+{
+	 char InfoBuffer[512] = {0};
+
+	while (1)
+	{
+		printf("--------------- Heap free size total:%ld---------------------\r\n", (long)esp_get_free_heap_size());
+		printf("--------------- heap free size PSRAM:%d---------------------\r\n", (int)heap_caps_get_free_size( MALLOC_CAP_SPIRAM ));
+		printf("--------------- heap free size in processor:%ld---------------------\r\n",(long)esp_get_free_internal_heap_size());
+	    vTaskList((char *) &InfoBuffer);
+		printf("Task Name  state priority free_size task_number Core_number\r\n");
+		printf("\r\n%s\r\n", InfoBuffer);
+        vTaskDelay(20000 / portTICK_PERIOD_MS);
+
+	}
+}
+void TCP_Client_SendData(char *BufferSend,unsigned int Slen)
+{
+	int err = send(SCI.sockID, BufferSend, Slen, 0);
+	if (err < 0)
+	{
+		printf("sang:Error occurred during sending: errno %d", errno);
+
+	}
+	else
+	{
+		printf("sang: %d", err);
+	}
+
+}
+void TCP_Client_Receive_Data_Task(void *pvParameters)
+{
+	
+	int len; 	
+
+	SCI.SocketClientConnectedState=true;
+	while(1)
+	{
+		len = recv(SCI.sockID, SCI.ReceiveBuffer, 1000, 0);
+	//	len = recv(SCI.sockID, buffer, 500, 0);
+		if (len < 0)
+		{ 
+            printf("recv failed: errno %d\r\n", errno);
+			if((errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN))
+			{
+				printf("recv continue\r\n");
+				continue;
+			}
+			else
+			{
+				printf("recv close..\r\n");
+				closesocket(SCI.sockID);
+				SCI.SocketClientConnectedState=false;
+				SCI.SocketClientTaskRuning=false;
+				vTaskDelete(NULL);
+			}
+		}
+		else 
+		{
+			printf("Received %d bytes\r\n", len);
+			TCP_Client_SendData(SCI.ReceiveBuffer);
+			//SaveData((unsigned int)len,(unsigned char*)SCI.ReceiveBuffer);
+			//CommunicationInterface=1;
+			//DataParser();
+		}
+	}
+}
+void Tcp_Client_Connect_Task(void *pvParameters)
+{
+	printf("Tcp_Client_Connect_Task starting..\r\n");
+	char IPStr[30]="192.168.1.2";
+	unsigned int PortN=1234;
+	NVS_GetNetWorkConfirm(IPStr,&PortN);
+	printf("sang:Server address:%s,port:%d\r\n",IPStr,PortN);
+	strcpy(SCI.HostIPAddress,IPStr);
+	SCI.Port=PortN;
+	SCI.SocketClientConnectedState=false;
+	struct sockaddr_in dest_addr;
+	dest_addr.sin_addr.s_addr = inet_addr(SCI.HostIPAddress);
+	dest_addr.sin_family = AF_INET;
+	dest_addr.sin_port = htons(SCI.Port);
+	
+	SCI.sockID =  socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (SCI.sockID < 0) 
+	{
+		printf("Unable to create socket: errno %d\r\n",errno);
+		SCI.SocketClientTaskRuning=false;
+		vTaskDelete(NULL);
+	}
+	printf("Socket created, connecting to %s:%d.....\r\n", SCI.HostIPAddress, SCI.Port);
+	int err = connect(SCI.sockID, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr_in));
+	if (err != 0)
+	{
+		printf("Socket unable to connect: errno %d\r\n", errno);
+		SCI.SocketClientTaskRuning=false;
+		closesocket(SCI.sockID);
+		vTaskDelete(NULL);
+	}
+	printf("Successfully connected!!\r\n");
+	xTaskCreatePinnedToCore(&TCP_Client_Receive_Data_Task, "TCP_Client_Receive_Data_Task", 2048, NULL, 2, NULL, 1);
+	SCI.SocketClientTaskRuning=false;
+	vTaskDelete(NULL);
+	
+}
+
+
+/* The examples use WiFi configuration that you can set via 'make menuconfig'.
+
+   If you'd rather not, just change the below entries to strings with
+   the config you want - ie #define EXAMPLE_WIFI_SSID "mywifissid"
+*/
+#define EXAMPLE_ESP_WIFI_SSID CONFIG_ESP_WIFI_SSID
+#define EXAMPLE_ESP_WIFI_PASS CONFIG_ESP_WIFI_PASSWORD
+#define EXAMPLE_ESP_MAXIMUM_RETRY CONFIG_ESP_MAXIMUM_RETRY
+#define EXAMPLE_ESP_WIFI_AP_SSID CONFIG_ESP_WIFI_AP_SSID
+#define EXAMPLE_ESP_WIFI_AP_PASS CONFIG_ESP_WIFI_AP_PASSWORD
+#define EXAMPLE_MAX_STA_CONN CONFIG_MAX_STA_CONN
+#define EXAMPLE_IP_ADDR CONFIG_SERVER_IP
+#define EXAMPLE_ESP_WIFI_AP_CHANNEL CONFIG_ESP_WIFI_AP_CHANNEL
+
+
+typedef struct
+{
+	bool WifiConnectedState;		
+	uint32_t CurrentStationIP;
+
+}WifiConnectState;
+WifiConnectState WCS;
+
+static int s_retry_num = 0;
+
+static esp_err_t event_handler_Sang(void *ctx, system_event_t *event)
+{
+    switch (event->event_id)
+    {
+		case SYSTEM_EVENT_AP_STACONNECTED:
+        break;
+    	case SYSTEM_EVENT_AP_STADISCONNECTED:
+        break;
+		case SYSTEM_EVENT_STA_START:
+        	esp_wifi_connect();
+        break;
+		case SYSTEM_EVENT_STA_GOT_IP:
+        	s_retry_num = 0;
+			WifiInfosang.WifiConnectState=true;
+			WifiInfosang.CurrentStationIP=event->event_info.got_ip.ip_info.ip.addr;
+			printf("sang:Got IP:%08X\r\n",WifiInfosang.CurrentStationIP);
+			//xTaskCreate(WifiConnectStateMoniterTask, "WifiConnectStateMoniterTask", 4096, NULL,5, &Task_HandleIPMoniter);
+        break;
+		case WIFI_EVENT_STA_CONNECTED:
+			printf("sang:WIFI_EVENT_STA_CONNECTED!\r\n");
+		break;
+	    case SYSTEM_EVENT_STA_DISCONNECTED:	//disconnected from ap
+	    {
+	        if (s_retry_num < EXAMPLE_ESP_MAXIMUM_RETRY)
+	        {
+	            esp_wifi_connect();
+	            s_retry_num++;
+	        }
+	        printf("sang:connect to the AP fail!\r\n");
+			WifiInfosang.WifiConnectState=false;
+			vTaskDelete(Task_HandleIPMoniter);
+	        break;
+	    }
+    default:
+        break;
+    }
+    mdns_handle_system_event(ctx, event);
+    return ESP_OK;
+}
+
+
+
+void wifi_init_sta_sang(void)
+{
+    wifi_config_t wifi_config;
+	printf("wifi_init_sta_sang..");
+    memset(&wifi_config, 0, sizeof(wifi_config_t));
+	char WiFiName[32],WiFiPassWord[64];
+	if(true==NVS_GetWifiSSIDAndPassword(WiFiName,WiFiPassWord))
+	{
+		printf("sang:WiFi infor uses NVS \r\n");
+    	snprintf((char *)wifi_config.sta.ssid, 32, "%s", WiFiName);
+    	snprintf((char *)wifi_config.sta.password, 64, "%s", WiFiPassWord);
+	}
+	else
+	{
+		snprintf((char *)wifi_config.sta.ssid, 32, "%s", EXAMPLE_ESP_WIFI_SSID);
+   		snprintf((char *)wifi_config.sta.password, 64, "%s", EXAMPLE_ESP_WIFI_PASS);
+	}
+
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
+
+}
+
+
+void app_wifi_main_sang(void)
+{
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    wifi_mode_t mode = WIFI_MODE_NULL;
+    mode = WIFI_MODE_STA;
+
+	WifiInfosang.WifiConnectState=false;
+	SCI.SocketClientTaskRuning=false;
+    tcpip_adapter_init();
+    ESP_ERROR_CHECK(esp_event_loop_init(event_handler_Sang, NULL));
+    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+    ESP_ERROR_CHECK(esp_wifi_set_mode(mode));
+    if (mode & WIFI_MODE_STA)
+    {
+        wifi_init_sta_sang();
+    }
+    ESP_ERROR_CHECK(esp_wifi_start());
+    ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_MIN_MODEM));
+	
+	
+	//	xTaskCreate(state_task, "state_task", 4096, NULL, 8, NULL);
+	xTaskCreate(WifiConnectStateMoniterTask, "WifiConnectStateMoniterTask", 4096, NULL,5, NULL);
+}
+
+void WifiConnectStateMoniterTask(void *pvParameters)
+{
+	printf("WifiScanWaitTask starting...\r\n");
+	while(1)
+	{
+		if(
+		true==WifiInfosang.WifiConnectState&&
+		false==SCI.SocketClientTaskRuning&&
+		false==SCI.SocketClientConnectedState)
+		{
+			SCI.SocketClientTaskRuning=true;
+			printf("connecting tasck start...\r\n");
+			xTaskCreate(Tcp_Client_Connect_Task, "Tcp_Client_Connect_Task", 4096, NULL, 5, NULL);
+		}
+		else
+		{
+			//printf("..\r\n");
+		}
+		vTaskDelay(3000/portTICK_PERIOD_MS);
+
+	}
+
+}
+
+
+

@@ -164,8 +164,11 @@ static void task_process_handler(void *arg)
                     case SHOW_STATE_RECOGNIZE:
                         if (recognize_result.id > 0)
                             rgb_printf(frame, RGB565_MASK_GREEN, "ID %d", recognize_result.id);
-                        else
+                        else{
                             rgb_print(frame, RGB565_MASK_RED, "who ?");
+                            ESP_LOGI(TAG,"\nWho ?");
+                            printf("who done");
+                            }
                         break;
 
                     case SHOW_STATE_ENROLL:

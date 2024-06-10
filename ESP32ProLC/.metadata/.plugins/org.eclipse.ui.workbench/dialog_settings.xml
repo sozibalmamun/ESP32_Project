@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="ImportExportAction">
+		<item key="ImportExportPage.STORE_SELECTED_IMPORT_WIZARD_ID" value="org.eclipse.ui.wizards.import.FileSystem"/>
+		<list key="ImportExportPage.STORE_EXPANDED_IMPORT_CATEGORIES">
+			<item value="org.eclipse.ui.Basic"/>
+			<item value="org.eclipse.cdt.ui.importWizardCategory"/>
+			<item value="com.espressif.idf.ui.category.import"/>
+		</list>
+	</section>
+	<section name="FileSystemImportWizard">
+		<item key="WizardFileSystemResourceImportPage1.STORE_OVERWRITE_EXISTING_RESOURCES_ID" value="false"/>
+		<item key="WizardFileSystemResourceImportPage1.STORE_CREATE_CONTAINER_STRUCTURE_ID" value="false"/>
+		<item key="WizardFileSystemResourceImportPage1.STORE_CREATE_VIRTUAL_FOLDERS_ID" value="false"/>
+		<item key="WizardFileSystemResourceImportPage1.STORE_CREATE_LINKS_IN_WORKSPACE_ID" value="false"/>
+		<item key="WizardFileSystemResourceImportPage1.STORE_PATH_VARIABLE_SELECTED_ID" value="true"/>
+		<item key="WizardFileSystemResourceImportPage1.STORE_PATH_VARIABLE_NAME_ID" value="PROJECT_LOC"/>
+		<list key="WizardFileSystemResourceImportPage1.STORE_SOURCE_NAMES_ID">
+			<item value="D:\BaiduSyncdisk\ESP32Pro"/>
+			<item value="D:\BaiduSyncdisk\ESP32Pro\ESP32ProLC\lcd\main"/>
+			<item value="D:\BaiduNetdiskDownload\esp32s3 LVGLv9开发板教程\2.程序源码\lvgl_img\components"/>
+			<item value="D:\BaiduNetdiskDownload\esp32s3进阶视频教程idf篇\idf进阶篇源码\9_camera\components\camera"/>
+			<item value="D:\BaiduNetdiskDownload\esp32s3 LVGLv9开发板教程\2.程序源码\lvgl_button"/>
+			<item value="D:\BaiduNetdiskDownload\esp32s3 LVGLv9开发板教程\2.程序源码\lvgl_button\components"/>
+			<item value="D:\BaiduSyncdisk\ESP32Pro\ESP32ProLC\web\main\components\espressif__esp_lcd_touch\include"/>
+			<item value="D:\BaiduSyncdisk\ESP32Pro\ESP32ProLC\web\main\components\atanisoft__esp_lcd_touch_xpt2046\include"/>
+			<item value="D:\BaiduSyncdisk\ESP32Pro\ESP32ProLC\web\managed_components"/>
+			<item value="D:\BaiduSyncdisk\ESP32Pro\ESP32ProLC\web\managed_components\atanisoft__esp_lcd_touch_xpt2046"/>
+			<item value="D:\BaiduSyncdisk\LVGL\Pro\My_LVGL\generated"/>
+			<item value="D:\BaiduSyncdisk\LVGL\Pro\My_LVGL\custom"/>
+		</list>
+	</section>
+	<section name="ZipFileImportWizard">
+	</section>
+	<section name="NewWizardAction">
+		<item key="NewWizardSelectionPage.STORE_SELECTED_ID" value="org.eclipse.ui.wizards.new.file"/>
+		<list key="NewWizardSelectionPage.STORE_EXPANDED_CATEGORIES_ID">
+			<item value="org.eclipse.ui.Basic"/>
+		</list>
+	</section>
+</section>

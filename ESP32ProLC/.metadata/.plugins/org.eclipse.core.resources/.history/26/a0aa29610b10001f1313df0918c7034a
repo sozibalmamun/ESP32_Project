@@ -1,0 +1,1391 @@
+/*
+ * OEMparser.c
+ *
+ *  Created on: Apr 22, 2024
+ *      Author: sang
+ */
+#include "who_camera.h"
+#include "who_button.h"
+#include "who_adc_button.h"
+#include "who_human_face_recognition.hpp"
+#include "app_wifi.h"
+#include "app_httpd.hpp"
+#include "app_mdns.h"
+#include "who_lcd.h"
+#include "App_OEMType.h"
+#include "nvs_flash.h"
+#include "nvs.h"
+#include "esp_bt.h"
+#include "string.h"
+#define FormatErr	1
+#define NVSErr		2
+
+enum DeviceType
+{
+	Device_Camera,
+	Device_Voice,
+};
+
+enum CommandLineHead
+{
+	CommandLine_NormalReceive=0,
+	CommandLine_HeadW,
+	CommandLine_SetWiFi,
+	commandLine_SetNNetwork,
+	CommandLine_HeadSaveFacialImage,
+	CommandLine_DeleteAllFaceInfo,
+	commandLine_DeleteFaceinfoID,
+	commnadLine_ReadDeviceInformation,
+	commandLine_alive,
+};
+
+typedef struct
+{
+	unsigned int CommandType;		//command line types
+    unsigned int PreadOffset;		//command line read offset
+    unsigned int PwriteDe;			//command line write offset
+    unsigned char ErrCode;			//command line error code
+    unsigned char CommunicationInterface;
+    //set WiFI name and password
+    
+    unsigned char WiFiN[30];
+	unsigned char WiFiP[30];
+	
+	//save facial image
+	unsigned char FacialImageCWriteTemp;
+	bool ChineseGBK;
+	unsigned char FacialImageName[30];
+	unsigned char FacialImageID[30];
+	recognizer_state_t FaceImageState;
+
+	//save network
+	char IPStr[30];
+	char  portStr[30];
+	unsigned int Port;
+
+	//delete face information by employee ID
+	char DeleteEmployID[30];
+	
+	DeviceType DType;
+
+
+	
+}CommandLine_Set_PCB;
+
+EXT_RAM_ATTR static CommandLine_Set_PCB CLSPCB;
+
+
+#define MAXBufferReceiveSize	2000
+static EXT_RAM_ATTR unsigned int Pread=0;
+static EXT_RAM_ATTR unsigned int Pwrite=1;
+static EXT_RAM_ATTR unsigned char BufferReceive[MAXBufferReceiveSize];
+void IntialParser(void)
+{
+	Pread=0;
+	Pwrite=1;
+	CLSPCB.CommandType=CommandLine_NormalReceive;
+	CLSPCB.PreadOffset=0;
+	CLSPCB.FaceImageState=DETECT;
+	CLSPCB.CommunicationInterface=0;//0:BLE 1:wiFi
+	CLSPCB.DType=Device_Camera;
+
+}
+void BLEReturnValue(bool state,char value)
+{
+	if(true==state)
+	{
+		SangReturnLen=6;
+		strcpy(SangReturnStr,"true\r\n");
+		if(1==CommunicationInterface)
+		{
+			TCP_Client_SendData("true\r\n",6);
+		}
+	}
+	else
+	{
+		if(1==value)
+		{
+			SangReturnLen=9;
+			strcpy(SangReturnStr,"false 1\r\n");
+		}
+		else
+		{
+			SangReturnLen=9;
+			strcpy(SangReturnStr,"false 2\r\n");
+		}
+		if(1==CommunicationInterface)
+		{
+			TCP_Client_SendData(SangReturnStr,9);
+		}
+	}
+}
+void OEMSaveData(unsigned    int  sizebytes,unsigned char *Buffer)
+{
+    unsigned int i;
+	if((Pwrite+sizebytes)<=MAXBufferReceiveSize)
+	{
+		memcpy(&BufferReceive[Pwrite], Buffer, sizebytes); 
+		if((Pwrite+sizebytes)==MAXBufferReceiveSize)
+			Pwrite=0;
+		else
+			Pwrite+=sizebytes;
+	}
+	else
+	{
+		memcpy(&BufferReceive[Pwrite], Buffer, MAXBufferReceiveSize-Pwrite);
+		memcpy(BufferReceive, &Buffer[MAXBufferReceiveSize-Pwrite], Pwrite+sizebytes-MAXBufferReceiveSize);
+		Pwrite=Pwrite+sizebytes-MAXBufferReceiveSize;
+
+	}
+}
+void CommandLine_HeadSaveFacialImageF(unsigned char data)
+{
+	//WT save face image 
+	switch(CLSPCB.PreadOffset)
+	{
+		case 0:
+			if('a'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 1:
+			if('v'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 2:
+			if('e'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 3:
+			if(' '==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 4:
+			if('f'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 5:
+			if('a'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 6:
+			if('c'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 7:
+			if('e'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 8:
+			if(' '==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 9:
+			if('i'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 10:
+			if('m'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 11:
+			if('a'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 12:
+			if('g'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 13:
+			if('e'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 14:
+			if(' '==data)
+			{
+				CLSPCB.PreadOffset++;
+				CLSPCB.FacialImageCWriteTemp=0;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 15:
+			if(false==CLSPCB.ChineseGBK)
+			{
+				if(' '==data)
+				{
+					CLSPCB.PreadOffset++;
+					CLSPCB.FacialImageName[CLSPCB.FacialImageCWriteTemp]='\0';
+					printf("sang Name:%s\r\n",CLSPCB.FacialImageName);
+					CLSPCB.FacialImageCWriteTemp=0;
+				}
+				else
+				{
+					CLSPCB.FacialImageName[CLSPCB.FacialImageCWriteTemp++]=data;
+					if(CLSPCB.FacialImageCWriteTemp>15)
+					{
+						CLSPCB.PreadOffset=0;
+						CLSPCB.CommandType=CommandLine_NormalReceive;
+						printf("sang:FacialImage too long!\r\n");
+						BLEReturnValue(false,1);
+					}
+					if(data>=0xa1&&data<=0xf7)
+					{
+						CLSPCB.ChineseGBK=true;
+					}
+					
+				}
+			}
+			else
+			{
+				CLSPCB.FacialImageName[CLSPCB.FacialImageCWriteTemp++]=data;
+				if(CLSPCB.FacialImageCWriteTemp>15)
+				{
+					CLSPCB.PreadOffset=0;
+					CLSPCB.CommandType=CommandLine_NormalReceive;
+					printf("sang:FacialImage too long!\r\n");
+					BLEReturnValue(false,1);
+				}
+				CLSPCB.ChineseGBK=false;
+			}
+			break;	
+		case 16:
+			if(0x0A==data)
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				printf("sang NameID:%s\r\n",CLSPCB.FacialImageID);
+				printf("sang:save FacialImage command end 0x0a!\r\n");
+				CLSPCB.FaceImageState=ENROLL;
+			}
+			else if(0x0d==data)
+			{
+				CLSPCB.PreadOffset++;
+				CLSPCB.FacialImageID[CLSPCB.FacialImageCWriteTemp]='\0';
+				printf("sang NameID:%s\r\n",CLSPCB.FacialImageID);
+			}
+			else
+			{
+				CLSPCB.FacialImageID[CLSPCB.FacialImageCWriteTemp++]=data;
+				if(CLSPCB.FacialImageCWriteTemp>15)
+				{
+					CLSPCB.PreadOffset=0;
+					CLSPCB.CommandType=CommandLine_NormalReceive;
+					printf("sang:FacialImage ID too long!");
+				}
+			}
+			break;
+		case 17:
+			if(0x0a==data)
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				printf("sang:save FacialImage command end!\r\n");
+				CLSPCB.FaceImageState=ENROLL;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+			}
+			break;
+		default:
+			CLSPCB.PreadOffset=0;
+			CLSPCB.CommandType=CommandLine_NormalReceive;
+			break;
+	}
+}
+//¡±WT WiFi nn...nn pp...pp\r\n¡±
+void CommandLine_SetWiFiF(unsigned char data)
+{
+	switch(CLSPCB.PreadOffset)
+	{
+		case 0:
+			if('i'==data||'I'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 1:
+			if('f'==data||'F'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 2:
+			if('i'==data||'I'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 3:
+			if(' '==data )
+			{
+				CLSPCB.PreadOffset++;
+				CLSPCB.PwriteDe=0;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 4:
+			if(' '==data)
+			{
+				CLSPCB.PreadOffset++;
+				CLSPCB.WiFiN[CLSPCB.PwriteDe]='\0';
+				CLSPCB.PwriteDe=0;
+				printf("sang:Set Wifi Name:%s\r\n",CLSPCB.WiFiN);
+			}
+			else
+			{
+				CLSPCB.WiFiN[CLSPCB.PwriteDe++]=data;
+				if(CLSPCB.PwriteDe>=29)
+				{
+					CLSPCB.ErrCode=FormatErr;
+					CLSPCB.PreadOffset=0;
+					CLSPCB.CommandType=CommandLine_NormalReceive;
+					BLEReturnValue(false,1);
+					return;
+				}
+			}
+			break;
+		case 5:
+			if(0x0A==data||0x0D==data)
+			{
+				CLSPCB.PreadOffset++;
+				CLSPCB.WiFiP[CLSPCB.PwriteDe]='\0';
+				CLSPCB.PwriteDe=0;
+				printf("sang:Set Wifi Password:%s\r\n",CLSPCB.WiFiP);
+				if(true==NVS_SetWifiSSIDAndPassword((char*)CLSPCB.WiFiN,(char*)CLSPCB.WiFiP))
+				{
+					BLEReturnValue(true,0);
+				}
+				else
+				{
+					BLEReturnValue(false,2);
+				}
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				
+			}
+			else
+			{
+				CLSPCB.WiFiP[CLSPCB.PwriteDe++]=data;
+				if(CLSPCB.PwriteDe>=29)
+				{
+					CLSPCB.ErrCode=FormatErr;
+					CLSPCB.PreadOffset=0;
+					CLSPCB.CommandType=CommandLine_NormalReceive;
+					BLEReturnValue(false,1);
+					return;
+				}
+			}
+			break;
+
+		default:
+			CLSPCB.PreadOffset=0;
+			CLSPCB.CommandType=CommandLine_NormalReceive;
+			break;
+	}
+
+}
+void commandLine_SetNNetworkF(unsigned char  data)
+{
+	//¡±WT Net II...II pp...pp\r\n¡±
+	switch(CLSPCB.PreadOffset)
+	{
+		case 0:
+			if('e'==data||'E'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 1:
+			if('t'==data||'T'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 2:
+			if(' '==data)
+			{
+				CLSPCB.PreadOffset++;
+				CLSPCB.PwriteDe=0;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 3:
+			if(' '==data)
+			{
+				CLSPCB.IPStr[CLSPCB.PwriteDe]='\0';
+				printf("sang:setIP:%s\r\n",CLSPCB.IPStr);
+				CLSPCB.PwriteDe=0;
+				CLSPCB.Port=0;
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.IPStr[CLSPCB.PwriteDe++]=data;
+				if(CLSPCB.PwriteDe>29)
+				{
+					CLSPCB.PreadOffset=0;
+					CLSPCB.CommandType=CommandLine_NormalReceive;
+					BLEReturnValue(false,1);
+				}
+			}
+			break;
+		case 4:
+			if(0x0a==data||0x0d==data)
+			{
+				CLSPCB.portStr[CLSPCB.PwriteDe]='\0';
+				printf("sang:portStr:%s->%d\r\n",CLSPCB.portStr,CLSPCB.Port);
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				printf("Set network command end!\r\n");
+				if(true==NVS_SaveNetWorkConfirm(CLSPCB.IPStr,CLSPCB.Port))
+				{
+					BLEReturnValue(true,1);
+				}
+				
+			}
+			else
+			{
+				if(data<'0'||data>'9')
+				{
+					printf("sang:must 0-->9\r\n");
+					
+					CLSPCB.PreadOffset=0;
+					CLSPCB.CommandType=CommandLine_NormalReceive;
+				}
+				CLSPCB.Port=CLSPCB.Port*10+data-'0';
+				CLSPCB.portStr[CLSPCB.PwriteDe++]=data;
+				if(CLSPCB.PwriteDe>29)
+				{
+					CLSPCB.PreadOffset=0;
+					CLSPCB.CommandType=CommandLine_NormalReceive;
+				}
+
+			}
+			break;			
+		default:
+			CLSPCB.PreadOffset=0;
+			CLSPCB.CommandType=CommandLine_NormalReceive;
+			break;
+	}
+	
+}
+void CommandLine_DeleteAllFaceInfoF(unsigned char data)
+{
+	//¡±WT delete All\r\n¡±
+	switch(CLSPCB.PreadOffset)
+	{
+		case 0:
+			if('e'==data||'E'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 1:
+			if('L'==data||'l'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 2:
+			if('E'==data||'e'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 3:
+			if('T'==data||'t'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 4:
+			if('E'==data||'e'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 5:
+			if(' '==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 6:
+			if('A'==data||'a'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 7:
+			if('L'==data||'l'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 8:
+			if('L'==data||'l'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 9:
+			if('\r'==data||'\n'==data)
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				DeleteAllFacialInfor();
+				printf("sang:delete all face information\r\n");
+				DeleteAllFacialInfor();
+				NVS_DeleteALLFaceInformation();
+				FaceInfoQuantity=0;
+				NVS_SaveFaceinfoQuantity();
+				BLEReturnValue(true,0);
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+
+		default:
+			CLSPCB.PreadOffset=0;
+			CLSPCB.CommandType=CommandLine_NormalReceive;
+			break;
+	}
+}
+void commandLine_DeleteFaceinfoIDF(unsigned char data)
+{
+	//¡±WT ID delete nn..nn¡±
+	switch(CLSPCB.PreadOffset)
+	{
+		case 0:
+			if('d'==data||'D'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 1:
+			if(' '==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 2:
+			if('d'==data||'D'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 3:
+			if('e'==data||'E'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;	
+		case 4:
+			if('l'==data||'L'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;	
+		case 5:
+			if('e'==data||'E'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;	
+		case 6:
+			if('t'==data||'T'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;	
+		case 7:
+			if('e'==data||'E'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;	
+		case 8:
+			if(' '==data)
+			{
+				CLSPCB.PreadOffset++;
+				CLSPCB.PwriteDe=0;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;	
+		case 9:
+			if('\r'==data||'\n'==data)
+			{
+				CLSPCB.DeleteEmployID[CLSPCB.PwriteDe]='\0';
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				printf("sang:delete employee ID command:%s\r\n",CLSPCB.DeleteEmployID);
+				
+			}
+			else
+			{
+				CLSPCB.DeleteEmployID[CLSPCB.PwriteDe++]=data;
+				if(CLSPCB.PwriteDe>28)
+				{
+					CLSPCB.PreadOffset=0;
+					CLSPCB.CommandType=CommandLine_NormalReceive;
+					BLEReturnValue(false,1);	
+				}
+			}
+			break;
+			
+
+		default:
+			CLSPCB.PreadOffset=0;
+			CLSPCB.CommandType=CommandLine_NormalReceive;
+			break;
+	}
+
+}
+void commnadLine_ReadDeviceInformationF(unsigned char data)
+{
+	//WT Read device Information\r\n
+	switch(CLSPCB.PreadOffset)
+	{
+		case 0:
+			if('E'==data||'e'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 1:
+			if('A'==data||'a'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 2:
+			if('D'==data||'d'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 3:
+			if(' '==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 4:
+			if('D'==data||'d'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 5:
+			if('E'==data||'e'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 6:
+			if('V'==data||'v'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 7:
+			if('I'==data||'i'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 8:
+			if('C'==data||'c'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 9:
+			if('E'==data||'e'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 10:
+			if(' '==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 11:
+			if('I'==data||'i'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 12:
+			if('N'==data||'n'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 13:
+			if('F'==data||'f'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 14:
+			if('O'==data||'o'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 15:
+			if('R'==data||'r'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 16:
+			if('M'==data||'m'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 17:
+			if('A'==data||'a'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 18:
+			if('T'==data||'t'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 19:
+			if('I'==data||'i'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 20:
+			if('O'==data||'o'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 21:
+			if('N'==data||'n'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		case 22:
+			if('\r'==data||'\n'==data)
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				printf("sang:Read device information end!\r\n");
+				uint8_t MACS[6];
+				char ReturnStr[100];
+				esp_efuse_mac_get_default(MACS);
+				sprintf(ReturnStr,"Type %d %02X%02X%02X%02X%02X%02X\n",CLSPCB.DType,MACS[0],MACS[1],MACS[2],MACS[3],MACS[4],MACS[5]);
+				printf(ReturnStr);
+				if(1==CommunicationInterface)
+				{
+					TCP_Client_SendData(ReturnStr,strlen(ReturnStr));
+				}
+				else
+				{
+					SangReturnLen=strlen(ReturnStr);
+					printf("SangReturnLen:%d\r\n",SangReturnLen);
+					strcpy(SangReturnStr,ReturnStr);
+				}
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+		default:
+			CLSPCB.PreadOffset=0;
+			CLSPCB.CommandType=CommandLine_NormalReceive;
+			break;
+	}
+}
+void CommandLine_HeadWF(unsigned char data)
+{
+	switch(CLSPCB.PreadOffset)
+	{
+		case 0:
+			if('T'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+			}
+			break;
+		case 1:
+			if(' '==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+			}
+			break;
+		case 2:
+			if('S'==data||'s'==data)
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.FacialImageCWriteTemp=0;
+				CLSPCB.ChineseGBK=false;
+				CLSPCB.CommandType=CommandLine_HeadSaveFacialImage;
+			}
+			else if('W'==data||'w'==data)
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_SetWiFi;
+			}
+			else if('N'==data||'n'==data)
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=commandLine_SetNNetwork;
+			}
+			else if('D'==data||'d'==data)
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_DeleteAllFaceInfo;
+			}
+			else if('i'==data||'I'==data)
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=commandLine_DeleteFaceinfoID;
+			}
+			else if('r'==data||'R'==data)
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=commnadLine_ReadDeviceInformation;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+			}
+			break;			
+		default:
+			CLSPCB.PreadOffset=0;
+			CLSPCB.CommandType=CommandLine_NormalReceive;
+			break;
+	}
+}
+void commandLine_aliveF(unsigned char data)
+{
+	//WT Read device Information\r\n
+	switch(CLSPCB.PreadOffset)
+	{
+		case 0:
+			if('E'==data||'e'==data)
+			{
+				CLSPCB.PreadOffset++;
+			}
+			else
+			{
+				CLSPCB.PreadOffset=0;
+				CLSPCB.CommandType=CommandLine_NormalReceive;
+				BLEReturnValue(false,1);
+			}
+			break;
+}
+void CommandLine_NormalReceiveF(unsigned char data)
+{
+	if('w'==data||'W'==data)
+	{
+		CLSPCB.PreadOffset=0;
+		CLSPCB.CommandType=CommandLine_HeadW;
+	}
+	else if('a'==data||'A'==data)
+	{
+		CLSPCB.PreadOffset=0;
+		CLSPCB.CommandType=commandLine_alive;
+	}
+}
+void CommandLineExecution(unsigned char data)
+{
+	//printf("%02X",data);
+	switch(CLSPCB.CommandType)
+	{
+		case CommandLine_NormalReceive:CommandLine_NormalReceiveF(data);break;
+		case CommandLine_HeadW:CommandLine_HeadWF(data);break;
+		case CommandLine_HeadSaveFacialImage:CommandLine_HeadSaveFacialImageF(data);break;
+		case CommandLine_SetWiFi:CommandLine_SetWiFiF(data);break;
+		case commandLine_SetNNetwork:commandLine_SetNNetworkF(data);break;
+		case CommandLine_DeleteAllFaceInfo:CommandLine_DeleteAllFaceInfoF(data);break;
+		case commandLine_DeleteFaceinfoID:commandLine_DeleteFaceinfoIDF(data);break;
+		case commnadLine_ReadDeviceInformation:commnadLine_ReadDeviceInformationF(data);break;
+		case commandLine_alive:commandLine_aliveF(data);break;
+		default:CommandLine_NormalReceiveF(data);break;
+	}
+}
+void OEMDataParser(void)
+{
+    while(1)
+    {
+        if((Pread+1)<Pwrite)
+        {
+			CommandLineExecution(BufferReceive[++Pread]);
+        }
+        else
+        {
+            if(Pread>Pwrite)
+            {
+                if(Pread==(MAXBufferReceiveSize-1))
+                {
+                    if(Pwrite>0)
+                    {
+                        Pread=0;
+						CommandLineExecution(BufferReceive[Pread]);
+                    }
+					else
+					{
+						return;
+					}
+                }
+                else
+                {
+					CommandLineExecution(BufferReceive[++Pread]);
+                }
+            }
+			else
+			{
+				return;
+			}
+        }
+    }
+}
+
+//-----------------------------------------command for recongnition----------------------------------------------
+void OEMSetFaceImageState(recognizer_state_t state)
+{
+	CLSPCB.FaceImageState=state;
+}
+recognizer_state_t OEMGetFaceImageState(void)
+{
+	return CLSPCB.FaceImageState;
+} 
+void OEMGetCurrentSaveFaceInfor(unsigned char *Name,unsigned char *ID)
+{
+	strcpy((char*)Name,(const char*)CLSPCB.FacialImageName);
+	strcpy((char*)ID,(const char*)CLSPCB.FacialImageID);
+}
+extern "C" void OEMSetComunicationInterface(unsigned char Type)
+{
+	CLSPCB.CommunicationInterface=Type;
+}
+

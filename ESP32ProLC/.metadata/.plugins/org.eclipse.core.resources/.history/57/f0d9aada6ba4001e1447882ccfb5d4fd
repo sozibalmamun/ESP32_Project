@@ -1,0 +1,4 @@
+idf_component_register(SRCS 
+							"App_main.cpp"
+					"App_SocketClient.cpp"
+                    INCLUDE_DIRS "."  "include")

@@ -26,5 +26,4 @@ extern "C" void app_main()
     register_event(xQueueKeyState, xQueueEventLogic);
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
     register_lcd(xQueueLCDFrame, NULL, true);
-
 }

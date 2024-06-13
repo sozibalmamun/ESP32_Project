@@ -1,0 +1,10 @@
+{
+    "idf.adapterTargetName": "esp32s3",
+    "C_Cpp.default.compilerPath": "",
+    "files.associations": {
+        "fs.h": "c",
+        "fs.hpp": "c"
+    },
+    "idf.portWin": "COM3",
+    "idf.flashType": "UART"
+}

@@ -19,7 +19,7 @@
 
 #define WIFI_SSID_KEY "wifi_ssid"
 #define WIFI_PASS_KEY "wifi_pass"
-
+#define DEVICE_NAME "THT-Face"
 const char *ssid = "SOZIB";
 const char *pass = "123456789";
 const char *TAG_WI_FI = "Wifi Debug";
@@ -34,7 +34,7 @@ void print_hostname();
 void set_and_print_hostname();
 
 static const char *TAG = "example";
-
+/*
 esp_err_t save_wifi_credentials(const char *ssid, const char *pass) {
     nvs_handle_t nvs_handle;
     esp_err_t err;
@@ -102,6 +102,7 @@ esp_err_t read_wifi_credentials(char *ssid, size_t ssid_len, char *pass, size_t 
 
     return err;
 }
+*/
 
 static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
     if (event_id == WIFI_EVENT_STA_START) {
@@ -123,22 +124,17 @@ static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_b
 
         // Read and log the hostname
         print_hostname();
-        set_and_print_hostname("THTFace");
+        //set_and_print_hostname("THTFace");
 
     }
 }
 
 void wifi_connection() {
-
+/*
     char ssid[32];
     char pass[64];
     size_t ssid_len = sizeof(ssid);
     size_t pass_len = sizeof(pass);
-
-
-    // set host namae // espressif
-   // esp_netif_t* netif = esp_netif_create_default_wifi_sta();
-  //  esp_netif_set_hostname(netif, "THTFace");
 
     // Read Wi-Fi credentials from NVS
     esp_err_t err = read_wifi_credentials(ssid, ssid_len, pass, pass_len);
@@ -148,7 +144,7 @@ void wifi_connection() {
         strcpy(pass, "123456789");
         save_wifi_credentials(ssid, pass);
     }
-
+*/
     // Wi-Fi Configuration Phase
     esp_netif_init();
     esp_event_loop_create_default(); // Event loop
@@ -171,7 +167,7 @@ void wifi_connection() {
 
     esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_configuration);
     
-
+    set_and_print_hostname(DEVICE_NAME);
 
     // Wi-Fi Start Phase
     esp_wifi_start();
@@ -180,7 +176,7 @@ void wifi_connection() {
     // Wi-Fi Connect Phase
     esp_wifi_connect();
 }
-
+/*
 void init_spiffs() {
 
     ESP_LOGI(TAG, "Initializing SPIFFS");
@@ -247,6 +243,8 @@ void read_wifi_info(char* ssid, char* pass) {
     fclose(f);
     ESP_LOGI(TAG_FS, "Wi-Fi info read: SSID: %s, PASS: %s", ssid, pass);
 }
+
+*/
 void print_hostname() {
     esp_netif_t *netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
     if (netif == NULL) {
@@ -264,6 +262,7 @@ void print_hostname() {
 }
 // Function to set and print the hostname
 void set_and_print_hostname(char *hostName) {
+
     esp_netif_t *netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
     if (netif == NULL) {
         ESP_LOGE(TAG, "Failed to get netif handle");

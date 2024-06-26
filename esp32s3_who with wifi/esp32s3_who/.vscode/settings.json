@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "tcp_client.h": "c",
+        "stdint.h": "c",
+        "string.h": "c",
+        "who_lcd.h": "c"
+    }
+}

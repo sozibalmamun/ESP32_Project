@@ -5,15 +5,18 @@
 #include "event_logic.hpp"
 #include "who_adc_button.h"
 
+#include "tcp_client.h"
+
 static QueueHandle_t xQueueAIFrame = NULL;
 static QueueHandle_t xQueueLCDFrame = NULL;
 static QueueHandle_t xQueueKeyState = NULL;
 static QueueHandle_t xQueueEventLogic = NULL;
-static button_adc_config_t buttons[4] = {{1, 2800, 3000}, {2, 2250, 2450}, {3, 300, 500}, {4, 850, 1050}};
+// static button_adc_config_t buttons[4] = {{1, 2800, 3000}, {2, 2250, 2450}, {3, 300, 500}, {4, 850, 1050}};
 
 #define GPIO_BOOT GPIO_NUM_0
 
-extern "C" void app_main()
+extern "C" 
+void app_main()
 {
     xQueueAIFrame = xQueueCreate(2, sizeof(camera_fb_t *));
     xQueueLCDFrame = xQueueCreate(2, sizeof(camera_fb_t *));
@@ -26,4 +29,8 @@ extern "C" void app_main()
     register_event(xQueueKeyState, xQueueEventLogic);
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
     register_lcd(xQueueLCDFrame, NULL, true);
+
+    nvs_flash_init();
+    wifi_connection();
+
 }

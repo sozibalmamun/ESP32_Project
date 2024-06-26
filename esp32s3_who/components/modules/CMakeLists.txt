@@ -11,7 +11,8 @@ set(src_dirs
                 button
                 web
                 trace
-                imu)
+                imu
+                tcp_client)
 
 set(include_dirs    
                     ai
@@ -21,7 +22,8 @@ set(include_dirs
                     button
                     web
                     trace
-                    imu)
+                    imu
+                    tcp_client)
 
 set(requires    esp32-camera
                 esp-dl

@@ -15,7 +15,6 @@
 #include "esp_vfs.h"
 #include "esp_spiffs.h"
 
-// #include "fs.h"
 
 #define WIFI_SSID_KEY "wifi_ssid"
 #define WIFI_PASS_KEY "wifi_pass"
@@ -34,75 +33,6 @@ void print_hostname();
 void set_and_print_hostname();
 
 static const char *TAG = "example";
-/*
-esp_err_t save_wifi_credentials(const char *ssid, const char *pass) {
-    nvs_handle_t nvs_handle;
-    esp_err_t err;
-
-    // Open NVS handle
-    err = nvs_open("storage", NVS_READWRITE, &nvs_handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Error (%s) opening NVS handle!", esp_err_to_name(err));
-        return err;
-    } else {
-        ESP_LOGI(TAG, "NVS handle opened successfully");
-
-        // Write SSID
-        err = nvs_set_str(nvs_handle, WIFI_SSID_KEY, ssid);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to write SSID to NVS (%s)", esp_err_to_name(err));
-        }
-
-        // Write Password
-        err = nvs_set_str(nvs_handle, WIFI_PASS_KEY, pass);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to write Password to NVS (%s)", esp_err_to_name(err));
-        }
-
-        // Commit written value
-        err = nvs_commit(nvs_handle);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to commit written value to NVS (%s)", esp_err_to_name(err));
-        }
-
-        // Close NVS handle
-        nvs_close(nvs_handle);
-    }
-
-    return err;
-}
-
-esp_err_t read_wifi_credentials(char *ssid, size_t ssid_len, char *pass, size_t pass_len) {
-    nvs_handle_t nvs_handle;
-    esp_err_t err;
-
-    // Open NVS handle
-    err = nvs_open("storage", NVS_READONLY, &nvs_handle);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Error (%s) opening NVS handle!", esp_err_to_name(err));
-        return err;
-    } else {
-        ESP_LOGI(TAG, "NVS handle opened successfully");
-
-        // Read SSID
-        err = nvs_get_str(nvs_handle, WIFI_SSID_KEY, ssid, &ssid_len);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to read SSID from NVS (%s)", esp_err_to_name(err));
-        }
-
-        // Read Password
-        err = nvs_get_str(nvs_handle, WIFI_PASS_KEY, pass, &pass_len);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to read Password from NVS (%s)", esp_err_to_name(err));
-        }
-
-        // Close NVS handle
-        nvs_close(nvs_handle);
-    }
-
-    return err;
-}
-*/
 
 static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
     if (event_id == WIFI_EVENT_STA_START) {
@@ -130,21 +60,7 @@ static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_b
 }
 
 void wifi_connection() {
-/*
-    char ssid[32];
-    char pass[64];
-    size_t ssid_len = sizeof(ssid);
-    size_t pass_len = sizeof(pass);
 
-    // Read Wi-Fi credentials from NVS
-    esp_err_t err = read_wifi_credentials(ssid, ssid_len, pass, pass_len);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to read Wi-Fi credentials from NVS. Using default credentials.");
-        strcpy(ssid, "SOZIB");
-        strcpy(pass, "123456789");
-        save_wifi_credentials(ssid, pass);
-    }
-*/
     // Wi-Fi Configuration Phase
     esp_netif_init();
     esp_event_loop_create_default(); // Event loop
@@ -176,75 +92,7 @@ void wifi_connection() {
     // Wi-Fi Connect Phase
     esp_wifi_connect();
 }
-/*
-void init_spiffs() {
 
-    ESP_LOGI(TAG, "Initializing SPIFFS");
-
-    esp_vfs_spiffs_conf_t conf = {
-      .base_path = "/spiffs",
-      .partition_label = NULL,
-      .max_files = 5,
-      .format_if_mount_failed = true
-    };
-
-    // Use settings defined above to initialize and mount SPIFFS filesystem.
-    // Note: esp_vfs_spiffs_register is an all-in-one convenience function.
-    esp_err_t ret = esp_vfs_spiffs_register(&conf);
-
-    if (ret != ESP_OK) {
-        if (ret == ESP_FAIL) {
-            ESP_LOGE(TAG, "Failed to mount or format filesystem");
-        } else if (ret == ESP_ERR_NOT_FOUND) {
-            ESP_LOGE(TAG, "Failed to find SPIFFS partition");
-        } else {
-            ESP_LOGE(TAG, "Failed to initialize SPIFFS (%s)", esp_err_to_name(ret));
-        }
-        return;
-    }
-
-
-
- 
-    size_t total = 0, used = 0;
-    ret = esp_spiffs_info(conf.partition_label, &total, &used);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to get SPIFFS partition information (%s). Formatting...", esp_err_to_name(ret));
-        esp_spiffs_format(conf.partition_label);
-        return;
-    } else {
-        ESP_LOGI(TAG, "Partition size: total: %d, used: %d", total, used);
-    }
-
-
-}
-
-void save_wifi_info(const char* ssid, const char* pass) {
-    FILE* f = fopen("/spiffs/wifi_info.txt", "w");
-    if (f == NULL) {
-        ESP_LOGE(TAG_FS, "Failed to open file for writing");
-        return;
-    }
-    fprintf(f, "%s\n%s\n", ssid, pass);
-    fclose(f);
-    ESP_LOGI(TAG_FS, "Wi-Fi info saved");
-}
-
-void read_wifi_info(char* ssid, char* pass) {
-    FILE* f = fopen("/spiffs/wifi_info.txt", "r");
-    if (f == NULL) {
-        ESP_LOGE(TAG_FS, "Failed to open file for reading");
-        return;
-    }
-    fgets(ssid, 32, f);  // Assuming SSID length is 32
-    ssid[strcspn(ssid, "\n")] = 0;  // Remove newline character
-    fgets(pass, 64, f);  // Assuming password length is 64
-    pass[strcspn(pass, "\n")] = 0;  // Remove newline character
-    fclose(f);
-    ESP_LOGI(TAG_FS, "Wi-Fi info read: SSID: %s, PASS: %s", ssid, pass);
-}
-
-*/
 void print_hostname() {
     esp_netif_t *netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
     if (netif == NULL) {
@@ -293,6 +141,9 @@ void set_and_print_hostname(char *hostName) {
 
 void app_main(void) {
     nvs_flash_init();
-   // init_spiffs();
     wifi_connection();
+
+
+
+    
 }

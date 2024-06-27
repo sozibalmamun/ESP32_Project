@@ -124,21 +124,42 @@ static void task_process_handler(void *arg)
                 {
                     switch (_gEvent)
                     {
-                    case ENROLL:
+                    case ENROLL:{
                         recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
                         ESP_LOGW("ENROLL", "ID %d is enrolled", recognizer->get_enrolled_ids().back().id);
+                        //------------------------------------------------------
+                        for (int i = 0; i < sizeof(detect_results.front().keypoint); i++) { 
+
+                        printf("\nDEBUG Keypoint : %d", detect_results.front().keypoint[i]);
+                        }
+                        printf("\nDEBUG formet : %d", (int)frame->format);
+
+                        //--------------------------------------------------------
                         frame_show_state = SHOW_STATE_ENROLL;
                         break;
-
-                    case RECOGNIZE:
+                    }
+                    case RECOGNIZE:{
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
                         print_detection_result(detect_results);
+                        
+                        // Debugging the image data
+                        // ESP_LOGI("debug", "Printing frame buffer contents:");
+                        // ESP_LOGI("debug", "Frame height: %d, Frame width: %d", frame->height, frame->width);
+                        // int buffer_length = frame->height * frame->width * 3; // Assuming 3 channels (e.g., RGB)
+                        // for (int i = 0; i < buffer_length; i++) { // Limit to first 100 elements for example
+                        //     if (i % frame->width == 0) {
+                        //         printf("\n\n"); // Newline for each row
+                        //     }
+                        //     printf("0x%04x,", ((uint16_t *)frame->buf)[i]); // Print as hex with leading zeros
+                        // }
+                        //-----------------------------------------------------------------------------------------------
                         if (recognize_result.id > 0)
                             ESP_LOGI("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
                         else
                             ESP_LOGE("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
                         frame_show_state = SHOW_STATE_RECOGNIZE;
                         break;
+                    }
 
                     case DELETE:
                         vTaskDelay(10);

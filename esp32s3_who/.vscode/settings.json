@@ -3,6 +3,13 @@
         "tcp_client.h": "c",
         "stdint.h": "c",
         "string.h": "c",
-        "who_lcd.h": "c"
+        "who_lcd.h": "c",
+        "compare": "cpp",
+        "cstdint": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "vector": "cpp",
+        "string_view": "cpp"
     }
 }

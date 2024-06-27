@@ -30,7 +30,7 @@ void app_main()
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
     register_lcd(xQueueLCDFrame, NULL, true);
 
-    nvs_flash_init();
-    wifi_connection();
+   // nvs_flash_init();
+    //wifi_connection();
 
 }

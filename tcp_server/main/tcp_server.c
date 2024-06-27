@@ -11,10 +11,11 @@
 #include "lwip/dns.h"
 #include "lwip/netdb.h"
 
-#define WIFI_SSID "SOZIB"
-#define WIFI_PASS "123456789"
+#define WIFI_SSID "Space"
+#define WIFI_PASS "12345space6789"
 #define PORT 80
 #define LISTEN_BACKLOG 1
+#define ACK_SIZE 1024
 
 static const char *TAG = "Socket Example";
 
@@ -92,6 +93,7 @@ void socket_task(void *pvParameters) {
     }
 
     ESP_LOGI(TAG, "Socket listening on port %d", PORT);
+    int16_t total_received = 0;
 
     while (1) {
         client_sock = accept(listen_sock, (struct sockaddr *)&client_addr, &client_addr_len);
@@ -103,19 +105,32 @@ void socket_task(void *pvParameters) {
         }
 
         char rx_buffer[1024];
-        int len = recv(client_sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
-        if (len < 0) {
-            ESP_LOGE(TAG, "Error receiving data: errno %d", errno);
-        } else if (len == 0) {
-            ESP_LOGW(TAG, "Connection closed");
-        } else {
-            rx_buffer[len] = '\0';
-            ESP_LOGI(TAG, "Received %d bytes: %s", len, rx_buffer);
-            // Process received data here
+        while(1){
+            int len = recv(client_sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
+            if (len < 0) {
+                ESP_LOGE(TAG, "Error receiving data: errno %d", errno);
+                break;
+            } else if (len == 0) {
+                ESP_LOGW(TAG, "Connection closed");
+                break;
+            } else {
+                rx_buffer[len] = '\0';
+                total_received += len;
+                ESP_LOGI(TAG, "Received %d bytes: %s", len, rx_buffer);
+                // Process received data here
+                    if (total_received >= ACK_SIZE) {
+                        const char *ack_message = "ACK";
+                        int err = send(client_sock, ack_message, strlen(ack_message), 0);
+                        if (err < 0) {
+                            ESP_LOGE(TAG, "Error sending ACK: errno %d", errno);
+                        } else {
+                            ESP_LOGI(TAG, "ACK sent to client\n");
+                        }
+                        total_received = 0; // Reset the counter after sending ACK
+                    }
 
-            
+            }
         }
-
         close(client_sock);
     }
 }

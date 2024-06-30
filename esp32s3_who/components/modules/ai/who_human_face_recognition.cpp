@@ -117,9 +117,10 @@ static void task_process_handler(void *arg)
                 std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3});
                 std::list<dl::detect::result_t> &detect_results = detector2.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_candidates);
 
-                if (detect_results.size() == 1)
+                if (detect_results.size() == 1){
                     is_detected = true;
-
+                   // _gEvent = RECOGNIZE;// due to no button for recognize
+                }
                 if (is_detected)
                 {
                     switch (_gEvent)

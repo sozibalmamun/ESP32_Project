@@ -125,14 +125,15 @@ static void task_process_handler(void *arg)
                     switch (_gEvent)
                     {
                     case ENROLL:{
-                        recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
+                        // recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
+                        recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "Sozib", true);// due to add name
                         ESP_LOGW("ENROLL", "ID %d is enrolled", recognizer->get_enrolled_ids().back().id);
                         //------------------------------------------------------
                         for (int i = 0; i < sizeof(detect_results.front().keypoint); i++) { 
 
                         printf("\nDEBUG Keypoint : %d", detect_results.front().keypoint[i]);
                         }
-                        printf("\nDEBUG formet : %d", (int)frame->format);
+                        // printf("\nDEBUG formet : %d", (int)frame->format);
 
                         //--------------------------------------------------------
                         frame_show_state = SHOW_STATE_ENROLL;
@@ -163,7 +164,13 @@ static void task_process_handler(void *arg)
 
                     case DELETE:
                         vTaskDelay(10);
-                        recognizer->delete_id(true);
+                       recognizer->delete_id(true);// debug due to person delete
+                        // recognizer->delete_id(2,true);
+
+                      //int delete_id(int id, bool update_flash = false);
+
+
+
                         ESP_LOGE("DELETE", "% d IDs left", recognizer->get_enrolled_id_num());
                         frame_show_state = SHOW_STATE_DELETE;
                         break;
@@ -184,7 +191,9 @@ static void task_process_handler(void *arg)
 
                     case SHOW_STATE_RECOGNIZE:
                         if (recognize_result.id > 0)
-                            rgb_printf(frame, RGB565_MASK_GREEN, "ID %d", recognize_result.id);
+                            // rgb_printf(frame, RGB565_MASK_GREEN, "ID %d", recognize_result.id);
+                        rgb_printf(frame, RGB565_MASK_GREEN, "ID %d Name %s", recognize_result.id,recognize_result.name.c_str());// debug due to display name
+
                         else{
                             rgb_print(frame, RGB565_MASK_RED, "who ?");
                             ESP_LOGI(TAG,"\nWho ?");

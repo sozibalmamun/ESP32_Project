@@ -1,0 +1,59 @@
+<mxfile host="app.diagrams.net" modified="2024-06-29T08:51:30.872Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36" etag="VmUe7-WbUr4lJhRZXyT9" version="24.6.4" type="device">
+  <diagram name="Page-1" id="dyxbc-GIJBcg4NW4KkdV">
+    <mxGraphModel dx="875" dy="435" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="vBuvtqWgGCUfQ8dRdakS-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=3;" edge="1" parent="1" source="vBuvtqWgGCUfQ8dRdakS-1" target="vBuvtqWgGCUfQ8dRdakS-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vBuvtqWgGCUfQ8dRdakS-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.25;entryDx=0;entryDy=0;strokeWidth=3;" edge="1" parent="1" source="vBuvtqWgGCUfQ8dRdakS-1" target="vBuvtqWgGCUfQ8dRdakS-17">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="170" y="110" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vBuvtqWgGCUfQ8dRdakS-1" value="&lt;b&gt;Connecting to Network&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="310" y="60" width="120" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="vBuvtqWgGCUfQ8dRdakS-2" value="&lt;b&gt;Generating Qr Code for network configuration process&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="510" y="150" width="150" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="vBuvtqWgGCUfQ8dRdakS-4" value="&lt;b&gt;&lt;font color=&quot;#cc0000&quot;&gt;Fail&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="470" y="70" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="vBuvtqWgGCUfQ8dRdakS-12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;" edge="1" parent="1" source="vBuvtqWgGCUfQ8dRdakS-5" target="vBuvtqWgGCUfQ8dRdakS-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vBuvtqWgGCUfQ8dRdakS-5" value="&lt;div&gt;&lt;b&gt;QR scanning using&lt;/b&gt;&lt;/div&gt;&lt;b&gt;User Application&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="525" y="300" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="vBuvtqWgGCUfQ8dRdakS-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=-0.167;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.494;exitY=1.011;exitDx=0;exitDy=0;exitPerimeter=0;strokeColor=#000000;strokeWidth=4;" edge="1" parent="1" source="vBuvtqWgGCUfQ8dRdakS-2">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="584.92" y="270.02" as="sourcePoint" />
+            <mxPoint x="584.92" y="300.00000000000006" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="584" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vBuvtqWgGCUfQ8dRdakS-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;" edge="1" parent="1" source="vBuvtqWgGCUfQ8dRdakS-7" target="vBuvtqWgGCUfQ8dRdakS-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vBuvtqWgGCUfQ8dRdakS-7" value="Wifi credintials from user application" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="310" y="300" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="vBuvtqWgGCUfQ8dRdakS-17" value="Go to&amp;nbsp;&lt;br&gt;Normal operation" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="80" width="120" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="vBuvtqWgGCUfQ8dRdakS-20" value="Text" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="300" y="120" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="vBuvtqWgGCUfQ8dRdakS-21" value="Success" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#2D7600;fillColor=#60a917;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="205" y="70" width="70" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

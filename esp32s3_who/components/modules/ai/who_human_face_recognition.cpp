@@ -24,9 +24,11 @@ using namespace std;
 using namespace dl;
 
 static const char *TAG = "human_face_recognition";
-
-extern bool CmdEnroll;
-
+// extern from tcp client  for enrolment
+extern uint8_t CmdEnroll;
+extern char personName[20];
+extern uint32_t personId;
+//---------------------------------------
 static QueueHandle_t xQueueFrameI = NULL;
 static QueueHandle_t xQueueEvent = NULL;
 static QueueHandle_t xQueueFrameO = NULL;
@@ -44,6 +46,7 @@ typedef enum
     SHOW_STATE_DELETE,
     SHOW_STATE_RECOGNIZE,
     SHOW_STATE_ENROLL,
+    SHOW_DUPLICATE
 } show_state_t;
 
 #define RGB565_MASK_RED 0xF800
@@ -101,7 +104,7 @@ static void task_process_handler(void *arg)
     show_state_t frame_show_state = SHOW_STATE_IDLE;
     recognizer_state_t _gEvent;
     recognizer->set_partition(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "fr");
-    int partition_result = recognizer->set_ids_from_flash();
+   // int partition_result = recognizer->set_ids_from_flash();
 
     while (true)
     {
@@ -122,21 +125,36 @@ static void task_process_handler(void *arg)
                 if (detect_results.size() == 1){
                     is_detected = true;
                    // _gEvent = RECOGNIZE;// due to no button for recognize
-                   if(CmdEnroll)_gEvent=ENROLL;
+                   if(CmdEnroll==1)_gEvent=ENROLL;// 1 for enroling 
                 }
                 if (is_detected)
                 {
                     switch (_gEvent)
                     {
                     case ENROLL:{
-                        // recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
-                        recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "Sozib", true);// due to add name
-                        ESP_LOGW("ENROLL", "ID %d is enrolled", recognizer->get_enrolled_ids().back().id);
-                        //------------------------------------------------------
-                        for (int i = 0; i < sizeof(detect_results.front().keypoint); i++) { 
 
-                        printf("\nDEBUG Keypoint : %d", detect_results.front().keypoint[i]);
+
+
+                        // dupliocate 
+                        recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
+                        print_detection_result(detect_results);
+                        if (recognize_result.id > 0){
+                        CmdEnroll=3;// 3 FOR DUPLICATE
+                        frame_show_state = SHOW_DUPLICATE;
                         }
+                        // duplicat end
+
+
+                        // recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
+                        recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, personName, true);// due to add name
+                        ESP_LOGW("ENROLL", "ID %d is enrolled", recognizer->get_enrolled_ids().back().id);
+                        
+
+                        //------------------------------------------------------
+                        // for (int i = 0; i < sizeof(detect_results.front().keypoint); i++) { 
+
+                        // printf("\nDEBUG Keypoint : %d", detect_results.front().keypoint[i]);
+                        // }
                         // printf("\nDEBUG formet : %d", (int)frame->format);
 
                         //--------------------------------------------------------
@@ -206,9 +224,14 @@ static void task_process_handler(void *arg)
                         break;
 
                     case SHOW_STATE_ENROLL:
-                        rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id); CmdEnroll=false;
+                        rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id); 
+                        personId=recognizer->get_enrolled_ids().back().id;
+                        CmdEnroll=2;// 2 means enrol done
                         break;
 
+                    case SHOW_DUPLICATE:
+                       rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");// debug due to display name
+                    break;
                     default:
                         break;
                     }

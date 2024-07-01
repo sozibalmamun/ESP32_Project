@@ -8,7 +8,16 @@ const char *pass = "12345space6789";
 const char *TAG_WI_FI = "Wifi Debug";
 const char *TAG_FS   = "FS Debug";
 
-bool  CmdEnroll =false;
+#define NOENROL 0
+#define ENROLING 1
+#define ENROLED 2
+#define DUPLICATE 3
+
+
+
+uint8_t  CmdEnroll=NOENROL;
+char personName[20];
+uint32_t personId;
 
 
 
@@ -176,6 +185,24 @@ void socket_task(void *pvParameters) {
 
                 // Process received data here
                 process_enrollment_command(rx_buffer);
+                if(CmdEnroll==ENROLED){
+                        // int err = send(client_sock, personId, strlen(ack_message), 0);
+                        // if (err < 0) {
+                        //     ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+                        // } else {
+                        //     ESP_LOGI(TAGSOCKET, "id sent to client\n");
+                        // }
+
+                }else if(CmdEnroll==DUPLICATE){
+
+                        // int err = send(client_sock, personId, strlen(ack_message), 0);
+                        // if (err < 0) {
+                        //     ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+                        // } else {
+                        //     ESP_LOGI(TAGSOCKET, "id sent to client\n");
+                        // }
+
+                }
 
 
                     if (total_received >= ACK_SIZE) {
@@ -195,10 +222,7 @@ void socket_task(void *pvParameters) {
     }
 }
 
-
 void process_enrollment_command(const char* buffer) {
-  char name[32]; // Assuming maximum name length of 32 characters
-  int id;
 
   // Check if the buffer starts with "cmdEnrol" (case-sensitive)
   if (strncmp(buffer, "cmdEnrol", strlen("cmdEnrol")) != 0) {
@@ -213,16 +237,19 @@ void process_enrollment_command(const char* buffer) {
     // Handle invalid format (no space)
     return;
   }
-  strncpy(name, name_start, space_pos - name_start);
-  name[space_pos - name_start] = '\0'; // Null terminate the name string
+  strncpy(personName, name_start, space_pos - name_start);
+  personName[space_pos - name_start] = '\0'; // Null terminate the name string
 
   // Extract the ID (assuming integer after space)
-  sscanf(space_pos + 1, "%d", &id);
+  sscanf(space_pos + 1, "%u", &personId);
 
   // Process the enrollment data (name and ID)
   // ... (your application logic here)
   // For example, print the information or store it in memory
-  printf("Enrolling: Name - %s, ID - %d\n", name, id);
+  printf("Enrolling: Name - %s, ID - %d\n", personName, personId);
+  
+  CmdEnroll=ENROLING;
+
 }
 
 

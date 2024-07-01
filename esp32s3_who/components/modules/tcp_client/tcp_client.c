@@ -185,6 +185,7 @@ void socket_task(void *pvParameters) {
 
                 // Process received data here
                 process_enrollment_command(rx_buffer);
+
                 if(CmdEnroll==ENROLED){
                         // int err = send(client_sock, personId, strlen(ack_message), 0);
                         // if (err < 0) {
@@ -195,26 +196,27 @@ void socket_task(void *pvParameters) {
 
                 }else if(CmdEnroll==DUPLICATE){
 
-                        // int err = send(client_sock, personId, strlen(ack_message), 0);
-                        // if (err < 0) {
-                        //     ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
-                        // } else {
-                        //     ESP_LOGI(TAGSOCKET, "id sent to client\n");
-                        // }
+                    const char *ack_message = "NDP";// nack for duplicate person
+                    int err = send(client_sock, ack_message, strlen(ack_message), 0);
+                    if (err < 0) {
+                        ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+                    } else {
+                        ESP_LOGI(TAGSOCKET, "duplicate ack sent to client\n");
+                    }
 
                 }
 
 
-                    if (total_received >= ACK_SIZE) {
-                        const char *ack_message = "ACK";
-                        int err = send(client_sock, ack_message, strlen(ack_message), 0);
-                        if (err < 0) {
-                            ESP_LOGE(TAGSOCKET, "Error sending ACK: errno %d", errno);
-                        } else {
-                            ESP_LOGI(TAGSOCKET, "ACK sent to client\n");
-                        }
-                        total_received = 0; // Reset the counter after sending ACK
-                    }
+                    // if (total_received >= ACK_SIZE) {
+                    //     const char *ack_message = "ACK";
+                    //     int err = send(client_sock, ack_message, strlen(ack_message), 0);
+                    //     if (err < 0) {
+                    //         ESP_LOGE(TAGSOCKET, "Error sending ACK: errno %d", errno);
+                    //     } else {
+                    //         ESP_LOGI(TAGSOCKET, "ACK sent to client\n");
+                    //     }
+                    //     total_received = 0; // Reset the counter after sending ACK
+                    // }
 
             }
         }

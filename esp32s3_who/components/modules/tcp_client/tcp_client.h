@@ -16,15 +16,20 @@
 #include "esp_err.h"
 #include "esp_vfs.h"
 
-// #define WIFI_SSID_KEY "wifi_ssid"
-// #define WIFI_PASS_KEY "wifi_pass"
-// #define DEVICE_NAME "THT-Face"
-// const char *ssid = "SOZIB";
-// const char *pass = "123456789";
-// const char *TAG_WI_FI = "Wifi Debug";
-// const char *TAG_FS   = "FS Debug";
 
-// static const char *TAG = "example";
+
+#include "freertos/task.h"
+#include "esp_wifi.h"
+#include "lwip/sockets.h"
+#include "lwip/dns.h"
+#include "lwip/netdb.h"
+
+
+#define PORT 80
+#define LISTEN_BACKLOG 1
+#define ACK_SIZE 1024
+
+static const char *TAG = "Socket Example";
 
 
 #ifdef __cplusplus
@@ -37,6 +42,9 @@ esp_err_t save_wifi_credentials(const char *ssid, const char *pass) ;
 void print_hostname();
 void set_and_print_hostname();
 void wifi_connection(void);
+
+void socket_task(void *pvParameters);
+
 
 void save_wifi_info(const char* ssid, const char* pass);
 void read_wifi_info(char* ssid, char* pass);

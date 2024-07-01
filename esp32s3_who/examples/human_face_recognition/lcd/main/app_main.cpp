@@ -29,8 +29,11 @@ void app_main()
     register_event(xQueueKeyState, xQueueEventLogic);
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
     register_lcd(xQueueLCDFrame, NULL, true);
+//------------wi-fi-----------
+    nvs_flash_init();
+    wifi_connection();
+    xTaskCreate(&socket_task, "socket_task", 4 * 1024, NULL, 5, NULL);
 
-   // nvs_flash_init();
-    //wifi_connection();
 
+//-------------wifi end---------------
 }

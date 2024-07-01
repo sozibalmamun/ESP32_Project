@@ -9,8 +9,6 @@ const char *pass = "123456789";
 const char *TAG_WI_FI = "Wifi Debug";
 const char *TAG_FS   = "FS Debug";
 
-static const char *TAG = "example";
-
 
 static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
     if (event_id == WIFI_EVENT_STA_START) {
@@ -116,6 +114,82 @@ void set_and_print_hostname(char *hostName) {
         ESP_LOGE(TAG, "Failed to get hostname: %s", esp_err_to_name(err));
     }
 }
+
+void socket_task(void *pvParameters) {
+    int listen_sock, client_sock;
+    struct sockaddr_in server_addr, client_addr;
+    socklen_t client_addr_len = sizeof(client_addr);
+
+    listen_sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (listen_sock < 0) {
+        ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
+        vTaskDelete(NULL);
+        return;
+    }
+
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    server_addr.sin_port = htons(PORT);
+
+    if (bind(listen_sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+        ESP_LOGE(TAG, "Socket bind failed: errno %d", errno);
+        close(listen_sock);
+        vTaskDelete(NULL);
+        return;
+    }
+
+    if (listen(listen_sock, LISTEN_BACKLOG) < 0) {
+        ESP_LOGE(TAG, "Socket listen failed: errno %d", errno);
+        close(listen_sock);
+        vTaskDelete(NULL);
+        return;
+    }
+
+    ESP_LOGI(TAG, "Socket listening on port %d", PORT);
+    int16_t total_received = 0;
+
+    while (1) {
+        client_sock = accept(listen_sock, (struct sockaddr *)&client_addr, &client_addr_len);
+        if (client_sock < 0) {
+            ESP_LOGE(TAG, "Unable to accept connection: errno %d", errno);
+            close(listen_sock);
+            vTaskDelete(NULL);
+            return;
+        }
+
+        char rx_buffer[1024];
+        while(1){
+            int len = recv(client_sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
+            if (len < 0) {
+                ESP_LOGE(TAG, "Error receiving data: errno %d", errno);
+                break;
+            } else if (len == 0) {
+                ESP_LOGW(TAG, "Connection closed");
+                break;
+            } else {
+                rx_buffer[len] = '\0';
+                total_received += len;
+                ESP_LOGI(TAG, "Received %d bytes: %s", len, rx_buffer);
+                // Process received data here
+                    if (total_received >= ACK_SIZE) {
+                        const char *ack_message = "ACK";
+                        int err = send(client_sock, ack_message, strlen(ack_message), 0);
+                        if (err < 0) {
+                            ESP_LOGE(TAG, "Error sending ACK: errno %d", errno);
+                        } else {
+                            ESP_LOGI(TAG, "ACK sent to client\n");
+                        }
+                        total_received = 0; // Reset the counter after sending ACK
+                    }
+
+            }
+        }
+        close(client_sock);
+    }
+}
+
+
 
 
 

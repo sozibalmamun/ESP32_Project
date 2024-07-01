@@ -14,6 +14,8 @@ typedef enum
     DELETE,
 } recognizer_state_t;
 
+extern bool CmdEnroll;
+
 void register_human_face_recognition(QueueHandle_t frame_i,
                                      QueueHandle_t event,
                                      QueueHandle_t result,

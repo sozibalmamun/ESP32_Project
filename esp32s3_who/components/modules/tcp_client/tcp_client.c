@@ -1,13 +1,15 @@
 
 #include "tcp_client.h"
 
-#define WIFI_SSID_KEY "wifi_ssid"
-#define WIFI_PASS_KEY "wifi_pass"
+
 #define DEVICE_NAME "THT-Face"
-const char *ssid = "SOZIB";
-const char *pass = "123456789";
+const char *ssid = "Space";
+const char *pass = "12345space6789";
 const char *TAG_WI_FI = "Wifi Debug";
 const char *TAG_FS   = "FS Debug";
+
+bool  CmdEnroll =false;
+
 
 
 static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
@@ -74,16 +76,16 @@ void wifi_connection(void) {
 void print_hostname() {
     esp_netif_t *netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
     if (netif == NULL) {
-        ESP_LOGE(TAG, "Failed to get netif handle");
+        ESP_LOGE(TAG_WI_FI, "Failed to get netif handle");
         return;
     }
 
     const char *hostname;
     esp_err_t err = esp_netif_get_hostname(netif, &hostname);
     if (err == ESP_OK) {
-        ESP_LOGI(TAG, "Hostname: %s", hostname);
+        ESP_LOGI(TAG_WI_FI, "Hostname: %s", hostname);
     } else {
-        ESP_LOGE(TAG, "Failed to get hostname: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG_WI_FI, "Failed to get hostname: %s", esp_err_to_name(err));
     }
 }
 // Function to set and print the hostname
@@ -91,7 +93,7 @@ void set_and_print_hostname(char *hostName) {
 
     esp_netif_t *netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
     if (netif == NULL) {
-        ESP_LOGE(TAG, "Failed to get netif handle");
+        ESP_LOGE(TAG_WI_FI, "Failed to get netif handle");
         return;
     }
 
@@ -99,9 +101,9 @@ void set_and_print_hostname(char *hostName) {
     const char *new_hostname = hostName;
     esp_err_t err = esp_netif_set_hostname(netif, new_hostname);
     if (err == ESP_OK) {
-        ESP_LOGI(TAG, "Hostname set to: %s", new_hostname);
+        ESP_LOGI(TAG_WI_FI, "Hostname set to: %s", new_hostname);
     } else {
-        ESP_LOGE(TAG, "Failed to set hostname: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG_WI_FI, "Failed to set hostname: %s", esp_err_to_name(err));
         return;
     }
 
@@ -109,9 +111,9 @@ void set_and_print_hostname(char *hostName) {
     const char *hostname;
     err = esp_netif_get_hostname(netif, &hostname);
     if (err == ESP_OK) {
-        ESP_LOGI(TAG, "Hostname: %s", hostname);
+        ESP_LOGI(TAG_WI_FI, "Hostname: %s", hostname);
     } else {
-        ESP_LOGE(TAG, "Failed to get hostname: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG_WI_FI, "Failed to get hostname: %s", esp_err_to_name(err));
     }
 }
 
@@ -122,7 +124,7 @@ void socket_task(void *pvParameters) {
 
     listen_sock = socket(AF_INET, SOCK_STREAM, 0);
     if (listen_sock < 0) {
-        ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
+        ESP_LOGE(TAGSOCKET, "Unable to create socket: errno %d", errno);
         vTaskDelete(NULL);
         return;
     }
@@ -133,26 +135,26 @@ void socket_task(void *pvParameters) {
     server_addr.sin_port = htons(PORT);
 
     if (bind(listen_sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        ESP_LOGE(TAG, "Socket bind failed: errno %d", errno);
+        ESP_LOGE(TAGSOCKET, "Socket bind failed: errno %d", errno);
         close(listen_sock);
         vTaskDelete(NULL);
         return;
     }
 
     if (listen(listen_sock, LISTEN_BACKLOG) < 0) {
-        ESP_LOGE(TAG, "Socket listen failed: errno %d", errno);
+        ESP_LOGE(TAGSOCKET, "Socket listen failed: errno %d", errno);
         close(listen_sock);
         vTaskDelete(NULL);
         return;
     }
 
-    ESP_LOGI(TAG, "Socket listening on port %d", PORT);
+    ESP_LOGI(TAGSOCKET, "Socket listening on port %d", PORT);
     int16_t total_received = 0;
 
     while (1) {
         client_sock = accept(listen_sock, (struct sockaddr *)&client_addr, &client_addr_len);
         if (client_sock < 0) {
-            ESP_LOGE(TAG, "Unable to accept connection: errno %d", errno);
+            ESP_LOGE(TAGSOCKET, "Unable to accept connection: errno %d", errno);
             close(listen_sock);
             vTaskDelete(NULL);
             return;
@@ -162,23 +164,27 @@ void socket_task(void *pvParameters) {
         while(1){
             int len = recv(client_sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
             if (len < 0) {
-                ESP_LOGE(TAG, "Error receiving data: errno %d", errno);
+                ESP_LOGE(TAGSOCKET, "Error receiving data: errno %d", errno);
                 break;
             } else if (len == 0) {
-                ESP_LOGW(TAG, "Connection closed");
+                ESP_LOGW(TAGSOCKET, "Connection closed");
                 break;
             } else {
                 rx_buffer[len] = '\0';
                 total_received += len;
-                ESP_LOGI(TAG, "Received %d bytes: %s", len, rx_buffer);
+                ESP_LOGI(TAGSOCKET, "Received %d bytes: %s", len, rx_buffer);
+
                 // Process received data here
+                process_enrollment_command(rx_buffer);
+
+
                     if (total_received >= ACK_SIZE) {
                         const char *ack_message = "ACK";
                         int err = send(client_sock, ack_message, strlen(ack_message), 0);
                         if (err < 0) {
-                            ESP_LOGE(TAG, "Error sending ACK: errno %d", errno);
+                            ESP_LOGE(TAGSOCKET, "Error sending ACK: errno %d", errno);
                         } else {
-                            ESP_LOGI(TAG, "ACK sent to client\n");
+                            ESP_LOGI(TAGSOCKET, "ACK sent to client\n");
                         }
                         total_received = 0; // Reset the counter after sending ACK
                     }
@@ -190,6 +196,34 @@ void socket_task(void *pvParameters) {
 }
 
 
+void process_enrollment_command(const char* buffer) {
+  char name[32]; // Assuming maximum name length of 32 characters
+  int id;
+
+  // Check if the buffer starts with "cmdEnrol" (case-sensitive)
+  if (strncmp(buffer, "cmdEnrol", strlen("cmdEnrol")) != 0) {
+    // Handle invalid command format
+    return;
+  }
+
+  // Extract the name (assuming space separates name and ID)
+  const char* name_start = buffer + strlen("cmdEnrol") + 1;
+  const char* space_pos = strchr(name_start, ' ');
+  if (space_pos == NULL) {
+    // Handle invalid format (no space)
+    return;
+  }
+  strncpy(name, name_start, space_pos - name_start);
+  name[space_pos - name_start] = '\0'; // Null terminate the name string
+
+  // Extract the ID (assuming integer after space)
+  sscanf(space_pos + 1, "%d", &id);
+
+  // Process the enrollment data (name and ID)
+  // ... (your application logic here)
+  // For example, print the information or store it in memory
+  printf("Enrolling: Name - %s, ID - %d\n", name, id);
+}
 
 
 

@@ -2,6 +2,10 @@
 
 #include <stdio.h>           // For basic printf commands
 #include <string.h>          // For handling strings
+#include "stdbool.h"
+#include <sys/unistd.h>
+#include <sys/stat.h>
+
 #include "freertos/FreeRTOS.h"  // For delay, mutexes, semaphores, RTOS operations
 #include "esp_system.h"      // For ESP init functions, esp_err_t
 #include "esp_wifi.h"        // For esp_wifi_init functions and Wi-Fi operations
@@ -11,8 +15,7 @@
 #include "lwip/err.h"        // Light weight IP packets error handling
 #include "lwip/sys.h"        // System applications for lightweight IP apps
 #include "nvs.h"
-#include <sys/unistd.h>
-#include <sys/stat.h>
+
 #include "esp_err.h"
 #include "esp_vfs.h"
 
@@ -29,7 +32,7 @@
 #define LISTEN_BACKLOG 1
 #define ACK_SIZE 1024
 
-static const char *TAG = "Socket Example";
+static const char *TAGSOCKET = "Socket Example";
 
 
 #ifdef __cplusplus
@@ -43,11 +46,16 @@ void print_hostname();
 void set_and_print_hostname();
 void wifi_connection(void);
 
+// tcp server
 void socket_task(void *pvParameters);
 
-
+//save wifi info
 void save_wifi_info(const char* ssid, const char* pass);
 void read_wifi_info(char* ssid, char* pass);
+
+
+// parsing
+void process_enrollment_command(const char* buffer);
 
 #ifdef __cplusplus
 }

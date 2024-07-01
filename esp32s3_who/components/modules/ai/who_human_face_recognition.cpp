@@ -25,6 +25,8 @@ using namespace dl;
 
 static const char *TAG = "human_face_recognition";
 
+extern bool CmdEnroll;
+
 static QueueHandle_t xQueueFrameI = NULL;
 static QueueHandle_t xQueueEvent = NULL;
 static QueueHandle_t xQueueFrameO = NULL;
@@ -120,6 +122,7 @@ static void task_process_handler(void *arg)
                 if (detect_results.size() == 1){
                     is_detected = true;
                    // _gEvent = RECOGNIZE;// due to no button for recognize
+                   if(CmdEnroll)_gEvent=ENROLL;
                 }
                 if (is_detected)
                 {
@@ -198,12 +201,12 @@ static void task_process_handler(void *arg)
                         else{
                             rgb_print(frame, RGB565_MASK_RED, "who ?");
                             ESP_LOGI(TAG,"\nWho ?");
-                            printf("who done");
+                            // printf("who done");
                             }
                         break;
 
                     case SHOW_STATE_ENROLL:
-                        rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id);
+                        rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id); CmdEnroll=false;
                         break;
 
                     default:

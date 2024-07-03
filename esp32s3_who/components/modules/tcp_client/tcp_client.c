@@ -182,14 +182,17 @@ void socket_task(void *pvParameters) {
             } else {
                 rx_buffer[len] = '\0';
                 total_received += len;
-                ESP_LOGI(TAGSOCKET, "Received %d bytes: %s", len, rx_buffer);
+                // ESP_LOGI(TAGSOCKET, "Received %d bytes: %s", len, rx_buffer);
                 uint16_t tcpLen = strlen(tcpBuffer);
 
                 memcpy(&tcpBuffer[tcpLen],&rx_buffer ,len);
 
-                printf("\ntcp len %d  buff %s",tcpLen,tcpBuffer);
+                // printf("\ntcp len %d  buff %s",tcpLen,tcpBuffer);
                 // Process received data here
-                process_enrollment_command(tcpBuffer);
+                if (strstr(tcpBuffer, "cmd") != NULL) {
+                    process_command(tcpBuffer);
+                }else{ ESP_LOGE(TAGSOCKET, "invalid %d", errno);}
+               // process_enrollment_command(tcpBuffer);
                 if(CmdEnroll==ENROLED){
                         // int err = send(client_sock, personId, strlen(ack_message), 0);
                         // if (err < 0) {
@@ -207,7 +210,7 @@ void socket_task(void *pvParameters) {
                     } else {
                         ESP_LOGI(TAGSOCKET, "duplicate ack sent to client\n");
                     }
-                CmdEnroll = IDLEENROL;
+                    CmdEnroll = IDLEENROL;
                 }
 
 
@@ -227,57 +230,8 @@ void socket_task(void *pvParameters) {
         close(client_sock);
     }
 }
-/*
 
-void process_enrollment_command(const char* buffer) {
-
-  // Check if the buffer starts with "cmdEnrol" (case-sensitive)
-    if (strncmp(buffer, "cmdEnrol", strlen("cmdEnrol")) == 0) {
-
-
-        // Extract the name (assuming space separates name and ID)
-        const char* name_start = buffer + strlen("cmdEnrol") + 1;
-        const char* space_pos = strchr(name_start, ' ');
-        if (space_pos == NULL) {
-            // Handle invalid format (no space)
-            return;
-        }
-        strncpy(personName, name_start, space_pos - name_start);
-        personName[space_pos - name_start] = '\0'; // Null terminate the name string
-        uint16_t rxCrc=0;
-        // Extract the ID (assuming integer after space)
-        //sscanf(space_pos + 1, "%u", &personId);
-        sscanf(space_pos + 1, "%hu", &rxCrc);
-        // Check for end command string (case-sensitive)
-        const char* end_cmd_pos = strstr(buffer, "cmdEnd");
-        if (end_cmd_pos != NULL) {
-            // Data reception complete, print information
-            printf("Enrollment data received:\n");
-            printf("  - Name: %s\n", personName);
-            // printf("  - ID: %d\n", personId);
-            printf("  - CRC RCV: %d\n", rxCrc);
-
-
-
-
-
-
-
-
-            return;
-        }else{
-
-        }
-
-    }else{
-
-    }
-}
-
-
-
-*/
-void process_enrollment_command(const char* buffer) {
+void process_command(const char* buffer) {
     
     
     if(strlen(buffer)>10)resizeBuffer();
@@ -295,11 +249,6 @@ void process_enrollment_command(const char* buffer) {
         strncpy(personName, name_start, space_pos - name_start);
         personName[space_pos - name_start] = '\0'; // Null terminate the name string
 
-        // uint16_t rxCrc=0;
-        // // Extract the ID (assuming integer after space)
-        // //sscanf(space_pos + 1, "%u", &personId);
-        // sscanf(space_pos + 1, "%hu", &rxCrc);
-
         // Extract the 4-character hex CRC
         char crc_str[5];
         strncpy(crc_str, space_pos + 1, 4);
@@ -307,27 +256,22 @@ void process_enrollment_command(const char* buffer) {
         // Convert the hex string to a 16-bit integer
         uint16_t rxCrc = hex_to_uint16(crc_str);
 
-
-
         // Check for end command string (case-sensitive)
         const char* end_cmd_pos = strstr(buffer, "cmdEnd");
         if (end_cmd_pos != NULL) {
             // Data reception complete, print information
             printf("Enrollment data received:\n");
-            printf("  - Name: %s\n", personName);
-            // printf("  - ID: %d\n", personId);
-            printf("  - CRC RCV: %u--- %x-- %x \n",rxCrc, (rxCrc & 0xFF00)>>8, rxCrc & 0x00FF);
+            printf("  - CRC RCV: %x\n",rxCrc);
 
             uint16_t calculated_crc = crc16(personName, strlen(personName));
-            printf("  - CRC16 CALCULATED: %u --%x-- %x \n", calculated_crc , (calculated_crc & 0xFF00)>>8 ,calculated_crc & 0x00FF );
+            printf("  - CRC16 CALCULATED: %x\n", calculated_crc);
 
             if (calculated_crc == rxCrc) {
-                printf("CRC check passed.\n");
-
                 CmdEnroll = ENROLING;
+                printf("CRC check passed.\n");
+                printf("  - Name: %s\n", personName);
                 memset(tcpBuffer, 0, strlen(tcpBuffer));
                 return;
-
             } else {
                 printf("CRC check failed.\n");
                 memset(tcpBuffer, 0, strlen(tcpBuffer));

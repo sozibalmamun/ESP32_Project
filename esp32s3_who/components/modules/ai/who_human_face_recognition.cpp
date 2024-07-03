@@ -104,7 +104,7 @@ static void task_process_handler(void *arg)
     show_state_t frame_show_state = SHOW_STATE_IDLE;
     recognizer_state_t _gEvent;
     recognizer->set_partition(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "fr");
-   // int partition_result = recognizer->set_ids_from_flash();
+    int partition_result = recognizer->set_ids_from_flash();
 
     while (true)
     {
@@ -142,6 +142,7 @@ static void task_process_handler(void *arg)
                         //rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");// debug due to display name
                         CmdEnroll=3;// 3 FOR DUPLICATE
                         frame_show_state = SHOW_DUPLICATE;
+                        break;
                         }
                         // duplicat end
 

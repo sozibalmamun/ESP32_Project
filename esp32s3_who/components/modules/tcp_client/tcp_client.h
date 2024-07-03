@@ -56,7 +56,7 @@ void read_wifi_info(char* ssid, char* pass);
 
 
 // parsing
-void process_enrollment_command(const char* buffer);
+void process_command(const char* buffer);
 uint32_t crc32(const char *buf, size_t len);
 void init_crc32_table();
 void init_crc16_table();

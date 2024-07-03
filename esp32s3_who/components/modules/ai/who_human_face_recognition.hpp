@@ -14,9 +14,9 @@ typedef enum
     DELETE,
 } recognizer_state_t;
 
-#define ENROLING 1
-#define ENROLED 2
-#define DUPLICATE 3
+#define ENROLING 0x01
+#define ENROLED 0x02
+#define DUPLICATE 0x03
 
 
 

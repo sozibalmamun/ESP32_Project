@@ -2,6 +2,7 @@
 #include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/timers.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
@@ -10,6 +11,13 @@
 #include "lwip/sockets.h"
 #include "lwip/dns.h"
 #include "lwip/netdb.h"
+
+
+
+
+#define SERVER_IP "192.168.1.103"  // Replace with your server's IP address
+#define SERVER_PORT 57609
+#define TIMER_PERIOD pdMS_TO_TICKS(60000)  // 1 minute
 
 #define WIFI_SSID "Space"
 #define WIFI_PASS "12345space6789"
@@ -135,8 +143,85 @@ void socket_task(void *pvParameters) {
     }
 }
 
+void send_data_task(void *pvParameters) {
+    int sock;
+    struct sockaddr_in dest_addr;
+    fd_set readfds;
+    struct timeval timeout;
+    char rx_buffer[1024];
+
+    while (1) {
+        // Create socket
+        sock = socket(AF_INET, SOCK_STREAM, 0);
+        if (sock < 0) {
+            ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
+            vTaskDelay(pdMS_TO_TICKS(1000));  // Retry every 1 second if failed to create socket
+            continue;
+        }
+
+        dest_addr.sin_family = AF_INET;
+        dest_addr.sin_port = htons(SERVER_PORT);
+        inet_pton(AF_INET, SERVER_IP, &dest_addr.sin_addr);
+
+        // Connect to server
+        int err = connect(sock, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+        if (err < 0) {
+            ESP_LOGE(TAG, "Socket unable to connect: errno %d", errno);
+            close(sock);
+            vTaskDelay(pdMS_TO_TICKS(1000));  // Retry every 1 second if failed to connect
+            continue;
+        }
+
+        // Keep the connection alive and send data every minute
+        while (1) {
+            const char *payload = "Periodic data payload";
+            err = send(sock, payload, strlen(payload), 0);
+            if (err < 0) {
+                ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
+                break;  // Break out of the loop if sending failed
+            } else {
+                ESP_LOGI(TAG, "Message sent: %s", payload);
+            }
+
+            // Set up the select call for receiving data
+            FD_ZERO(&readfds);
+            FD_SET(sock, &readfds);
+
+            timeout.tv_sec = 60;  // 1 minute timeout
+            timeout.tv_usec = 0;
+
+            int activity = select(sock + 1, &readfds, NULL, NULL, &timeout);
+
+            if (activity < 0) {
+                ESP_LOGE(TAG, "Select error: errno %d", errno);
+                break;
+            }
+
+            if (FD_ISSET(sock, &readfds)) {
+                int len = recv(sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
+                if (len < 0) {
+                    ESP_LOGE(TAG, "Error receiving data: errno %d", errno);
+                    break;
+                } else if (len == 0) {
+                    ESP_LOGW(TAG, "Connection closed");
+                    break;
+                } else {
+                    rx_buffer[len] = '\0';
+                    ESP_LOGI(TAG, "Received from server: %s", rx_buffer);
+                }
+            } else {
+                ESP_LOGI(TAG, "Timeout occurred, no data received");
+            }
+        }
+
+        close(sock);  // Close the socket if sending failed or connection closed
+    }
+}
+
 void app_main() {
     ESP_ERROR_CHECK(nvs_flash_init());
     wifi_init_sta();
     xTaskCreate(&socket_task, "socket_task", 4096, NULL, 5, NULL);
+    xTaskCreate(&send_data_task, "send_data_task", 4096, NULL, 5, NULL);
+
 }

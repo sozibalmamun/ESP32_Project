@@ -11,6 +11,8 @@
         "list": "cpp",
         "vector": "cpp",
         "string_view": "cpp",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "cerrno": "c",
+        "type_traits": "cpp"
     }
 }

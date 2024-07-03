@@ -10,15 +10,15 @@ const char *TAG_WI_FI = "Wifi Debug";
 const char *TAG_FS   = "FS Debug";
 
 #define IDLEENROL 0
-#define ENROLING 1
-#define ENROLED 2
-#define DUPLICATE 3
+#define ENROLING 0x01
+#define ENROLED 0x02
+#define DUPLICATE 0x03
 
 
 
-uint8_t  CmdEnroll=IDLEENROL;
+volatile uint8_t  CmdEnroll=IDLEENROL;
 char personName[20];
-uint32_t personId;
+uint16_t personId;
 char tcpBuffer[2024]; // Adjust MAX_TRANSACTION_SIZE as needed
 
 
@@ -152,16 +152,17 @@ void socket_task(void *pvParameters) {
     }
 
     if (listen(listen_sock, LISTEN_BACKLOG) < 0) {
-        ESP_LOGE(TAGSOCKET, "Socket listen failed: errno %d", errno);
+       // ESP_LOGE(TAGSOCKET, "Socket listen failed: errno %d", errno);
         close(listen_sock);
         vTaskDelete(NULL);
         return;
     }
 
-    ESP_LOGI(TAGSOCKET, "Socket listening on port %d", PORT);
+   // ESP_LOGI(TAGSOCKET, "Socket listening on port %d", PORT);
     int16_t total_received = 0;
 
     while (1) {
+
         client_sock = accept(listen_sock, (struct sockaddr *)&client_addr, &client_addr_len);
         if (client_sock < 0) {
             ESP_LOGE(TAGSOCKET, "Unable to accept connection: errno %d", errno);
@@ -169,12 +170,16 @@ void socket_task(void *pvParameters) {
             vTaskDelete(NULL);
             return;
         }
+        // Send success message to the client
+        send(client_sock, "200!\n\r", 7, 0);
+
 
         char rx_buffer[500];
         while(1){
+
             uint16_t len = recv(client_sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
             if (len < 0) {
-                ESP_LOGE(TAGSOCKET, "Error receiving data: errno %d", errno);
+               // ESP_LOGE(TAGSOCKET, "Error receiving data: errno %d", errno);
                 break;
             } else if (len == 0) {
                 ESP_LOGW(TAGSOCKET, "Connection closed");
@@ -189,31 +194,53 @@ void socket_task(void *pvParameters) {
 
                 // printf("\ntcp len %d  buff %s",tcpLen,tcpBuffer);
                 // Process received data here
+                if(strlen(tcpBuffer)>5)resizeBuffer();
                 if (strstr(tcpBuffer, "cmd") != NULL) {
+
                     process_command(tcpBuffer);
-                }else{ ESP_LOGE(TAGSOCKET, "invalid %d", errno);}
-               // process_enrollment_command(tcpBuffer);
-                if(CmdEnroll==ENROLED){
-                        // int err = send(client_sock, personId, strlen(ack_message), 0);
-                        // if (err < 0) {
-                        //     ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
-                        // } else {
-                        //     ESP_LOGI(TAGSOCKET, "id sent to client\n");
-                        // }
+                    bool cmd=true;
+                   while(cmd){
 
-                }else if(CmdEnroll==DUPLICATE){
+                        if(CmdEnroll==ENROLED){
 
-                    const char *ack_message = "NDP";// nack for duplicate person
-                    int err = send(client_sock, ack_message, strlen(ack_message), 0);
-                    if (err < 0) {
-                        ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
-                    } else {
-                        ESP_LOGI(TAGSOCKET, "duplicate ack sent to client\n");
+                            char personIdStr[12]; // assuming 32-bit uint can be represented in 11 chars + null terminator
+                            snprintf(personIdStr, sizeof(personIdStr), "%u", personId);
+                            int err = send(client_sock, personIdStr, strlen(personIdStr), 0);
+                            if (err < 0) {
+                              //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+                            } else {
+                                ESP_LOGI(TAGSOCKET, "id sent to client\n");
+                                CmdEnroll = IDLEENROL;
+                                cmd=false;
+                            }
+                        }else if(CmdEnroll==DUPLICATE){
+
+                            ESP_LOGI(TAGSOCKET, "duplicate ack\n");
+
+                            const char *ack_message = "NDP";// nack for duplicate person
+                            int err = send(client_sock, ack_message, strlen(ack_message), 0);
+                            if (err < 0) {
+                                //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+                            } else {
+                                ESP_LOGI(TAGSOCKET, "back to idle mode\n");
+                                CmdEnroll = IDLEENROL;
+                                cmd=false;
+                            }
+                        }else {
+
+                           // ESP_LOGI(TAGSOCKET, "not acking\n");
+                           // send(client_sock, "\nwait for..", 8, 0);
+                            printf("\ncmd enroll flag status %d",CmdEnroll);
+                            vTaskDelay(10);
+
+                        }
+
                     }
-                    CmdEnroll = IDLEENROL;
-                }
+                }else{ 
 
+                    ESP_LOGE(TAGSOCKET, "invalid %d", errno);
 
+                    }
                     // if (total_received >= ACK_SIZE) {
                     //     const char *ack_message = "ACK";
                     //     int err = send(client_sock, ack_message, strlen(ack_message), 0);
@@ -234,7 +261,7 @@ void socket_task(void *pvParameters) {
 void process_command(const char* buffer) {
     
     
-    if(strlen(buffer)>10)resizeBuffer();
+    // if(strlen(buffer)>10)resizeBuffer();
   // Check if the buffer starts with "cmdEnrol" (case-sensitive)
     if (strncmp(buffer, "cmdEnrol", strlen("cmdEnrol")) == 0) {
        
@@ -267,6 +294,8 @@ void process_command(const char* buffer) {
             printf("  - CRC16 CALCULATED: %x\n", calculated_crc);
 
             if (calculated_crc == rxCrc) {
+                printf("\ncmd enroll flag status %d",CmdEnroll);
+
                 CmdEnroll = ENROLING;
                 printf("CRC check passed.\n");
                 printf("  - Name: %s\n", personName);

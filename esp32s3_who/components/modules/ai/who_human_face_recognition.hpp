@@ -14,6 +14,11 @@ typedef enum
     DELETE,
 } recognizer_state_t;
 
+#define ENROLING 1
+#define ENROLED 2
+#define DUPLICATE 3
+
+
 
 void register_human_face_recognition(QueueHandle_t frame_i,
                                      QueueHandle_t event,

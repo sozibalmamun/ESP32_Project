@@ -25,9 +25,9 @@ using namespace dl;
 
 static const char *TAG = "human_face_recognition";
 // extern from tcp client  for enrolment
-extern uint8_t CmdEnroll;
+extern volatile uint8_t CmdEnroll;
 extern char personName[20];
-extern uint32_t personId;
+extern uint16_t personId;
 //---------------------------------------
 static QueueHandle_t xQueueFrameI = NULL;
 static QueueHandle_t xQueueEvent = NULL;
@@ -125,22 +125,24 @@ static void task_process_handler(void *arg)
                 if (detect_results.size() == 1){
                     is_detected = true;
                    // _gEvent = RECOGNIZE;// due to no button for recognize
-                   if(CmdEnroll==1)_gEvent=ENROLL;// 1 for enroling 
-                }
+                   if(CmdEnroll==ENROLING)_gEvent=ENROLL;// 1 for enroling 
+                   vTaskDelay(10);
+
+                }else if(CmdEnroll==ENROLING) rgb_printf(frame, RGB565_MASK_GREEN, "Start Enroling");// debug due to display name
+
                 if (is_detected)
                 {
                     switch (_gEvent)
                     {
                     case ENROLL:{
 
-
-
+                        vTaskDelay(10);
                         // duplicate 
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
-                        print_detection_result(detect_results);
+                        //print_detection_result(detect_results);
                         if (recognize_result.id > 0){
                         //rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");// debug due to display name
-                        CmdEnroll=3;// 3 FOR DUPLICATE
+                        CmdEnroll=DUPLICATE;// 3 FOR DUPLICATE
                         frame_show_state = SHOW_DUPLICATE;
                         break;
                         }
@@ -226,16 +228,18 @@ static void task_process_handler(void *arg)
                         break;
 
                     case SHOW_STATE_ENROLL:
+
+                        CmdEnroll=ENROLED;// 2 means enrol done
                         rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id); 
                         personId=recognizer->get_enrolled_ids().back().id;
-                        CmdEnroll=2;// 2 means enrol done
+
                         break;
 
                     case SHOW_DUPLICATE:
-
-                       rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");// debug due to display name
-                        CmdEnroll=3;// 3 FOR DUPLICATE
-                        frame_show_state = SHOW_DUPLICATE;
+                        CmdEnroll=DUPLICATE;// 3 FOR DUPLICATE
+                        rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");// debug due to display name
+                        vTaskDelay(10);
+                        break;
 
                     default:
                         break;

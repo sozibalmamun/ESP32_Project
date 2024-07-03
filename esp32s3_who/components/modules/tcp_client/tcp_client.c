@@ -1,5 +1,6 @@
 
 #include "tcp_client.h"
+#include "string.h"
 
 
 #define DEVICE_NAME "THT-Face"
@@ -8,17 +9,17 @@ const char *pass = "12345space6789";
 const char *TAG_WI_FI = "Wifi Debug";
 const char *TAG_FS   = "FS Debug";
 
-#define NOENROL 0
+#define IDLEENROL 0
 #define ENROLING 1
 #define ENROLED 2
 #define DUPLICATE 3
 
 
 
-uint8_t  CmdEnroll=NOENROL;
+uint8_t  CmdEnroll=IDLEENROL;
 char personName[20];
 uint32_t personId;
-
+char tcpBuffer[2024]; // Adjust MAX_TRANSACTION_SIZE as needed
 
 
 static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
@@ -169,9 +170,9 @@ void socket_task(void *pvParameters) {
             return;
         }
 
-        char rx_buffer[1024];
+        char rx_buffer[500];
         while(1){
-            int len = recv(client_sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
+            uint16_t len = recv(client_sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
             if (len < 0) {
                 ESP_LOGE(TAGSOCKET, "Error receiving data: errno %d", errno);
                 break;
@@ -182,10 +183,13 @@ void socket_task(void *pvParameters) {
                 rx_buffer[len] = '\0';
                 total_received += len;
                 ESP_LOGI(TAGSOCKET, "Received %d bytes: %s", len, rx_buffer);
+                uint16_t tcpLen = strlen(tcpBuffer);
 
+                memcpy(&tcpBuffer[tcpLen],&rx_buffer ,len);
+
+                printf("\ntcp len %d  buff %s",tcpLen,tcpBuffer);
                 // Process received data here
-                process_enrollment_command(rx_buffer);
-
+                process_enrollment_command(tcpBuffer);
                 if(CmdEnroll==ENROLED){
                         // int err = send(client_sock, personId, strlen(ack_message), 0);
                         // if (err < 0) {
@@ -203,7 +207,7 @@ void socket_task(void *pvParameters) {
                     } else {
                         ESP_LOGI(TAGSOCKET, "duplicate ack sent to client\n");
                     }
-
+                CmdEnroll = IDLEENROL;
                 }
 
 
@@ -223,40 +227,212 @@ void socket_task(void *pvParameters) {
         close(client_sock);
     }
 }
+/*
 
 void process_enrollment_command(const char* buffer) {
 
   // Check if the buffer starts with "cmdEnrol" (case-sensitive)
-  if (strncmp(buffer, "cmdEnrol", strlen("cmdEnrol")) != 0) {
-    // Handle invalid command format
-    return;
-  }
+    if (strncmp(buffer, "cmdEnrol", strlen("cmdEnrol")) == 0) {
 
-  // Extract the name (assuming space separates name and ID)
-  const char* name_start = buffer + strlen("cmdEnrol") + 1;
-  const char* space_pos = strchr(name_start, ' ');
-  if (space_pos == NULL) {
-    // Handle invalid format (no space)
-    return;
-  }
-  strncpy(personName, name_start, space_pos - name_start);
-  personName[space_pos - name_start] = '\0'; // Null terminate the name string
 
-  // Extract the ID (assuming integer after space)
-  sscanf(space_pos + 1, "%u", &personId);
+        // Extract the name (assuming space separates name and ID)
+        const char* name_start = buffer + strlen("cmdEnrol") + 1;
+        const char* space_pos = strchr(name_start, ' ');
+        if (space_pos == NULL) {
+            // Handle invalid format (no space)
+            return;
+        }
+        strncpy(personName, name_start, space_pos - name_start);
+        personName[space_pos - name_start] = '\0'; // Null terminate the name string
+        uint16_t rxCrc=0;
+        // Extract the ID (assuming integer after space)
+        //sscanf(space_pos + 1, "%u", &personId);
+        sscanf(space_pos + 1, "%hu", &rxCrc);
+        // Check for end command string (case-sensitive)
+        const char* end_cmd_pos = strstr(buffer, "cmdEnd");
+        if (end_cmd_pos != NULL) {
+            // Data reception complete, print information
+            printf("Enrollment data received:\n");
+            printf("  - Name: %s\n", personName);
+            // printf("  - ID: %d\n", personId);
+            printf("  - CRC RCV: %d\n", rxCrc);
 
-  // Process the enrollment data (name and ID)
-  // ... (your application logic here)
-  // For example, print the information or store it in memory
-  printf("Enrolling: Name - %s, ID - %d\n", personName, personId);
-  
-  CmdEnroll=ENROLING;
 
+
+
+
+
+
+
+            return;
+        }else{
+
+        }
+
+    }else{
+
+    }
 }
 
 
 
-// void app_main(void) {
-//     nvs_flash_init();
-//     wifi_connection();
-// }
+*/
+void process_enrollment_command(const char* buffer) {
+    
+    
+    if(strlen(buffer)>10)resizeBuffer();
+  // Check if the buffer starts with "cmdEnrol" (case-sensitive)
+    if (strncmp(buffer, "cmdEnrol", strlen("cmdEnrol")) == 0) {
+       
+        init_crc16_table();
+        // Extract the name (assuming space separates name and ID)
+        const char* name_start = buffer + strlen("cmdEnrol") + 1;
+        const char* space_pos = strchr(name_start, ' ');
+        if (space_pos == NULL) {
+            // Handle invalid format (no space)
+            return;
+        }
+        strncpy(personName, name_start, space_pos - name_start);
+        personName[space_pos - name_start] = '\0'; // Null terminate the name string
+
+        // uint16_t rxCrc=0;
+        // // Extract the ID (assuming integer after space)
+        // //sscanf(space_pos + 1, "%u", &personId);
+        // sscanf(space_pos + 1, "%hu", &rxCrc);
+
+        // Extract the 4-character hex CRC
+        char crc_str[5];
+        strncpy(crc_str, space_pos + 1, 4);
+        crc_str[4] = '\0'; // Null terminate the CRC string
+        // Convert the hex string to a 16-bit integer
+        uint16_t rxCrc = hex_to_uint16(crc_str);
+
+
+
+        // Check for end command string (case-sensitive)
+        const char* end_cmd_pos = strstr(buffer, "cmdEnd");
+        if (end_cmd_pos != NULL) {
+            // Data reception complete, print information
+            printf("Enrollment data received:\n");
+            printf("  - Name: %s\n", personName);
+            // printf("  - ID: %d\n", personId);
+            printf("  - CRC RCV: %u--- %x-- %x \n",rxCrc, (rxCrc & 0xFF00)>>8, rxCrc & 0x00FF);
+
+            uint16_t calculated_crc = crc16(personName, strlen(personName));
+            printf("  - CRC16 CALCULATED: %u --%x-- %x \n", calculated_crc , (calculated_crc & 0xFF00)>>8 ,calculated_crc & 0x00FF );
+
+            if (calculated_crc == rxCrc) {
+                printf("CRC check passed.\n");
+
+                CmdEnroll = ENROLING;
+                memset(tcpBuffer, 0, strlen(tcpBuffer));
+                return;
+
+            } else {
+                printf("CRC check failed.\n");
+                memset(tcpBuffer, 0, strlen(tcpBuffer));
+                CmdEnroll = IDLEENROL;
+                return;
+            }
+        }else{
+
+        }
+
+    }else{
+    }
+}
+void resizeBuffer() {
+    char startMarker[] = "cmdEnrol";
+    char endMarker[] = "cmdEnd";
+    
+    char *start = strstr(tcpBuffer, startMarker);
+    char *end = strstr(tcpBuffer, endMarker);
+    
+    if (start && end && end > start) {
+        end += strlen(endMarker); // Move pointer to end of endMarker
+        
+        size_t newSize = end - start;
+        char newBuffer[newSize + 1];
+        strncpy(newBuffer, start, newSize);
+        newBuffer[newSize] = '\0'; // Null terminate the new buffer
+        
+        printf("New Buffer: %s\n", newBuffer);
+        
+        // Optionally, if you want to update the global tcpBuffer with resized data
+        memset(tcpBuffer, 0, sizeof(tcpBuffer));
+        strncpy(tcpBuffer, newBuffer, newSize);
+    } else {
+        printf("Markers not found or in wrong order\n");
+
+    }
+}
+
+
+
+// CRC-32 table for faster computation
+void init_crc32_table() {
+    uint32_t polynomial = 0xEDB88320;
+    for (uint32_t i = 0; i < 256; i++) {
+        uint32_t c = i;
+        for (int j = 0; j < 8; j++) {
+            if (c & 1) {
+                c = polynomial ^ (c >> 1);
+            } else {
+                c = c >> 1;
+            }
+        }
+        crc_table[i] = c;
+    }
+}
+
+uint32_t crc32(const char *buf, size_t len) {
+    uint32_t crc = 0xFFFFFFFF;
+    for (size_t i = 0; i < len; i++) {
+        uint8_t byte = buf[i];
+        crc = crc_table[(crc ^ byte) & 0xFF] ^ (crc >> 8);
+    }
+    return crc ^ 0xFFFFFFFF;
+}
+
+
+// CRC-16-CCITT table for faster computation
+
+void init_crc16_table() {
+    uint16_t polynomial = 0x1021;
+    for (uint16_t i = 0; i < 256; i++) {
+        uint16_t c = i << 8;
+        for (int j = 0; j < 8; j++) {
+            if (c & 0x8000) {
+                c = (c << 1) ^ polynomial;
+            } else {
+                c = c << 1;
+            }
+        }
+        crc16_table[i] = c;
+    }
+}
+
+uint16_t crc16(const char *buf, size_t len) {
+    uint16_t crc = 0xFFFF;
+    for (size_t i = 0; i < len; i++) {
+        uint8_t byte = buf[i];
+        crc = crc16_table[((crc >> 8) ^ byte) & 0xFF] ^ (crc << 8);
+    }
+    return crc;
+}
+
+uint16_t hex_to_uint16(const char* hex_str) {
+    uint16_t result=0x0000;
+    sscanf(hex_str, "%4hx", &result);
+    return result;
+}
+
+
+uint32_t toint4(uint8_t *data_buffer) {
+  uint32_t slotL = data_buffer[0];
+  slotL = (slotL << 8) + data_buffer[1];
+  slotL = (slotL << 8) + data_buffer[2];
+  slotL = (slotL << 8) + data_buffer[3];
+
+  return slotL;
+}

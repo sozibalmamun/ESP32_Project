@@ -104,7 +104,7 @@ static void task_process_handler(void *arg)
     show_state_t frame_show_state = SHOW_STATE_IDLE;
     recognizer_state_t _gEvent;
     recognizer->set_partition(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "fr");
-   int partition_result = recognizer->set_ids_from_flash();
+   // int partition_result = recognizer->set_ids_from_flash();
 
     while (true)
     {
@@ -134,13 +134,14 @@ static void task_process_handler(void *arg)
                     case ENROLL:{
 
 
-                        // dupliocate 
+
+                        // duplicate 
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
                         print_detection_result(detect_results);
                         if (recognize_result.id > 0){
+                        //rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");// debug due to display name
                         CmdEnroll=3;// 3 FOR DUPLICATE
                         frame_show_state = SHOW_DUPLICATE;
-                        break;
                         }
                         // duplicat end
 
@@ -150,7 +151,7 @@ static void task_process_handler(void *arg)
                         ESP_LOGW("ENROLL", "ID %d is enrolled", recognizer->get_enrolled_ids().back().id);
                         
 
-                        //--------------------------debug----------------------------
+                        //------------------------------------------------------
                         // for (int i = 0; i < sizeof(detect_results.front().keypoint); i++) { 
 
                         // printf("\nDEBUG Keypoint : %d", detect_results.front().keypoint[i]);
@@ -165,7 +166,7 @@ static void task_process_handler(void *arg)
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
                         print_detection_result(detect_results);
                         
-                        // Debugging the image data-----------------------------------------------------------------
+                        // Debugging the image data
                         // ESP_LOGI("debug", "Printing frame buffer contents:");
                         // ESP_LOGI("debug", "Frame height: %d, Frame width: %d", frame->height, frame->width);
                         // int buffer_length = frame->height * frame->width * 3; // Assuming 3 channels (e.g., RGB)
@@ -230,8 +231,11 @@ static void task_process_handler(void *arg)
                         break;
 
                     case SHOW_DUPLICATE:
+
                        rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");// debug due to display name
-                    break;
+                        CmdEnroll=3;// 3 FOR DUPLICATE
+                        frame_show_state = SHOW_DUPLICATE;
+
                     default:
                         break;
                     }

@@ -33,7 +33,8 @@
 #define ACK_SIZE 1024
 
 static const char *TAGSOCKET = "Socket Example";
-
+uint32_t crc_table[256];
+uint16_t crc16_table[256];
 
 #ifdef __cplusplus
 extern "C"
@@ -56,6 +57,14 @@ void read_wifi_info(char* ssid, char* pass);
 
 // parsing
 void process_enrollment_command(const char* buffer);
+uint32_t crc32(const char *buf, size_t len);
+void init_crc32_table();
+void init_crc16_table();
+uint16_t crc16(const char *buf, size_t len);
+uint16_t hex_to_uint16(const char* hex_str);
+
+uint16_t toint2(uint8_t *data_buffer);
+void resizeBuffer(void);
 
 #ifdef __cplusplus
 }

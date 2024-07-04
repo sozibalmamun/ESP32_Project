@@ -14,12 +14,37 @@ const char *TAG_FS   = "FS Debug";
 #define ENROLED 0x02
 #define DUPLICATE 0x03
 
+#define TIMEOUT_50_MS         5
+#define TIMEOUT_100_MS        10
+#define TIMEOUT_120_MS        12
+#define TIMEOUT_150_MS        15
+#define TIMEOUT_200_MS        20
+#define TIMEOUT_300_MS        30
+#define TIMEOUT_500_MS        50
+#define TIMEOUT_1000_MS       100
+#define TIMEOUT_2000_MS       200
+#define TIMEOUT_3000_MS       300
+#define TIMEOUT_4000_MS       400
+#define TIMEOUT_5000_MS       500
+#define TIMEOUT_6000_MS       600
+#define TIMEOUT_7000_MS       700
+#define TIMEOUT_9000_MS       900
+#define TIMEOUT_10000_MS      1000
+#define TIMEOUT_12000_MS      1200
+#define TIMEOUT_20000_MS      2000
+#define TIMEOUT_15_S          1500
+#define TIMEOUT_30_S          3000
+#define TIMEOUT_45_S          4500
+#define TIMEOUT_1_MIN         6000
+#define TIMEOUT_2_MIN         12000
+#define TIMEOUT_5_MIN         30000
 
 
 volatile uint8_t  CmdEnroll=IDLEENROL;
 char personName[20];
 uint16_t personId;
 char tcpBuffer[2024]; // Adjust MAX_TRANSACTION_SIZE as needed
+TickType_t erolTimeOut;
 
 
 static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
@@ -228,11 +253,25 @@ void socket_task(void *pvParameters) {
                             }
                         }else {
 
+                            TickType_t TimeOut = xTaskGetTickCount();
+                    
+                            if (TimeOut-erolTimeOut> TIMEOUT_15_S ){
                            // ESP_LOGI(TAGSOCKET, "not acking\n");
                            // send(client_sock, "\nwait for..", 8, 0);
+                            CmdEnroll = IDLEENROL;
+
+                            const char *ack_message = "NTO";// nack for time out
+                            int err = send(client_sock, ack_message, strlen(ack_message), 0);
+                            if (err < 0) {
+                                //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+                            } else {
+                                ESP_LOGI(TAGSOCKET, "back to idle mode\n");
+                                cmd=false;
+                            }
                             printf("\ncmd enroll flag status %d",CmdEnroll);
                             vTaskDelay(10);
 
+                            }
                         }
 
                     }
@@ -297,6 +336,7 @@ void process_command(const char* buffer) {
                 printf("\ncmd enroll flag status %d",CmdEnroll);
 
                 CmdEnroll = ENROLING;
+                erolTimeOut = xTaskGetTickCount();
                 printf("CRC check passed.\n");
                 printf("  - Name: %s\n", personName);
                 memset(tcpBuffer, 0, strlen(tcpBuffer));

@@ -174,6 +174,33 @@ void send_data_task(void *pvParameters) {
 
         // Keep the connection alive and send data every minute
         while (1) {
+
+
+        // Get the tick count when the task starts
+            TickType_t start_tick = xTaskGetTickCount();
+
+            // Print the start tick count
+            printf("Start tick count: %d\n", start_tick);
+
+            // Delay for 1000 ms (1 second)
+            vTaskDelay(pdMS_TO_TICKS(1000));
+
+            // Get the tick count after delay
+            TickType_t end_tick = xTaskGetTickCount();
+
+            // Print the end tick count
+            printf("End tick count: %d\n", end_tick);
+
+            // Calculate the elapsed time in ticks and milliseconds
+            TickType_t elapsed_ticks = end_tick - start_tick;
+            uint32_t elapsed_time_ms = elapsed_ticks * portTICK_PERIOD_MS;
+
+            // Print the elapsed time
+            printf("Elapsed time: %d ticks (%d ms)\n", elapsed_ticks, elapsed_time_ms);
+
+
+
+
             const char *payload = "Periodic data payload";
             err = send(sock, payload, strlen(payload), 0);
             if (err < 0) {
@@ -187,7 +214,7 @@ void send_data_task(void *pvParameters) {
             FD_ZERO(&readfds);
             FD_SET(sock, &readfds);
 
-            timeout.tv_sec = 60;  // 1 minute timeout
+            timeout.tv_sec = 20;  // 1 minute timeout
             timeout.tv_usec = 0;
 
             int activity = select(sock + 1, &readfds, NULL, NULL, &timeout);
@@ -221,7 +248,6 @@ void send_data_task(void *pvParameters) {
 void app_main() {
     ESP_ERROR_CHECK(nvs_flash_init());
     wifi_init_sta();
-    xTaskCreate(&socket_task, "socket_task", 4096, NULL, 5, NULL);
+    // xTaskCreate(&socket_task, "socket_task", 4096, NULL, 5, NULL);
     xTaskCreate(&send_data_task, "send_data_task", 4096, NULL, 5, NULL);
-
 }

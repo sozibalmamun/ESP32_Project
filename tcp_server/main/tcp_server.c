@@ -198,16 +198,19 @@ void send_data_task(void *pvParameters) {
             // Print the elapsed time
             printf("Elapsed time: %d ticks (%d ms)\n", elapsed_ticks, elapsed_time_ms);
 
+            char payload[1024]; // Declare a character array with 100 elements
+            memset(payload, 'A', 1022); // Fill the array with 'A' characters using memset
+            payload[1022]='C';
+            payload[1023]='\0';
 
-
-
-            const char *payload = "Periodic data payload";
+            
+            //char *payload = "Periodic data payload";
             err = send(sock, payload, strlen(payload), 0);
             if (err < 0) {
                 ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
                 break;  // Break out of the loop if sending failed
             } else {
-                ESP_LOGI(TAG, "Message sent: %s", payload);
+                ESP_LOGI(TAG, "Message sent");
             }
 
             // Set up the select call for receiving data

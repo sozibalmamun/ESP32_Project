@@ -220,7 +220,10 @@ void socket_task(void *pvParameters) {
                 // printf("\ntcp len %d  buff %s",tcpLen,tcpBuffer);
                 // Process received data here
                 if(strlen(tcpBuffer)>5)resizeBuffer();
-                if (strstr(tcpBuffer, "cmd") != NULL) {
+
+                if (strstr(tcpBuffer, "cmd") && strstr(tcpBuffer, "End") && strstr(tcpBuffer, "End") > strstr(tcpBuffer, "cmd")) {// varifi the cmd pattern
+
+                // if (strstr(tcpBuffer, "cmd") != NULL) {
 
                     process_command(tcpBuffer);
                     bool cmd=true;
@@ -260,7 +263,7 @@ void socket_task(void *pvParameters) {
                            // send(client_sock, "\nwait for..", 8, 0);
                             CmdEnroll = IDLEENROL;
 
-                            const char *ack_message = "NTO";// nack for time out
+                            const char *ack_message = "NETO";// nack for time out
                             int err = send(client_sock, ack_message, strlen(ack_message), 0);
                             if (err < 0) {
                                 //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);

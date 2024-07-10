@@ -33,7 +33,5 @@ void app_main()
     nvs_flash_init();
     wifi_connection();
     xTaskCreate(&socket_task, "socket_task", 4 * 1024, NULL, 5, NULL);
-
-
 //-------------wifi end---------------
 }

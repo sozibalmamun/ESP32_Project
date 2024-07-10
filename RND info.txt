@@ -2,3 +2,9 @@ Myestra video editing
 https://app.maestra.ai
 susanirisgrass60@gmail.com
 pass: Sangong03c.85.TP
+
+
+
+wss://grozziieget.zjweiting.com:3091/CloudSocket-Dev/websocket
+message send destination: /app/cloud      43.154.22.219
+Subscribe Channel:  /topic/cloud

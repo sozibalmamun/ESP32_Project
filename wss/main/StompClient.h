@@ -8,16 +8,25 @@
    Kevin Hoyt    : parkerkrhoyt@gmail.com
 */
 
-#ifndef STOMP_CLIENT
-#define STOMP_CLIENT
+#pragma once
+#include "Stomp.h"
+#include "StompCommandParser.h"
+#include "esp_websocket_client.h"
+
+#include "string.h"
 
 #ifndef STOMP_MAX_SUBSCRIPTIONS
 #define STOMP_MAX_SUBSCRIPTIONS 8
 #endif
 
-#include "Stomp.h"
-#include "StompCommandParser.h"
-#include <WebsocketsClient.h>
+
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+
 
 namespace Stomp {
 
@@ -34,7 +43,13 @@ class StompClient {
        @param sockjs bool               - Set to true to indicate that the connection uses SockJS protocol
     */
     StompClient(
+
+
+
       WebSocketsClient &wsClient,
+
+
+
       const char *host,
       const int port,
       const char *url,
@@ -88,7 +103,7 @@ class StompClient {
           _subscriptions[i].id = i;
           _subscriptions[i].messageHandler = handler;
 
-          String ack;
+          char* ack;
           switch (ackType) {
             case AUTO:
               ack = "auto";
@@ -100,10 +115,9 @@ class StompClient {
               ack = "client-individual";
               break;
           }
-          Serial.print("Debug lines ");
-          Serial.println(lines[0] +lines[1]+lines[2]);
-          String lines[4] = { "SUBSCRIBE", "id:sub-" + String(i), "destination:" + String(queue), "ack:" + ack };
-          _send(lines, 4);
+
+          // String lines[4] = { "SUBSCRIBE", "id:sub-" + String(i), "destination:" + String(queue), "ack:" + ack };
+          // _send(lines, 4);
 
           return i;
         }
@@ -116,11 +130,11 @@ class StompClient {
        @param subscription int - The subscription number previously returned by the subscribe() method
     */
     void unsubscribe(int subscription) {
-      String msg[2] = { "UNSUBSCRIBE", "id:sub-" + String(subscription) };
-      _send(msg, 2);
+      // String msg[2] = { "UNSUBSCRIBE", "id:sub-" + String(subscription) };
+      // _send(msg, 2);
 
-      _subscriptions[subscription].id = -1;
-      _subscriptions[subscription].messageHandler = 0;
+      // _subscriptions[subscription].id = -1;
+      // _subscriptions[subscription].messageHandler = 0;
     }
 
     /**
@@ -128,8 +142,11 @@ class StompClient {
      * @param message StompCommand - The message being acknowledged
      */
     void ack(StompCommand message) {
-      String msg[2] = { "ACK", "id:" + message.headers.getValue("ack") };
-      _send(msg, 2);
+      // String msg[2] = { "ACK", "id:" + message.headers.getValue("ack") };
+      char msg[20] = "ACK";
+      strcat(msg, "id");
+      strcat(msg, message.headers.getValue("ack") );
+      // _send(msg, 2);
     }
 
     /**
@@ -138,12 +155,12 @@ class StompClient {
      */
     void nack(StompCommand message) {
       String msg[2] = { "NACK", "id:" + message.headers.getValue("ack") };
-      _send(msg, 2);
+      // _send(msg, 2);
     }
 
     void disconnect() {
       String msg[2] = { "DISCONNECT", "receipt:" + String(_commandCount) };
-      _send(msg, 2);
+      // _send(msg, 2);
     }
 
     void sendMessage(String destination, String message) {
@@ -285,14 +302,14 @@ class StompClient {
     }
 
     void _handleMessage(StompCommand message) {
-      String sub = message.headers.getValue("subscription");
+      char sub[] = message.headers.getValue("subscription");
       if (!sub.startsWith("sub-")) {
         // Not for us. Do nothing (raise an error one day??)
         return;
       }
-      int id = sub.substring(4).toInt();
-
-      String messageId = message.headers.getValue("message-id");
+      // int id = sub.substring(4).toInt();
+       int id = strtol(sub + 4, NULL, 10);
+      char messageId[] = message.headers.getValue("message-id");
 
       StompSubscription *subscription = &_subscriptions[id];
       if (subscription->id != id) {
@@ -353,7 +370,6 @@ class StompClient {
       msg += "\\n\\u0000\"]";
 
       _wsClient.sendTXT(msg.c_str(), msg.length() + 1);
-
       _commandCount++;
     }
 
@@ -392,4 +408,6 @@ class StompClient {
 
 }
 
+#ifdef __cplusplus
+}
 #endif

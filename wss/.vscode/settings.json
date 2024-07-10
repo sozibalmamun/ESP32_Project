@@ -5,5 +5,11 @@
   "idf.openOcdConfigs": [
     "board/esp32s3-builtin.cfg"
   ],
-  "idf.flashType": "UART"
+  "idf.flashType": "UART",
+  "files.associations": {
+    "esp_tls.h": "c",
+    "*.tcc": "cpp",
+    "freertos.h": "c",
+    "esp_websocket_client.h": "c"
+  }
 }

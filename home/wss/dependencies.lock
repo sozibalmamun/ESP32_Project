@@ -1,0 +1,21 @@
+dependencies:
+  cesanta/mongoose:
+    component_hash: e4f893b0f71d20b9191bf0354e94f6c662c023a39cd540a6f5db587d818a24b3
+    source:
+      service_url: https://api.components.espressif.com/
+      type: service
+    version: 7.8.2
+  espressif/esp_websocket_client:
+    component_hash: ae561d39222a399ddda5e470913c3d54a3c0f53dce15b8d21a3aaa4226dd74b1
+    source:
+      service_url: https://api.components.espressif.com/
+      type: service
+    version: 1.2.3
+  idf:
+    component_hash: null
+    source:
+      type: idf
+    version: 5.0.0
+manifest_hash: ff3f5b82d44b344f2bfc437a19ec2c4dcd475f00bcba6a62ec39b07858cd5920
+target: esp32
+version: 1.0.0

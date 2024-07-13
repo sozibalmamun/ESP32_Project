@@ -10,6 +10,22 @@
     "esp_tls.h": "c",
     "*.tcc": "cpp",
     "freertos.h": "c",
-    "esp_websocket_client.h": "c"
+    "esp_websocket_client.h": "c",
+    "*.ipp": "c",
+    "*.inc": "c",
+    "bitset": "c",
+    "string": "c",
+    "vector": "c",
+    "string_view": "c",
+    "functional": "c",
+    "iomanip": "c",
+    "istream": "c",
+    "limits": "c",
+    "ostream": "c",
+    "ratio": "c",
+    "sstream": "c",
+    "streambuf": "c",
+    "regex": "c",
+    "esp_event.h": "c"
   }
 }

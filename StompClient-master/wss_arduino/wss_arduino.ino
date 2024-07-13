@@ -46,8 +46,6 @@ void setup() {
   stomper.onConnect(subscribe);
   stomper.onError(error);
 
-
-
   if (useWSS) {
     stomper.beginSSL();
   } else {

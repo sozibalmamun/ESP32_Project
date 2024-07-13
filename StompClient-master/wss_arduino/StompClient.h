@@ -89,6 +89,8 @@ class StompClient {
           _subscriptions[i].messageHandler = handler;
 
           String ack;
+          Serial.print("Subscribe packt ");Serial.println(ackType); 
+
           switch (ackType) {
             case AUTO:
               ack = "auto";
@@ -100,8 +102,6 @@ class StompClient {
               ack = "client-individual";
               break;
           }
-          Serial.print("Debug lines ");
-          Serial.println(lines[0] +lines[1]+lines[2]);
           String lines[4] = { "SUBSCRIBE", "id:sub-" + String(i), "destination:" + String(queue), "ack:" + ack };
           _send(lines, 4);
 
@@ -130,6 +130,7 @@ class StompClient {
     void ack(StompCommand message) {
       String msg[2] = { "ACK", "id:" + message.headers.getValue("ack") };
       _send(msg, 2);
+      Serial.print("acking:   ");Serial.println(msg[0]);Serial.println(msg[1]);
     }
 
     /**
@@ -247,7 +248,7 @@ class StompClient {
     void _connectStomp() {
       if (_state != OPENING) {
         _state = OPENING;
-        String msg[3] = { "CONNECT", "accept-version:1.1,1.0", "heart-beat:10000,10000" };
+        String msg[3] = { "CONNECT", "accept-version:1.1", "heart-beat:10000,10000" };
         _send(msg, 3);
       }
     }
@@ -351,7 +352,7 @@ class StompClient {
         msg += "\\n";
       }
       msg += "\\n\\u0000\"]";
-
+      Serial.print("sending data : "); Serial.println(msg);
       _wsClient.sendTXT(msg.c_str(), msg.length() + 1);
 
       _commandCount++;

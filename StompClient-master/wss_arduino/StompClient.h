@@ -89,7 +89,7 @@ class StompClient {
           _subscriptions[i].messageHandler = handler;
 
           String ack;
-          Serial.print("Subscribe packt ");Serial.println(ackType); 
+          Serial.print("Subscribe packt "); Serial.println(ackType);
 
           switch (ackType) {
             case AUTO:
@@ -124,19 +124,19 @@ class StompClient {
     }
 
     /**
-     * Acknowledge receipt of the message
-     * @param message StompCommand - The message being acknowledged
-     */
+       Acknowledge receipt of the message
+       @param message StompCommand - The message being acknowledged
+    */
     void ack(StompCommand message) {
       String msg[2] = { "ACK", "id:" + message.headers.getValue("ack") };
       _send(msg, 2);
-      Serial.print("acking:   ");Serial.println(msg[0]);Serial.println(msg[1]);
+      Serial.print("acking:   "); Serial.println(msg[0]); Serial.println(msg[1]);
     }
 
     /**
-     * Reject receipt of the message with the given messageId
-     * @param message StompCommand - The message being rejected
-     */
+       Reject receipt of the message with the given messageId
+       @param message StompCommand - The message being rejected
+    */
     void nack(StompCommand message) {
       String msg[2] = { "NACK", "id:" + message.headers.getValue("ack") };
       _send(msg, 2);
@@ -208,7 +208,7 @@ class StompClient {
     }
 
     void _handleWebSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
-      Serial.println("Event" + String((char*)payload));
+      Serial.println("Event: " + String((char*)payload));
 
       switch (type) {
         case WStype_DISCONNECTED:
@@ -248,8 +248,21 @@ class StompClient {
     void _connectStomp() {
       if (_state != OPENING) {
         _state = OPENING;
-        String msg[3] = { "CONNECT", "accept-version:1.1", "heart-beat:10000,10000" };
-        _send(msg, 3);
+        //        String msg[3] = { "CONNECT", "accept-version:1.1", "heart-beat:10000,10000" };
+
+#define STOMP_CONNECT_FRAME   "[\"CONNECT\\naccept-version:1.1\\nheart-beat:10000,10000\\n\\n\\u0000\"]"
+
+        //        _send(msg, 3);
+        String connectFrame = STOMP_CONNECT_FRAME;
+        // connectFrame += "accept-version:1.1\n";
+        // connectFrame += "heart-beat:10000,10000\n";
+        // connectFrame += "\n\u0000";
+
+        Serial.print("sending data : "); Serial.println(connectFrame);
+
+      //  _wsClient.sendTXT(connectFrame.c_str(), connectFrame.length() + 1);
+
+
       }
     }
 
@@ -322,7 +335,7 @@ class StompClient {
 
     void _handleReceipt(StompCommand command) {
 
-      if(_receiptHandler) {
+      if (_receiptHandler) {
         _receiptHandler(command);
       }
 
@@ -364,7 +377,7 @@ class StompClient {
       // Add the command
       msg += lines[0] + "\\n";
       // Add the extra headers
-      for(int i=0; i<headers.size(); i++) {
+      for (int i = 0; i < headers.size(); i++) {
         StompHeader h = headers.get(i);
         msg += h.key + ":" + h.value + "\\n";
       }

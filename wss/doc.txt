@@ -1,0 +1,12 @@
+Install java and run the following command in the downloaded .jar filepath:
+
+java -jar CloudSocket-Dev.jar
+
+brokerURL: 'ws://localhost:8080/websocket'
+
+sample log:
+1. INFO 13752 --- [CloudSocket] [tboundChannel-3] c.e.c.WebSocket.WebSocketEventListener   : New User Connected to websocket
+
+2. INFO 13752 --- [CloudSocket] [boundChannel-12] c.e.c.WebSocket.WebSocketController      : {"message":"Hello"}
+
+3. INFO 13752 --- [CloudSocket] [io-8080-exec-10] c.e.c.WebSocket.WebSocketEventListener   : New User Disconnected from websocket

@@ -18,8 +18,10 @@
 
 
 
-#define THT     "wss://grozziieget.zjweiting.com:3091/CloudSocket-Dev/websocket"
-#define HOST    "wss://grozziieget.zjweiting.com/"
+#define THT     "wss://grozziieget.zjweiting.com:3091/CloudSocket-Dev/websocket/"
+// #define HOST    "wss://grozziieget.zjweiting.com/"
+#define HOST    "grozziieget.zjweiting.com"
+
 #define PORT    3091
 #define  PATH  "/CloudSocket-Dev/websocket"
 
@@ -72,46 +74,47 @@ static void shutdown_signaler(TimerHandle_t xTimer)
 
 void websocket_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
-    // stomp_client_t *client = (stomp_client_t *)arg;
+    stomp_client_t *client = (stomp_client_t *)arg;
     esp_websocket_event_data_t *data = (esp_websocket_event_data_t *)event_data;
 
     switch (event_id) {
     case WEBSOCKET_EVENT_CONNECTED:
         ESP_LOGI(TAG, "WebSocket connected");
-        // stomp_client_connect(client);
-
-
-        char connect_frame[]= "[\"CONNECT\\naccept-version:1.1\\nheart-beat:10000,10000\\n\\n\\u0000\"]";
-        // snprintf(connect_frame, sizeof(connect_frame), STOMP_CONNECT_FRAME, THT);
-
-        ESP_LOGI(TAG, "Sending STOMP CONNECT frame:\n%s", connect_frame);
-
-        // Send the STOMP CONNECT frame over the WebSocket
-        if (esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY) != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to send STOMP CONNECT frame");
-            return;
-        }
-
-
+        stomp_client_connect(client);
+        stomp_client_subscribe(client, "/topic/cloud", "auto");
 
         break;
     case WEBSOCKET_EVENT_DISCONNECTED:
         ESP_LOGI(TAG, "WebSocket disconnected");
         break;
     case WEBSOCKET_EVENT_DATA:
-        ESP_LOGI(TAG, "WebSocket data received");
+        ESP_LOGI(TAG, "WebSocket ping");
         if (data->op_code == 0x1) { // Check if the data is text (0x1)
             ESP_LOGI(TAG, "Received text data: %.*s", data->data_len, (char *)data->data_ptr);
-            stomp_client_handle_message(client, (char *)data->data_ptr);
-        }
+            stomp_client_handle_message(client, (const char *)data->data_ptr);
+        }           
+
         break;
     case WEBSOCKET_EVENT_ERROR:
         ESP_LOGE(TAG, "WebSocket error occurred");
+        //  stomp_client_handle_message(client, (char *)data->data_ptr);
         break;
     default:
         ESP_LOGW(TAG, "Unhandled WebSocket event: %d", event_id);
+        //  stomp_client_handle_message(client, (char *)data->data_ptr);
         break;
     }
+}
+
+const char* stomp_client_socket_url(const char* url) {
+    static char socket_url[256];
+    snprintf(socket_url, sizeof(socket_url), "%s", url);
+
+    int random1 = esp_random() % 999; // Generates a random number between 0 and 999
+    int random2 = esp_random() % 999999; // Generates a random number between 0 and 999999
+    snprintf(socket_url + strlen(socket_url), sizeof(socket_url) - strlen(socket_url), "%d/%d/websocket", random1, random2);
+    ESP_LOGI(TAG, "Constructed WebSocket URL: %s", socket_url);
+    return socket_url;
 }
 
 void app_main(void)
@@ -132,17 +135,16 @@ void app_main(void)
 
     // Configure the WebSocket client
     esp_websocket_client_config_t websocket_cfg = {
-        .uri = THT,
-        .uri = HOST,
-        .port = PORT,
-        .path = PATH,
-        .cert_pem = echo_org_ssl_ca_cert,
+        .uri = stomp_client_socket_url(THT),
+       .host = HOST,
+       .port = PORT,
+       .path = PATH,
+        // .cert_pem = echo_org_ssl_ca_cert,
+        .transport = WEBSOCKET_TRANSPORT_OVER_TCP,
         .use_global_ca_store = true,
         .skip_cert_common_name_check = true,
         .disable_auto_reconnect = false
     };
-
-
 
     shutdown_signal_timer = xTimerCreate("Websocket shutdown timer", NO_DATA_TIMEOUT_SEC * 1000 / portTICK_PERIOD_MS,
                                          pdFALSE, NULL, shutdown_signaler);
@@ -153,7 +155,14 @@ void app_main(void)
 
 
     client = esp_websocket_client_init(&websocket_cfg);
-    esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
+
+    stomp_client_t *stomper = stomp_client_init(client);
+    if (stomper == NULL) {
+        ESP_LOGE(TAG, "Failed to initialize STOMP client");
+        return;
+    }
+
+    esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)stomper);
     esp_websocket_client_start(client);
 
     // Initialize StompClient

@@ -24,16 +24,27 @@
 #include "esp_websocket_client.h"
 #include "esp_event.h"
 
-#define NO_DATA_TIMEOUT_SEC 10
 
-#define THT     "wss://grozziieget.zjweiting.com:3091/CloudSocket-Dev/websocket/"
-// #define HOST    "wss://grozziieget.zjweiting.com/"
-#define HOST    "grozziieget.zjweiting.com"
+// #define THT     "wss://grozziieget.zjweiting.com:3091/CloudSocket-Dev/websocket/" worked
+
+#define THT     "wss://grozziieget.zjweiting.com:3091/CloudSocket-Dev/websocket/"// testing 
+
+// #define HOST    "wss://grozziieget.zjweiting.com/"// testing
+#define HOST    "grozziieget.zjweiting.com"// done
 
 #define PORT    3091
-#define  PATH  "/CloudSocket-Dev/websocket"
+#define  PATH  "/CloudSocket-Dev/websocket/"
 
 #define STOMP_CONNECT_FRAME     "[\"CONNECT\\naccept-version:1.1\\nheart-beat:10000,10000\\n\\n\\u0000\"]"
+
+typedef struct {
+    const char                  *uri;                       /*!< Websocket URI, the information on the URI can be overrides the other fields below, if any */
+    const char                  *host;                      /*!< Domain or IP as string */
+    int                         port;                       /*!< Port to connect, default depend on esp_websocket_transport_t (80 or 443) */
+    const char                  *path;                       /*!< Websocket URI, the information on the URI can be overrides the other fields below, if any */
+} stompInfo_cfg_t;
+
+
 
 static const char *TAG = "example";
 
@@ -71,19 +82,8 @@ const char echo_org_ssl_ca_cert[]  = \
 "-----END CERTIFICATE-----\n";
 
 
-// static TimerHandle_t shutdown_signal_timer;
-// static SemaphoreHandle_t shutdown_sema;
 
-// static void shutdown_signaler(TimerHandle_t xTimer)
-// {
-//     ESP_LOGI(TAG, "No data received for %d seconds, signaling shutdown", NO_DATA_TIMEOUT_SEC);
-//     xSemaphoreGive(shutdown_sema);
-// }
 void stomp_client_connect() {
-
-
-        // ["CONNECT\naccept-version:1.1\nheart-beat:10000,10000\n\n\u0000"]
-
 
     int ret;
     if (0){
@@ -146,6 +146,26 @@ void stomp_client_subscribe() {
     ESP_LOGI(TAG, "STOMP CONNECT frame sent successfully");
 }
 
+void stompSend(char * buff, char* topic){
+
+
+    //example pac 
+    //["SEND\ndestination:/app/cloud\n\nESP\n\n\u0000"]
+
+    char connect_frame[512] ;
+    const char *command = "[\"SEND\\n";
+    const char *destination = "destination:";
+    char *end_of_frame = "\\u0000\"]";
+
+    // end_of_frame[0] = (char)92;
+    snprintf(connect_frame, sizeof(connect_frame), "%s%s%s%s%s%s%s", command, destination,topic,"\\n\\n", buff,"\\n\\n", end_of_frame);
+
+    ESP_LOGI(TAG, "Sending STOMP CONNECT frame:\n%s", connect_frame);
+    esp_websocket_client_send_text(client, connect_frame, sizeof(connect_frame), portMAX_DELAY);
+}
+
+
+
 
 
 
@@ -174,7 +194,6 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
             stomp_client_connect();
             stomp_client_subscribe();
             
-
             }     
         }
         // ESP_LOGW(TAG, "Total payload length=%d, data_len=%d, current payload offset=%d\r\n", data->payload_len, data->data_len, data->payload_offset);
@@ -187,57 +206,60 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 }
 
 
-const char* stomp_client_socket_url(const char* url) {
-    static char socket_url[256];
-    snprintf(socket_url, sizeof(socket_url), "%s", url);
+void stomp_client_int( stompInfo_cfg_t stompSetup ) {
+   
+   
+    esp_websocket_client_config_t websocket_cfg = {};
+
+    char socket[100];
+    snprintf(socket, sizeof(socket), "%s", stompSetup.uri);
 
     int random1 = esp_random() % 999; // Generates a random number between 0 and 999
     int random2 = esp_random() % 999999; // Generates a random number between 0 and 999999
-    snprintf(socket_url + strlen(socket_url), sizeof(socket_url) - strlen(socket_url), "%d/%d/websocket", random1, random2);
-    ESP_LOGI(TAG, "Constructed WebSocket URL: %s", socket_url);
-    return socket_url;
-}
+    snprintf(socket + strlen(socket), sizeof(socket) - strlen(socket), "%d/%d/websocket", random1, random2);
 
-static void websocket_app_start(void)
-{
-    esp_websocket_client_config_t websocket_cfg = {};
+    websocket_cfg.uri = (const char*)socket;
+    // memset(socket,0,strlen(socket));
 
-  
+    // snprintf(socket, sizeof(socket), "%s", stompSetup.path);
+    // snprintf(socket + strlen(socket), sizeof(socket) - strlen(socket), "%d/%d/websocket", random1, random2);
+    
+    // websocket_cfg.path = (const char*)socket;// path
+    // websocket_cfg.port = stompSetup.port;
+    // websocket_cfg.host = (const char*)stompSetup.host;
 
-    websocket_cfg.uri = stomp_client_socket_url(THT);
-    // websocket_cfg.host = HOST;
-    // websocket_cfg.port = PORT;
-    // websocket_cfg.path = PATH;
+    // websocket_cfg.use_global_ca_store = false;// try 
+    // websocket_cfg.skip_cert_common_name_check = false;
+    // websocket_cfg.disable_auto_reconnect = false;
 
-    websocket_cfg.use_global_ca_store = true;
+        websocket_cfg.use_global_ca_store = true;// ok 
     websocket_cfg.skip_cert_common_name_check = true;
     websocket_cfg.disable_auto_reconnect = false;
+
+
+    ESP_LOGI(TAG, "Constructed WebSocket URL: %s", websocket_cfg.uri);
+    // ESP_LOGI(TAG, "Constructed WebSocket PATH: %s", websocket_cfg.path);
+
 
     ESP_LOGI(TAG, "Initializing global CA store...");
     ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));
 
 
-    ESP_LOGI(TAG, "Connecting to %s...", websocket_cfg.uri);
-
     client = esp_websocket_client_init(&websocket_cfg);
     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
-
     esp_websocket_client_start(client);
-    int i = 0;
-    while (i < 5) {
-        if (esp_websocket_client_is_connected(client)) {
+}
 
+static void websocket_app_start(void)
+{
 
-
-
-        }
-        vTaskDelay(1000 / portTICK_RATE_MS);
-    }
-
-    // xSemaphoreTake(shutdown_sema, portMAX_DELAY);
-    // esp_websocket_client_close(client, portMAX_DELAY);
-    // ESP_LOGI(TAG, "Websocket Stopped");
-    // esp_websocket_client_destroy(client);
+    stompInfo_cfg_t stompInfo ={
+        .uri = THT,
+        .host = HOST,
+        .port = PORT,
+        .path = PATH
+    };
+    stomp_client_int(stompInfo);
 }
 
 void app_main(void)

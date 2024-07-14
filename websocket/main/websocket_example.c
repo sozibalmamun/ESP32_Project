@@ -85,61 +85,29 @@ const char echo_org_ssl_ca_cert[]  = \
 
 void stomp_client_connect() {
 
-    int ret;
-    if (0){
-        char connect_frame[100] ;//"[\"CONNECT\naccept-version:1.1\nheart-beat:10000,10000\n\n\u0000\"]";
-        const char *command = "[\"CONNECT\\n";
-        const char *accept_version = "accept-version:1.1\\n";
-        const char *heart_beat = "heart-beat:10000,10000\\n\\n";
-        char *end_of_frame = "\\u0000\"]";
-
-        // end_of_frame[0] = (char)92;
-        snprintf(connect_frame, sizeof(connect_frame), "%s%s%s%s", command, accept_version, heart_beat, end_of_frame);
-
-        ESP_LOGI(TAG, "Sending STOMP CONNECT frame:\n%s", connect_frame);
-         ret = esp_websocket_client_send_text(client, connect_frame, sizeof(connect_frame), portMAX_DELAY);
-
-
-    } else {
-    // Send the STOMP CONNECT frame over the WebSocket
-        ESP_LOGI(TAG, "Sending STOMP CONNECT frame:\n%s", STOMP_CONNECT_FRAME);
-         ret = esp_websocket_client_send_text(client, STOMP_CONNECT_FRAME, sizeof(STOMP_CONNECT_FRAME), portMAX_DELAY);
-    }
-    if (ret < 0) {
-        ESP_LOGE(TAG, "Failed to send STOMP CONNECT frame, error code: %d", ret);
-        return;
-    }
-    ESP_LOGI(TAG, "STOMP CONNECT frame sent successfully");
+    char connect_frame[100] ;//"[\"CONNECT\naccept-version:1.1\nheart-beat:10000,10000\n\n\u0000\"]";
+    snprintf(connect_frame, sizeof(connect_frame), "%s%s%s%s", "[\"CONNECT\\n", "accept-version:1.1\\n", "heart-beat:10000,10000\\n\\n", "\\u0000\"]");
+    ESP_LOGI(TAG, "Sending STOMP CONNECT frame:\n%s", connect_frame);
+    esp_websocket_client_send_text(client, connect_frame, sizeof(connect_frame), portMAX_DELAY);
 }
-void stomp_client_subscribe() {
-    // Implement subscription logic
+void stomp_client_subscribe(char* topic) {
     
-    char connect_frame[]= "[\"SUBSCRIBE\\nid:sub-0\\ndestination:/topic/cloud\\nack:client\\n\\n\\u0000\"]";
-    // snprintf(connect_frame, sizeof(connect_frame), STOMP_CONNECT_FRAME, THT);
+    //example pack "[\"SUBSCRIBE\\nid:sub-0\\ndestination:/topic/cloud\\nack:client\\n\\n\\u0000\"]";
 
-    ESP_LOGI(TAG, "Sending STOMP SUBSCRIBE frame:\n%s", connect_frame);
+    char connect_frame[100] ;
+    snprintf(connect_frame, sizeof(connect_frame), "%s%s%s%s%s%s%s", "[\"SUBSCRIBE\\n","id:sub-0\\n", "destination:",topic,"\\n", "ack:client\\n\\n", "\\u0000\"]");
 
-    // Send the STOMP CONNECT frame over the WebSocket
-    int ret = esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY);
-    if (ret < 0) {
-        ESP_LOGE(TAG, "Failed to send STOMP SUBSCRIBE frame, error code: %d", ret);
-        return;
-    }
+    ESP_LOGI(TAG, "Sending STOMP Subscribe frame :\n%s", connect_frame);
+    esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY);
 }
 void stompSend(char * buff, char* topic){
 
     //example pac 
     //char ["SEND\ndestination:/app/cloud\n\nESP\n\n\u0000"]
 
-    char connect_frame[512] ;
-    const char *command = "[\"SEND\\n";
-    const char *destination = "destination:";
-    char *end_of_frame = "\\u0000\"]";
-
-    // end_of_frame[0] = (char)92;
-    snprintf(connect_frame, sizeof(connect_frame), "%s%s%s%s%s%s%s", command, destination,topic,"\\n\\n", buff,"\\n\\n", end_of_frame);
+    char connect_frame[512];
+    snprintf(connect_frame, sizeof(connect_frame), "%s%s%s%s%s%s%s", "[\"SEND\\n", "destination:",topic,"\\n\\n", buff,"\\n\\n", "\\u0000\"]");
     ESP_LOGI(TAG, "Sending STOMP MSG :\n%s", connect_frame);
-
     esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY);
 }
 
@@ -152,11 +120,11 @@ void stomp_client_handle_message( const char *message) {
     if (strstr(message, "CONNECTED")) {
         ESP_LOGI("example", "STOMP CONNECTED");
         // Subscribe to a topic
-        stomp_client_subscribe();
+        stomp_client_subscribe("/topic/cloud");
     } else if (strstr(message, "MESSAGE")) {
         ESP_LOGI("example", "STOMP MESSAGE");
         
-        stompSend("this is from vsCode!","/app/cloud");
+        stompSend(echo_org_ssl_ca_cert,"/app/cloud");
 
         // Handle the received message
     } else if (strstr(message, "ERROR")) {

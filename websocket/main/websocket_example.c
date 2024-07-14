@@ -111,24 +111,6 @@ void stomp_client_connect() {
     }
     ESP_LOGI(TAG, "STOMP CONNECT frame sent successfully");
 }
-
-// void stomp_client_handle_message( const char *message) {
-
-//        ESP_LOGI("example", "Received STOMP message:\n%s", message);
-//     if (strstr(message, "CONNECTED")) {
-//         ESP_LOGI("example", "STOMP CONNECTED");
-//         // Subscribe to a topic
-//         // stomp_client_subscribe("/topic/cloud", "auto", "subscription-1");
-//     } else if (strstr(message, "MESSAGE")) {
-//         ESP_LOGI("example", "STOMP MESSAGE");
-//         // Handle the received message
-//     } else if (strstr(message, "ERROR")) {
-//         ESP_LOGE("example", "STOMP ERROR: %s", message);
-//     }else if(){
-
-
-//     }
-// }
 void stomp_client_subscribe() {
     // Implement subscription logic
     
@@ -143,14 +125,11 @@ void stomp_client_subscribe() {
         ESP_LOGE(TAG, "Failed to send STOMP SUBSCRIBE frame, error code: %d", ret);
         return;
     }
-    ESP_LOGI(TAG, "STOMP CONNECT frame sent successfully");
 }
-
 void stompSend(char * buff, char* topic){
 
-
     //example pac 
-    //["SEND\ndestination:/app/cloud\n\nESP\n\n\u0000"]
+    //char ["SEND\ndestination:/app/cloud\n\nESP\n\n\u0000"]
 
     char connect_frame[512] ;
     const char *command = "[\"SEND\\n";
@@ -159,15 +138,31 @@ void stompSend(char * buff, char* topic){
 
     // end_of_frame[0] = (char)92;
     snprintf(connect_frame, sizeof(connect_frame), "%s%s%s%s%s%s%s", command, destination,topic,"\\n\\n", buff,"\\n\\n", end_of_frame);
+    ESP_LOGI(TAG, "Sending STOMP MSG :\n%s", connect_frame);
 
-    ESP_LOGI(TAG, "Sending STOMP CONNECT frame:\n%s", connect_frame);
-    esp_websocket_client_send_text(client, connect_frame, sizeof(connect_frame), portMAX_DELAY);
+    esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY);
 }
 
 
 
 
+void stomp_client_handle_message( const char *message) {
 
+       ESP_LOGI("example", "Received STOMP message:\n%s", message);
+    if (strstr(message, "CONNECTED")) {
+        ESP_LOGI("example", "STOMP CONNECTED");
+        // Subscribe to a topic
+        stomp_client_subscribe();
+    } else if (strstr(message, "MESSAGE")) {
+        ESP_LOGI("example", "STOMP MESSAGE");
+        
+        stompSend("this is from vsCode!","/app/cloud");
+
+        // Handle the received message
+    } else if (strstr(message, "ERROR")) {
+        ESP_LOGE("example", "STOMP ERROR: %s", message);
+    }
+}
 
 static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
@@ -183,18 +178,19 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         ESP_LOGI(TAG, "WEBSOCKET_EVENT_DISCONNECTED");
         break;
     case WEBSOCKET_EVENT_DATA:
-        ESP_LOGI(TAG, "Ping");
         // ESP_LOGI(TAG, "Received opcode=%d", data->op_code);
         if (data->op_code == 0x08 && data->data_len == 2) {
             // ESP_LOGW(TAG, "Received closed message with code=%d", 256*data->data_ptr[0] + data->data_ptr[1]);
         } else {
-            ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
+            // ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
             if((char *)data->data_ptr[0]=='o'){
-
-            stomp_client_connect();
-            stomp_client_subscribe();
-            
-            }     
+            stomp_client_connect();            
+            }  
+            else if((char *)data->data_ptr[0]=='a'){
+                stomp_client_handle_message(&data->data_ptr[3]);
+            }else if((char *)data->data_ptr[0]=='h'){
+                ESP_LOGI(TAG, "Ping");
+            } 
         }
         // ESP_LOGW(TAG, "Total payload length=%d, data_len=%d, current payload offset=%d\r\n", data->payload_len, data->data_len, data->payload_offset);
 

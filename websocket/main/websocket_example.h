@@ -27,13 +27,16 @@ extern "C" {
 
 // #define THT     "wss://grozziieget.zjweiting.com:3091/CloudSocket-Dev/websocket/" worked
 
-#define THT     "wss://grozziieget.zjweiting.com:3091/CloudSocket-Dev/websocket/"// testing 
+#define     THT     "wss://grozziieget.zjweiting.com:3091/CloudSocket-Dev/websocket/"// testing 
 
 // #define HOST    "wss://grozziieget.zjweiting.com/"// testing
-#define HOST    "grozziieget.zjweiting.com"// done
+#define     HOST    "grozziieget.zjweiting.com"// done
 
-#define PORT    3091
-#define  PATH  "/CloudSocket-Dev/websocket/"
+#define     PORT            3091
+#define     PATH            "/CloudSocket-Dev/websocket/"
+
+#define     CHANK_SIZE      760
+// #define     CONNECT_FRAME_SIZE   1100
 
 typedef struct {
     const char                  *uri;                       /*!< Websocket URI, the information on the URI can be overrides the other fields below, if any */

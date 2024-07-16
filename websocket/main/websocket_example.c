@@ -131,21 +131,18 @@ void stomp_client_subscribe(char* topic) {
 bool stompSend(char * buff, char* topic){
 
 
-    char tempFrame[512+1];  
-
+    char tempFrame[CHANK_SIZE+1]; 
     memset(tempFrame,0,sizeof(tempFrame));
-    char connect_frame[1024]; 
 
     uint16_t currentIndex=0;
     uint16_t buffLen =strlen(buff);
-    ESP_LOGI(TAGSTOMP, "Sending  total len :%d\n", buffLen);
-
-
+    // ESP_LOGI(TAGSTOMP, "Sending  total len :%d\n", buffLen);
 
     do{
 
+
         memset(tempFrame,0,sizeof(tempFrame));
-        if(buffLen<=512){
+        if(buffLen<=CHANK_SIZE){
 
             currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],buffLen) : memcpy(&tempFrame,&buff[currentIndex],buffLen);
             // memcpy(&tempFrame,&buff[currentIndex-1],buffLen);
@@ -154,13 +151,16 @@ bool stompSend(char * buff, char* topic){
 
             currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame)-1) : memcpy(&tempFrame,&buff[currentIndex],sizeof(tempFrame)-1);
             // memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame));
-            currentIndex+= 512;
-            buffLen= buffLen - 512;
+            currentIndex+= CHANK_SIZE;
+            buffLen= buffLen - CHANK_SIZE;
         }
         tempFrame[strlen(tempFrame)] = '\0';  // Null-terminate the chunk
 
-        memset(connect_frame,0,600);
-        ESP_LOGI(TAGSTOMP, "Sending  tempFrame len :%d\n", strlen(tempFrame));
+
+        char connect_frame[strlen(tempFrame)+37+strlen(topic)];memset(connect_frame,0,sizeof(connect_frame));
+
+
+        ESP_LOGI(TAGSTOMP, "Sending  tempFrame len :%d dynamic pac len %d\n", strlen(tempFrame) ,sizeof(connect_frame));
 
         snprintf(connect_frame, sizeof(connect_frame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, tempFrame);
         ESP_LOGI(TAGSTOMP, "Sending  connect_frame len :%d\n", strlen(connect_frame));
@@ -169,11 +169,9 @@ bool stompSend(char * buff, char* topic){
 
         if(!esp_websocket_client_is_connected(client))return false;
         if(esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY)!=ESP_OK){
-            // memset(tempFrame,0,strlen(tempFrame));
-            ESP_LOGI(TAGSTOMP, "Sending STOMP   sent len :%d  remain   %d\n", currentIndex,buffLen);
-
+            // ESP_LOGI(TAGSTOMP, "Sending STOMP   sent len :%d  remain   %d\n", currentIndex,buffLen);
         }
-
+        
     }while(buffLen!=0);
 
 
@@ -192,7 +190,9 @@ void stomp_client_handle_message( const char *message) {
     } else if (strstr(message, "MESSAGE")) {
         ESP_LOGI(TAGSTOMP, "STOMP MESSAGE");
         
-        stompSend(testdata,"/app/cloud");
+        if(!stompSend(testdata,"/app/cloud")){
+            ESP_LOGI(TAGSTOMP, "Data sending error");
+        }
 
         // Handle the received message
     } else if (strstr(message, "ERROR")) {

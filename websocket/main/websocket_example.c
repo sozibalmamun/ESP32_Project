@@ -20,17 +20,18 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         if (data->op_code == 0x08 && data->data_len == 2) {
             // ESP_LOGW(TAG, "Received closed message with code=%d", 256*data->data_ptr[0] + data->data_ptr[1]);
         } else {
-            // ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
             if((char *)data->data_ptr[0]=='o'){
             stomp_client_connect();            
             }  
             else if((char *)data->data_ptr[0]=='a'){
-
                 stomp_client_handle_message(&data->data_ptr[3]);
-
             }else if((char *)data->data_ptr[0]=='h'){
                 ESP_LOGI(TAG, "Ping");
-            } 
+            }else if((char *)data->data_ptr[0]=='c'){
+
+                ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
+                websocket_app_start();
+            }
         }
         break;
     case WEBSOCKET_EVENT_ERROR:
@@ -118,48 +119,65 @@ void stomp_client_subscribe(char* topic) {
     
     //example pack "[\"SUBSCRIBE\\nid:sub-0\\ndestination:/topic/cloud\\nack:client\\n\\n\\u0000\"]";
 
-    char connect_frame[60+strlen(topic)] ;
-    snprintf(connect_frame, sizeof(connect_frame), "%s%s%s%s%s%s%s", "[\"SUBSCRIBE\\n","id:sub-0\\n", "destination:",topic,"\\n", "ack:client\\n\\n", "\\u0000\"]");
+    char connect_frame[100] ;
 
-    ESP_LOGI(TAGSTOMP, "Sending STOMP Subscribe frame :%s\n", connect_frame);
+    // snprintf(connect_frame, sizeof(connect_frame), "%s%s%s%s%s%s%s", "[\"SUBSCRIBE\\n","id:sub-0\\n", "destination:",topic,"\\n", "ack:client\\n\\n", "\\u0000\"]");
+    
+    snprintf(connect_frame, sizeof(connect_frame), "[\"SUBSCRIBE\\nid:sub-0\\ndestination:%s\\nack:client\\n\\n\\u0000\"]", topic);
+
+    ESP_LOGI(TAGSTOMP, "Sending STOMP Subscribe frame :\n%s", connect_frame);
     esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY);
 }
 bool stompSend(char * buff, char* topic){
 
-    //example pac 
-    //char ["SEND\ndestination:/app/cloud\n\nESP\n\n\u0000"]
 
-    char tempBuff[1024];
-    uint16_t buffLen= strlen(buff);
-    uint16_t tempLen=0;
+    char tempFrame[512+1];  
+
+    memset(tempFrame,0,sizeof(tempFrame));
+    char connect_frame[1024]; 
+
+    uint16_t currentIndex=0;
+    uint16_t buffLen =strlen(buff);
+    ESP_LOGI(TAGSTOMP, "Sending  total len :%d\n", buffLen);
+
+
 
     do{
 
-        if(buffLen<=1024){
-            memcpy(&tempBuff,&buff,buffLen);
+        memset(tempFrame,0,sizeof(tempFrame));
+        if(buffLen<=512){
+
+            currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],buffLen) : memcpy(&tempFrame,&buff[currentIndex],buffLen);
+            // memcpy(&tempFrame,&buff[currentIndex-1],buffLen);
+            buffLen= buffLen - buffLen;
         }else{
-            ESP_LOGI(TAGSTOMP, "Buffer more then 1kb: %d ", buffLen);
-            memcpy(&tempBuff,&buff[tempLen],1024);
+
+            currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame)-1) : memcpy(&tempFrame,&buff[currentIndex],sizeof(tempFrame)-1);
+            // memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame));
+            currentIndex+= 512;
+            buffLen= buffLen - 512;
         }
+        tempFrame[strlen(tempFrame)] = '\0';  // Null-terminate the chunk
 
-        char connect_frame[strlen(tempBuff)+strlen(topic)+36];
-        ESP_LOGI(TAGSTOMP, "connect frame len: %d ", sizeof(connect_frame));
+        memset(connect_frame,0,600);
+        ESP_LOGI(TAGSTOMP, "Sending  tempFrame len :%d\n", strlen(tempFrame));
 
-        snprintf(connect_frame, sizeof(connect_frame), "%s%s%s%s%s%s%s", "[\"SEND\\n", "destination:",topic,"\\n\\n", tempBuff,"\\n\\n", "\\u0000\"]");
+        snprintf(connect_frame, sizeof(connect_frame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, tempFrame);
+        ESP_LOGI(TAGSTOMP, "Sending  connect_frame len :%d\n", strlen(connect_frame));
 
         ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", connect_frame);
 
-        if(!esp_websocket_client_is_connected(client)) return false;
+        if(!esp_websocket_client_is_connected(client))return false;
+        if(esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY)!=ESP_OK){
+            // memset(tempFrame,0,strlen(tempFrame));
+            ESP_LOGI(TAGSTOMP, "Sending STOMP   sent len :%d  remain   %d\n", currentIndex,buffLen);
 
-            if(esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY)!=ESP_OK){
-                buffLen= buffLen-strlen(tempBuff); // calculate remaining data buff
-                tempLen+=strlen(tempBuff);// calculate starting ary addr at copy.
-                memset(tempBuff,0,strlen(tempBuff));
-            }
+        }
 
     }while(buffLen!=0);
-    
-    return true;
+
+
+return true;
 
 }
 
@@ -174,10 +192,12 @@ void stomp_client_handle_message( const char *message) {
     } else if (strstr(message, "MESSAGE")) {
         ESP_LOGI(TAGSTOMP, "STOMP MESSAGE");
         
-        stompSend(echo_org_ssl_ca_cert,"/app/cloud");
+        stompSend(testdata,"/app/cloud");
 
         // Handle the received message
     } else if (strstr(message, "ERROR")) {
+
         ESP_LOGE(TAGSTOMP, "STOMP ERROR: %s", message);
+
     }
 }

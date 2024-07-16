@@ -22,7 +22,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         } else {
 
             ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
-            
+
             if((char *)data->data_ptr[0]=='o'){
             stomp_client_connect();            
             }  
@@ -163,7 +163,6 @@ bool stompSend(char * buff, char* topic){
 
         char connect_frame[strlen(tempFrame)+37+strlen(topic)];memset(connect_frame,0,sizeof(connect_frame));
 
-
         // ESP_LOGI(TAGSTOMP, "Sending  tempFrame len :%d dynamic pac len %d\n", strlen(tempFrame) ,sizeof(connect_frame));
 
         snprintf(connect_frame, sizeof(connect_frame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, tempFrame);
@@ -171,11 +170,11 @@ bool stompSend(char * buff, char* topic){
 
         ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", connect_frame);
 
-        // if(!esp_websocket_client_is_connected(client))return false;
+        if(!esp_websocket_client_is_connected(client))return false;
 
         if(esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY)!=ESP_OK){
             // ESP_LOGI(TAGSTOMP, "Sending STOMP   sent len :%d  remain   %d\n", currentIndex,buffLen);
-        }
+        }else return false;
 
     }while(buffLen!=0);
 

@@ -7,7 +7,7 @@
 
 
 #include "tcp_client.h"
-#include "StomeClient/StomeClient.h"
+// #include "StomeClient/StomeClient.h"
 
 static QueueHandle_t xQueueAIFrame = NULL;
 static QueueHandle_t xQueueLCDFrame = NULL;
@@ -34,8 +34,8 @@ void app_main()
 //------------wi-fi-----------
     nvs_flash_init();
     wifi_connection();
-    websocket_app_start();
+    // websocket_app_start();
 
-    // xTaskCreate(&socket_task, "socket_task", 4 * 1024, NULL, 5, NULL);
+    xTaskCreate(&socket_task, "socket_task", 4 * 1024, NULL, 5, NULL);
 //-------------wifi end---------------
 }

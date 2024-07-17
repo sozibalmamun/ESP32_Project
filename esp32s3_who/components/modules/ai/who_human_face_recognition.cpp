@@ -25,6 +25,17 @@ using namespace dl;
 
 static const char *TAG = "human_face_recognition";
 
+// extern from tcp client  for enrolment
+
+extern volatile uint8_t CmdEnroll;
+extern char personName[20];
+extern uint16_t personId;
+//---------------------------------------
+
+
+
+
+
 static QueueHandle_t xQueueFrameI = NULL;
 static QueueHandle_t xQueueEvent = NULL;
 static QueueHandle_t xQueueFrameO = NULL;
@@ -42,6 +53,7 @@ typedef enum
     SHOW_STATE_DELETE,
     SHOW_STATE_RECOGNIZE,
     SHOW_STATE_ENROLL,
+    SHOW_DUPLICATE
 } show_state_t;
 
 #define RGB565_MASK_RED 0xF800
@@ -117,20 +129,43 @@ static void task_process_handler(void *arg)
                 std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3});
                 std::list<dl::detect::result_t> &detect_results = detector2.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_candidates);
 
-                if (detect_results.size() == 1)
+                if (detect_results.size() == 1){
                     is_detected = true;
+                   // _gEvent = RECOGNIZE;// due to no button for recognize
+                   if(CmdEnroll==ENROLING)_gEvent=ENROLL;// 1 for enroling 
+                   vTaskDelay(10);
+
+                }else if(CmdEnroll==ENROLING) rgb_printf(frame, RGB565_MASK_GREEN, "Start Enroling");// debug due to display name
+
+            
+
 
                 if (is_detected)
                 {
                     switch (_gEvent)
                     {
-                    case ENROLL:
-                        recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
+                    case ENROLL:{
+
+                        vTaskDelay(10);
+                        // duplicate 
+                        recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
+                        //print_detection_result(detect_results);
+                        if (recognize_result.id > 0){
+                        //rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");// debug due to display name
+                        CmdEnroll=DUPLICATE;// 3 FOR DUPLICATE
+                        frame_show_state = SHOW_DUPLICATE;
+                        break;
+                        }
+                        // duplicat end
+
+
+                        // recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
+                        recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, personName, true);// due to add name
                         ESP_LOGW("ENROLL", "ID %d is enrolled", recognizer->get_enrolled_ids().back().id);
                         frame_show_state = SHOW_STATE_ENROLL;
                         break;
-
-                    case RECOGNIZE:
+                    }
+                    case RECOGNIZE:{
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
                         print_detection_result(detect_results);
                         if (recognize_result.id > 0)
@@ -139,11 +174,15 @@ static void task_process_handler(void *arg)
                             ESP_LOGE("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
                         frame_show_state = SHOW_STATE_RECOGNIZE;
                         break;
-
+                    }
                     case DELETE:
                         vTaskDelay(10);
                         recognizer->delete_id(true);
-                        
+                        // recognizer->delete_id(2,true);
+                      //int delete_id(int id, bool update_flash = false);
+
+
+
                         ESP_LOGE("DELETE", "% d IDs left", recognizer->get_enrolled_id_num());
                         frame_show_state = SHOW_STATE_DELETE;
                         break;
@@ -163,8 +202,11 @@ static void task_process_handler(void *arg)
                         break;
 
                     case SHOW_STATE_RECOGNIZE:
-                        if (recognize_result.id > 0)
-                            rgb_printf(frame, RGB565_MASK_GREEN, "ID %d", recognize_result.id);
+                        if (recognize_result.id > 0){
+                            // rgb_printf(frame, RGB565_MASK_GREEN, "ID %d", recognize_result.id);
+                            rgb_printf(frame, RGB565_MASK_GREEN, "ID %d Name %s", recognize_result.id,recognize_result.name.c_str());// debug due to display name
+
+                        }
                         else{
                             rgb_print(frame, RGB565_MASK_RED, "who ?");
                             ESP_LOGI(TAG,"\nWho ?");
@@ -172,10 +214,20 @@ static void task_process_handler(void *arg)
                             }
                         break;
 
-                    case SHOW_STATE_ENROLL:
-                        rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id);
-                        break;
+                    case SHOW_STATE_ENROLL:{
+                        CmdEnroll=ENROLED;// 2 means enrol done
 
+                        rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id); 
+                        personId=recognizer->get_enrolled_ids().back().id;
+                        // rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id);
+                        break;
+                    }
+                    case SHOW_DUPLICATE:{
+                        rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");//   
+                        vTaskDelay(10);
+
+                    break;
+                    }
                     default:
                         break;
                     }

@@ -20,6 +20,8 @@
 
 #include "who_ai_utils.hpp"
 
+
+
 using namespace std;
 using namespace dl;
 
@@ -27,9 +29,18 @@ static const char *TAG = "human_face_recognition";
 
 // extern from tcp client  for enrolment
 
-extern volatile uint8_t CmdEnroll;
-extern char personName[20];
-extern uint16_t personId;
+// extern volatile uint8_t CmdEnroll;
+// extern char personName[20];
+// extern uint16_t personId;
+
+
+ volatile uint8_t CmdEnroll;
+ char personName[20];
+ uint16_t personId;
+
+
+
+
 //---------------------------------------
 
 

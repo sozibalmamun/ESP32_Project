@@ -6,6 +6,9 @@
         "board/esp32s3-builtin.cfg"
     ],
     "files.associations": {
-        "tcp_client.h": "c"
+        "tcp_client.h": "c",
+        "cstdarg": "cpp",
+        "cstdio": "cpp",
+        "cstdint": "cpp"
     }
 }

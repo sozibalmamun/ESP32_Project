@@ -18,6 +18,23 @@
 #include "esp_event.h"
 
 
+#include <string.h>          // For handling strings
+#include "stdbool.h"
+#include <sys/unistd.h>
+#include <sys/stat.h>
+#include "lwip/err.h"        // Light weight IP packets error handling
+#include "lwip/sys.h"        // System applications for lightweight IP apps
+#include "nvs.h"
+#include "esp_err.h"
+#include "esp_vfs.h"
+#include "lwip/sockets.h"
+#include "lwip/dns.h"
+#include "lwip/netdb.h"
+
+
+
+
+
 
 
 #ifdef __cplusplus
@@ -25,12 +42,56 @@ extern "C" {
 #endif
 
 
+#define DEVICE_NAME "THT-Face"
+
+
+#define IDLEENROL 0
+#define ENROLING 0x01
+#define ENROLED 0x02
+#define DUPLICATE 0x03
+
+#define TIMEOUT_50_MS         5
+#define TIMEOUT_100_MS        10
+#define TIMEOUT_120_MS        12
+#define TIMEOUT_150_MS        15
+#define TIMEOUT_200_MS        20
+#define TIMEOUT_300_MS        30
+#define TIMEOUT_500_MS        50
+#define TIMEOUT_1000_MS       100
+#define TIMEOUT_2000_MS       200
+#define TIMEOUT_3000_MS       300
+#define TIMEOUT_4000_MS       400
+#define TIMEOUT_5000_MS       500
+#define TIMEOUT_6000_MS       600
+#define TIMEOUT_7000_MS       700
+#define TIMEOUT_9000_MS       900
+#define TIMEOUT_10000_MS      1000
+#define TIMEOUT_12000_MS      1200
+#define TIMEOUT_20000_MS      2000
+#define TIMEOUT_15_S          1500
+#define TIMEOUT_30_S          3000
+#define TIMEOUT_45_S          4500
+#define TIMEOUT_1_MIN         6000
+#define TIMEOUT_2_MIN         12000
+#define TIMEOUT_5_MIN         30000
+#define LISTEN_BACKLOG 1
+#define ACK_SIZE 1024
+
+uint32_t crc_table[256];
+uint16_t crc16_table[256];
+
+
+
+
+
+
+
 #define     THT     "wss://grozziieget.zjweiting.com:3091/CloudSocket-Dev/websocket/"
 #define     HOST    "grozziieget.zjweiting.com"
 #define     PORT            3091
 #define     PATH            "/CloudSocket-Dev/websocket/"
 
-#define     CHANK_SIZE      512//760//256
+#define     CHANK_SIZE     256 //512//760//256
 
 typedef struct {
     const char                  *uri;                       /*!< Websocket URI, the information on the URI can be overrides the other fields below, if any */
@@ -81,7 +142,37 @@ void stomp_client_subscribe(char* topic);
 bool stompSend(char * buff, char* topic);
 void stomp_client_handle_message( const char *message);
 void stomp_client_int( stompInfo_cfg_t stompSetup );
-void websocket_app_start(void);
+void stompAppStart(void);
+
+
+
+
+// esp_err_t read_wifi_credentials(char *ssid, size_t ssid_len, char *pass, size_t pass_len) ;
+// esp_err_t save_wifi_credentials(const char *ssid, const char *pass) ;
+// void print_hostname();
+void set_and_print_hostname();
+void wifi_connection(void);
+
+// tcp server
+void socket_task(void *pvParameters);
+
+//save wifi info
+void save_wifi_info(const char* ssid, const char* pass);
+void read_wifi_info(char* ssid, char* pass);
+
+
+// parsing
+void process_command(const char* buffer);
+uint32_t crc32(const char *buf, size_t len);
+void init_crc32_table();
+void init_crc16_table();
+uint16_t crc16(const char *buf, size_t len);
+uint16_t hex_to_uint16(const char* hex_str);
+
+// uint16_t toint2(uint8_t *data_buffer);
+void resizeBuffer(void);
+
+
 
 
 

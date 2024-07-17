@@ -12,7 +12,8 @@ set(src_dirs
                 web
                 trace
                 imu
-                tcp_client)
+                tcp_client
+                )
 
 set(include_dirs    
                     ai
@@ -23,7 +24,8 @@ set(include_dirs
                     web
                     trace
                     imu
-                    tcp_client)
+                    tcp_client
+                    )
 
 set(requires    esp32-camera
                 esp-dl

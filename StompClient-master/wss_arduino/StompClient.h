@@ -260,7 +260,7 @@ class StompClient {
 
         Serial.print("sending data : "); Serial.println(connectFrame);
 
-      //  _wsClient.sendTXT(connectFrame.c_str(), connectFrame.length() + 1);
+        _wsClient.sendTXT(connectFrame.c_str(), connectFrame.length() + 1);
 
 
       }

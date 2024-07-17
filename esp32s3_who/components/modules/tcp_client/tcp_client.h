@@ -20,7 +20,6 @@
 #include "esp_vfs.h"
 
 
-
 #include "freertos/task.h"
 #include "esp_wifi.h"
 #include "lwip/sockets.h"

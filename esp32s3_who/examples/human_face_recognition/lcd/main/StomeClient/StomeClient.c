@@ -1,15 +1,15 @@
 #include "StomeClient.h"
 
-const char *TAG = "WEBSOCKET";
-const char *TAGSTOMP = "STOMP_CLIENT";
-const char *TAG_WI_FI = "Wifi Debug";
-const char *TAG_FS   = "FS Debug";
-
-const char *ssid = "Space";
-const char *pass = "12345space6789";
-
+#define     TAG             "WEBSOCKET"
+#define     TAGSTOMP        "STOMP_CLIENT"
+#define     TAG_WI_FI       "Wifi Debug"
+#define     TAG_FS          "FS Debug"
+#define     TAG_ENROL       "ENROL"
+#define     DATA_HANDEL     "DATA HANDEL"
 
 
+const char *ssid = "myssid";
+const char *pass = "mypassword";
 
 extern volatile uint8_t CmdEnroll;
 extern char personName[20];
@@ -30,7 +30,7 @@ static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_b
     } else if (event_id == WIFI_EVENT_STA_CONNECTED) {
 
         printf("WiFi CONNECTED\n");
-
+        vTaskDelay(500);
         stompAppStart();
 
     } else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
@@ -41,10 +41,10 @@ static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_b
         ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
         ESP_LOGI(TAG_WI_FI, "WiFi got IP: " IPSTR, IP2STR(&event->ip_info.ip));
 
-        uint8_t mac[6];
-        esp_wifi_get_mac(ESP_IF_WIFI_STA, mac);
-        ESP_LOGI(TAG_WI_FI, "MAC address: %02x:%02x:%02x:%02x:%02x:%02x",
-                 mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+        // uint8_t mac[6];
+        // esp_wifi_get_mac(ESP_IF_WIFI_STA, mac);
+        // ESP_LOGI(TAG_WI_FI, "MAC address: %02x:%02x:%02x:%02x:%02x:%02x",
+        //          mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
         // Read and log the hostname
         // print_hostname();
@@ -77,7 +77,7 @@ void wifi_connection(void) {
 
     esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_configuration);
     
-    set_and_print_hostname(DEVICE_NAME);
+    // set_and_print_hostname(DEVICE_NAME);
 
     // Wi-Fi Start Phase
     esp_wifi_start();
@@ -89,49 +89,49 @@ void wifi_connection(void) {
 
 
 
-void print_hostname() {
-    esp_netif_t *netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-    if (netif == NULL) {
-        ESP_LOGE(TAG_WI_FI, "Failed to get netif handle");
-        return;
-    }
+// void print_hostname() {
+//     esp_netif_t *netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+//     if (netif == NULL) {
+//         ESP_LOGE(TAG_WI_FI, "Failed to get netif handle");
+//         return;
+//     }
 
-    const char *hostname;
-    esp_err_t err = esp_netif_get_hostname(netif, &hostname);
-    if (err == ESP_OK) {
-        ESP_LOGI(TAG_WI_FI, "Hostname: %s", hostname);
-    } else {
-        ESP_LOGE(TAG_WI_FI, "Failed to get hostname: %s", esp_err_to_name(err));
-    }
-}
+//     const char *hostname;
+//     esp_err_t err = esp_netif_get_hostname(netif, &hostname);
+//     if (err == ESP_OK) {
+//         ESP_LOGI(TAG_WI_FI, "Hostname: %s", hostname);
+//     } else {
+//         ESP_LOGE(TAG_WI_FI, "Failed to get hostname: %s", esp_err_to_name(err));
+//     }
+// }
 // Function to set and print the hostname
-void set_and_print_hostname(char *hostName) {
+// void set_and_print_hostname(char *hostName) {
 
-    esp_netif_t *netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-    if (netif == NULL) {
-        ESP_LOGE(TAG_WI_FI, "Failed to get netif handle");
-        return;
-    }
+//     esp_netif_t *netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+//     if (netif == NULL) {
+//         ESP_LOGE(TAG_WI_FI, "Failed to get netif handle");
+//         return;
+//     }
 
-    // Set the hostname to "THTFace"
-    const char *new_hostname = hostName;
-    esp_err_t err = esp_netif_set_hostname(netif, new_hostname);
-    if (err == ESP_OK) {
-        ESP_LOGI(TAG_WI_FI, "Hostname set to: %s", new_hostname);
-    } else {
-        ESP_LOGE(TAG_WI_FI, "Failed to set hostname: %s", esp_err_to_name(err));
-        return;
-    }
+//     // Set the hostname to "THTFace"
+//     const char *new_hostname = hostName;
+//     esp_err_t err = esp_netif_set_hostname(netif, new_hostname);
+//     if (err == ESP_OK) {
+//         ESP_LOGI(TAG_WI_FI, "Hostname set to: %s", new_hostname);
+//     } else {
+//         ESP_LOGE(TAG_WI_FI, "Failed to set hostname: %s", esp_err_to_name(err));
+//         return;
+//     }
 
-    // Retrieve and log the hostname to verify
-    const char *hostname;
-    err = esp_netif_get_hostname(netif, &hostname);
-    if (err == ESP_OK) {
-        ESP_LOGI(TAG_WI_FI, "Hostname: %s", hostname);
-    } else {
-        ESP_LOGE(TAG_WI_FI, "Failed to get hostname: %s", esp_err_to_name(err));
-    }
-}
+//     // Retrieve and log the hostname to verify
+//     const char *hostname;
+//     err = esp_netif_get_hostname(netif, &hostname);
+//     if (err == ESP_OK) {
+//         ESP_LOGI(TAG_WI_FI, "Hostname: %s", hostname);
+//     } else {
+//         ESP_LOGE(TAG_WI_FI, "Failed to get hostname: %s", esp_err_to_name(err));
+//     }
+// }
 
 
 void process_command(const char* buffer) {
@@ -176,6 +176,9 @@ void process_command(const char* buffer) {
                 printf("CRC check passed.\n");
                 printf("  - Name: %s\n", personName);
                 memset(tcpBuffer, 0, strlen(tcpBuffer));
+
+                enrolOngoing();
+
                 return;
             } else {
                 printf("CRC check failed.\n");
@@ -187,9 +190,75 @@ void process_command(const char* buffer) {
 
         }
 
-    }else{
+    }else if(strncmp(buffer, "cmddl", strlen("cmddl")) == 0){
+
+        ESP_LOGI(TAG_ENROL, "delete ccmd id");
+
+
+
     }
 }
+
+
+
+void enrolOngoing(void){
+
+            bool cmd=true;
+        while(cmd){
+
+            if(CmdEnroll==ENROLED){
+
+                char personIdStr[12]; // assuming 32-bit uint can be represented in 11 chars + null terminator
+                snprintf(personIdStr, sizeof(personIdStr), "%u", personId);
+                if (!stompSend(personIdStr,PUBLISH_TOPIC)) {
+                    //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+                } else {
+                    ESP_LOGI(TAG_ENROL, "id sent to client\n");
+                    CmdEnroll = IDLEENROL;
+                    cmd=false;
+                }
+            }else if(CmdEnroll==DUPLICATE){
+
+                ESP_LOGI(TAG_ENROL, "duplicate ack\n");
+
+                // nack for duplicate person
+                if (!stompSend("NDP",PUBLISH_TOPIC)) {
+                    //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+                } else {
+                    ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+                    CmdEnroll = IDLEENROL;
+                    cmd=false;
+                }
+            }else {
+
+                TickType_t TimeOut = xTaskGetTickCount();
+        
+                if (TimeOut-erolTimeOut> TIMEOUT_15_S ){
+                // ESP_LOGI(TAG_ENROL, "not acking\n");
+                // send(client_sock, "\nwait for..", 8, 0);
+                CmdEnroll = IDLEENROL;
+
+                // nack for time out
+                if (!stompSend("NETO",PUBLISH_TOPIC)) {
+                    //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
+                } else {
+                    ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+                    cmd=false;
+                }
+                printf("\ncmd enroll flag status %d",CmdEnroll);
+                vTaskDelay(10);
+
+                }
+            }
+
+        }
+}
+
+
+
+
+
+
 void resizeBuffer() {
     char startMarker[] = "cmdEnrol";
     char endMarker[] = "cmdEnd";
@@ -275,124 +344,15 @@ uint16_t hex_to_uint16(const char* hex_str) {
 }
 
 
-
-
-
-
-static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
-{
-    esp_websocket_event_data_t *data = (esp_websocket_event_data_t *)event_data;
-    switch (event_id) {
-    case WEBSOCKET_EVENT_CONNECTED:
-        ESP_LOGI(TAG, "WEBSOCKET_EVENT_CONNECTED");
-        break;
-    case WEBSOCKET_EVENT_DISCONNECTED:
-        ESP_LOGI(TAG, "WEBSOCKET_EVENT_DISCONNECTED");
-
-        break;
-    case WEBSOCKET_EVENT_DATA:
-        if (data->op_code == 0x08 && data->data_len == 2) {
-            // ESP_LOGW(TAG, "Received closed message with code=%d", 256*data->data_ptr[0] + data->data_ptr[1]);
-        } else {
-
-            ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
-
-            if(data->data_ptr[0]=='o'){
-            stomp_client_connect();            
-            }  
-            else if(data->data_ptr[0]=='a'){
-                stomp_client_handle_message(&data->data_ptr[3]);
-            }else if(data->data_ptr[0]=='h'){
-                ESP_LOGI(TAG, "Ping");
-                if(!stompSend((char*)testdata,"/app/cloud")){
-                ESP_LOGI(TAGSTOMP, "Data sending error");
-
-                }
-            }else if(data->data_ptr[0]=='c'){
-
-                ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
-                stompAppStart();
-            }
-        }
-        break;
-    case WEBSOCKET_EVENT_ERROR:
-        ESP_LOGI(TAG, "WEBSOCKET_EVENT_ERROR");
-        break;
-    }
-}
-
-
-
-// void app_main(void)
-// {
-//     ESP_ERROR_CHECK(nvs_flash_init());
-//     ESP_ERROR_CHECK(esp_netif_init());
-//     ESP_ERROR_CHECK(esp_event_loop_create_default());
-//     ESP_ERROR_CHECK(example_connect());
-
-//     websocket_app_start();
-// }
-
-
-void stomp_client_int( stompInfo_cfg_t stompSetup ) {
-   
-    esp_websocket_client_config_t websocket_cfg = {};
-
-    char socket[100];
-    snprintf(socket, sizeof(socket), "%s", stompSetup.uri);
-
-    int random1 = esp_random() % 999; // Generates a random number between 0 and 999
-    int random2 = esp_random() % 999999; // Generates a random number between 0 and 999999
-    snprintf(socket + strlen(socket), sizeof(socket) - strlen(socket), "%d/%d/websocket", random1, random2);
-
-    websocket_cfg.uri = (const char*)socket;
-    // memset(socket,0,strlen(socket));
-
-    // snprintf(socket, sizeof(socket), "%s", stompSetup.path);
-    // snprintf(socket + strlen(socket), sizeof(socket) - strlen(socket), "%d/%d/websocket", random1, random2);
-    
-    // websocket_cfg.path = (const char*)socket;// path
-    // websocket_cfg.port = stompSetup.port;
-    // websocket_cfg.host = (const char*)stompSetup.host;
-
-    // websocket_cfg.use_global_ca_store = false;// try 
-    // websocket_cfg.skip_cert_common_name_check = false;
-    // websocket_cfg.disable_auto_reconnect = false;
-
-    websocket_cfg.use_global_ca_store = true;// ok 
-    websocket_cfg.skip_cert_common_name_check = true;
-    websocket_cfg.disable_auto_reconnect = false;
-
-
-    ESP_LOGI(TAG, "Constructed WebSocket URL: %s", websocket_cfg.uri);
-    // ESP_LOGI(TAG, "Constructed WebSocket PATH: %s", websocket_cfg.path);
-
-
-    ESP_LOGI(TAG, "Initializing global CA store...");
-    ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));
-
-
-    client = esp_websocket_client_init(&websocket_cfg);
-    esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
-    esp_websocket_client_start(client);
-}
-
-void stompAppStart(void)
-{
-
-    stompInfo_cfg_t stompInfo ={
-        .uri = THT,
-        .host = HOST,
-        .port = PORT,
-        .path = PATH
-    };
-    stomp_client_int(stompInfo);
-}
-
 void stomp_client_connect() {
 
-    char connect_frame[100] ;//"[\"CONNECT\naccept-version:1.1\nheart-beat:10000,10000\n\n\u0000\"]";
-    snprintf(connect_frame, sizeof(connect_frame), "%s%s%s%s", "[\"CONNECT\\n", "accept-version:1.1\\n", "heart-beat:10000,10000\\n\\n", "\\u0000\"]");
+    // char connect_frame[100] ;//"[\"CONNECT\naccept-version:1.1\nheart-beat:10000,10000\n\n\u0000\"]";
+    // snprintf(connect_frame, sizeof(connect_frame), "%s%s%s%s", "[\"CONNECT\\n", "accept-version:1.1\\n", "heart-beat:10000,10000\\n\\n", "\\u0000\"]");
+
+    // char connect_frame[100] = "[\"CONNECT\\naccept-version:1.1\\nheart-beat:10000,10000\\n\\n\\u0000\"]";
+
+    char connect_frame[100] = "[\"CONNECT\\naccept-version:1.1\\nhost:grozziieget.zjweiting.com\\n\\n\\u0000\"]";
+
     // ESP_LOGI(TAGSTOMP, "Sending STOMP CONNECT frame:\n%s", connect_frame);
     esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY);
 }
@@ -405,12 +365,41 @@ void stomp_client_subscribe(char* topic) {
     // snprintf(connect_frame, sizeof(connect_frame), "%s%s%s%s%s%s%s", "[\"SUBSCRIBE\\n","id:sub-0\\n", "destination:",topic,"\\n", "ack:client\\n\\n", "\\u0000\"]");
     
     snprintf(connect_frame, sizeof(connect_frame), "[\"SUBSCRIBE\\nid:sub-0\\ndestination:%s\\nack:client\\n\\n\\u0000\"]", topic);
+    // snprintf(connect_frame, sizeof(connect_frame), "[\"SUBSCRIBE\\nid:sub-1\\ndestination:%s\\nack:auto\\n\\n\\u0000\"]", topic);
+
+
 
     // ESP_LOGI(TAGSTOMP, "Sending STOMP Subscribe frame :\n%s", connect_frame);
-    esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY);
-}
-bool stompSend(char * buff, char* topic){
+    if(esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY)>0)ESP_LOGI(TAGSTOMP, " STOMP Subscribed");
 
+}
+void stomeAck(const char * message){
+// MESSAGE\ndestination:/topic/cloud\ncontent-type:text/plain;charset=UTF-8\nsubscription:sub-0\nmessage-id:556974-45339\ncontent-length:15\n\n{\"message\":\"3\"}\u0000"]+
+    char output[20] ;
+    const char *jsonStart = strstr(message, "message-id:");
+    if (jsonStart) {
+        jsonStart += strlen("message-id:"); // Move past the starting point
+
+        // Locate the end of the message within the JSON payload
+        const char *jsonEnd = strstr(jsonStart, "-");
+        if (jsonEnd) {
+            // Copy the message content into the output buffer
+            size_t length = jsonEnd - jsonStart;
+            strncpy(output, jsonStart, length);
+            output[length] = '\0'; // Null-terminate the output string
+        }
+    }
+    char connect_frame[100] ;
+    snprintf(connect_frame, sizeof(connect_frame), "[\"ACK\\nsubscription:1\\nmessage-id:%s\\ntransaction:tx1\\n\\n\\u0000\"]",output);
+    ESP_LOGI(TAGSTOMP, "STOMP ACKING %s\n", connect_frame);
+
+    esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY);
+   
+
+}
+
+
+bool stompSend(char * buff, char* topic){
 
     char tempFrame[CHANK_SIZE+1]; 
     memset(tempFrame,0,sizeof(tempFrame));
@@ -458,18 +447,69 @@ return true;
 }
 
 
+
+
+
+static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
+{
+    esp_websocket_event_data_t *data = (esp_websocket_event_data_t *)event_data;
+    switch (event_id) {
+    case WEBSOCKET_EVENT_CONNECTED:
+        ESP_LOGI(TAG, "WEBSOCKET_EVENT_CONNECTED");
+        break;
+    case WEBSOCKET_EVENT_DISCONNECTED:
+        ESP_LOGI(TAG, "WEBSOCKET_EVENT_DISCONNECTED");
+
+        break;
+    case WEBSOCKET_EVENT_DATA:
+
+        if (data->op_code == 0x08 && data->data_len == 2) {
+            ESP_LOGW(TAG, "Received closed message with code=%d", 256*data->data_ptr[0] + data->data_ptr[1]);
+        } else {
+
+            if(data->data_ptr[0]=='o')stomp_client_connect();   
+
+            else if(data->data_ptr[0]=='a'){
+
+                // ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
+                stomp_client_handle_message(&data->data_ptr[3]);
+
+            }
+
+            else if(data->data_ptr[0]=='h'){
+                ESP_LOGI(TAG, "Ping");
+
+                // if(!stompSend("testdata", PUBLISH_TOPIC)){
+                // ESP_LOGI(TAGSTOMP, "Data sending error");
+                // }
+
+            }else if(data->data_ptr[0]=='c'){
+
+                ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
+                stompAppStart();
+            }
+            ESP_LOGI(TAG, "WEBSOCKET_free");
+            memset(data->data_ptr,0,data->data_len);
+        }
+        break;
+    case WEBSOCKET_EVENT_ERROR:
+        ESP_LOGI(TAG, "WEBSOCKET_EVENT_ERROR");
+        break;
+    }
+}
 void stomp_client_handle_message( const char *message) {
 
     // ESP_LOGI(TAGSTOMP, "Received STOMP message:\n%s", message);
-    if (strstr(message, "CONNECTED")) {
+        if (strstr(message, "CONNECTED")) {
         ESP_LOGI(TAGSTOMP, "STOMP CONNECTED");
         // Subscribe to a topic
-        stomp_client_subscribe("/topic/cloud");
+        stomp_client_subscribe(SUBCRIBE_TOPIC);
     } else if (strstr(message, "MESSAGE")) {
-        ESP_LOGI(TAGSTOMP, "STOMP MESSAGE");
-        
+
+        // stomeAck(message);
+
         // if(!stompSend(testdata,"/app/cloud"))ESP_LOGI(TAGSTOMP, "Data sending error");
-        // socket_task(message);
+        dataHandele(message);
 
         // Handle the received message
     } else if (strstr(message, "ERROR")) {
@@ -477,105 +517,116 @@ void stomp_client_handle_message( const char *message) {
         ESP_LOGE(TAGSTOMP, "STOMP ERROR: %s", message);
 
     }
+
 }
 
 
-// void socket_task(const char *rx_buffer) {
+void dataHandele(const char *rx_buffer) {
 
 
-//             uint16_t len = recv(client_sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
-//             if (len < 0) {
-//                // ESP_LOGE(TAGSOCKET, "Error receiving data: errno %d", errno);
-//                 break;
-//             } else if (len == 0) {
-//                 ESP_LOGW(TAGSOCKET, "Connection closed");
-//                 break;
-//             } else {
-//                 rx_buffer[len] = '\0';
-//                 total_received += len;
-//                 // ESP_LOGI(TAGSOCKET, "Received %d bytes: %s", len, rx_buffer);
-//                 uint16_t tcpLen = strlen(tcpBuffer);
+    uint16_t len = strlen(rx_buffer);
+    memset(tcpBuffer,0 ,len);
+    // rx_buffer[len] = '\0';
+    extractMessage(rx_buffer, tcpBuffer);
 
-//                 memcpy(&tcpBuffer[tcpLen],&rx_buffer ,len);
+    // memcpy(&tcpBuffer,&rx_buffer ,len);
 
-//                 // printf("\ntcp len %d  buff %s",tcpLen,tcpBuffer);
-//                 // Process received data here
-//                 if(strlen(tcpBuffer)>5)resizeBuffer();
+    // ESP_LOGI(DATA_HANDEL, "Received STOMP len:%d msg: \n%s", len , rx_buffer);
 
-//                 if (strstr(tcpBuffer, "cmd") && strstr(tcpBuffer, "End") && strstr(tcpBuffer, "End") > strstr(tcpBuffer, "cmd")) {// varifi the cmd pattern
+    ESP_LOGI(DATA_HANDEL, "extracted data \n%s",tcpBuffer);
+    // Process received data here
+    // if(strlen(tcpBuffer)>5)resizeBuffer();
 
-//                 // if (strstr(tcpBuffer, "cmd") != NULL) {
+    if (strstr(tcpBuffer, "cmd") && strstr(tcpBuffer, "End") && strstr(tcpBuffer, "End") > strstr(tcpBuffer, "cmd")) {// varifi the cmd pattern
 
-//                     process_command(tcpBuffer);
-//                     bool cmd=true;
-//                    while(cmd){
+    // if (strstr(tcpBuffer, "cmd") != NULL) {
 
-//                         if(CmdEnroll==ENROLED){
+        process_command(tcpBuffer);
 
-//                             char personIdStr[12]; // assuming 32-bit uint can be represented in 11 chars + null terminator
-//                             snprintf(personIdStr, sizeof(personIdStr), "%u", personId);
-//                             int err = send(client_sock, personIdStr, strlen(personIdStr), 0);
-//                             if (err < 0) {
-//                               //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
-//                             } else {
-//                                 ESP_LOGI(TAGSOCKET, "id sent to client\n");
-//                                 CmdEnroll = IDLEENROL;
-//                                 cmd=false;
-//                             }
-//                         }else if(CmdEnroll==DUPLICATE){
 
-//                             ESP_LOGI(TAGSOCKET, "duplicate ack\n");
 
-//                             const char *ack_message = "NDP";// nack for duplicate person
-//                             int err = send(client_sock, ack_message, strlen(ack_message), 0);
-//                             if (err < 0) {
-//                                 //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
-//                             } else {
-//                                 ESP_LOGI(TAGSOCKET, "back to idle mode\n");
-//                                 CmdEnroll = IDLEENROL;
-//                                 cmd=false;
-//                             }
-//                         }else {
 
-//                             TickType_t TimeOut = xTaskGetTickCount();
-                    
-//                             if (TimeOut-erolTimeOut> TIMEOUT_15_S ){
-//                            // ESP_LOGI(TAGSOCKET, "not acking\n");
-//                            // send(client_sock, "\nwait for..", 8, 0);
-//                             CmdEnroll = IDLEENROL;
+    }else{ 
 
-//                             const char *ack_message = "NETO";// nack for time out
-//                             int err = send(client_sock, ack_message, strlen(ack_message), 0);
-//                             if (err < 0) {
-//                                 //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
-//                             } else {
-//                                 ESP_LOGI(TAGSOCKET, "back to idle mode\n");
-//                                 cmd=false;
-//                             }
-//                             printf("\ncmd enroll flag status %d",CmdEnroll);
-//                             vTaskDelay(10);
+        ESP_LOGE(TAG_ENROL, "invalid %d", errno);
+        // memcpy(&tcpBuffer[tcpLen],&rx_buffer ,len);
 
-//                             }
-//                         }
 
-//                     }
-//                 }else{ 
+        }
 
-//                     ESP_LOGE(TAGSOCKET, "invalid %d", errno);
+}
 
-//                     }
-//                     // if (total_received >= ACK_SIZE) {
-//                     //     const char *ack_message = "ACK";
-//                     //     int err = send(client_sock, ack_message, strlen(ack_message), 0);
-//                     //     if (err < 0) {
-//                     //         ESP_LOGE(TAGSOCKET, "Error sending ACK: errno %d", errno);
-//                     //     } else {
-//                     //         ESP_LOGI(TAGSOCKET, "ACK sent to client\n");
-//                     //     }
-//                     //     total_received = 0; // Reset the counter after sending ACK
-//                     // }
+void extractMessage(const char *buffer, char *output) {
+    // Locate the start of the JSON payload
 
-//             }
+    //length:40\n\n{\"message\":\"cmdEnrol sozib 8dfb cmdEnd\"}\u0000";
+    const char *jsonStart = strstr(buffer, "message\\\":\\\"");
+    if (jsonStart) {
+        jsonStart += strlen("message\\\":\\\""); // Move past the starting point
 
-//     }
-// }
+        // Locate the end of the message within the JSON payload
+        const char *jsonEnd = strstr(jsonStart, "\\\"}");
+        if (jsonEnd) {
+            // Copy the message content into the output buffer
+            size_t length = jsonEnd - jsonStart;
+            strncpy(output, jsonStart, length);
+            output[length] = '\0'; // Null-terminate the output string
+        }
+    }
+}
+
+void stompAppStart(void)
+{
+
+    stompInfo_cfg_t stompInfo ={
+        .uri = THT,
+        .host = HOST,
+        .port = PORT,
+        .path = PATH
+    };
+    stomp_client_int(stompInfo);
+}
+void stomp_client_int( stompInfo_cfg_t stompSetup ) {
+   
+    esp_websocket_client_config_t websocket_cfg = {};
+
+    char socket[100];
+    snprintf(socket, sizeof(socket), "%s", stompSetup.uri);
+
+    int random1 = esp_random() % 999; // Generates a random number between 0 and 999
+    int random2 = esp_random() % 999999; // Generates a random number between 0 and 999999
+    snprintf(socket + strlen(socket), sizeof(socket) - strlen(socket), "%d/%d/websocket", random1, random2);
+
+    websocket_cfg.uri = (const char*)socket;
+    // memset(socket,0,strlen(socket));
+
+    // snprintf(socket, sizeof(socket), "%s", stompSetup.path);
+    // snprintf(socket + strlen(socket), sizeof(socket) - strlen(socket), "%d/%d/websocket", random1, random2);
+    
+    // websocket_cfg.path = (const char*)socket;// path
+    // websocket_cfg.port = stompSetup.port;
+    // websocket_cfg.host = (const char*)stompSetup.host;
+
+    // websocket_cfg.use_global_ca_store = false;// try 
+    // websocket_cfg.skip_cert_common_name_check = false;
+    // websocket_cfg.disable_auto_reconnect = false;
+
+    websocket_cfg.use_global_ca_store = true;// ok 
+    websocket_cfg.skip_cert_common_name_check = true;
+    websocket_cfg.disable_auto_reconnect = false;
+
+
+    ESP_LOGI(TAG, "Constructed WebSocket URL: %s", websocket_cfg.uri);
+    // ESP_LOGI(TAG, "Constructed WebSocket PATH: %s", websocket_cfg.path);
+
+
+    ESP_LOGI(TAG, "Initializing global CA store...");
+    ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));
+
+
+    client = esp_websocket_client_init(&websocket_cfg);
+    esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
+    esp_websocket_client_start(client);
+}
+
+

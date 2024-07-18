@@ -9,6 +9,7 @@
         "tcp_client.h": "c",
         "cstdarg": "cpp",
         "cstdio": "cpp",
-        "cstdint": "cpp"
+        "cstdint": "cpp",
+        "stomeclient.h": "c"
     }
 }

@@ -32,6 +32,6 @@ void app_main()
 //------------wi-fi-----------
     nvs_flash_init();
     wifi_connection();
-    // stompAppStart();
+    // stompAppStart();// move to wifi event
 //-------------wifi end---------------
 }

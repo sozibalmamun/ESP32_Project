@@ -5,7 +5,7 @@
 
 
 /**
-* Stomp server settings
+  Stomp server settings
 **/
 //wss://grozziieget.zjweiting.com:3091/CloudSocket-Dev/websocket
 bool useWSS                       = true; //false;
@@ -24,25 +24,25 @@ Stomp::StompClient stomper(webSocket, ws_host, ws_port, ws_baseurl, true);
 
 
 void setup() {
-    // USE_SERIAL.begin(921600);
-    Serial.begin(115200);
+  // USE_SERIAL.begin(921600);
+  Serial.begin(115200);
 
-    // Connect to wifi
-    WiFi.begin("myssid", "mypassword");
+  // Connect to wifi
+  WiFi.begin("myssid", "mypassword");
 
-    // Wait some time to connect to wifi
-    for(int i = 0; i < 10 && WiFi.status() != WL_CONNECTED; i++) {
-        Serial.print(".");
-        delay(1000);
-    }
+  // Wait some time to connect to wifi
+  for (int i = 0; i < 10 && WiFi.status() != WL_CONNECTED; i++) {
+    Serial.print(".");
+    delay(1000);
+  }
 
-    // Check if connected to wifi
-    if(WiFi.status() != WL_CONNECTED) {
-        Serial.println("No Wifi!");
-        return;
-    }
+  // Check if connected to wifi
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("No Wifi!");
+    return;
+  }
 
-    Serial.println("Connected to Wifi, Connecting to server.");
+  Serial.println("Connected to Wifi, Connecting to server.");
   // Start the StompClient
   stomper.onConnect(subscribe);
   stomper.onError(error);
@@ -52,7 +52,7 @@ void setup() {
   } else {
     stomper.begin();
   }
-  
+
   //stomper.sendMessage("/app/cloud", "hello");
   //takeSample();
 }
@@ -91,6 +91,6 @@ void takeSample() {
 }
 
 void loop() {
-  webSocket.loop(); 
-  takeSample();
+  webSocket.loop();
+  //  takeSample();
 }

@@ -14,6 +14,7 @@
         "stdio.h": "c",
         "cerrno": "c",
         "type_traits": "cpp",
-        "stomeclient.h": "c"
+        "stomeclient.h": "c",
+        "string": "c"
     }
 }

@@ -10,6 +10,10 @@
         "cstdarg": "cpp",
         "cstdio": "cpp",
         "cstdint": "cpp",
-        "stomeclient.h": "c"
+        "stomeclient.h": "c",
+        "datahandler.h": "c",
+        "enrol.h": "c",
+        "stdint.h": "c",
+        "compare": "c"
     }
 }

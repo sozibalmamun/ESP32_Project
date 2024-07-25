@@ -1,27 +1,28 @@
 #include "StomeClient.h"
 
+
+
 #define     TAG             "WEBSOCKET"
 #define     TAGSTOMP        "STOMP_CLIENT"
 #define     TAG_WI_FI       "Wifi Debug"
 #define     TAG_FS          "FS Debug"
-#define     TAG_ENROL       "ENROL"
-#define     DATA_HANDEL     "DATA HANDEL"
+
 
 
 const char *ssid = "myssid";
 const char *pass = "mypassword";
 
-extern volatile uint8_t CmdEnroll;
-extern char personName[20];
-extern uint16_t personId;
+// extern volatile uint8_t CmdEnroll;
+// extern char personName[20];
+// extern uint16_t personId;
 
 // volatile uint8_t  CmdEnroll=IDLEENROL;
 // char personName[20];
 // uint16_t personId;
 
 
-char tcpBuffer[2024]; // Adjust MAX_TRANSACTION_SIZE as needed
-TickType_t erolTimeOut;
+// char tcpBuffer[2024]; // Adjust MAX_TRANSACTION_SIZE as needed
+// TickType_t erolTimeOut;
 
 
 static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
@@ -133,253 +134,25 @@ void wifi_connection(void) {
 //     }
 // }
 
-
-void process_command(const char* buffer) {
-    
-    // if(strlen(buffer)>10)resizeBuffer();
-  // Check if the buffer starts with "cmdEnrol" (case-sensitive)
-    if (strncmp(buffer, "cmdEnrol", strlen("cmdEnrol")) == 0) {
-       
-        init_crc16_table();
-        // Extract the name (assuming space separates name and ID)
-        const char* name_start = buffer + strlen("cmdEnrol") + 1;
-        const char* space_pos = strchr(name_start, ' ');
-        if (space_pos == NULL) {
-            // Handle invalid format (no space)
-            return;
-        }
-        strncpy(personName, name_start, space_pos - name_start);
-        personName[space_pos - name_start] = '\0'; // Null terminate the name string
-
-        // Extract the 4-character hex CRC
-        char crc_str[5];
-        strncpy(crc_str, space_pos + 1, 4);
-        crc_str[4] = '\0'; // Null terminate the CRC string
-        // Convert the hex string to a 16-bit integer
-        uint16_t rxCrc = hex_to_uint16(crc_str);
-
-        // Check for end command string (case-sensitive)
-        const char* end_cmd_pos = strstr(buffer, "cmdEnd");
-        if (end_cmd_pos != NULL) {
-            // Data reception complete, print information
-            printf("Enrollment data received:\n");
-            printf("  - CRC RCV: %x\n",rxCrc);
-
-            uint16_t calculated_crc = crc16(personName, strlen(personName));
-            printf("  - CRC16 CALCULATED: %x\n", calculated_crc);
-
-            if (calculated_crc == rxCrc) {
-                printf("\ncmd enroll flag status %d",CmdEnroll);
-
-                CmdEnroll = ENROLING;
-                erolTimeOut = xTaskGetTickCount();
-                printf("CRC check passed.\n");
-                printf("  - Name: %s\n", personName);
-                memset(tcpBuffer, 0, strlen(tcpBuffer));
-
-                enrolOngoing();
-
-                return;
-            } else {
-                printf("CRC check failed.\n");
-                memset(tcpBuffer, 0, strlen(tcpBuffer));
-                CmdEnroll = IDLEENROL;
-                return;
-            }
-        }else{
-
-        }
-
-    }else if(strncmp(buffer, "cmddl", strlen("cmddl")) == 0){
-
-        ESP_LOGI(TAG_ENROL, "delete ccmd id");
-
-
-
-    }
-}
-
-
-
-void enrolOngoing(void){
-
-            bool cmd=true;
-        while(cmd){
-
-            if(CmdEnroll==ENROLED){
-
-                char personIdStr[12]; // assuming 32-bit uint can be represented in 11 chars + null terminator
-                snprintf(personIdStr, sizeof(personIdStr), "%u", personId);
-                if (!stompSend(personIdStr,PUBLISH_TOPIC)) {
-                    //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
-                } else {
-                    ESP_LOGI(TAG_ENROL, "id sent to client\n");
-                    CmdEnroll = IDLEENROL;
-                    cmd=false;
-                }
-            }else if(CmdEnroll==DUPLICATE){
-
-                ESP_LOGI(TAG_ENROL, "duplicate ack\n");
-
-                // nack for duplicate person
-                if (!stompSend("NDP",PUBLISH_TOPIC)) {
-                    //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
-                } else {
-                    ESP_LOGI(TAG_ENROL, "back to idle mode\n");
-                    CmdEnroll = IDLEENROL;
-                    cmd=false;
-                }
-            }else {
-
-                TickType_t TimeOut = xTaskGetTickCount();
-        
-                if (TimeOut-erolTimeOut> TIMEOUT_15_S ){
-                // ESP_LOGI(TAG_ENROL, "not acking\n");
-                // send(client_sock, "\nwait for..", 8, 0);
-                CmdEnroll = IDLEENROL;
-
-                // nack for time out
-                if (!stompSend("NETO",PUBLISH_TOPIC)) {
-                    //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
-                } else {
-                    ESP_LOGI(TAG_ENROL, "back to idle mode\n");
-                    cmd=false;
-                }
-                printf("\ncmd enroll flag status %d",CmdEnroll);
-                vTaskDelay(10);
-
-                }
-            }
-
-        }
-}
-
-
-
-
-
-
-void resizeBuffer() {
-    char startMarker[] = "cmdEnrol";
-    char endMarker[] = "cmdEnd";
-    
-    char *start = strstr(tcpBuffer, startMarker);
-    char *end = strstr(tcpBuffer, endMarker);
-    
-    if (start && end && end > start) {
-        end += strlen(endMarker); // Move pointer to end of endMarker
-        
-        size_t newSize = end - start;
-        char newBuffer[newSize + 1];
-        strncpy(newBuffer, start, newSize);
-        newBuffer[newSize] = '\0'; // Null terminate the new buffer
-        
-        printf("New Buffer: %s\n", newBuffer);
-        
-        // Optionally, if you want to update the global tcpBuffer with resized data
-        memset(tcpBuffer, 0, sizeof(tcpBuffer));
-        strncpy(tcpBuffer, newBuffer, newSize);
-    } else {
-        printf("Markers not found or in wrong order\n");
-
-    }
-}
-
-// CRC-32 table for faster computation
-void init_crc32_table() {
-    uint32_t polynomial = 0xEDB88320;
-    for (uint32_t i = 0; i < 256; i++) {
-        uint32_t c = i;
-        for (int j = 0; j < 8; j++) {
-            if (c & 1) {
-                c = polynomial ^ (c >> 1);
-            } else {
-                c = c >> 1;
-            }
-        }
-        crc_table[i] = c;
-    }
-}
-
-uint32_t crc32(const char *buf, size_t len) {
-    uint32_t crc = 0xFFFFFFFF;
-    for (size_t i = 0; i < len; i++) {
-        uint8_t byte = buf[i];
-        crc = crc_table[(crc ^ byte) & 0xFF] ^ (crc >> 8);
-    }
-    return crc ^ 0xFFFFFFFF;
-}
-
-
-// CRC-16-CCITT table for faster computation
-
-void init_crc16_table() {
-    uint16_t polynomial = 0x1021;
-    for (uint16_t i = 0; i < 256; i++) {
-        uint16_t c = i << 8;
-        for (int j = 0; j < 8; j++) {
-            if (c & 0x8000) {
-                c = (c << 1) ^ polynomial;
-            } else {
-                c = c << 1;
-            }
-        }
-        crc16_table[i] = c;
-    }
-}
-
-uint16_t crc16(const char *buf, size_t len) {
-    uint16_t crc = 0xFFFF;
-    for (size_t i = 0; i < len; i++) {
-        uint8_t byte = buf[i];
-        crc = crc16_table[((crc >> 8) ^ byte) & 0xFF] ^ (crc << 8);
-    }
-    return crc;
-}
-
-uint16_t hex_to_uint16(const char* hex_str) {
-    uint16_t result=0x0000;
-    sscanf(hex_str, "%4hx", &result);
-    return result;
-}
-
-
 void stomp_client_connect() {
 
-    // char connect_frame[100] ;//"[\"CONNECT\naccept-version:1.1\nheart-beat:10000,10000\n\n\u0000\"]";
-    // snprintf(connect_frame, sizeof(connect_frame), "%s%s%s%s", "[\"CONNECT\\n", "accept-version:1.1\\n", "heart-beat:10000,10000\\n\\n", "\\u0000\"]");
-
-    // char connect_frame[100] = "[\"CONNECT\\naccept-version:1.1\\nheart-beat:10000,10000\\n\\n\\u0000\"]";
-
     char connect_frame[100] = "[\"CONNECT\\naccept-version:1.1\\nhost:grozziieget.zjweiting.com\\n\\n\\u0000\"]";
-
-    // ESP_LOGI(TAGSTOMP, "Sending STOMP CONNECT frame:\n%s", connect_frame);
     esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY);
 }
+
+
 void stomp_client_subscribe(char* topic) {
     
-    //example pack "[\"SUBSCRIBE\\nid:sub-0\\ndestination:/topic/cloud\\nack:client\\n\\n\\u0000\"]";
-
     char connect_frame[100] ;
-
-    // snprintf(connect_frame, sizeof(connect_frame), "%s%s%s%s%s%s%s", "[\"SUBSCRIBE\\n","id:sub-0\\n", "destination:",topic,"\\n", "ack:client\\n\\n", "\\u0000\"]");
-    
     snprintf(connect_frame, sizeof(connect_frame), "[\"SUBSCRIBE\\nid:sub-0\\ndestination:%s\\nack:client\\n\\n\\u0000\"]", topic);
-    // snprintf(connect_frame, sizeof(connect_frame), "[\"SUBSCRIBE\\nid:sub-1\\ndestination:%s\\nack:auto\\n\\n\\u0000\"]", topic);
-
-
-
-    // ESP_LOGI(TAGSTOMP, "Sending STOMP Subscribe frame :\n%s", connect_frame);
     if(esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY)>0)ESP_LOGI(TAGSTOMP, " STOMP Subscribed");
 
 }
 void stomeAck(const char * message){
-// MESSAGE\ndestination:/topic/cloud\ncontent-type:text/plain;charset=UTF-8\nsubscription:sub-0\nmessage-id:556974-45339\ncontent-length:15\n\n{\"message\":\"3\"}\u0000"]+
     char output[20] ;
     const char *jsonStart = strstr(message, "message-id:");
     if (jsonStart) {
         jsonStart += strlen("message-id:"); // Move past the starting point
-
         // Locate the end of the message within the JSON payload
         const char *jsonEnd = strstr(jsonStart, "-");
         if (jsonEnd) {
@@ -392,10 +165,7 @@ void stomeAck(const char * message){
     char connect_frame[100] ;
     snprintf(connect_frame, sizeof(connect_frame), "[\"ACK\\nsubscription:1\\nmessage-id:%s\\ntransaction:tx1\\n\\n\\u0000\"]",output);
     ESP_LOGI(TAGSTOMP, "STOMP ACKING %s\n", connect_frame);
-
     esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY);
-   
-
 }
 
 
@@ -431,7 +201,7 @@ bool stompSend(char * buff, char* topic){
         snprintf(connect_frame, sizeof(connect_frame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, tempFrame);
         // ESP_LOGI(TAGSTOMP, "Sending  connect_frame len :%d\n", strlen(connect_frame));
 
-        ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", connect_frame);
+        // ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", connect_frame);
 
         if(!esp_websocket_client_is_connected(client))return false;
 
@@ -447,15 +217,12 @@ return true;
 }
 
 
-
-
-
 static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
     esp_websocket_event_data_t *data = (esp_websocket_event_data_t *)event_data;
     switch (event_id) {
     case WEBSOCKET_EVENT_CONNECTED:
-        ESP_LOGI(TAG, "WEBSOCKET_EVENT_CONNECTED");
+        // ESP_LOGI(TAG, "WEBSOCKET_EVENT_CONNECTED");
         break;
     case WEBSOCKET_EVENT_DISCONNECTED:
         ESP_LOGI(TAG, "WEBSOCKET_EVENT_DISCONNECTED");
@@ -488,7 +255,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
                 ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
                 stompAppStart();
             }
-            ESP_LOGI(TAG, "WEBSOCKET_free");
+            // ESP_LOGI(TAG, "WEBSOCKET_free");
             memset(data->data_ptr,0,data->data_len);
         }
         break;
@@ -501,7 +268,7 @@ void stomp_client_handle_message( const char *message) {
 
     // ESP_LOGI(TAGSTOMP, "Received STOMP message:\n%s", message);
         if (strstr(message, "CONNECTED")) {
-        ESP_LOGI(TAGSTOMP, "STOMP CONNECTED");
+        // ESP_LOGI(TAGSTOMP, "STOMP CONNECTED");
         // Subscribe to a topic
         stomp_client_subscribe(SUBCRIBE_TOPIC);
     } else if (strstr(message, "MESSAGE")) {
@@ -520,60 +287,6 @@ void stomp_client_handle_message( const char *message) {
 
 }
 
-
-void dataHandele(const char *rx_buffer) {
-
-
-    uint16_t len = strlen(rx_buffer);
-    memset(tcpBuffer,0 ,len);
-    // rx_buffer[len] = '\0';
-    extractMessage(rx_buffer, tcpBuffer);
-
-    // memcpy(&tcpBuffer,&rx_buffer ,len);
-
-    // ESP_LOGI(DATA_HANDEL, "Received STOMP len:%d msg: \n%s", len , rx_buffer);
-
-    ESP_LOGI(DATA_HANDEL, "extracted data \n%s",tcpBuffer);
-    // Process received data here
-    // if(strlen(tcpBuffer)>5)resizeBuffer();
-
-    if (strstr(tcpBuffer, "cmd") && strstr(tcpBuffer, "End") && strstr(tcpBuffer, "End") > strstr(tcpBuffer, "cmd")) {// varifi the cmd pattern
-
-    // if (strstr(tcpBuffer, "cmd") != NULL) {
-
-        process_command(tcpBuffer);
-
-
-
-
-    }else{ 
-
-        ESP_LOGE(TAG_ENROL, "invalid %d", errno);
-        // memcpy(&tcpBuffer[tcpLen],&rx_buffer ,len);
-
-
-        }
-
-}
-
-void extractMessage(const char *buffer, char *output) {
-    // Locate the start of the JSON payload
-
-    //length:40\n\n{\"message\":\"cmdEnrol sozib 8dfb cmdEnd\"}\u0000";
-    const char *jsonStart = strstr(buffer, "message\\\":\\\"");
-    if (jsonStart) {
-        jsonStart += strlen("message\\\":\\\""); // Move past the starting point
-
-        // Locate the end of the message within the JSON payload
-        const char *jsonEnd = strstr(jsonStart, "\\\"}");
-        if (jsonEnd) {
-            // Copy the message content into the output buffer
-            size_t length = jsonEnd - jsonStart;
-            strncpy(output, jsonStart, length);
-            output[length] = '\0'; // Null-terminate the output string
-        }
-    }
-}
 
 void stompAppStart(void)
 {
@@ -616,11 +329,11 @@ void stomp_client_int( stompInfo_cfg_t stompSetup ) {
     websocket_cfg.disable_auto_reconnect = false;
 
 
-    ESP_LOGI(TAG, "Constructed WebSocket URL: %s", websocket_cfg.uri);
+    // ESP_LOGI(TAG, "Constructed WebSocket URL: %s", websocket_cfg.uri);
     // ESP_LOGI(TAG, "Constructed WebSocket PATH: %s", websocket_cfg.path);
 
 
-    ESP_LOGI(TAG, "Initializing global CA store...");
+    // ESP_LOGI(TAG, "Initializing global CA store...");
     ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));
 
 

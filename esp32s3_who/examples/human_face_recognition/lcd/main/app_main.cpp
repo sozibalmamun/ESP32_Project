@@ -7,6 +7,7 @@
 
 #include "StomeClient/StomeClient.h"
 
+
 static QueueHandle_t xQueueAIFrame = NULL;
 static QueueHandle_t xQueueLCDFrame = NULL;
 static QueueHandle_t xQueueKeyState = NULL;

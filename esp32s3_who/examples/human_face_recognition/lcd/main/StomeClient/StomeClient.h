@@ -33,10 +33,6 @@
 
 
 
-
-
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -49,42 +45,40 @@ extern "C" {
 
 
 
-#define IDLEENROL 0
-#define ENROLING 0x01
-#define ENROLED 0x02
-#define DUPLICATE 0x03
+#define IDLEENROL               0
+#define ENROLING                0x01
+#define ENROLED                 0x02
+#define DUPLICATE               0x03
 
-#define TIMEOUT_50_MS         5
-#define TIMEOUT_100_MS        10
-#define TIMEOUT_120_MS        12
-#define TIMEOUT_150_MS        15
-#define TIMEOUT_200_MS        20
-#define TIMEOUT_300_MS        30
-#define TIMEOUT_500_MS        50
-#define TIMEOUT_1000_MS       100
-#define TIMEOUT_2000_MS       200
-#define TIMEOUT_3000_MS       300
-#define TIMEOUT_4000_MS       400
-#define TIMEOUT_5000_MS       500
-#define TIMEOUT_6000_MS       600
-#define TIMEOUT_7000_MS       700
-#define TIMEOUT_9000_MS       900
-#define TIMEOUT_10000_MS      1000
-#define TIMEOUT_12000_MS      1200
-#define TIMEOUT_20000_MS      2000
-#define TIMEOUT_15_S          1500
-#define TIMEOUT_30_S          3000
-#define TIMEOUT_45_S          4500
-#define TIMEOUT_1_MIN         6000
-#define TIMEOUT_2_MIN         12000
-#define TIMEOUT_5_MIN         30000
-#define LISTEN_BACKLOG 1
+#define DELETE_CMD              0X04
+
+
+// #define TIMEOUT_50_MS         5
+// #define TIMEOUT_100_MS        10
+// #define TIMEOUT_120_MS        12
+// #define TIMEOUT_150_MS        15
+// #define TIMEOUT_200_MS        20
+// #define TIMEOUT_300_MS        30
+// #define TIMEOUT_500_MS        50
+// #define TIMEOUT_1000_MS       100
+// #define TIMEOUT_2000_MS       200
+// #define TIMEOUT_3000_MS       300
+// #define TIMEOUT_4000_MS       400
+// #define TIMEOUT_5000_MS       500
+// #define TIMEOUT_6000_MS       600
+// #define TIMEOUT_7000_MS       700
+// #define TIMEOUT_9000_MS       900
+// #define TIMEOUT_10000_MS      1000
+// #define TIMEOUT_12000_MS      1200
+// #define TIMEOUT_20000_MS      2000
+// #define TIMEOUT_15_S          1500
+// #define TIMEOUT_30_S          3000
+// #define TIMEOUT_45_S          4500
+// #define TIMEOUT_1_MIN         6000
+// #define TIMEOUT_2_MIN         12000
+// #define TIMEOUT_5_MIN         30000
+
 #define ACK_SIZE 1024
-
-uint32_t crc_table[256];
-uint16_t crc16_table[256];
-
-
 
 
 
@@ -173,9 +167,6 @@ void stomeAck(const char * message);
 void stomp_client_handle_message( const char *message);
 void stomp_client_int( stompInfo_cfg_t stompSetup );
 void stompAppStart(void);
-void dataHandele(const char *rx_buffer);
-
-
 
 
 // esp_err_t read_wifi_credentials(char *ssid, size_t ssid_len, char *pass, size_t pass_len) ;
@@ -188,20 +179,8 @@ void wifi_connection(void);
 //save wifi info
 // void save_wifi_info(const char* ssid, const char* pass);
 // void read_wifi_info(char* ssid, char* pass);
-void enrolOngoing(void);
 
-// parsing
-void process_command(const char* buffer);
-uint32_t crc32(const char *buf, size_t len);
-void init_crc32_table();
-void init_crc16_table();
-uint16_t crc16(const char *buf, size_t len);
-uint16_t hex_to_uint16(const char* hex_str);
-
-void resizeBuffer(void);
-void extractMessage(const char *buffer, char *output);
-
-
+extern void dataHandele(const char *rx_buffer);
 
 
 #ifdef __cplusplus

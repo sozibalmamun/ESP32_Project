@@ -14,9 +14,12 @@ typedef enum
     DELETE,
 } recognizer_state_t;
 
-#define ENROLING 0x01
-#define ENROLED 0x02
-#define DUPLICATE 0x03
+// CMD handle from server
+#define ENROLING        0x01
+#define ENROLED         0x02
+#define DUPLICATE       0x03
+
+#define DELETE_CMD      0X04
 
 
 

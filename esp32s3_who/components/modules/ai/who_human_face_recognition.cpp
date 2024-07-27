@@ -146,11 +146,20 @@ static void task_process_handler(void *arg)
                    if(CmdEnroll==ENROLING)_gEvent=ENROLL;// 1 for enroling 
                    vTaskDelay(10);
 
-                }else if(CmdEnroll==ENROLING) rgb_printf(frame, RGB565_MASK_GREEN, "Start Enroling");// debug due to display name
+                }else if(CmdEnroll==ENROLING){
+                    
+                    rgb_printf(frame, RGB565_MASK_GREEN, "Start Enroling");// debug due to display name
+
+                }else if(CmdEnroll==DELETE_CMD){// deleting person 
+
+                    // rgb_printf(frame, RGB565_MASK_GREEN, "Start Deliting id%d",personId);// debug due to display name
+                    _gEvent=DELETE;
+                    is_detected = true;
+                    ESP_LOGE("DELETE", "% d ID:",personId );
+
+                }
 
             
-
-
                 if (is_detected)
                 {
                     switch (_gEvent)
@@ -188,14 +197,18 @@ static void task_process_handler(void *arg)
                     }
                     case DELETE:
                         vTaskDelay(10);
-                        recognizer->delete_id(true);
-                        // recognizer->delete_id(2,true);
+                        // recognizer->delete_id(true);
+                        recognizer->delete_id(personId,true);
                       //int delete_id(int id, bool update_flash = false);
 
 
 
-                        ESP_LOGE("DELETE", "% d IDs left", recognizer->get_enrolled_id_num());
+                        // ESP_LOGE("DELETE", "% d IDs left", recognizer->get_enrolled_id_num());
+                        ESP_LOGE("DELETE", "% d IDs left", personId);
+
                         frame_show_state = SHOW_STATE_DELETE;
+                        CmdEnroll=DELETED;
+
                         break;
 
                     default:

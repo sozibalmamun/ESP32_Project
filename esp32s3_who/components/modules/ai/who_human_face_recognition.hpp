@@ -20,6 +20,7 @@ typedef enum
 #define DUPLICATE       0x03
 
 #define DELETE_CMD      0X04
+#define DELETED         0X05
 
 
 

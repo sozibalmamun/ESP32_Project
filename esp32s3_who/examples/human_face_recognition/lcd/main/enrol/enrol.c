@@ -36,6 +36,8 @@
 #define DUPLICATE               0x03
 
 #define DELETE_CMD              0X04
+#define DELETED                 0X05
+
 
 extern volatile uint8_t CmdEnroll;
 extern char personName[20];
@@ -119,64 +121,59 @@ void process_command(const char* buffer) {
 
         strncpy(id, name_start, space_pos - name_start);
         // id[space_pos - name_start] = '\0'; // Null terminate the name string
+        printf("id  char: %s\n",id);
 
         uint16_t tempid= chartou16(id);
         // uint16_t tempid= 1;
 
         printf("id  hex: %x\n",tempid);
 
-        personId= tempid;
-
 
         // Extract the 2-character CRC
         char crc_str[2];
         strncpy(crc_str, space_pos + 1, 2);
 
-        printf("id chr: %s",crc_str);
-
-        // Convert the hex string to a 16-bit integer
-        uint16_t rxCrc = chartou16(crc_str);
-        printf("  - CRC RCV: %x\n",rxCrc);
-
-        uint16_t calculated_crc = getCRC16(tempid);
-        printf("  - CRC16 CALCULATED: %x\n", calculated_crc);
-
-
-
         // Check for end command string (case-sensitive)
-        const char* end_cmd_pos = strstr(buffer, "cmdEnd");
+        const char* end_cmd_pos = strstr(buffer, "cmdend");
         if (end_cmd_pos != NULL) {
             // Data reception complete, print information
-            printf("delete data received:\n");
+            uint16_t rxCrc = chartou16(crc_str);
             printf("  - CRC RCV: %x\n",rxCrc);
 
-            uint16_t calculated_crc = crc16(id, strlen(id));
+            uint16_t calculated_crc = getCRC16(tempid);
             printf("  - CRC16 CALCULATED: %x\n", calculated_crc);
+
+            // personId= tempid;
+            personId= 1;// for test delete person by there id
+
+
+
 
             if (calculated_crc == rxCrc) {
 
-                CmdEnroll = DELETE_CMD;
-                printf("CRC check passed.\n");
-                printf("  - Name: %s\n", id);
+                // CmdEnroll = DELETE_CMD;
+                // printf("CRC check passed.\n");
+                // printf("  - Name: %s\n", id);
+                // idDeletingOngoing();
+
                 return;
             } else {
-                 printf("CRC check failed.\n");
-                // memset(tcpBuffer, 0, strlen(tcpBuffer));
-                // CmdEnroll = IDLEENROL;
+                printf("CRC check failed.\n");
+                
+                CmdEnroll = DELETE_CMD;
+
                 return;
             }
+            idDeletingOngoing();
+
         }
-
-
-
-
     }
 }
 
 
 void enrolOngoing(void){
 
-            bool cmd=true;
+        bool cmd=true;
         while(cmd){
 
             if(CmdEnroll==ENROLED){
@@ -225,4 +222,26 @@ void enrolOngoing(void){
             }
 
         }
+}
+
+void idDeletingOngoing(void){
+    bool cmd=true;
+    while(cmd){
+
+        if(CmdEnroll==DELETED){
+
+            ESP_LOGI(TAG_ENROL, "duplicate ack\n");
+
+            // ack for delete id
+            if (!stompSend("ADI",PUBLISH_TOPIC)) {
+                //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+            } else {
+                ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+                CmdEnroll = IDLEENROL;
+                cmd=false;
+            }
+
+        }
+    }
+
 }

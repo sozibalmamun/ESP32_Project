@@ -45,7 +45,6 @@ uint16_t getCRC16(uint16_t value);
 
 uint16_t hex_to_uint16(const char* hex_str);
 
-
 void u16tochar (uint16_t data, char* buff);
 void u32tochar (uint32_t data, char* buff);
 uint16_t chartou16 (char* data);

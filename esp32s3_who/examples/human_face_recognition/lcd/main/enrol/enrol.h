@@ -25,6 +25,7 @@ extern "C" {
 
 void process_command(const char* buffer);
 void enrolOngoing(void);
+void idDeletingOngoing(void);
 
 extern uint16_t crc16(const char *buf, size_t len);
 extern uint16_t getCRC16(uint16_t value);

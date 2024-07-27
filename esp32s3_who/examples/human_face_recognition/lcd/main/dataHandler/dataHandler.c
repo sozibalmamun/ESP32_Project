@@ -182,7 +182,6 @@ uint32_t chartou32 (char* data) {
 
 void dataHandele(const char *rx_buffer) {
 
-
     uint16_t len = strlen(rx_buffer);
     memset(tcpBuffer,0 ,len);
     // rx_buffer[len] = '\0';
@@ -190,7 +189,7 @@ void dataHandele(const char *rx_buffer) {
 
     // memcpy(&tcpBuffer,&rx_buffer ,len);
 
-    ESP_LOGI(DATA_HANDEL, "Received STOMP len:%d msg: \n%s", len , rx_buffer);
+    // ESP_LOGI(DATA_HANDEL, "Received STOMP len:%d msg: \n%s", len , rx_buffer);
 
     ESP_LOGI(DATA_HANDEL, "extracted data \n%s",tcpBuffer);
     // Process received data here
@@ -224,20 +223,6 @@ void extractMessage(const char *buffer, char *output) {
 
 
     //length:40\n\n{\"message\":\"cmdEnrol sozib 8dfb cmdEnd\"}\u0000";
-    // const char *jsonStart = strstr(buffer, "message\\\":\\\"");
-    // if (jsonStart) {
-    //     jsonStart += strlen("message\\\":\\\""); // Move past the starting point
-
-    //     // Locate the end of the message within the JSON payload
-    //     const char *jsonEnd = strstr(jsonStart, "\\\"}");
-    //     if (jsonEnd) {
-    //         // Copy the message content into the output buffer
-    //         size_t length = jsonEnd - jsonStart;
-    //         strncpy(output, jsonStart, length);
-    //         output[length] = '\0'; // Null-terminate the output string
-    //     }
-    // }
-
     const char *jsonStart = strstr(buffer, "message\\\":\\\"");
     if (jsonStart) {
         jsonStart += strlen("message\\\":\\\""); // Move past the starting point
@@ -251,11 +236,6 @@ void extractMessage(const char *buffer, char *output) {
             output[length] = '\0'; // Null-terminate the output string
         }
     }
-
-
-
-
-
 
 }
 

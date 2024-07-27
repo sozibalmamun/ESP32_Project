@@ -155,7 +155,7 @@ static void task_process_handler(void *arg)
                     // rgb_printf(frame, RGB565_MASK_GREEN, "Start Deliting id%d",personId);// debug due to display name
                     _gEvent=DELETE;
                     is_detected = true;
-                    ESP_LOGE("DELETE", "% d ID:",personId );
+                    // ESP_LOGE("DELETE", "% d ID:",personId );
 
                 }
 
@@ -198,17 +198,20 @@ static void task_process_handler(void *arg)
                     case DELETE:
                         vTaskDelay(10);
                         // recognizer->delete_id(true);
-                        recognizer->delete_id(personId,true);
-                      //int delete_id(int id, bool update_flash = false);
+                        if(recognizer->delete_id(personId,true)== -1 ){// invalide id if "-1"
 
+                            ESP_LOGE("DELETE", "% d IDs invalided", personId);
+                            CmdEnroll=ID_INVALID; // delete done 
 
+                        }else{
+
+                            CmdEnroll=DELETED;// delete done
+                            ESP_LOGE("DELETE", "% d IDs left", personId);
+
+                        }
 
                         // ESP_LOGE("DELETE", "% d IDs left", recognizer->get_enrolled_id_num());
-                        ESP_LOGE("DELETE", "% d IDs left", personId);
-
                         frame_show_state = SHOW_STATE_DELETE;
-                        CmdEnroll=DELETED;
-
                         break;
 
                     default:
@@ -222,7 +225,15 @@ static void task_process_handler(void *arg)
                     switch (frame_show_state)
                     {
                     case SHOW_STATE_DELETE:
-                        rgb_printf(frame, RGB565_MASK_RED, "%d IDs left", recognizer->get_enrolled_id_num());
+                        // rgb_printf(frame, RGB565_MASK_RED, "%d IDs left", recognizer->get_enrolled_id_num());   #define ID_INVALID      0X06
+                        if(CmdEnroll==DELETED){
+
+                            rgb_printf(frame, RGB565_MASK_RED, "%d IDs left", personId);
+
+                        }else rgb_printf(frame, RGB565_MASK_RED, "%d IDs invalided", personId);
+
+                        personId=0;
+
                         break;
 
                     case SHOW_STATE_RECOGNIZE:

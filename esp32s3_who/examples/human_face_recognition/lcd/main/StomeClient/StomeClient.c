@@ -188,8 +188,8 @@ bool stompSend(char * buff, char* topic){
 
             currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame)-1) : memcpy(&tempFrame,&buff[currentIndex],sizeof(tempFrame)-1);
             // memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame));
-            currentIndex+= CHANK_SIZE;
-            buffLen= buffLen - CHANK_SIZE;
+            // currentIndex+= CHANK_SIZE;
+            // buffLen= buffLen - CHANK_SIZE;
         }
         tempFrame[strlen(tempFrame)] = '\0';  // Null-terminate the chunk
 
@@ -207,7 +207,17 @@ bool stompSend(char * buff, char* topic){
 
         if(esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY)!=ESP_OK){
             // ESP_LOGI(TAGSTOMP, "Sending STOMP   sent len :%d  remain   %d\n", currentIndex,buffLen);
-        }else return false;
+
+            currentIndex+= CHANK_SIZE;
+
+            if(buffLen>0)buffLen= buffLen - CHANK_SIZE; // check bufflen 0 or not then calculate 
+
+        }else {
+
+            ESP_LOGI(TAGSTOMP, "Sending STOMP FAIL");
+            return false;
+
+        }
 
     }while(buffLen!=0);
 

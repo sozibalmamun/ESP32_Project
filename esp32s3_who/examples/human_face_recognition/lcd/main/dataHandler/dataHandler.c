@@ -189,7 +189,7 @@ void dataHandele(const char *rx_buffer) {
 
     // memcpy(&tcpBuffer,&rx_buffer ,len);
 
-    // ESP_LOGI(DATA_HANDEL, "Received STOMP len:%d msg: \n%s", len , rx_buffer);
+    ESP_LOGI(DATA_HANDEL, "Received STOMP len:%d msg: \n%s", len , rx_buffer);
 
     ESP_LOGI(DATA_HANDEL, "extracted data \n%s",tcpBuffer);
     // Process received data here

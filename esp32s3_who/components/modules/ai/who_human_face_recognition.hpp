@@ -21,6 +21,9 @@ typedef enum
 
 #define DELETE_CMD      0X04
 #define DELETED         0X05
+#define ID_INVALID      0X06
+
+
 
 
 

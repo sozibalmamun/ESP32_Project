@@ -5,6 +5,9 @@
 #include "event_logic.hpp"
 #include "who_adc_button.h"
 
+#include <esp_efuse.h>
+
+
 #include "StomeClient/StomeClient.h"
 
 
@@ -35,4 +38,12 @@ void app_main()
     wifi_connection();
     // stompAppStart();// move to wifi event
 //-------------wifi end---------------
+}
+
+uint32_t generate_unique_id(void)
+{
+    uint8_t mac[6];
+    esp_efuse_read_block(ESP_EFUSE_BLK3, &mac);
+    uint32_t unique_id = (mac[2] << 24) | (mac[3] << 16) | (mac[4] << 8) | mac[5];
+    return unique_id;
 }

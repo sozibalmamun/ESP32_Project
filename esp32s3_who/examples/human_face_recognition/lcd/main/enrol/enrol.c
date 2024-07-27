@@ -37,6 +37,7 @@
 
 #define DELETE_CMD              0X04
 #define DELETED                 0X05
+#define ID_INVALID              0X06
 
 
 extern volatile uint8_t CmdEnroll;
@@ -161,10 +162,10 @@ void process_command(const char* buffer) {
                 printf("CRC check failed.\n");
                 
                 CmdEnroll = DELETE_CMD;
+                idDeletingOngoing();
 
                 return;
             }
-            idDeletingOngoing();
 
         }
     }
@@ -228,18 +229,33 @@ void idDeletingOngoing(void){
     bool cmd=true;
     while(cmd){
 
-        if(CmdEnroll==DELETED){
 
-            ESP_LOGI(TAG_ENROL, "duplicate ack\n");
+
+        if(CmdEnroll==DELETED){
 
             // ack for delete id
             if (!stompSend("ADI",PUBLISH_TOPIC)) {
-                //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+                ESP_LOGE("ID DELETE", "Error sending ACK");
             } else {
                 ESP_LOGI(TAG_ENROL, "back to idle mode\n");
                 CmdEnroll = IDLEENROL;
                 cmd=false;
             }
+
+        }else if(CmdEnroll==ID_INVALID){
+
+            // nack for delete invalide id
+            if (!stompSend("NDII",PUBLISH_TOPIC)) {
+                ESP_LOGE("ID DELETE", "Error sending NACK");
+            } else {
+                ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+                CmdEnroll = IDLEENROL;
+                cmd=false;
+            }
+
+        }else {
+
+            // ESP_LOGI(TAG_ENROL, "wait for idle mode\n");
 
         }
     }

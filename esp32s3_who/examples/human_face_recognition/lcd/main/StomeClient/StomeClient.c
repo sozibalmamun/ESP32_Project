@@ -36,8 +36,14 @@ static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_b
 
     } else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
         // printf("WiFi lost connection\n");
+
+
+        esp_websocket_client_stop( client);
+
+        vTaskDelay(500);
         esp_wifi_connect();
         printf("Retrying to Connect...\n");
+
     } else if (event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
         ESP_LOGI(TAG_WI_FI, "WiFi got IP: " IPSTR, IP2STR(&event->ip_info.ip));
@@ -86,6 +92,7 @@ void wifi_connection(void) {
 
     // Wi-Fi Connect Phase
     esp_wifi_connect();
+
 }
 
 
@@ -232,11 +239,10 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     esp_websocket_event_data_t *data = (esp_websocket_event_data_t *)event_data;
     switch (event_id) {
     case WEBSOCKET_EVENT_CONNECTED:
-        // ESP_LOGI(TAG, "WEBSOCKET_EVENT_CONNECTED");
+        ESP_LOGI(TAG, "WEBSOCKET_EVENT_CONNECTED");
         break;
     case WEBSOCKET_EVENT_DISCONNECTED:
         ESP_LOGI(TAG, "WEBSOCKET_EVENT_DISCONNECTED");
-
         break;
     case WEBSOCKET_EVENT_DATA:
 

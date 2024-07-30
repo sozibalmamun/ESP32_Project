@@ -22,6 +22,13 @@ static void task_process_handler(void *arg)
         {
             g_lcd.draw_bitmap(0, 0, frame->width, frame->height, (uint16_t *)frame->buf);
 
+
+
+
+
+
+
+
             if (xQueueFrameO)
             {
                 xQueueSend(xQueueFrameO, &frame, portMAX_DELAY);

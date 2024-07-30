@@ -1,0 +1,13 @@
+{
+    "idf.adapterTargetName": "esp32s3",
+    "files.associations": {
+        "cstdint": "cpp",
+        "lvglgrap.h": "c",
+        "stomeclient.h": "c"
+    },
+    "idf.flashType": "UART",
+    "idf.portWin": "COM3",
+    "idf.openOcdConfigs": [
+        "board/esp32s3-builtin.cfg"
+    ]
+}

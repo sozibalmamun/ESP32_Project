@@ -247,6 +247,7 @@ void idDeletingOngoing(void){
             // nack for delete invalide id
             if (!stompSend("NDII",PUBLISH_TOPIC)) {
                 ESP_LOGE("ID DELETE", "Error sending NACK");
+
             } else {
                 ESP_LOGI(TAG_ENROL, "back to idle mode\n");
                 CmdEnroll = IDLEENROL;
@@ -256,6 +257,7 @@ void idDeletingOngoing(void){
         }else {
 
             // ESP_LOGI(TAG_ENROL, "wait for idle mode\n");
+            
 
         }
     }

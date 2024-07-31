@@ -8,12 +8,16 @@
 #include <esp_efuse.h>
 #include "StomeClient/StomeClient.h"
 
+
+
 static QueueHandle_t xQueueAIFrame = NULL;
 static QueueHandle_t xQueueLCDFrame = NULL;
 static QueueHandle_t xQueueKeyState = NULL;
 static QueueHandle_t xQueueEventLogic = NULL;
 // static button_adc_config_t buttons[4] = {{1, 2800, 3000}, {2, 2250, 2450}, {3, 300, 500}, {4, 850, 1050}};
  
+
+
 #define GPIO_BOOT GPIO_NUM_0
 uint32_t generate_unique_id(void);
 
@@ -41,7 +45,6 @@ void app_main()
     nvs_flash_init();
     wifi_connection();
     //-------------wifi end---------------
-
 }
 
 uint32_t generate_unique_id(void)

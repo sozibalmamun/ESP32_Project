@@ -1,28 +1,16 @@
 #pragma once
 
+#include <string.h>
 #include <stdint.h>
-#include "esp_log.h"
-#include "screen_driver.h"
-
-#define BOARD_LCD_MOSI 47
-#define BOARD_LCD_MISO -1
-#define BOARD_LCD_SCK 21
-#define BOARD_LCD_CS 42
-#define BOARD_LCD_DC 41
-#define BOARD_LCD_RST -1
-#define BOARD_LCD_BL 14
-#define BOARD_LCD_PIXEL_CLOCK_HZ (40 * 1000 * 1000)
-#define BOARD_LCD_BK_LIGHT_ON_LEVEL 0
-#define BOARD_LCD_BK_LIGHT_OFF_LEVEL !BOARD_LCD_BK_LIGHT_ON_LEVEL
-#define BOARD_LCD_H_RES 320
-#define BOARD_LCD_V_RES 240
-#define BOARD_LCD_CMD_BITS 8
-#define BOARD_LCD_PARAM_BITS 8
-#define LCD_HOST SPI2_HOST
-//-------------------------------------qrcode
+#include "stdbool.h"
 
 
-
+int offsetsX = 42;
+int offsetsY = 10;
+int screenwidth = 128;
+int screenheight = 64;
+bool QRDEBUG = false;
+int multiply = 1;
 
 const unsigned char neccblk1 = 2;
 const unsigned char neccblk2 = 0;
@@ -164,41 +152,28 @@ const unsigned char g0exp[256] = {
 };
 
 
-
-
-
-//--------------------------------------------
-
-
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-    esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o, const bool return_fb);
+void qrencode(void);
+void create(char* message);
+void render(int x, int y, int color);
+unsigned modnn(unsigned x);
+void initrspoly(unsigned char eclen, unsigned char *genpoly);
+void appendrs(unsigned char *data, unsigned char dlen, 
+              unsigned char *ecbuf, unsigned char eclen, unsigned char *genpoly);
 
-    void app_lcd_draw_wallpaper();
-    void app_lcd_set_color(int color);
-    void app_lcd_draw_wallpaper_try();
+void stringtoqr(void);
+unsigned char ismasked(unsigned char x, unsigned char y);
+void fillframe(void);
+void applymask(unsigned char m);
+unsigned badruns(unsigned char length);
+int badcheck();
+void addfmt(unsigned char masknum);
+void qrencode();
 
-    //-----------------------qrcode
-    void create(char* message);
-    void render(int x, int y, int color);
-    unsigned modnn(unsigned x);
-    void initrspoly(unsigned char eclen, unsigned char *genpoly);
-    void appendrs(unsigned char *data, unsigned char dlen, 
-                unsigned char *ecbuf, unsigned char eclen, unsigned char *genpoly);
-
-    void stringtoqr(void);
-    unsigned char ismasked(unsigned char x, unsigned char y);
-    void fillframe(void);
-    void applymask(unsigned char m);
-    unsigned badruns(unsigned char length);
-    int badcheck();
-    void addfmt(unsigned char masknum);
-    void qrencode();
-    //-------------------------
 
 
 #ifdef __cplusplus

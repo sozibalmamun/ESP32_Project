@@ -8,6 +8,3 @@
  idf_component_register(SRCS "app_main.cpp" "event_logic.cpp" "StomeClient/StomeClient.c" "dataHandler/dataHandler.c" "enrol/enrol.c"
                     INCLUDE_DIRS ".")
 
-
-
-

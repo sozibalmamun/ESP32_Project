@@ -3,6 +3,7 @@
 #include <string.h>
 #include "logo_en_240x240_lcd.h"
 
+
 static const char *TAG = "who_lcd";
 
 static scr_driver_t g_lcd;
@@ -12,6 +13,9 @@ static QueueHandle_t xQueueFrameI = NULL;
 static QueueHandle_t xQueueFrameO = NULL;
 static bool gReturnFB = true;
 
+
+uint8_t wifiStatus=false;
+
 static void task_process_handler(void *arg)
 {
     camera_fb_t *frame = NULL;
@@ -20,7 +24,33 @@ static void task_process_handler(void *arg)
     {
         if (xQueueReceive(xQueueFrameI, &frame, portMAX_DELAY))
         {
+
+
+            // if(!wifiStatus)app_lcd_draw_wallpaper_try();
+
+            // memset(frame->buf, 0, frame->len);
+
+
+
+             // Erase a 50x50 section of the frame buffer from 340*240
+            int start_x = 180;  // Starting x coordinate
+            int start_y = 120;  // Starting y coordinate
+            int erase_width = 120;
+            int erase_height = 120;
+
+            for (int y = start_y; y < start_y + erase_height; y++)
+            {
+                for (int x = start_x; x < start_x + erase_width; x++)
+                {
+                    int index = (y * frame->width + x) * 2; // Assuming 2 bytes per pixel
+                    frame->buf[index] = 0;
+                    frame->buf[index + 1] = 0;
+                }
+            }
+
             g_lcd.draw_bitmap(0, 0, frame->width, frame->height, (uint16_t *)frame->buf);
+
+
 
             if (xQueueFrameO)
             {
@@ -142,4 +172,28 @@ void app_lcd_set_color(int color)
 
         free(buffer);
     }
+}
+
+
+void app_lcd_draw_wallpaper_try()
+{
+    scr_info_t lcd_info;
+    g_lcd.get_info(&lcd_info);
+
+    uint16_t *pixels = (uint16_t *)heap_caps_malloc((logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    if (NULL == pixels)
+    {
+        ESP_LOGE(TAG, "Memory for bitmap is not enough");
+        return;
+    }
+    memcpy(pixels, logo_en_240x240_lcd, (logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t));
+    g_lcd.draw_bitmap(0, 0, logo_en_240x240_lcd_width, logo_en_240x240_lcd_height, (uint16_t *)pixels);
+    heap_caps_free(pixels);
+}
+void qrCode(void){
+
+
+
+
+
 }

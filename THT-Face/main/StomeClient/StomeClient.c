@@ -31,12 +31,15 @@ static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_b
     } else if (event_id == WIFI_EVENT_STA_CONNECTED) {
 
         printf("WiFi CONNECTED\n");
+         wifiStatus=true;
+
         vTaskDelay(500);
         stompAppStart();
 
     } else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
 
         // printf("WiFi lost connection\n");
+        wifiStatus=false;
         esp_websocket_client_stop( client);
         esp_wifi_connect();
         printf("Retrying to Connect...\n");

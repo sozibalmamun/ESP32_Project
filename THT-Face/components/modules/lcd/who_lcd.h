@@ -29,6 +29,8 @@ extern "C"
 
     void app_lcd_draw_wallpaper();
     void app_lcd_set_color(int color);
+    void app_lcd_draw_wallpaper_try();
+
 
 #ifdef __cplusplus
 }

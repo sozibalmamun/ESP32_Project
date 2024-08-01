@@ -152,8 +152,9 @@ const unsigned char N4 = 10;
 
 qrcode_t qrInfo={
 
-    .xOfset = 202,  // Starting x coordinate263
-    .yOfset = 23, // Starting y coordinate 22
+    .xOfset = 265,  // Starting x coordinate 263
+    .yOfset = 22, // Starting y coordinate 22
+    .erase_size =  50,
 
 };
 //-------------------------------------------

@@ -7,14 +7,11 @@
 
 
 typedef struct {
-uint8_t xOfset;
+uint16_t xOfset;
 uint8_t yOfset;
-uint8_t width ;
-uint8_t height;
+uint8_t erase_size;
+
 } qrcode_t;
-
-
-
 
 #ifdef __cplusplus
 extern "C"
@@ -22,8 +19,6 @@ extern "C"
 #endif
 
 void qrencode(void);
-// void createQrcode(char* message);
-// void render(int x, int y, int color);
 
 void createQrcode(char *message ,camera_fb_t *buff);
 void render(int x, int y, int color ,camera_fb_t *buff);

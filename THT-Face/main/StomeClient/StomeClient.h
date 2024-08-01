@@ -151,6 +151,10 @@ extern void dataHandele(const char *rx_buffer);
 // void print_hostname();
 // void set_and_print_hostname();
 
+
+extern uint64_t generate_unique_id(void);
+
+
 extern uint8_t wifiStatus;
 
 

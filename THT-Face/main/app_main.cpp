@@ -5,9 +5,7 @@
 #include "event_logic.hpp"
 #include "who_adc_button.h"
 
-#include <esp_efuse.h>
 #include "StomeClient/StomeClient.h"
-
 
 
 static QueueHandle_t xQueueAIFrame = NULL;
@@ -19,7 +17,6 @@ static QueueHandle_t xQueueEventLogic = NULL;
 
 
 #define GPIO_BOOT GPIO_NUM_0
-uint32_t generate_unique_id(void);
 
 extern "C" 
 void app_main()
@@ -28,10 +25,6 @@ void app_main()
     xQueueLCDFrame = xQueueCreate(2, sizeof(camera_fb_t *));
     xQueueKeyState = xQueueCreate(1, sizeof(int *));
     xQueueEventLogic = xQueueCreate(1, sizeof(int *));
-
-    // uint32_t unique_id = generate_unique_id();
-    // ESP_LOGI("MAIN", "Unique ID: 0x%08x", unique_id);
-
 
     // Continue with other initializations
     // register_button(GPIO_BOOT, xQueueKeyState);
@@ -47,14 +40,3 @@ void app_main()
     //-------------wifi end---------------
 }
 
-uint32_t generate_unique_id(void)
-{
-    uint8_t mac[6];
-    esp_read_mac(mac, ESP_MAC_WIFI_STA);
-    uint32_t unique_id = (mac[2] << 24) | (mac[3] << 16) | (mac[4] << 8) | mac[5];
-
-    ESP_LOGI("mac", "MAC address: %02x:%02x:%02x:%02x:%02x:%02x",
-                 mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-
-    return unique_id;
-}

@@ -5,6 +5,7 @@
 #include "stdbool.h"
 #include "handleQrCode.h"
 
+extern qrcode_t qrInfo;
 
 #ifdef __cplusplus
 extern "C"
@@ -13,7 +14,7 @@ extern "C"
 
 
 void editDisplayBuff(camera_fb_t **buff);
-
+uint64_t generate_unique_id(void);
 
 #ifdef __cplusplus
 }

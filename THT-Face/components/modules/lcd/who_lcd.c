@@ -16,8 +16,6 @@ static QueueHandle_t xQueueFrameO = NULL;
 static bool gReturnFB = true;
 
 
-uint8_t wifiStatus=false;
-
 static void task_process_handler(void *arg)
 {
     camera_fb_t *frame = NULL;
@@ -29,9 +27,6 @@ static void task_process_handler(void *arg)
 
 
             editDisplayBuff(&frame);
-            // create("sozib");
-
-
             g_lcd.draw_bitmap(0, 0, frame->width, frame->height, (uint16_t *)frame->buf);
 
             if (xQueueFrameO)

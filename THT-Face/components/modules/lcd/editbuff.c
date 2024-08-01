@@ -2,40 +2,27 @@
 #include "editbuff.h"
 
 
+uint8_t wifiStatus=false;
+
 void editDisplayBuff(camera_fb_t **buff){
 
-// .xOfset = 202,  // Starting x coordinate
-// .yOfset = 22, // Starting y coordinate
+    if(!wifiStatus){
 
-// .width = 110,
-// .height = 110
-
-// int start_x = 180;  // Starting x coordinate
-// int start_y = 20;  // Starting y coordinate
-// int erase_width = 120;
-// int erase_height = 120;
-
-
-    int start_x = 262;  // Starting x coordinate
-    int start_y = 20;  // Starting y coordinate
-    int erase_width = 50;
-    int erase_height = 50;
-
-
-    for (int y = start_y; y < start_y + erase_height; y++)
-    {
-        for (int x = start_x; x < start_x + erase_width; x++)
+        for (int y = qrInfo.yOfset-3; y < qrInfo.yOfset-3 + qrInfo.erase_size; y++)
         {
-            int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
+            for (int x = qrInfo.xOfset-3; x < qrInfo.xOfset-3 + qrInfo.erase_size; x++)
+            {
+                int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
 
-            (*buff)->buf[index] = 0xff;
-            (*buff)->buf[index + 1] = 0xff;
-        
-
+                (*buff)->buf[index] = 0xff;
+                (*buff)->buf[index + 1] = 0xff;
+            
+            }
         }
+
+        char tempFrame[10] ;
+        snprintf(tempFrame, sizeof(tempFrame), "%09llu", generate_unique_id());
+        createQrcode(tempFrame , *buff);
     }
-
-    createQrcode("sozib" , *buff);
-
 
 }

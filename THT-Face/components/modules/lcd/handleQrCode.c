@@ -126,9 +126,7 @@ const unsigned char neccblk1 = 2;
 const unsigned char neccblk2 = 0;
 const unsigned char datablkw = 78;
 const unsigned char eccblkwid = 20;
-
-const unsigned char VERSION = 7;//7
-
+const unsigned char VERSION = 7;
 const unsigned char ECCLEVEL = 1;
 const unsigned char WD = 45;
 const unsigned char WDB = 6;
@@ -142,7 +140,6 @@ const unsigned char N2 = 3;
 const unsigned char N3 = 40;
 const unsigned char N4 = 10;
 
-
 #define glog(x) __LPM(&g0log[x])
 #define gexp(x) __LPM(&g0exp[x])
 
@@ -153,46 +150,27 @@ const unsigned char N4 = 10;
 
 #define MULTIPLY 1
 
-// const unsigned char neccblk1 = 2;
-// const unsigned char neccblk2 = 0;
-// const unsigned char datablkw = 78;
-// const unsigned char eccblkwid = 20;
-// const unsigned char VERSION = 7;
-// const unsigned char ECCLEVEL = 1;
-// const unsigned char WD = 45;
-// const unsigned char WDB = 6;
-// unsigned char strinbuf[270];
-// unsigned char qrframe[600];
-// unsigned char rlens[46];
-
-// // Badness coefficients.
-// const unsigned char N1 = 3;
-// const unsigned char N2 = 3;
-// const unsigned char N3 = 40;
-// const unsigned char N4 = 10;
-
 qrcode_t qrInfo={
 
-    .xOfset = 182,  // Starting x coordinate220
-    .yOfset = 22, // Starting y coordinate 22
+    .xOfset = 202,  // Starting x coordinate263
+    .yOfset = 23, // Starting y coordinate 22
 
 };
 //-------------------------------------------
-
-
-
-
-
-//-----------------------------------------
-
-
 
 void createQrcode(char *message ,camera_fb_t *buff) {
 
   // create QR code
     memcpy(&strinbuf,&message,strlen(message));
-    qrencode();
+    size_t len = strlen(message);
+    if (len >= sizeof(strinbuf)) {
+        len = sizeof(strinbuf) - 1;
+    }
+    // Copy the message to the buffer and ensure it is null-terminated
+    strncpy((char *)strinbuf, message, 270);
+    strinbuf[len] = '\0'; // Explicitly add null terminator
 
+    qrencode();
   // print QR Code
   for (uint8_t x = 0; x < WD; x+=2) {
     for (uint8_t y = 0; y < WD; y++) {

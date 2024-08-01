@@ -2,7 +2,6 @@
 #include "editbuff.h"
 
 
-
 void editDisplayBuff(camera_fb_t **buff){
 
 // .xOfset = 202,  // Starting x coordinate
@@ -17,10 +16,10 @@ void editDisplayBuff(camera_fb_t **buff){
 // int erase_height = 120;
 
 
-    int start_x = 180;  // Starting x coordinate
+    int start_x = 262;  // Starting x coordinate
     int start_y = 20;  // Starting y coordinate
-    int erase_width = 93;
-    int erase_height = 93;
+    int erase_width = 50;
+    int erase_height = 50;
 
 
     for (int y = start_y; y < start_y + erase_height; y++)

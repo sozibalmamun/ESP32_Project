@@ -24,13 +24,9 @@ extern "C"
 void qrencode(void);
 // void createQrcode(char* message);
 // void render(int x, int y, int color);
+
 void createQrcode(char *message ,camera_fb_t *buff);
 void render(int x, int y, int color ,camera_fb_t *buff);
-
-void render1(int x, int y, int color ,camera_fb_t *buff);
-void render2(int x, int y, int color ,camera_fb_t *buff);
-void render3(int x, int y, int color ,camera_fb_t *buff);
-void render4(int x, int y, int color ,camera_fb_t *buff);
 
 
 unsigned modnn(unsigned x);

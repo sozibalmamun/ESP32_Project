@@ -21,7 +21,8 @@
         "who_lcd.h": "c",
         "logo_en_240x240_lcd.h": "c",
         "stdbool.h": "c",
-        "editbuff.h": "c"
+        "editbuff.h": "c",
+        "logo&icon.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM3",

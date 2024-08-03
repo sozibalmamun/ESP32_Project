@@ -31,7 +31,7 @@ static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_b
     } else if (event_id == WIFI_EVENT_STA_CONNECTED) {
 
         printf("WiFi CONNECTED\n");
-         wifiStatus=true;
+         wifiStatus=0x01;
 
         vTaskDelay(500);
         stompAppStart();
@@ -39,7 +39,7 @@ static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_b
     } else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
 
         // printf("WiFi lost connection\n");
-        wifiStatus=false;
+         wifiStatus=0x00;
         esp_websocket_client_stop( client);
         esp_wifi_connect();
         printf("Retrying to Connect...\n");
@@ -151,7 +151,11 @@ void stomp_client_subscribe(char* topic) {
     
     char connect_frame[100] ;
     snprintf(connect_frame, sizeof(connect_frame), "[\"SUBSCRIBE\\nid:sub-0\\ndestination:%s\\nack:client\\n\\n\\u0000\"]", topic);
-    if(esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY)>0)ESP_LOGI(TAGSTOMP, " STOMP Subscribed");
+    if(esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY)>0){
+        
+        wifiStatus=0x02;
+        ESP_LOGI(TAGSTOMP, " STOMP Subscribed");
+    }
 
 }
 void stomeAck(const char * message){
@@ -371,4 +375,20 @@ uint64_t generate_unique_id(void)
 
     return unique_id;
 
+}
+uint8_t get_wifi_signal_strength() {
+    wifi_ap_record_t ap_info;
+    if (esp_wifi_sta_get_ap_info(&ap_info) == ESP_OK) {
+        int32_t rssi = ap_info.rssi;
+        if (rssi <= -100) {
+            return 0;
+        } else if (rssi >= 0) {
+            return 100;
+        } else {
+            return (uint8_t)((rssi + 100) * 100 / 100);
+        }
+    } else {
+        ESP_LOGE(TAG, "Failed to get Wi-Fi RSSI");
+        return 0;
+    }
 }

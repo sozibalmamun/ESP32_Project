@@ -144,7 +144,7 @@ void wifi_connection(void);
 //save wifi info
 // void save_wifi_info(const char* ssid, const char* pass);
 // void read_wifi_info(char* ssid, char* pass);
-
+extern uint8_t get_wifi_signal_strength();
 extern void dataHandele(const char *rx_buffer);
 // esp_err_t read_wifi_credentials(char *ssid, size_t ssid_len, char *pass, size_t pass_len) ;
 // esp_err_t save_wifi_credentials(const char *ssid, const char *pass) ;

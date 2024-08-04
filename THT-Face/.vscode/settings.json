@@ -24,7 +24,8 @@
         "editbuff.h": "c",
         "logo&icon.h": "c",
         "string": "cpp",
-        "random": "c"
+        "random": "c",
+        "enrol.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM3",

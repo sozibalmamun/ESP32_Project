@@ -1,6 +1,8 @@
 
 #include "editbuff.h"
 #include "logo&Icon.h"
+#include "esp_wifi.h"
+#include "esp_log.h"
 
 #define WIFI_WIDTH 16
 #define WIFI_HEIGHT 15
@@ -10,15 +12,13 @@
 #define CHAR_WIDTH 8//910
 #define CHAR_HEIGHT 10//13
 
-
-
 #define LETTER_WIDTH 8//910
 #define LETTER_HEIGHT 10//13
 
-#define WHITE 0xFFFF//910
-#define RED 0xf8c0//13
-#define GREEN 0x4f00//13
-#define GRAY 0x8410//13
+#define WHITE 0xFFFF
+#define RED 0xf8c0
+#define GREEN 0x4f00
+#define GRAY 0x6b4d
 
 
 
@@ -27,7 +27,7 @@
 
 
 uint8_t wifiStatus;
-// TickType_t sleep;= xTaskGetTickCount()
+TickType_t wifianimationTime=0; 
 
 const uint8_t *font_table[128] = {
 
@@ -61,10 +61,19 @@ void editDisplayBuff(camera_fb_t **buff){
 
     if(wifiStatus==0){
 
+        if( xTaskGetTickCount()-wifianimationTime< 50){
+            iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+12,WIFI_WIDTH,3,&wifiAnimation01,WHITE,*buff);
+        }else if(xTaskGetTickCount()-wifianimationTime> 50 && xTaskGetTickCount()-wifianimationTime< 100){
+            iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+8,WIFI_WIDTH,4,&wifiAnimation02,WHITE,*buff);
+        }else if(xTaskGetTickCount()-wifianimationTime> 100 && xTaskGetTickCount()-wifianimationTime< 150){
+            iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+5,WIFI_WIDTH,5,&wifiAnimation03,WHITE,*buff);
+        }else if(xTaskGetTickCount()-wifianimationTime> 150 && xTaskGetTickCount()-wifianimationTime< 200){
+            iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,6,&wifiAnimation04,WHITE,*buff);
+        }else if(xTaskGetTickCount()-wifianimationTime> 250){
+            wifianimationTime = xTaskGetTickCount();
+        }
 
-        iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcon,GRAY,*buff);
         iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,7,7 ,&noWifiIcon,RED,*buff);
-
 
         for (int y = qrInfo.yOfset-3; y < qrInfo.yOfset-3 + qrInfo.erase_size; y++)
         {
@@ -94,6 +103,7 @@ void editDisplayBuff(camera_fb_t **buff){
             iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,2,7,&disconnectedIcon,RED,*buff);
 
         }
+        wifianimationTime = xTaskGetTickCount();
     }
     writeSn(*buff);
 

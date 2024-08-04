@@ -7,15 +7,45 @@
 #define NETWORK_ICON_POSS_X 295
 #define NETWORK_ICON_POSS_Y 3
 
-#define CHAR_WIDTH 9
-#define CHAR_HEIGHT 16
+#define CHAR_WIDTH 8//910
+#define CHAR_HEIGHT 10//13
+
+
+
+#define LETTER_WIDTH 9//910
+#define LETTER_HEIGHT 10//13
+
+
+
+
 
 uint8_t wifiStatus;
+// TickType_t sleep;= xTaskGetTickCount()
 
-const uint16_t *font_table[128] = {
-    ['A'] = char_A,
-    ['0'] = zero,
-    // Add more characters here...
+const uint8_t *font_table[128] = {
+
+    ['0'] = char_0,
+    ['1'] = char_1,
+    ['2'] = char_2,
+    ['3'] = char_3,
+    ['4'] = char_4,
+    ['5'] = char_5,
+    ['6'] = char_6,
+    ['7'] = char_7,
+    ['8'] = char_8,
+    ['9'] = char_9,
+    ['-'] = charSignNeg
+
+    // ['0'] = char_0,
+    // ['0'] = char_0,
+    // ['0'] = char_0,
+};
+
+const uint16_t *font_table1[128] = {
+
+    ['N'] = char_N,
+    ['S'] = char_S
+
 };
 
 
@@ -54,7 +84,8 @@ void editDisplayBuff(camera_fb_t **buff){
         }
     }
 
-    wrightChar(200,210,'0',*buff);
+    WriteString(200, 210, "SN-0123456789",*buff);
+    // wrightChar(200, 200, '1', *buff);
 
 
 }
@@ -90,93 +121,73 @@ void iconPrint(int x_offset, int y_offset, uint8_t w, uint8_t h,char* logobuff, 
 }
 
 
-// Function to render a character onto the display buffer
-void wrightChar(int x_offset, int y_offset, char c, camera_fb_t *buff) {
-    // Get the bitmap data for the character
-    const uint16_t *char_data = font_table[(uint8_t)c];
-    if (char_data == NULL) {
-        printf("Character '%c' not supported\n", c);
-        return;
-    }
-
-    // Ensure the character fits within the buffer dimensions
-    if (x_offset + CHAR_WIDTH > buff->width || y_offset + CHAR_HEIGHT > buff->height) {
-        printf("Character position out of bounds\n");
-        return;
-    }
-
-    for (int y = 0; y < CHAR_HEIGHT; y++) {
-        for (int x = 0; x < CHAR_WIDTH; x++) {
-            int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
-
-            // Get the pixel value from the character data
-            if (char_data[y] & (1 << (CHAR_WIDTH - 1 - x))) {
-                // Draw black (pixel set)
-                buff->buf[buff_index] = 0xFF;
-                buff->buf[buff_index + 1] = 0xFF;
-            }
-        }
+// Function to render a string onto the display buffer
+void WriteString(int x_offset, int y_offset, const char *str, camera_fb_t *buff) {
+    while (*str) {
+        wrightChar(x_offset, y_offset, *str, buff);
+        x_offset += CHAR_WIDTH; // Move to the next character position
+        str++;
     }
 }
 
-
-// // Function to render a character onto the display buffer
-// void wrightChar(int x_offset, int y_offset, const uint8_t *char_data, camera_fb_t *buff) {
-//     // Ensure the character fits within the buffer dimensions
-//     if (x_offset + CHAR_WIDTH > buff->width || y_offset + CHAR_HEIGHT > buff->height) {
-//         printf("Character position out of bounds\n");
-//         return;
-//     }
-
-//     for (int y = 0; y < CHAR_HEIGHT; y++) {
-//         for (int x = 0; x < CHAR_WIDTH; x++) {
-//             int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
-
-//             // Get the pixel value from the character data
-//             if (char_data[y] & (1 << (CHAR_WIDTH - 1 - x))) {
-//                 // Draw black (pixel set)
-//                 buff->buf[buff_index] = 0xFF;
-//                 buff->buf[buff_index + 1] = 0xFF;
-//             }
-//         }
-//     }
-// }
+// Function to render a character onto the display buffer
+void wrightChar(int x_offset, int y_offset, char c, camera_fb_t *buff) {
+    
 
 
+    if((c>'@'&& c<'[') ||(c>0x60 && c<'{') ){
 
+        // Get the bitmap data for the character
+        const uint16_t *char_data = font_table1[(uint8_t)c];
 
+        if (char_data == NULL) {
+            printf("Character '%c' not supported\n", c);
+            return;
+        }
 
+        // Ensure the character fits within the buffer dimensions
+        if (x_offset + LETTER_WIDTH > buff->width || y_offset + LETTER_WIDTH > buff->height) {
+            printf("Character position out of bounds\n");
+            return;
+        }
 
+        for (int y = 0; y < LETTER_HEIGHT; y++) {
+            for (int x = 0; x <= LETTER_WIDTH; x++) {
 
+                int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
+                // Get the pixel value from the character data
+                if (char_data[y] & (1 << (LETTER_WIDTH-x))) {
+                    // Draw white (pixel set)
+                    buff->buf[buff_index] = 0xFF;
+                    buff->buf[buff_index + 1] = 0xFF;
+                }
+            }
+        }
+    }else{
 
+        // Get the bitmap data for the character
+        const uint8_t *char_data = font_table[(uint8_t)c];
+        if (char_data == NULL) {
+            printf("Character '%c' not supported\n", c);
+            return;
+        }
+        // Ensure the character fits within the buffer dimensions
+        if (x_offset + CHAR_WIDTH > buff->width || y_offset + CHAR_WIDTH > buff->height) {
+            printf("Character position out of bounds\n");
+            return;
+        }
 
+        for (int y = 0; y < CHAR_HEIGHT; y++) {
+            for (int x = 0; x <= CHAR_WIDTH; x++) {
+                int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
+                // Get the pixel value from the character data
+                if (char_data[y] & (1 << (CHAR_WIDTH-x))) {
+                    // Draw white (pixel set)
+                    buff->buf[buff_index] = 0xFF;
+                    buff->buf[buff_index + 1] = 0xFF;
+                }
+            }
+        }
+    }
 
-// void drawChar(uint16_t x, uint16_t y, uint16_t letter, uint16_t color, uint16_t height, uint16_t width)
-// {
-// 	unsigned char row, col, bytes, temp, bytesPerRow;
-	
-// 	y += (uint16_t)(lineNumber * height);
-	
-// 	bytesPerRow = ceil((double)width / 8);
-	
-// 	for (row = 0; row < height; row++ ) {
-		
-// 		for (bytes = bytesPerRow; bytes > 0 ; bytes--) {
-			
-// 			temp = pgm_read_byte_far(line + letter + row * bytesPerRow + bytes - 1 );
-			
-// 			unsigned char bitsExtra = 0;
-// 			if(bytes == bytesPerRow) 
-// 			{
-// 				bitsExtra =  bytesPerRow * 8 - width;
-// 				temp >>= bitsExtra;
-// 			}
-// 			for (col = 0; col < 8 - bitsExtra; col++) {
-// 				if (temp & 0x01) {
-// 					ST7735_drawPixel(x + ( 8 * bytes - bitsExtra ) - col, y + row, color);
-// 				}
-// 				temp >>= 1;
-// 			}
-// 		}
-// 	}
-// }
+}

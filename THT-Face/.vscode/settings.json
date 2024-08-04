@@ -22,7 +22,9 @@
         "logo_en_240x240_lcd.h": "c",
         "stdbool.h": "c",
         "editbuff.h": "c",
-        "logo&icon.h": "c"
+        "logo&icon.h": "c",
+        "string": "cpp",
+        "random": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM3",

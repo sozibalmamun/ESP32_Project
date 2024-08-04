@@ -16,7 +16,7 @@ extern "C"
 
 void editDisplayBuff(camera_fb_t **buff);
 uint64_t generate_unique_id(void);
-void iconPrint(int x_offset, int y_offset, uint8_t w, uint8_t h,char* logobuff, camera_fb_t *buff);
+void iconPrint(int x_offset, int y_offset, uint8_t w, uint8_t h,char* logobuff,uint16_t color ,camera_fb_t *buff);
 uint8_t get_wifi_signal_strength();
 
 void WriteString(int x_offset, int y_offset, const char *str, camera_fb_t *buff);

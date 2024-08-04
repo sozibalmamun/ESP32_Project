@@ -12,8 +12,15 @@
 
 
 
-#define LETTER_WIDTH 9//910
+#define LETTER_WIDTH 8//910
 #define LETTER_HEIGHT 10//13
+
+#define WHITE 0xFFFF//910
+#define RED 0xf8c0//13
+#define GREEN 0x4f00//13
+#define GRAY 0x8410//13
+
+
 
 
 
@@ -54,6 +61,11 @@ void editDisplayBuff(camera_fb_t **buff){
 
     if(wifiStatus==0){
 
+
+        iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcon,GRAY,*buff);
+        iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,7,7 ,&noWifiIcon,RED,*buff);
+
+
         for (int y = qrInfo.yOfset-3; y < qrInfo.yOfset-3 + qrInfo.erase_size; y++)
         {
             for (int x = qrInfo.xOfset-3; x < qrInfo.xOfset-3 + qrInfo.erase_size; x++)
@@ -71,15 +83,15 @@ void editDisplayBuff(camera_fb_t **buff){
         createQrcode(tempFrame , *buff);
     }else 
     {
-        iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcon,*buff);
+        iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcon,WHITE,*buff);
 
         if(wifiStatus==2){
 
-            iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,7,7 ,&connectedIcon,*buff);
+            iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,7,7 ,&connectedIcon,GREEN,*buff);
 
         }else{
 
-            iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,2,7,&disconnectedIcon,*buff);
+            iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,2,7,&disconnectedIcon,RED,*buff);
 
         }
     }
@@ -87,7 +99,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
 }
 
-void iconPrint(int x_offset, int y_offset, uint8_t w, uint8_t h,char* logobuff, camera_fb_t *buff) {
+void iconPrint(int x_offset, int y_offset, uint8_t w, uint8_t h,char* logobuff,uint16_t color ,camera_fb_t *buff) {
     // Ensure logo fits within the buffer dimensions
     if (x_offset + w > buff->width || y_offset + h > buff->height) {
         printf("Logo position out of bounds\n");
@@ -103,14 +115,8 @@ void iconPrint(int x_offset, int y_offset, uint8_t w, uint8_t h,char* logobuff, 
             // Copy the logo pixel to the buffer
             uint8_t pixel = logobuff[logo_index];
             if(pixel==0){// white color
-            buff->buf[buff_index] = 0xff;
-            buff->buf[buff_index + 1] = 0xff;
-            }else if(pixel==2){// red color //
-            buff->buf[buff_index] = 0xc0;
-            buff->buf[buff_index + 1] = 0x00;
-            }else if(pixel==3){//green color 0x3fe5
-            buff->buf[buff_index] = 0x3f;
-            buff->buf[buff_index + 1] = 0xe5;
+            buff->buf[buff_index] = color>>8;
+            buff->buf[buff_index + 1] = color&0xff;
             }
 
         }
@@ -120,7 +126,10 @@ void writeSn(camera_fb_t *buff){
 
     char tempFrame[13] ;
     snprintf(tempFrame, sizeof(tempFrame), "SN-%09llu", generate_unique_id());
-    WriteString(200, 215,tempFrame,buff);
+
+    uint16_t len = (buff->width-(strlen(tempFrame)*LETTER_WIDTH))-3;//x start poss
+
+    WriteString(len, buff->height-(LETTER_HEIGHT+3),tempFrame,buff);
 }
 
 // Function to render a string onto the display buffer
@@ -135,8 +144,6 @@ void WriteString(int x_offset, int y_offset, const char *str, camera_fb_t *buff)
 // Function to render a character onto the display buffer
 void wrightChar(int x_offset, int y_offset, char c, camera_fb_t *buff) {
     
-
-
     if((c>'@'&& c<'[') ||(c>0x60 && c<'{') ){
 
         // Get the bitmap data for the character

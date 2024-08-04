@@ -83,10 +83,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
         }
     }
-
-    WriteString(200, 210, "SN-0123456789",*buff);
-    // wrightChar(200, 200, '1', *buff);
-
+    writeSn(*buff);
 
 }
 
@@ -119,7 +116,12 @@ void iconPrint(int x_offset, int y_offset, uint8_t w, uint8_t h,char* logobuff, 
         }
     }
 }
+void writeSn(camera_fb_t *buff){
 
+    char tempFrame[13] ;
+    snprintf(tempFrame, sizeof(tempFrame), "SN-%09llu", generate_unique_id());
+    WriteString(200, 215,tempFrame,buff);
+}
 
 // Function to render a string onto the display buffer
 void WriteString(int x_offset, int y_offset, const char *str, camera_fb_t *buff) {

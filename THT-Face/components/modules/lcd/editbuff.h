@@ -21,6 +21,7 @@ uint8_t get_wifi_signal_strength();
 
 void WriteString(int x_offset, int y_offset, const char *str, camera_fb_t *buff);
 void wrightChar(int x_offset, int y_offset, char c, camera_fb_t *buff);
+void writeSn(camera_fb_t *buff);
 
 #ifdef __cplusplus
 }

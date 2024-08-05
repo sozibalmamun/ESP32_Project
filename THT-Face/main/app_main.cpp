@@ -4,10 +4,12 @@
 #include "who_button.h"
 #include "event_logic.hpp"
 #include "who_adc_button.h"
-#include "StomeClient/StomeClient.h"
+// #include "StomeClient/StomeClient.h"
+#include "Conectivity/Conectivity.h"
 #include "esp_log.h"
 #include "esp_system.h"
 #include "nvs_flash.h"
+
 
 static const char *TAG = "app_main";
 

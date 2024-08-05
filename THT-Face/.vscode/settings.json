@@ -25,7 +25,8 @@
         "logo&icon.h": "c",
         "string": "cpp",
         "random": "c",
-        "enrol.h": "c"
+        "enrol.h": "c",
+        "conectivity.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM3",

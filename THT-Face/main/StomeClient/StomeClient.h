@@ -2,26 +2,18 @@
 #define STOMECLIENT_H
 
 #include <stdio.h>
-#include "esp_wifi.h"
-#include "esp_system.h"
-#include "nvs_flash.h"
-#include "esp_event.h"
-// #include "protocol_examples_common.h"
+#include <string.h>          // For handling strings
+#include "stdbool.h"
+#include <sys/unistd.h>
+#include <sys/stat.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 #include "freertos/event_groups.h"
-
-#include "esp_log.h"
 #include "esp_websocket_client.h"
-#include "esp_event.h"
 
 
-#include <string.h>          // For handling strings
-#include "stdbool.h"
-#include <sys/unistd.h>
-#include <sys/stat.h>
 #include "lwip/err.h"        // Light weight IP packets error handling
 #include "lwip/sys.h"        // System applications for lightweight IP apps
 #include "nvs.h"
@@ -31,14 +23,13 @@
 #include "lwip/dns.h"
 #include "lwip/netdb.h"
 
-
+#include "esp_log.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-#define     DEVICE_NAME         "THT-Face"
 #define     PUBLISH_TOPIC       "/app/cloud"
 #define     SUBCRIBE_TOPIC       "/topic/cloud"
 
@@ -130,6 +121,9 @@ const char echo_org_ssl_ca_cert[]  = \
 "v4wa90UCOn1j6r7WhMmX3eT3Gsdj3WMe9bYD0AFuqa6MDyjIeXq08mVGraXiw73s\n" \
 "Zale8OMckn/BU3O/3aFNLHLfET2H2hT6Wb3nwxjpLIfXmSVcVd8A58XH0g==\n" \
 "-----END CERTIFICATE-----\n";
+extern uint8_t wifiStatus;
+
+
 
 void stomp_client_connect(void);
 void stomp_client_subscribe(char* topic);
@@ -138,24 +132,8 @@ void stomeAck(const char * message);
 void stomp_client_handle_message( const char *message);
 void stomp_client_int( stompInfo_cfg_t stompSetup );
 void stompAppStart(void);
-void wifi_connection(void);
-
-
-//save wifi info
-// void save_wifi_info(const char* ssid, const char* pass);
-// void read_wifi_info(char* ssid, char* pass);
-extern uint8_t get_wifi_signal_strength();
 extern void dataHandele(const char *rx_buffer);
-// esp_err_t read_wifi_credentials(char *ssid, size_t ssid_len, char *pass, size_t pass_len) ;
-// esp_err_t save_wifi_credentials(const char *ssid, const char *pass) ;
-// void print_hostname();
-// void set_and_print_hostname();
 
-
-extern uint64_t generate_unique_id(void);
-
-
-extern uint8_t wifiStatus;
 
 
 #ifdef __cplusplus

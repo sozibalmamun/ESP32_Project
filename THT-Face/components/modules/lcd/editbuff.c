@@ -6,6 +6,9 @@
 
 #define WIFI_WIDTH 16
 #define WIFI_HEIGHT 15
+#define BLE_W 11
+#define BLE_H 15
+
 #define NETWORK_ICON_POSS_X 295
 #define NETWORK_ICON_POSS_Y 3
 
@@ -19,6 +22,7 @@
 #define RED 0xf8c0
 #define GREEN 0x4f00
 #define GRAY 0x6b4d
+#define BLACK 0x0000
 
 
 
@@ -62,13 +66,19 @@ void editDisplayBuff(camera_fb_t **buff){
     if(wifiStatus==0){
 
         if( xTaskGetTickCount()-wifianimationTime< 50){
+
+            iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
+            
             iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+12,WIFI_WIDTH,3,&wifiAnimation01,WHITE,*buff);
         }else if(xTaskGetTickCount()-wifianimationTime> 50 && xTaskGetTickCount()-wifianimationTime< 100){
             iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+8,WIFI_WIDTH,4,&wifiAnimation02,WHITE,*buff);
         }else if(xTaskGetTickCount()-wifianimationTime> 100 && xTaskGetTickCount()-wifianimationTime< 150){
+            iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
             iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+5,WIFI_WIDTH,5,&wifiAnimation03,WHITE,*buff);
         }else if(xTaskGetTickCount()-wifianimationTime> 150 && xTaskGetTickCount()-wifianimationTime< 200){
+
             iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,6,&wifiAnimation04,WHITE,*buff);
+
         }else if(xTaskGetTickCount()-wifianimationTime> 250){
             wifianimationTime = xTaskGetTickCount();
         }
@@ -90,6 +100,9 @@ void editDisplayBuff(camera_fb_t **buff){
         char tempFrame[10] ;
         snprintf(tempFrame, sizeof(tempFrame), "%09llu", generate_unique_id());
         createQrcode(tempFrame , *buff);
+        writeSn(*buff);
+
+
     }else 
     {
         iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcon,WHITE,*buff);
@@ -105,7 +118,6 @@ void editDisplayBuff(camera_fb_t **buff){
         }
         wifianimationTime = xTaskGetTickCount();
     }
-    writeSn(*buff);
 
 }
 
@@ -159,11 +171,6 @@ void wrightChar(int x_offset, int y_offset, char c, camera_fb_t *buff) {
         // Get the bitmap data for the character
         const uint16_t *char_data = font_table1[(uint8_t)c];
 
-        if (char_data == NULL) {
-            printf("Character '%c' not supported\n", c);
-            return;
-        }
-
         // Ensure the character fits within the buffer dimensions
         if (x_offset + LETTER_WIDTH > buff->width || y_offset + LETTER_WIDTH > buff->height) {
             printf("Character position out of bounds\n");
@@ -186,10 +193,6 @@ void wrightChar(int x_offset, int y_offset, char c, camera_fb_t *buff) {
 
         // Get the bitmap data for the character
         const uint8_t *char_data = font_table[(uint8_t)c];
-        if (char_data == NULL) {
-            printf("Character '%c' not supported\n", c);
-            return;
-        }
         // Ensure the character fits within the buffer dimensions
         if (x_offset + CHAR_WIDTH > buff->width || y_offset + CHAR_WIDTH > buff->height) {
             printf("Character position out of bounds\n");

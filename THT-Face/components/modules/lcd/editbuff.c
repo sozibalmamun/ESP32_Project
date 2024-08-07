@@ -24,16 +24,35 @@
 #define GRAY 0x6b4d
 #define BLACK 0x0000
 
-
-
-
-
-
+#define ZERO "abcdef"
+#define ONE "bc"
+#define TWO "abged"
+#define THREE "abcdg"
+#define FOUR "bcfg"
+#define FIVE "acdfg"
+#define SIX "acdefg"
+#define SEVEEN "abc"
+#define EIGHT "abcdefg"
+#define NINE "abcdfg"
 
 uint8_t wifiStatus;
 TickType_t wifianimationTime=0; 
 
-const uint8_t *font_table[128] = {
+
+const uint32_t *segment_table1[]={
+    ['a']=a,
+    ['d']=d,
+    ['g']=g
+
+};
+const uint8_t *segment_table2[]={
+    ['b']=b,
+    ['c']=c,
+    ['e']=e,
+    ['f']=f
+};
+
+const uint8_t *font_table[] = {
 
     ['0'] = char_0,
     ['1'] = char_1,
@@ -52,7 +71,7 @@ const uint8_t *font_table[128] = {
     // ['0'] = char_0,
 };
 
-const uint16_t *font_table1[128] = {
+const uint16_t *font_table1[] = {
 
     ['N'] = char_N,
     ['S'] = char_S
@@ -62,61 +81,67 @@ const uint16_t *font_table1[128] = {
 
 void editDisplayBuff(camera_fb_t **buff){
 
+    if(true){
 
-    if(wifiStatus==0){
+        segmentTime(*buff);
 
-        if( xTaskGetTickCount()-wifianimationTime< 50){
+    }else {
 
-            iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
-            
-            iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+12,WIFI_WIDTH,3,&wifiAnimation01,WHITE,*buff);
-        }else if(xTaskGetTickCount()-wifianimationTime> 50 && xTaskGetTickCount()-wifianimationTime< 100){
-            iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+8,WIFI_WIDTH,4,&wifiAnimation02,WHITE,*buff);
-        }else if(xTaskGetTickCount()-wifianimationTime> 100 && xTaskGetTickCount()-wifianimationTime< 150){
-            iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
-            iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+5,WIFI_WIDTH,5,&wifiAnimation03,WHITE,*buff);
-        }else if(xTaskGetTickCount()-wifianimationTime> 150 && xTaskGetTickCount()-wifianimationTime< 200){
+        if(wifiStatus==0){
 
-            iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,6,&wifiAnimation04,WHITE,*buff);
+            if( xTaskGetTickCount()-wifianimationTime< 50){
 
-        }else if(xTaskGetTickCount()-wifianimationTime> 250){
+                iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
+                
+                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+12,WIFI_WIDTH,3,&wifiAnimation01,WHITE,*buff);
+            }else if(xTaskGetTickCount()-wifianimationTime> 50 && xTaskGetTickCount()-wifianimationTime< 100){
+                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+8,WIFI_WIDTH,4,&wifiAnimation02,WHITE,*buff);
+            }else if(xTaskGetTickCount()-wifianimationTime> 100 && xTaskGetTickCount()-wifianimationTime< 150){
+                iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
+                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+5,WIFI_WIDTH,5,&wifiAnimation03,WHITE,*buff);
+            }else if(xTaskGetTickCount()-wifianimationTime> 150 && xTaskGetTickCount()-wifianimationTime< 200){
+
+                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,6,&wifiAnimation04,WHITE,*buff);
+
+            }else if(xTaskGetTickCount()-wifianimationTime> 250){
+                wifianimationTime = xTaskGetTickCount();
+            }
+
+            iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,7,7 ,&noWifiIcon,RED,*buff);
+
+            for (int y = qrInfo.yOfset-3; y < qrInfo.yOfset-3 + qrInfo.erase_size; y++)
+            {
+                for (int x = qrInfo.xOfset-3; x < qrInfo.xOfset-3 + qrInfo.erase_size; x++)
+                {
+                    int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
+
+                    (*buff)->buf[index] = 0xff;
+                    (*buff)->buf[index + 1] = 0xff;
+                
+                }
+            }
+
+            char tempFrame[10] ;
+            snprintf(tempFrame, sizeof(tempFrame), "%09llu", generate_unique_id());
+            createQrcode(tempFrame , *buff);
+            writeSn(*buff);
+
+
+        }else 
+        {
+            iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcon,WHITE,*buff);
+
+            if(wifiStatus==2){
+
+                iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,7,7 ,&connectedIcon,GREEN,*buff);
+
+            }else{
+
+                iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,2,7,&disconnectedIcon,RED,*buff);
+
+            }
             wifianimationTime = xTaskGetTickCount();
         }
-
-        iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,7,7 ,&noWifiIcon,RED,*buff);
-
-        for (int y = qrInfo.yOfset-3; y < qrInfo.yOfset-3 + qrInfo.erase_size; y++)
-        {
-            for (int x = qrInfo.xOfset-3; x < qrInfo.xOfset-3 + qrInfo.erase_size; x++)
-            {
-                int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
-
-                (*buff)->buf[index] = 0xff;
-                (*buff)->buf[index + 1] = 0xff;
-            
-            }
-        }
-
-        char tempFrame[10] ;
-        snprintf(tempFrame, sizeof(tempFrame), "%09llu", generate_unique_id());
-        createQrcode(tempFrame , *buff);
-        writeSn(*buff);
-
-
-    }else 
-    {
-        iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcon,WHITE,*buff);
-
-        if(wifiStatus==2){
-
-            iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,7,7 ,&connectedIcon,GREEN,*buff);
-
-        }else{
-
-            iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,2,7,&disconnectedIcon,RED,*buff);
-
-        }
-        wifianimationTime = xTaskGetTickCount();
     }
 
 }
@@ -153,6 +178,7 @@ void writeSn(camera_fb_t *buff){
 
     WriteString(len, buff->height-(LETTER_HEIGHT+3),tempFrame,buff);
 }
+
 
 // Function to render a string onto the display buffer
 void WriteString(int x_offset, int y_offset, const char *str, camera_fb_t *buff) {
@@ -204,6 +230,215 @@ void wrightChar(int x_offset, int y_offset, char c, camera_fb_t *buff) {
                 int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
                 // Get the pixel value from the character data
                 if (char_data[y] & (1 << (CHAR_WIDTH-x))) {
+                    // Draw white (pixel set)
+                    buff->buf[buff_index] = 0xFF;
+                    buff->buf[buff_index + 1] = 0xFF;
+                }
+            }
+        }
+    }
+
+}
+
+
+
+void segmentTime(camera_fb_t *buff){
+
+            for (int y = 0; y < 240; y++)
+            {
+                for (int x = 0; x < 320; x++)
+                {
+                    int index = (y * buff->width + x) * 2; // Assuming 2 bytes per pixel
+                    buff->buf[index] = 0;
+                    buff->buf[index + 1] = 0;
+                }
+            }
+// input time in here
+    uint8_t tempHours= 05;
+    uint8_t tempMinuts= 9;
+
+
+
+#define segmentBaseX  93
+#define segmentBaseY  40
+// write hours
+    if(tempHours<=9){
+    timeDisplay( segmentBaseX, segmentBaseY, 0 , buff);
+    timeDisplay( segmentBaseX+44, segmentBaseY, tempHours , buff);
+    }else { 
+    timeDisplay( segmentBaseX, segmentBaseY, tempHours/10 , buff);
+    timeDisplay( segmentBaseX+44, segmentBaseY, tempHours%10 , buff);
+    }
+
+
+// write minuts
+    if(tempMinuts<=9){
+        timeDisplay( segmentBaseX+100, segmentBaseY, 0 , buff);
+        timeDisplay( segmentBaseX+144, segmentBaseY, tempMinuts , buff);
+    }else if(tempMinuts==0){
+        timeDisplay( segmentBaseX+100, segmentBaseY, 0 , buff);
+        timeDisplay( segmentBaseX+144, segmentBaseY, 0 , buff);
+    }else{ 
+        timeDisplay( segmentBaseX+100, segmentBaseY, tempMinuts / 10 , buff);
+        timeDisplay( segmentBaseX+144, segmentBaseY, tempMinuts % 10 , buff);
+    }
+
+}
+
+void timeDisplay(uint8_t x, uint8_t y, uint8_t value,camera_fb_t *buff){
+    
+    switch(value){
+
+        case 0:
+            WriteTimeString(x,y,ZERO,buff);
+        break;
+
+        case 1:
+            WriteTimeString(x,y,ONE,buff);
+        break;
+        
+        case 2:
+            WriteTimeString(x,y,TWO,buff);
+        break;
+
+        case 3:
+            WriteTimeString(x,y,THREE,buff);
+        break;
+
+        case 4:
+            WriteTimeString(x,y,FOUR,buff);
+        break;
+
+        case 5:
+            WriteTimeString(x,y,FIVE,buff);
+        break;
+
+        case 6:
+            WriteTimeString(x,y,SIX,buff);
+        break;
+
+        case 7:
+            WriteTimeString(x,y,SEVEEN,buff);
+        break;
+
+        case 8:
+            WriteTimeString(x,y,EIGHT,buff);
+        break;
+
+        case 9:
+            WriteTimeString(x,y,NINE,buff);
+        break;
+
+        default:
+        break;
+        
+    }
+}
+
+/*
+#define segmentBaseX  20
+#define segmentBaseY  20
+    wrighSingle7segment(segmentBaseX, segmentBaseY,'a',buff);
+    wrighSingle7segment(segmentBaseX+23, segmentBaseY+2,'b',buff);
+    wrighSingle7segment(segmentBaseX+23, segmentBaseY+30,'c',buff);
+    wrighSingle7segment(segmentBaseX, segmentBaseY+52,'d',buff);
+    wrighSingle7segment(segmentBaseX-3, segmentBaseY+30,'e',buff);
+    wrighSingle7segment(segmentBaseX-3, segmentBaseY+2,'f',buff);
+    wrighSingle7segment(segmentBaseX+1, segmentBaseY+26,'g',buff);
+*/
+
+void WriteTimeString(int x_offset, int y_offset, const char *str, camera_fb_t *buff) {
+
+    while (*str) {
+
+        switch (*str)
+        {
+
+        case 'a':
+            wrighSingle7segment(x_offset, y_offset,'a',buff);
+            break;
+
+        case 'b':
+            wrighSingle7segment(x_offset+23, y_offset+2,'b',buff);
+            break; 
+
+        case 'c':
+            wrighSingle7segment(x_offset+23, y_offset+30,'c',buff);
+            break;
+
+        case 'd':
+            wrighSingle7segment(x_offset, y_offset+52,'d',buff);
+            break;
+
+        case 'e':
+            wrighSingle7segment(x_offset-3, y_offset+30,'e',buff);
+            break;
+
+        case 'f':
+            wrighSingle7segment(x_offset-3, y_offset+2,'f',buff);
+            break;
+        
+        case 'g':
+            wrighSingle7segment(x_offset+1, y_offset+26,'g',buff);
+            break;
+        
+        default:
+            break;
+
+        }
+        str++;
+    }
+}
+// Function to render a character onto the display buffer a
+void wrighSingle7segment(int x_offset, int y_offset, char c, camera_fb_t *buff) {
+    
+    if(c=='a'|| c=='g'||c=='d'){
+
+#define HEIGHT_32 6
+#define WIDTH_32 30
+
+        // Get the bitmap data for the character
+        const uint32_t *char_data = segment_table1[(uint8_t)c];
+
+        // Ensure the character fits within the buffer dimensions
+        if (x_offset + WIDTH_32 > buff->width || y_offset + WIDTH_32 > buff->height) {
+            printf("Character position out of bounds\n");
+            return;
+        }
+
+
+
+        for (int y = 0; y < HEIGHT_32; y++) {
+            for (int x = 0; x <= WIDTH_32; x++) {
+
+                int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
+                // Get the pixel value from the character data
+                if (char_data[y] & (1 << (WIDTH_32-x))) {
+                    // Draw white (pixel set)
+                    buff->buf[buff_index] = 0xFF;
+                    buff->buf[buff_index + 1] = 0xFF;
+                }
+            }
+        }
+
+    }else{
+
+#define HEIGHT_8 26
+#define WIDTH_8 8
+
+        // Get the bitmap data for the character
+        const uint8_t *char_data = segment_table2[(uint8_t)c];
+        // Ensure the character fits within the buffer dimensions
+        if (x_offset + WIDTH_8 > buff->width || y_offset + WIDTH_8 > buff->height) {
+            printf("Character position out of bounds\n");
+            return;
+        }
+
+        for (int y = 0; y < HEIGHT_8; y++) {
+            for (int x = 0; x <= WIDTH_8; x++) {
+                int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
+                // Get the pixel value from the character data
+                if (char_data[y] & (1 << (WIDTH_8-x))) {
                     // Draw white (pixel set)
                     buff->buf[buff_index] = 0xFF;
                     buff->buf[buff_index + 1] = 0xFF;

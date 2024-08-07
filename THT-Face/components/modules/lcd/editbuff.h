@@ -23,6 +23,13 @@ void WriteString(int x_offset, int y_offset, const char *str, camera_fb_t *buff)
 void wrightChar(int x_offset, int y_offset, char c, camera_fb_t *buff);
 void writeSn(camera_fb_t *buff);
 
+void segmentTime(camera_fb_t *buff);
+void wrighSingle7segment(int x_offset, int y_offset, char c, camera_fb_t *buff);
+void WriteTimeString(int x_offset, int y_offset, const char *str, camera_fb_t *buff);
+void timeDisplay(uint8_t x, uint8_t y, uint8_t value,camera_fb_t *buff);
+
+
+
 #ifdef __cplusplus
 }
 #endif

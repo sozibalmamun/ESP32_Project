@@ -153,3 +153,68 @@ void wifi_connection(void) {
 //         ESP_LOGE(TAG_WI_FI, "Failed to get hostname: %s", esp_err_to_name(err));
 //     }
 // }
+
+// void bt_init(void)
+// {
+//     esp_err_t ret;
+//     // Initialize NVS for Bluetooth
+//     ret = nvs_flash_init();
+//     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+//         ESP_ERROR_CHECK(nvs_flash_erase());
+//         ret = nvs_flash_init();
+//     }
+//     ESP_ERROR_CHECK(ret);
+
+//     // Initialize the BT controller to allocate task and other resources.
+//     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
+//     ret = esp_bt_controller_init(&bt_cfg);
+//     if (ret) {
+//         ESP_LOGE(BT_TAG, "%s initialize controller failed\n", __func__);
+//         return;
+//     }
+
+//     // Enable BT controller
+//     ret = esp_bt_controller_enable(ESP_BT_MODE_BTDM);
+//     if (ret) {
+//         ESP_LOGE(BT_TAG, "%s enable controller failed\n", __func__);
+//         return;
+//     }
+
+//     // Initialize and enable Bluedroid stack
+//     ret = esp_bluedroid_init();
+//     if (ret) {
+//         ESP_LOGE(BT_TAG, "%s initialize bluedroid failed\n", __func__);
+//         return;
+//     }
+
+//     ret = esp_bluedroid_enable();
+//     if (ret) {
+//         ESP_LOGE(BT_TAG, "%s enable bluedroid failed\n", __func__);
+//         return;
+//     }
+// }
+
+// void gatts_profile_event_handler(esp_gatts_cb_event_t event,
+//                                  esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
+//     switch (event) {
+//         case ESP_GATTS_WRITE_EVT: {
+//             if (param->write.handle == /* handle of your characteristic */) {
+//                 // Assuming credentials are sent in the format "SSID:PASSWORD"
+//                 char received_data[128];
+//                 memcpy(received_data, param->write.value, param->write.len);
+//                 received_data[param->write.len] = '\0';
+
+//                 char *ssid = strtok(received_data, ":");
+//                 char *password = strtok(NULL, ":");
+
+//                 if (ssid && password) {
+//                     ESP_LOGI(GATTS_TAG, "Received SSID: %s, Password: %s", ssid, password);
+//                     // Connect to WiFi with the received credentials
+//                     wifi_init_sta(ssid, password);
+//                 }
+//             }
+//             break;
+//         }
+//         // Handle other events
+//     }
+// }

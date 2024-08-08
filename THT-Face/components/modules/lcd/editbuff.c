@@ -13,10 +13,10 @@
 #define NETWORK_ICON_POSS_X 295
 #define NETWORK_ICON_POSS_Y 3
 
-#define CHAR_WIDTH 8//910
-#define CHAR_HEIGHT 10//13
+#define DIGIT_WIDTH 8//910
+#define DIGIT_HEIGHT 10//13
 
-#define LETTER_WIDTH 8//910
+#define LETTER_WIDTH 9//910
 #define LETTER_HEIGHT 10//13
 
 #define WHITE 0xFFFF
@@ -80,24 +80,37 @@ const uint16_t *font_table1[] = {
 
     ['N'] = char_N,
     ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S,
-    ['S'] = char_S
+    ['T'] = char_T,
+    ['F'] = char_F,
+    ['W'] = char_W,
+    ['M'] = char_M,
+
+    ['a'] = char_a,
+    ['b'] = char_b,
+    ['c'] = char_c,
+    ['d'] = char_d,
+    ['e'] = char_e,
+    ['f'] = char_f,
+    ['g'] = char_g,
+    ['h'] = char_h,
+    ['i'] = char_i,
+    ['j'] = char_j,
+    ['k'] = char_k,
+    ['l'] = char_l,
+    ['m'] = char_m,
+    ['n'] = char_n,
+    ['o'] = char_o,
+    ['p'] = char_p,
+    ['q'] = char_q,
+    ['r'] = char_r,
+    ['s'] = char_s,
+    ['t'] = char_t,
+    ['u'] = char_u,
+    ['v'] = char_v,
+    ['w'] = char_w,
+    ['x'] = char_x,
+    ['y'] = char_y,
+    ['z'] = char_z
 
 
 };
@@ -130,7 +143,6 @@ void editDisplayBuff(camera_fb_t **buff){
             }else if(xTaskGetTickCount()-animationTime> 250){
                 animationTime = xTaskGetTickCount();
             }
-
             iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,7,7 ,&noWifiIcon,RED,*buff);
 
             for (int y = qrInfo.yOfset-3; y < qrInfo.yOfset-3 + qrInfo.erase_size; y++)
@@ -177,7 +189,6 @@ void iconPrint(int x_offset, int y_offset, uint8_t w, uint8_t h,char* logobuff,u
         
         return;
     }
-
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
             int logo_index = y * w + x;
@@ -189,7 +200,6 @@ void iconPrint(int x_offset, int y_offset, uint8_t w, uint8_t h,char* logobuff,u
             buff->buf[buff_index] = color>>8;
             buff->buf[buff_index + 1] = color&0xff;
             }
-
         }
     }
 }
@@ -208,7 +218,9 @@ void writeSn(camera_fb_t *buff){
 void WriteString(int x_offset, int y_offset, const char *str, camera_fb_t *buff) {
     while (*str) {
         wrightChar(x_offset, y_offset, *str, buff);
-        x_offset += CHAR_WIDTH; // Move to the next character position
+        if(*str>='0' && *str<='9')x_offset += DIGIT_WIDTH; // Move to the next character position
+        else x_offset += LETTER_WIDTH; // Move to the next character position
+
         str++;
     }
 }
@@ -244,16 +256,16 @@ void wrightChar(int x_offset, int y_offset, char c, camera_fb_t *buff) {
         // Get the bitmap data for the character
         const uint8_t *char_data = font_table[(uint8_t)c];
         // Ensure the character fits within the buffer dimensions
-        if (x_offset + CHAR_WIDTH > buff->width || y_offset + CHAR_WIDTH > buff->height) {
+        if (x_offset + DIGIT_WIDTH > buff->width || y_offset + DIGIT_WIDTH > buff->height) {
             printf("Character position out of bounds\n");
             return;
         }
 
-        for (int y = 0; y < CHAR_HEIGHT; y++) {
-            for (int x = 0; x <= CHAR_WIDTH; x++) {
+        for (int y = 0; y < DIGIT_HEIGHT; y++) {
+            for (int x = 0; x <= DIGIT_WIDTH; x++) {
                 int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
                 // Get the pixel value from the character data
-                if (char_data[y] & (1 << (CHAR_WIDTH-x))) {
+                if (char_data[y] & (1 << (DIGIT_WIDTH-x))) {
                     // Draw white (pixel set)
                     buff->buf[buff_index] = 0xFF;
                     buff->buf[buff_index + 1] = 0xFF;
@@ -316,12 +328,12 @@ void sleepTimeDate(camera_fb_t *buff){
     }
 // date 2024-08-08 day
     char tempFrame[15] ;
-    // snprintf(tempFrame, sizeof(tempFrame), "%d-%d-%d-%s",current_time.year,current_time.month,current_time.day,day_names[current_time.day]);
+    snprintf(tempFrame, sizeof(tempFrame), "%d-%d-%d-%s",current_time.year,current_time.month,current_time.day,
+    day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
 
-    // uint16_t len = (buff->width-(strlen(tempFrame)*LETTER_WIDTH))-3;//x start poss
-    // WriteString(len, buff->height-(LETTER_HEIGHT+3),tempFrame,buff);
-
-
+    printf("\ntime frame %s",tempFrame);
+    uint16_t len = (buff->width-(strlen(tempFrame)*LETTER_WIDTH))-3;//x start poss
+    WriteString(len, buff->height-(LETTER_HEIGHT+3),tempFrame,buff);
 }
 
 void timeDisplay(uint8_t x, uint8_t y, uint8_t value,camera_fb_t *buff){

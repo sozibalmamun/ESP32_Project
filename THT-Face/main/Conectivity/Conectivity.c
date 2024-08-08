@@ -12,14 +12,11 @@ const char *pass = "mypassword";
 
 uint64_t generate_unique_id(void)
 {
-
     uint8_t mac[6];
     esp_read_mac(mac, ESP_MAC_WIFI_STA);
     uint64_t unique_id = ((uint64_t)mac[0] << 40) | ((uint64_t)mac[1] << 32) | ((uint64_t)mac[2] << 24) |
                          ((uint64_t)mac[3] << 16) | ((uint64_t)mac[4] << 8) | mac[5];
-
     return unique_id;
-
 }
 uint8_t get_wifi_signal_strength() {
     wifi_ap_record_t ap_info;

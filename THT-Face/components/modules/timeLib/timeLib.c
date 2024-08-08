@@ -12,7 +12,8 @@ static uint32_t reference_tick_count;
 
 static const uint8_t days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 const char* day_names[] = {
-     "Sat","Sun", "Mon", "Tue", "Wed", "Thu", "Fri"
+    "Sun", "Mon", "Tue", "Wed", "Thu", "Fri" ,"Sat"
+    //    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 };
 // Function to check if a year is a leap year
 static bool is_leap_year(uint16_t year) {
@@ -105,4 +106,18 @@ void get_time(time_library_time_t *time, bool is_pm) {
         }
     }
 
+}
+
+// Function to calculate the day of the week using Zeller's Congruence
+uint8_t calculate_day_of_week(uint16_t year, uint8_t month, uint8_t day) {
+    if (month < 3) {
+        month += 12;
+        year--;
+    }
+    uint8_t q = day;
+    uint8_t m = month;
+    uint16_t k = year % 100;
+    uint16_t j = year / 100;
+    uint8_t day_of_week = (q + 13 * (m + 1) / 5 + k + k / 4 + j / 4 - 2 * j) % 7;
+    return (day_of_week + 6) % 7;
 }

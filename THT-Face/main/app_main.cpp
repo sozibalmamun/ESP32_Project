@@ -68,7 +68,16 @@ void app_main()
     wifi_connection();
 
 //-----------time int here
-    time_library_time_t initial_time = {2024, 2, 28, 23, 58, 0};
+
+/*
+    uint16_t year;
+    uint8_t month;
+    uint8_t day;
+    uint8_t hour;
+    uint8_t minute;
+    uint8_t second;
+*/
+    time_library_time_t initial_time = {2024, 8, 8, 5, 16, 0};
     time_library_init(&initial_time);
 //--------------------------------------------------------------
 

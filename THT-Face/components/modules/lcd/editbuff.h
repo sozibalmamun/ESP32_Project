@@ -5,6 +5,9 @@
 #include "stdbool.h"
 #include "handleQrCode.h"
 
+#include "timeLib.h"
+
+
 extern qrcode_t qrInfo;
 
 

@@ -26,7 +26,9 @@
         "string": "cpp",
         "random": "c",
         "enrol.h": "c",
-        "conectivity.h": "c"
+        "conectivity.h": "c",
+        "time.h": "c",
+        "cstdlib": "cpp"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM3",

@@ -40,20 +40,6 @@ uint8_t wifiStatus;
 TickType_t animationTime=0; 
 
 
-
-// display Time structure
-typedef struct {
-    uint16_t year;
-    uint8_t month;
-    uint8_t day;
-    uint8_t hour;
-    uint8_t minute;
-    uint8_t second;
-} dsp_time_t;
-
-dsp_time_t timeNow;
-uint16_t  tim;
-
 const uint32_t *segment_table1[]={
     ['a']=a,
     ['d']=d,
@@ -269,8 +255,14 @@ void segmentTime(camera_fb_t *buff){
                 }
             }
 // input time in here
-    uint8_t tempHours= 05;
-    uint8_t tempMinuts= 8;
+    time_library_time_t current_time;
+    time_library_get_time(&current_time);
+    printf("Current time: %d-%d-%d %d:%d:%d\n",
+        current_time.year, current_time.month, current_time.day,
+        current_time.hour, current_time.minute, current_time.second);
+
+    uint8_t tempHours= current_time.hour;
+    uint8_t tempMinuts= current_time.minute;
 
 //170-87
 #define segmentBaseX  73

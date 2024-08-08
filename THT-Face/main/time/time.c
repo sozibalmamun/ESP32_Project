@@ -1,93 +1,93 @@
-#include "time.h"
+// #include "time.h"
 
 
-static const char *TAG = "TimeLibrary";
+// static const char *TAG = "TimeLibrary";
 
-time_library_time_t reference_time;
-static uint32_t reference_tick_count;
-time_library_time_t current_time;
-
-
+// time_library_time_t reference_time;
+// static uint32_t reference_tick_count;
+// time_library_time_t current_time;
 
 
-static const uint8_t days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
-// Function to check if a year is a leap year
-static bool is_leap_year(uint16_t year) {
-    return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
-}
-
-// Function to add seconds to a time structure
-static void add_seconds_to_time(time_library_time_t *time, uint32_t seconds) {
-    time->second += seconds % 60;
-    time->minute += (seconds / 60) % 60;
-    time->hour += (seconds / 3600) % 24;
-    time->day += seconds / 86400;
-
-    if (time->second >= 60) {
-        time->second -= 60;
-        time->minute++;
-    }
-    if (time->minute >= 60) {
-        time->minute -= 60;
-        time->hour++;
-    }
-    if (time->hour >= 24) {
-        time->hour -= 24;
-        time->day++;
-    }
-
-    while (true) {
-        uint8_t days_in_current_month = days_in_month[time->month - 1];
-        if (time->month == 2 && is_leap_year(time->year)) {
-            days_in_current_month = 29;
-        }
-        if (time->day <= days_in_current_month) {
-            break;
-        }
-        time->day -= days_in_current_month;
-        time->month++;
-        if (time->month > 12) {
-            time->month = 1;
-            time->year++;
-        }
-    }
-}
-
-// Initialize the time library with a known time
-void time_library_init(time_library_time_t *initial_time) {
-    reference_time = *initial_time;
-    reference_tick_count = xTaskGetTickCount();
-    ESP_LOGI(TAG, "Time library initialized with reference time: %d-%d-%d %d:%d:%d",
-             reference_time.year, reference_time.month, reference_time.day,
-             reference_time.hour, reference_time.minute, reference_time.second);
-}
-
-// Set the current time manually
-void time_library_set_time(time_library_time_t *time) {
-    time_library_init(time);
-}
-
-// Get the current time
-void time_library_get_time(time_library_time_t *current_time) {
-    uint32_t elapsed_ticks = xTaskGetTickCount() - reference_tick_count;
-    uint32_t elapsed_seconds = (elapsed_ticks * portTICK_PERIOD_MS) / 1000;
-    *current_time = reference_time;
-    add_seconds_to_time(current_time, elapsed_seconds);
-}
-
-// Calculate the elapsed time in milliseconds
-uint32_t time_library_elapsed_time_ms(uint32_t start_time) {
-    uint32_t current_time_ms = xTaskGetTickCount() * portTICK_PERIOD_MS;
-    return current_time_ms - start_time;
-}
-
-// dsp_time_t dispTime(){
-    
-// time_library_get_time(&current_time);
-//         printf("Current time: %d-%d-%d %d:%d:%d\n",
-//            current_time.year, current_time.month, current_time.day,
-//            current_time.hour, current_time.minute, current_time.second);
 
 
+// static const uint8_t days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+// // Function to check if a year is a leap year
+// static bool is_leap_year(uint16_t year) {
+//     return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
 // }
+
+// // Function to add seconds to a time structure
+// static void add_seconds_to_time(time_library_time_t *time, uint32_t seconds) {
+//     time->second += seconds % 60;
+//     time->minute += (seconds / 60) % 60;
+//     time->hour += (seconds / 3600) % 24;
+//     time->day += seconds / 86400;
+
+//     if (time->second >= 60) {
+//         time->second -= 60;
+//         time->minute++;
+//     }
+//     if (time->minute >= 60) {
+//         time->minute -= 60;
+//         time->hour++;
+//     }
+//     if (time->hour >= 24) {
+//         time->hour -= 24;
+//         time->day++;
+//     }
+
+//     while (true) {
+//         uint8_t days_in_current_month = days_in_month[time->month - 1];
+//         if (time->month == 2 && is_leap_year(time->year)) {
+//             days_in_current_month = 29;
+//         }
+//         if (time->day <= days_in_current_month) {
+//             break;
+//         }
+//         time->day -= days_in_current_month;
+//         time->month++;
+//         if (time->month > 12) {
+//             time->month = 1;
+//             time->year++;
+//         }
+//     }
+// }
+
+// // Initialize the time library with a known time
+// void time_library_init(time_library_time_t *initial_time) {
+//     reference_time = *initial_time;
+//     reference_tick_count = xTaskGetTickCount();
+//     ESP_LOGI(TAG, "Time library initialized with reference time: %d-%d-%d %d:%d:%d",
+//              reference_time.year, reference_time.month, reference_time.day,
+//              reference_time.hour, reference_time.minute, reference_time.second);
+// }
+
+// // Set the current time manually
+// void time_library_set_time(time_library_time_t *time) {
+//     time_library_init(time);
+// }
+
+// // Get the current time
+// void time_library_get_time(time_library_time_t *current_time) {
+//     uint32_t elapsed_ticks = xTaskGetTickCount() - reference_tick_count;
+//     uint32_t elapsed_seconds = (elapsed_ticks * portTICK_PERIOD_MS) / 1000;
+//     *current_time = reference_time;
+//     add_seconds_to_time(current_time, elapsed_seconds);
+// }
+
+// // Calculate the elapsed time in milliseconds
+// uint32_t time_library_elapsed_time_ms(uint32_t start_time) {
+//     uint32_t current_time_ms = xTaskGetTickCount() * portTICK_PERIOD_MS;
+//     return current_time_ms - start_time;
+// }
+
+// // dsp_time_t dispTime(){
+    
+// // time_library_get_time(&current_time);
+// //         printf("Current time: %d-%d-%d %d:%d:%d\n",
+// //            current_time.year, current_time.month, current_time.day,
+// //            current_time.hour, current_time.minute, current_time.second);
+
+
+// // }

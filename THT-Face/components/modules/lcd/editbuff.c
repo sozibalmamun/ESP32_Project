@@ -3,6 +3,7 @@
 #include "logo&Icon.h"
 #include "esp_wifi.h"
 #include "esp_log.h"
+#include "stdint.h"
 
 #define WIFI_WIDTH 16
 #define WIFI_HEIGHT 15
@@ -36,8 +37,22 @@
 #define NINE "abcdfg"
 
 uint8_t wifiStatus;
-TickType_t wifianimationTime=0; 
+TickType_t animationTime=0; 
 
+
+
+// display Time structure
+typedef struct {
+    uint16_t year;
+    uint8_t month;
+    uint8_t day;
+    uint8_t hour;
+    uint8_t minute;
+    uint8_t second;
+} dsp_time_t;
+
+dsp_time_t timeNow;
+uint16_t  tim;
 
 const uint32_t *segment_table1[]={
     ['a']=a,
@@ -89,22 +104,22 @@ void editDisplayBuff(camera_fb_t **buff){
 
         if(wifiStatus==0){
 
-            if( xTaskGetTickCount()-wifianimationTime< 50){
+            if( xTaskGetTickCount()-animationTime< 50){
 
                 iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
                 
-                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+12,WIFI_WIDTH,3,&wifiAnimation01,WHITE,*buff);
-            }else if(xTaskGetTickCount()-wifianimationTime> 50 && xTaskGetTickCount()-wifianimationTime< 100){
-                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+8,WIFI_WIDTH,4,&wifiAnimation02,WHITE,*buff);
-            }else if(xTaskGetTickCount()-wifianimationTime> 100 && xTaskGetTickCount()-wifianimationTime< 150){
+                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+12,WIFI_WIDTH,3,&animationTime,WHITE,*buff);
+            }else if(xTaskGetTickCount()-animationTime> 50 && xTaskGetTickCount()-animationTime< 100){
+                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+8,WIFI_WIDTH,4,&animationTime,WHITE,*buff);
+            }else if(xTaskGetTickCount()-animationTime> 100 && xTaskGetTickCount()-animationTime< 150){
                 iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
-                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+5,WIFI_WIDTH,5,&wifiAnimation03,WHITE,*buff);
-            }else if(xTaskGetTickCount()-wifianimationTime> 150 && xTaskGetTickCount()-wifianimationTime< 200){
+                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+5,WIFI_WIDTH,5,&animationTime,WHITE,*buff);
+            }else if(xTaskGetTickCount()-animationTime> 150 && xTaskGetTickCount()-animationTime< 200){
 
-                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,6,&wifiAnimation04,WHITE,*buff);
+                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,6,&animationTime,WHITE,*buff);
 
-            }else if(xTaskGetTickCount()-wifianimationTime> 250){
-                wifianimationTime = xTaskGetTickCount();
+            }else if(xTaskGetTickCount()-animationTime> 250){
+                animationTime = xTaskGetTickCount();
             }
 
             iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,7,7 ,&noWifiIcon,RED,*buff);
@@ -140,7 +155,7 @@ void editDisplayBuff(camera_fb_t **buff){
                 iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,2,7,&disconnectedIcon,RED,*buff);
 
             }
-            wifianimationTime = xTaskGetTickCount();
+            animationTime = xTaskGetTickCount();
         }
     }
 
@@ -255,12 +270,11 @@ void segmentTime(camera_fb_t *buff){
             }
 // input time in here
     uint8_t tempHours= 05;
-    uint8_t tempMinuts= 9;
+    uint8_t tempMinuts= 8;
 
-
-
-#define segmentBaseX  93
-#define segmentBaseY  40
+//170-87
+#define segmentBaseX  73
+#define segmentBaseY  58 
 // write hours
     if(tempHours<=9){
     timeDisplay( segmentBaseX, segmentBaseY, 0 , buff);
@@ -269,8 +283,6 @@ void segmentTime(camera_fb_t *buff){
     timeDisplay( segmentBaseX, segmentBaseY, tempHours/10 , buff);
     timeDisplay( segmentBaseX+44, segmentBaseY, tempHours%10 , buff);
     }
-
-
 // write minuts
     if(tempMinuts<=9){
         timeDisplay( segmentBaseX+100, segmentBaseY, 0 , buff);
@@ -282,7 +294,13 @@ void segmentTime(camera_fb_t *buff){
         timeDisplay( segmentBaseX+100, segmentBaseY, tempMinuts / 10 , buff);
         timeDisplay( segmentBaseX+144, segmentBaseY, tempMinuts % 10 , buff);
     }
-
+// secend dot toggole
+    if(xTaskGetTickCount()-animationTime < 50){
+        iconPrint(segmentBaseX+85,segmentBaseY+10 ,5,5 ,&secondicon,WHITE,buff);
+        iconPrint(segmentBaseX+85,segmentBaseY+56,5,5 ,&secondicon,WHITE,buff);
+    }else if(xTaskGetTickCount()-animationTime >100){
+        animationTime = xTaskGetTickCount();
+    }
 }
 
 void timeDisplay(uint8_t x, uint8_t y, uint8_t value,camera_fb_t *buff){
@@ -363,15 +381,15 @@ void WriteTimeString(int x_offset, int y_offset, const char *str, camera_fb_t *b
             break; 
 
         case 'c':
-            wrighSingle7segment(x_offset+23, y_offset+30,'c',buff);
+            wrighSingle7segment(x_offset+23, y_offset+32,'c',buff);
             break;
 
         case 'd':
-            wrighSingle7segment(x_offset, y_offset+52,'d',buff);
+            wrighSingle7segment(x_offset, y_offset+54,'d',buff);
             break;
 
         case 'e':
-            wrighSingle7segment(x_offset-3, y_offset+30,'e',buff);
+            wrighSingle7segment(x_offset-3, y_offset+32,'e',buff);
             break;
 
         case 'f':
@@ -379,7 +397,7 @@ void WriteTimeString(int x_offset, int y_offset, const char *str, camera_fb_t *b
             break;
         
         case 'g':
-            wrighSingle7segment(x_offset+1, y_offset+26,'g',buff);
+            wrighSingle7segment(x_offset+1, y_offset+27,'g',buff);
             break;
         
         default:

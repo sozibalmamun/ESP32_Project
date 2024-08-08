@@ -43,35 +43,7 @@ extern "C" {
 
 #define DELETE_CMD              0X04
 
-
-// #define TIMEOUT_50_MS         5
-// #define TIMEOUT_100_MS        10
-// #define TIMEOUT_120_MS        12
-// #define TIMEOUT_150_MS        15
-// #define TIMEOUT_200_MS        20
-// #define TIMEOUT_300_MS        30
-// #define TIMEOUT_500_MS        50
-// #define TIMEOUT_1000_MS       100
-// #define TIMEOUT_2000_MS       200
-// #define TIMEOUT_3000_MS       300
-// #define TIMEOUT_4000_MS       400
-// #define TIMEOUT_5000_MS       500
-// #define TIMEOUT_6000_MS       600
-// #define TIMEOUT_7000_MS       700
-// #define TIMEOUT_9000_MS       900
-// #define TIMEOUT_10000_MS      1000
-// #define TIMEOUT_12000_MS      1200
-// #define TIMEOUT_20000_MS      2000
-// #define TIMEOUT_15_S          1500
-// #define TIMEOUT_30_S          3000
-// #define TIMEOUT_45_S          4500
-// #define TIMEOUT_1_MIN         6000
-// #define TIMEOUT_2_MIN         12000
-// #define TIMEOUT_5_MIN         30000
-
 #define ACK_SIZE 1024
-
-
 
 
 
@@ -121,6 +93,7 @@ const char echo_org_ssl_ca_cert[]  = \
 "v4wa90UCOn1j6r7WhMmX3eT3Gsdj3WMe9bYD0AFuqa6MDyjIeXq08mVGraXiw73s\n" \
 "Zale8OMckn/BU3O/3aFNLHLfET2H2hT6Wb3nwxjpLIfXmSVcVd8A58XH0g==\n" \
 "-----END CERTIFICATE-----\n";
+
 extern uint8_t wifiStatus;
 
 

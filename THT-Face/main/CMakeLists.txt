@@ -6,6 +6,6 @@
 
 #new
  idf_component_register(SRCS "app_main.cpp" "event_logic.cpp" "StomeClient/StomeClient.c" "dataHandler/dataHandler.c" 
-                            "enrol/enrol.c" "Conectivity/Conectivity.c" "time/time.c"
+                            "enrol/enrol.c" "Conectivity/Conectivity.c"
                     INCLUDE_DIRS ".")
 

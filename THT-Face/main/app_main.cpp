@@ -67,20 +67,10 @@ void app_main()
     // Initialize Wi-Fi
     wifi_connection();
 
-//-----------time
-    time_library_time_t initial_time = {2024, 8, 8, 12, 0, 0};
+//-----------time int here
+    time_library_time_t initial_time = {2024, 2, 28, 23, 58, 0};
     time_library_init(&initial_time);
-
-    // time_library_time_t current_time;
-
-    // while(1){
-        // time_library_get_time(&current_time);
-    //     printf("Current time: %d-%d-%d %d:%d:%d\n",
-    //        current_time.year, current_time.month, current_time.day,
-    //        current_time.hour, current_time.minute, current_time.second);
-
-    // }
-   
+//--------------------------------------------------------------
 
     ESP_LOGI(TAG, "app_main finished");
 }

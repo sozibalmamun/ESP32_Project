@@ -33,6 +33,9 @@ void time_library_set_time(time_library_time_t *time);
 // Function to get the current time
 void time_library_get_time(time_library_time_t *time);
 
+void get_time(time_library_time_t *time, bool is_pm);
+
+
 // Function to get the current time in milliseconds
 uint32_t time_library_get_time_ms(void);
 

@@ -4,12 +4,10 @@
 #include <stdint.h>
 #include "stdbool.h"
 #include "handleQrCode.h"
-
 #include "timeLib.h"
 
 
 extern qrcode_t qrInfo;
-
 
 #ifdef __cplusplus
 extern "C"
@@ -26,11 +24,10 @@ void WriteString(int x_offset, int y_offset, const char *str, camera_fb_t *buff)
 void wrightChar(int x_offset, int y_offset, char c, camera_fb_t *buff);
 void writeSn(camera_fb_t *buff);
 
-void segmentTime(camera_fb_t *buff);
+void sleepTimeDate(camera_fb_t *buff);
 void wrighSingle7segment(int x_offset, int y_offset, char c, camera_fb_t *buff);
-void WriteTimeString(int x_offset, int y_offset, const char *str, camera_fb_t *buff);
+void WriteMulti7segment(int x_offset, int y_offset, const char *str, camera_fb_t *buff);
 void timeDisplay(uint8_t x, uint8_t y, uint8_t value,camera_fb_t *buff);
-// dsp_time_t dispTime();
 
 
 #ifdef __cplusplus

@@ -38,7 +38,7 @@
 
 uint8_t wifiStatus;
 TickType_t animationTime=0; 
-
+extern const char* day_names[];
 
 const uint32_t *segment_table1[]={
     ['a']=a,
@@ -71,11 +71,34 @@ const uint8_t *font_table[] = {
     // ['0'] = char_0,
     // ['0'] = char_0,
 };
-
+/*
+const char* day_names[] = {
+     "Sat","Sun", "Mon", "Tue", "Wed", "Thu", "Fri"
+};
+*/
 const uint16_t *font_table1[] = {
 
     ['N'] = char_N,
+    ['S'] = char_S,
+    ['S'] = char_S,
+    ['S'] = char_S,
+    ['S'] = char_S,
+    ['S'] = char_S,
+    ['S'] = char_S,
+    ['S'] = char_S,
+    ['S'] = char_S,
+    ['S'] = char_S,
+    ['S'] = char_S,
+    ['S'] = char_S,
+    ['S'] = char_S,
+    ['S'] = char_S,
+    ['S'] = char_S,
+    ['S'] = char_S,
+    ['S'] = char_S,
+    ['S'] = char_S,
+    ['S'] = char_S,
     ['S'] = char_S
+
 
 };
 
@@ -84,7 +107,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
     if(true){
 
-        segmentTime(*buff);
+        sleepTimeDate(*buff);
 
     }else {
 
@@ -243,27 +266,25 @@ void wrightChar(int x_offset, int y_offset, char c, camera_fb_t *buff) {
 
 
 
-void segmentTime(camera_fb_t *buff){
+void sleepTimeDate(camera_fb_t *buff){
 
-            for (int y = 0; y < 240; y++)
-            {
-                for (int x = 0; x < 320; x++)
-                {
-                    int index = (y * buff->width + x) * 2; // Assuming 2 bytes per pixel
-                    buff->buf[index] = 0;
-                    buff->buf[index + 1] = 0;
-                }
-            }
+    for (int y = 0; y < 240; y++)
+    {
+        for (int x = 0; x < 320; x++)
+        {
+            int index = (y * buff->width + x) * 2; // Assuming 2 bytes per pixel
+            buff->buf[index] = 0;
+            buff->buf[index + 1] = 0;
+        }
+    }
 // input time in here
     time_library_time_t current_time;
-    time_library_get_time(&current_time);
-    printf("Current time: %d-%d-%d %d:%d:%d\n",
-        current_time.year, current_time.month, current_time.day,
-        current_time.hour, current_time.minute, current_time.second);
-
+    get_time(&current_time, 1);
+    // printf("Current time: %d-%d-%d %d:%d:%d\n",
+    // current_time.year, current_time.month, current_time.day,
+    // current_time.hour, current_time.minute, current_time.second);
     uint8_t tempHours= current_time.hour;
     uint8_t tempMinuts= current_time.minute;
-
 //170-87
 #define segmentBaseX  73
 #define segmentBaseY  58 
@@ -293,6 +314,14 @@ void segmentTime(camera_fb_t *buff){
     }else if(xTaskGetTickCount()-animationTime >100){
         animationTime = xTaskGetTickCount();
     }
+// date 2024-08-08 day
+    char tempFrame[15] ;
+    // snprintf(tempFrame, sizeof(tempFrame), "%d-%d-%d-%s",current_time.year,current_time.month,current_time.day,day_names[current_time.day]);
+
+    // uint16_t len = (buff->width-(strlen(tempFrame)*LETTER_WIDTH))-3;//x start poss
+    // WriteString(len, buff->height-(LETTER_HEIGHT+3),tempFrame,buff);
+
+
 }
 
 void timeDisplay(uint8_t x, uint8_t y, uint8_t value,camera_fb_t *buff){
@@ -300,43 +329,43 @@ void timeDisplay(uint8_t x, uint8_t y, uint8_t value,camera_fb_t *buff){
     switch(value){
 
         case 0:
-            WriteTimeString(x,y,ZERO,buff);
+            WriteMulti7segment(x,y,ZERO,buff);
         break;
 
         case 1:
-            WriteTimeString(x,y,ONE,buff);
+            WriteMulti7segment(x,y,ONE,buff);
         break;
         
         case 2:
-            WriteTimeString(x,y,TWO,buff);
+            WriteMulti7segment(x,y,TWO,buff);
         break;
 
         case 3:
-            WriteTimeString(x,y,THREE,buff);
+            WriteMulti7segment(x,y,THREE,buff);
         break;
 
         case 4:
-            WriteTimeString(x,y,FOUR,buff);
+            WriteMulti7segment(x,y,FOUR,buff);
         break;
 
         case 5:
-            WriteTimeString(x,y,FIVE,buff);
+            WriteMulti7segment(x,y,FIVE,buff);
         break;
 
         case 6:
-            WriteTimeString(x,y,SIX,buff);
+            WriteMulti7segment(x,y,SIX,buff);
         break;
 
         case 7:
-            WriteTimeString(x,y,SEVEEN,buff);
+            WriteMulti7segment(x,y,SEVEEN,buff);
         break;
 
         case 8:
-            WriteTimeString(x,y,EIGHT,buff);
+            WriteMulti7segment(x,y,EIGHT,buff);
         break;
 
         case 9:
-            WriteTimeString(x,y,NINE,buff);
+            WriteMulti7segment(x,y,NINE,buff);
         break;
 
         default:
@@ -350,14 +379,13 @@ void timeDisplay(uint8_t x, uint8_t y, uint8_t value,camera_fb_t *buff){
 #define segmentBaseY  20
     wrighSingle7segment(segmentBaseX, segmentBaseY,'a',buff);
     wrighSingle7segment(segmentBaseX+23, segmentBaseY+2,'b',buff);
-    wrighSingle7segment(segmentBaseX+23, segmentBaseY+30,'c',buff);
-    wrighSingle7segment(segmentBaseX, segmentBaseY+52,'d',buff);
-    wrighSingle7segment(segmentBaseX-3, segmentBaseY+30,'e',buff);
+    wrighSingle7segment(segmentBaseX+23, segmentBaseY+32,'c',buff);
+    wrighSingle7segment(segmentBaseX, segmentBaseY+54,'d',buff);
+    wrighSingle7segment(segmentBaseX-3, segmentBaseY+32,'e',buff);
     wrighSingle7segment(segmentBaseX-3, segmentBaseY+2,'f',buff);
-    wrighSingle7segment(segmentBaseX+1, segmentBaseY+26,'g',buff);
+    wrighSingle7segment(segmentBaseX+1, segmentBaseY+27,'g',buff);
 */
-
-void WriteTimeString(int x_offset, int y_offset, const char *str, camera_fb_t *buff) {
+void WriteMulti7segment(int x_offset, int y_offset, const char *str, camera_fb_t *buff) {
 
     while (*str) {
 

@@ -11,7 +11,9 @@ static uint32_t reference_tick_count;
 
 
 static const uint8_t days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
+const char* day_names[] = {
+     "Sat","Sun", "Mon", "Tue", "Wed", "Thu", "Fri"
+};
 // Function to check if a year is a leap year
 static bool is_leap_year(uint16_t year) {
     return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
@@ -82,12 +84,25 @@ uint32_t time_library_elapsed_time_ms(uint32_t start_time) {
     return current_time_ms - start_time;
 }
 
-// dsp_time_t dispTime(){
-    
-// time_library_get_time(&current_time);
-//         printf("Current time: %d-%d-%d %d:%d:%d\n",
-//            current_time.year, current_time.month, current_time.day,
-//            current_time.hour, current_time.minute, current_time.second);
+// Get the current time in 12-hour format
+void get_time(time_library_time_t *time, bool is_pm) {
 
+    // time_library_get_time(time);
+    // *is_pm = (time->hour >= 12);
+    // if (time->hour == 0) {
+    //     time->hour = 12; // Midnight
+    // } else if (time->hour > 12) {
+    //     time->hour -= 12; // Convert to 12-hour format
+    // }
+    time_library_get_time(time);
 
-// }
+    if(is_pm){
+
+        if (time->hour == 0) {
+            time->hour = 12; // Midnight
+        } else if (time->hour > 12) {
+            time->hour -= 12; // Convert to 12-hour format
+        }
+    }
+
+}

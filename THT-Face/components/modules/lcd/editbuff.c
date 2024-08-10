@@ -233,14 +233,24 @@ const uint16_t *font_table1[] = {
 
 void editDisplayBuff(camera_fb_t **buff){
 
-    time_library_time_t current_time;
-    get_time(&current_time, 1);
 
-    if(true){
+    // time read here
+    time_library_time_t current_time;
+    uint8_t clockType = get_time(&current_time, 1);
+
+    if(true){// sleep time display
 
         sleepTimeDate(*buff,current_time);
 
-    }else {
+    }else {// wekup time display
+
+//2024-08-10 3.47 PM
+
+        char tempFrame[25] ;
+        // snprintf(tempFrame, sizeof(tempFrame), "%d-%d-%d  %d.%d  %s",current_time.year,current_time.month,current_time.day, current_time.hour, current_time.minute, clockType==2 ? "PM" : "AM");
+
+        // writeSn(*buff);
+
 
         if(wifiStatus==0){
 
@@ -400,12 +410,7 @@ void sleepTimeDate(camera_fb_t *buff, time_library_time_t current_time){
             buff->buf[index + 1] = 0;
         }
     }
-// input time in here
-    // time_library_time_t current_time;
-    // get_time(&current_time, 1);
-    // printf("Current time: %d-%d-%d %d:%d:%d\n",
-    // current_time.year, current_time.month, current_time.day,
-    // current_time.hour, current_time.minute, current_time.second);
+
     uint8_t tempHours= current_time.hour;
     uint8_t tempMinuts= current_time.minute;
 //170-87
@@ -431,7 +436,7 @@ void sleepTimeDate(camera_fb_t *buff, time_library_time_t current_time){
         timeDisplay( segmentBaseX+144, segmentBaseY, tempMinuts % 10 , buff);
     }
 // secend dot toggole
-    if(xTaskGetTickCount()-animationTime <400){
+    if(xTaskGetTickCount()-animationTime <50){
         iconPrint(segmentBaseX+85,segmentBaseY+10 ,5,5 ,&secondicon,WHITE,buff);
         iconPrint(segmentBaseX+85,segmentBaseY+56,5,5 ,&secondicon,WHITE,buff);
     }else if(xTaskGetTickCount()-animationTime >140){

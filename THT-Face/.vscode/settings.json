@@ -28,7 +28,8 @@
         "enrol.h": "c",
         "conectivity.h": "c",
         "time.h": "c",
-        "cstdlib": "cpp"
+        "cstdlib": "cpp",
+        "timelib.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM3",

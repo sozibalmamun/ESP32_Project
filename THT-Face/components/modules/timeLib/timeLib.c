@@ -13,7 +13,6 @@ static uint32_t reference_tick_count;
 static const uint8_t days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 const char* day_names[] = {
     "Sun", "Mon", "Tue", "Wed", "Thu", "Fri" ,"Sat"
-    //    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 };
 // Function to check if a year is a leap year
 static bool is_leap_year(uint16_t year) {
@@ -86,25 +85,25 @@ uint32_t time_library_elapsed_time_ms(uint32_t start_time) {
 }
 
 // Get the current time in 12-hour format
-void get_time(time_library_time_t *time, bool is_pm) {
+uint8_t  get_time(time_library_time_t *time, bool is_12) {
 
-    // time_library_get_time(time);
-    // *is_pm = (time->hour >= 12);
-    // if (time->hour == 0) {
-    //     time->hour = 12; // Midnight
-    // } else if (time->hour > 12) {
-    //     time->hour -= 12; // Convert to 12-hour format
-    // }
+    uint8_t PM=0;
+    if(!is_12){
+        time_library_get_time(time);
+        return PM;// 24 hour type clock
+
+    }
     time_library_get_time(time);
 
-    if(is_pm){
-
-        if (time->hour == 0) {
-            time->hour = 12; // Midnight
-        } else if (time->hour > 12) {
-            time->hour -= 12; // Convert to 12-hour format
-        }
+    if (time->hour == 0) {
+        time->hour = 12; // Midnight
+    } else if (time->hour > 12) {
+        PM=1; //AM
+        time->hour -= 12; // Convert to 12-hour format
+    }else if(time->hour < 12){
+        PM=2;// PM
     }
+    return PM;
 
 }
 

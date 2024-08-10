@@ -55,8 +55,27 @@ const uint8_t *segment_table2[]={
 };
 
 
-const uint8_t table0len[]={};
+const uint8_t table0len[]={
 
+    ['0'] = 8,
+    ['1'] = 8,
+    ['2'] = 8,
+    ['3'] = 8,
+    ['4'] = 8,
+    ['5'] = 8,
+    ['6'] = 8,
+    ['7'] = 8,
+    ['8'] = 8,
+    ['9'] = 8,
+    ['-'] = 8,
+    ['N'] = 8,
+    ['S'] = 8,
+
+};
+
+const uint8_t table0len[]={
+    0,10,22
+}
 
 
 const uint8_t *font_table0[] = {
@@ -238,19 +257,13 @@ void editDisplayBuff(camera_fb_t **buff){
     time_library_time_t current_time;
     uint8_t clockType = get_time(&current_time, 1);
 
-    if(true){// sleep time display
+    if(false){// sleep time display
 
         sleepTimeDate(*buff,current_time);
 
     }else {// wekup time display
 
-//2024-08-10 3.47 PM
-
-        char tempFrame[25] ;
-        // snprintf(tempFrame, sizeof(tempFrame), "%d-%d-%d  %d.%d  %s",current_time.year,current_time.month,current_time.day, current_time.hour, current_time.minute, clockType==2 ? "PM" : "AM");
-
-        // writeSn(*buff);
-
+        writedateTime(*buff);
 
         if(wifiStatus==0){
 
@@ -289,7 +302,6 @@ void editDisplayBuff(camera_fb_t **buff){
             snprintf(tempFrame, sizeof(tempFrame), "%09llu", generate_unique_id());
             createQrcode(tempFrame , *buff);
             writeSn(*buff);
-
 
         }else 
         {
@@ -336,9 +348,20 @@ void writeSn(camera_fb_t *buff){
     char tempFrame[13] ;
     snprintf(tempFrame, sizeof(tempFrame), "SN-%09llu", generate_unique_id());
 
-    // uint16_t len = (buff->width-(strlen(tempFrame)*LETTER_WIDTH))-3;//x start poss
+    uint16_t len = (buff->width-(strlen(tempFrame)*LETTER_WIDTH))-3;//x start poss
 
-    // WriteString(1,len, buff->height-(LETTER_HEIGHT+3),tempFrame,buff);
+    WriteString(1,len, buff->height-(LETTER_HEIGHT+3),tempFrame,buff);
+}
+void writedateTime(camera_fb_t *buff){
+
+//2024-08-10 3.47 PM
+
+    char tempFrame[30] ;
+    snprintf(tempFrame, sizeof(tempFrame), "%d-%d-%d  %d.%d  %s",current_time.year,current_time.month,current_time.day, 
+    current_time.hour, current_time.minute, clockType==2 ? "PM" : clockType==1?"AM" :" ");
+    WriteString(1,len, buff->height-(LETTER_HEIGHT+3),tempFrame,buff);
+
+
 }
 
 
@@ -353,7 +376,7 @@ void WriteString(uint8_t letterSize, int x_offset, int y_offset, const char *str
 
         if(letterSize==1){
 
-            letterWidth = table1len[(uint8_t)*str];
+            letterWidth = table0len[(uint8_t)*str];
             x_offset += (letterWidth+1); // Move to the next character position
             // printf("\npixle len %d for %c",letterWidth ,*str);
 
@@ -373,8 +396,19 @@ void wrightChar(uint8_t letterSize, int x_offset, int y_offset, char c, camera_f
     
 
     // Get the bitmap data for the character
-    const uint16_t *char_data = font_table1[(uint8_t)c];
-    uint8_t letterWidth = table1len[(uint8_t)c];
+    const uint16_t *char_data ;
+    uint8_t letterWidth = 0;
+    if(letterSize==1){
+
+        char_data = font_table0[(uint8_t)c];
+        letterWidth = table1len[(uint8_t)c];
+
+    }else if(letterSize==2){
+
+        char_data = font_table1[(uint8_t)c];
+        letterWidth = table1len[(uint8_t)c];
+
+    }
 
    // Ensure the character fits within the buffer dimensions
     if (x_offset + letterWidth > buff->width || y_offset + letterWidth > buff->height) {
@@ -382,7 +416,8 @@ void wrightChar(uint8_t letterSize, int x_offset, int y_offset, char c, camera_f
         return;
     }
 
-    for (int y = 0; y < LETTER_HEIGHT; y++) {
+
+    for (int y = 0; y < table0len[letterSize] ; y++) {
         for (int x = 0; x <= letterWidth; x++) {
 
             int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
@@ -462,7 +497,7 @@ uint16_t pixleLen(uint8_t letSize, char *str){
     uint16_t len=0;
         while (*str) {
             if(letSize==1){
-            // len = table1len[(uint8_t)*str];
+            len += table0len[(uint8_t)*str];
             }else if(letSize==2){
             len += table1len[(uint8_t)*str];
             }

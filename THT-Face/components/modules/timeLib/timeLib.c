@@ -88,22 +88,23 @@ uint32_t time_library_elapsed_time_ms(uint32_t start_time) {
 uint8_t  get_time(time_library_time_t *time, bool is_12) {
 
     uint8_t PM=0;
-    if(!is_12){
-        time_library_get_time(time);
-        return PM;// 24 hour type clock
-
-    }
     time_library_get_time(time);
 
-    if (time->hour == 0) {
-        time->hour = 12; // Midnight
-    } else if (time->hour > 12) {
-        PM=1; //AM
-        time->hour -= 12; // Convert to 12-hour format
-    }else if(time->hour < 12){
-        PM=2;// PM
+    if(!is_12)return PM;// 24 hour type clock
+    else{
+
+        if (time->hour == 0) {
+            time->hour = 12; // Midnight
+        } else if (time->hour > 12) {
+            PM=1; //AM
+            time->hour -= 12; // Convert to 12-hour format
+        }else if(time->hour < 12){
+            PM=2;// PM
+        }
+        return PM;
+
     }
-    return PM;
+
 
 }
 

@@ -70,14 +70,9 @@ void app_main()
 //-----------time int here
 
 /*
-    uint16_t year;
-    uint8_t month;
-    uint8_t day;
-    uint8_t hour;
-    uint8_t minute;
-    uint8_t second;
+     year, month, day, hour, minute, second;
 */
-    time_library_time_t initial_time = {2024, 8, 7, 5, 16, 0};
+    time_library_time_t initial_time = {2024, 8, 7, 17, 16, 0};
     time_library_init(&initial_time);
 //--------------------------------------------------------------
 

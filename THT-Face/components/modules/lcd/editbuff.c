@@ -13,11 +13,12 @@
 #define NETWORK_ICON_POSS_X 295
 #define NETWORK_ICON_POSS_Y 3
 
-#define DIGIT_WIDTH 8//910
-#define DIGIT_HEIGHT 10//13
+// #define DIGIT_WIDTH 8//910
+// #define DIGIT_HEIGHT 10//13
 
-#define LETTER_WIDTH 9//910
-#define LETTER_HEIGHT 10//13
+// #define LETTER_WIDTH 9//910
+// #define LETTER_HEIGHT 10//13
+#define LETTER_HEIGHT 22//13
 
 #define WHITE 0xFFFF
 #define RED 0xf8c0
@@ -53,7 +54,12 @@ const uint8_t *segment_table2[]={
     ['f']=f
 };
 
-const uint8_t *font_table[] = {
+
+const uint8_t table0len[]={};
+
+
+
+const uint8_t *font_table0[] = {
 
     ['0'] = char_0,
     ['1'] = char_1,
@@ -65,8 +71,9 @@ const uint8_t *font_table[] = {
     ['7'] = char_7,
     ['8'] = char_8,
     ['9'] = char_9,
-    ['-'] = charSignNeg
-
+    ['-'] = charSignNeg,
+    ['N'] = char_N,
+    ['S'] = char_S,
     // ['0'] = char_0,
     // ['0'] = char_0,
     // ['0'] = char_0,
@@ -76,41 +83,149 @@ const char* day_names[] = {
      "Sat","Sun", "Mon", "Tue", "Wed", "Thu", "Fri"
 };
 */
+
+const uint8_t table1len[]={
+
+
+    ['-'] = 5,
+    [' '] = 2,
+
+
+    ['0'] = 9,
+    ['1'] = 9,
+    ['2'] = 8,
+    ['3'] = 8,
+    ['4'] = 10,
+    ['5'] = 8,
+    ['6'] = 9,
+    ['7'] = 9,
+    ['8'] = 9,
+    ['9'] = 9,
+
+    ['A'] = 12,
+    ['B'] = 9,
+    ['C'] = 10,
+    ['D'] = 11,
+    ['E'] = 8,
+    ['F'] = 8,
+    ['G'] = 11,
+    ['H'] = 10,
+    ['I'] = 2,
+    ['J'] = 5,
+    ['K'] = 11,
+    ['L'] = 9,
+    ['M'] = 13,
+    ['N'] = 10,
+    ['O'] = 12,
+    ['P'] = 9,
+    ['Q'] = 13,
+    ['R'] = 10,
+    ['S'] = 9,
+    ['T'] = 12,
+    ['U'] = 10,
+    ['V'] = 12,
+    ['W'] = 17,
+    ['X'] = 11,
+    ['Y'] = 12,
+    ['Z'] = 10,
+
+    ['a'] = 8,
+    ['b'] = 9,
+    ['c'] = 8,
+    ['d'] = 9,
+    ['e'] = 9,
+    ['f'] = 7,
+    ['g'] = 9,
+    ['h'] = 9,
+    ['i'] = 2,
+    ['j'] = 4,
+    ['k'] = 9,
+    ['l'] = 4,
+    ['m'] = 14,
+    ['n'] = 8,
+    ['o'] = 9,
+    ['p'] = 9,
+    ['q'] = 9,
+    ['r'] = 6,
+    ['s'] = 7,
+    ['t'] = 7,
+    ['u'] = 8,
+    ['v'] = 10,
+    ['w'] = 16,
+    ['x'] = 10,
+    ['y'] = 10,
+    ['z'] = 7
+
+};
 const uint16_t *font_table1[] = {
 
-    ['N'] = char_N,
-    ['S'] = char_S,
-    ['T'] = char_T,
-    ['F'] = char_F,
-    ['W'] = char_W,
-    ['M'] = char_M,
+    ['-'] = signedNeg,
+    [' '] = space,
 
-    ['a'] = char_a,
-    ['b'] = char_b,
-    ['c'] = char_c,
-    ['d'] = char_d,
-    ['e'] = char_e,
-    ['f'] = char_f,
-    ['g'] = char_g,
-    ['h'] = char_h,
-    ['i'] = char_i,
-    ['j'] = char_j,
-    ['k'] = char_k,
-    ['l'] = char_l,
-    ['m'] = char_m,
-    ['n'] = char_n,
-    ['o'] = char_o,
-    ['p'] = char_p,
-    ['q'] = char_q,
-    ['r'] = char_r,
-    ['s'] = char_s,
-    ['t'] = char_t,
-    ['u'] = char_u,
-    ['v'] = char_v,
-    ['w'] = char_w,
-    ['x'] = char_x,
-    ['y'] = char_y,
-    ['z'] = char_z
+    ['0'] = zero_s2,
+    ['1'] = one_s2,
+    ['2'] = two_s2,
+    ['3'] = three_s2,
+    ['4'] = four_s2,
+    ['5'] = five_s2,
+    ['6'] = six_s2,
+    ['7'] = seven_s2,
+    ['8'] = eight_s2,
+    ['9'] = nine_s2,
+
+    ['A'] = A_s2,
+    ['B'] = b_s2,
+    ['C'] = C_s2,
+    ['D'] = D_s2,
+    ['E'] = E_s2,
+    ['F'] = F_s2,
+    ['G'] = G_s2,
+    ['H'] = H_s2,
+    ['I'] = I_s2,
+    ['J'] = J_s2,
+    ['K'] = K_s2,
+    ['L'] = L_s2,
+    ['M'] = M_s2,
+    ['N'] = N_s2,
+    ['O'] = O_s2,
+    ['P'] = P_s2,
+    ['Q'] = Q_s2,
+    ['R'] = R_s2,
+    ['S'] = S_s2,
+    ['T'] = T_s2,
+    ['U'] = U_s2,
+    ['V'] = V_s2,
+    ['W'] = W_s2,
+    ['X'] = X_s2,
+    ['Y'] = Y_s2,
+    ['Z'] = Z_s2,
+
+    ['a'] = a_s2,
+    ['b'] = b_s2,
+    ['c'] = c_s2,
+    ['d'] = d_s2,
+    ['e'] = e_s2,
+    ['f'] = f_s2,
+    ['g'] = g_s2,
+    ['h'] = h_s2,
+    ['i'] = i_s2,
+    ['j'] = j_s2,
+    ['k'] = k_s2,
+    ['l'] = l_s2,
+    ['m'] = m_s2,
+    ['n'] = n_s2,
+    ['o'] = o_s2,
+    ['p'] = p_s2,
+    ['q'] = q_s2,
+    ['r'] = r_s2,
+    ['s'] = s_s2,
+    ['t'] = t_s2,
+    ['u'] = u_s2,
+    ['v'] = v_s2,
+    ['w'] = w_s2,
+    ['x'] = x_s2,
+    ['y'] = y_s2,
+    ['z'] = z_s2
 
 
 };
@@ -118,9 +233,12 @@ const uint16_t *font_table1[] = {
 
 void editDisplayBuff(camera_fb_t **buff){
 
+    time_library_time_t current_time;
+    get_time(&current_time, 1);
+
     if(true){
 
-        sleepTimeDate(*buff);
+        sleepTimeDate(*buff,current_time);
 
     }else {
 
@@ -208,68 +326,61 @@ void writeSn(camera_fb_t *buff){
     char tempFrame[13] ;
     snprintf(tempFrame, sizeof(tempFrame), "SN-%09llu", generate_unique_id());
 
-    uint16_t len = (buff->width-(strlen(tempFrame)*LETTER_WIDTH))-3;//x start poss
+    // uint16_t len = (buff->width-(strlen(tempFrame)*LETTER_WIDTH))-3;//x start poss
 
-    WriteString(len, buff->height-(LETTER_HEIGHT+3),tempFrame,buff);
+    // WriteString(1,len, buff->height-(LETTER_HEIGHT+3),tempFrame,buff);
 }
 
 
 // Function to render a string onto the display buffer
-void WriteString(int x_offset, int y_offset, const char *str, camera_fb_t *buff) {
-    while (*str) {
-        wrightChar(x_offset, y_offset, *str, buff);
-        if(*str>='0' && *str<='9')x_offset += DIGIT_WIDTH; // Move to the next character position
-        else x_offset += LETTER_WIDTH; // Move to the next character position
+void WriteString(uint8_t letterSize, int x_offset, int y_offset, const char *str, camera_fb_t *buff) {
+    
+    uint8_t letterWidth;
 
+    while (*str) {
+
+        wrightChar(letterSize,x_offset, y_offset, *str, buff);
+
+        if(letterSize==1){
+
+            letterWidth = table1len[(uint8_t)*str];
+            x_offset += (letterWidth+1); // Move to the next character position
+            // printf("\npixle len %d for %c",letterWidth ,*str);
+
+        }else if(letterSize==2){
+
+            letterWidth = table1len[(uint8_t)*str];
+            x_offset += (letterWidth+1); // Move to the next character position
+            // printf("\npixle len %d for %c",letterWidth ,*str);
+
+        }
         str++;
     }
 }
 
 // Function to render a character onto the display buffer
-void wrightChar(int x_offset, int y_offset, char c, camera_fb_t *buff) {
+void wrightChar(uint8_t letterSize, int x_offset, int y_offset, char c, camera_fb_t *buff) {
     
-    if((c>'@'&& c<'[') ||(c>0x60 && c<'{') ){
 
-        // Get the bitmap data for the character
-        const uint16_t *char_data = font_table1[(uint8_t)c];
+    // Get the bitmap data for the character
+    const uint16_t *char_data = font_table1[(uint8_t)c];
+    uint8_t letterWidth = table1len[(uint8_t)c];
 
-        // Ensure the character fits within the buffer dimensions
-        if (x_offset + LETTER_WIDTH > buff->width || y_offset + LETTER_WIDTH > buff->height) {
-            printf("Character position out of bounds\n");
-            return;
-        }
+   // Ensure the character fits within the buffer dimensions
+    if (x_offset + letterWidth > buff->width || y_offset + letterWidth > buff->height) {
+        printf("Character position out of bounds\n");
+        return;
+    }
 
-        for (int y = 0; y < LETTER_HEIGHT; y++) {
-            for (int x = 0; x <= LETTER_WIDTH; x++) {
+    for (int y = 0; y < LETTER_HEIGHT; y++) {
+        for (int x = 0; x <= letterWidth; x++) {
 
-                int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
-                // Get the pixel value from the character data
-                if (char_data[y] & (1 << (LETTER_WIDTH-x))) {
-                    // Draw white (pixel set)
-                    buff->buf[buff_index] = 0xFF;
-                    buff->buf[buff_index + 1] = 0xFF;
-                }
-            }
-        }
-    }else{
-
-        // Get the bitmap data for the character
-        const uint8_t *char_data = font_table[(uint8_t)c];
-        // Ensure the character fits within the buffer dimensions
-        if (x_offset + DIGIT_WIDTH > buff->width || y_offset + DIGIT_WIDTH > buff->height) {
-            printf("Character position out of bounds\n");
-            return;
-        }
-
-        for (int y = 0; y < DIGIT_HEIGHT; y++) {
-            for (int x = 0; x <= DIGIT_WIDTH; x++) {
-                int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
-                // Get the pixel value from the character data
-                if (char_data[y] & (1 << (DIGIT_WIDTH-x))) {
-                    // Draw white (pixel set)
-                    buff->buf[buff_index] = 0xFF;
-                    buff->buf[buff_index + 1] = 0xFF;
-                }
+            int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
+            // Get the pixel value from the character data
+            if (char_data[y] & (1 << (16-x))) {
+                // Draw white (pixel set)
+                buff->buf[buff_index] = 0xFF;
+                buff->buf[buff_index + 1] = 0xFF;
             }
         }
     }
@@ -278,7 +389,7 @@ void wrightChar(int x_offset, int y_offset, char c, camera_fb_t *buff) {
 
 
 
-void sleepTimeDate(camera_fb_t *buff){
+void sleepTimeDate(camera_fb_t *buff, time_library_time_t current_time){
 
     for (int y = 0; y < 240; y++)
     {
@@ -290,8 +401,8 @@ void sleepTimeDate(camera_fb_t *buff){
         }
     }
 // input time in here
-    time_library_time_t current_time;
-    get_time(&current_time, 1);
+    // time_library_time_t current_time;
+    // get_time(&current_time, 1);
     // printf("Current time: %d-%d-%d %d:%d:%d\n",
     // current_time.year, current_time.month, current_time.day,
     // current_time.hour, current_time.minute, current_time.second);
@@ -320,22 +431,42 @@ void sleepTimeDate(camera_fb_t *buff){
         timeDisplay( segmentBaseX+144, segmentBaseY, tempMinuts % 10 , buff);
     }
 // secend dot toggole
-    if(xTaskGetTickCount()-animationTime < 50){
+    if(xTaskGetTickCount()-animationTime <400){
         iconPrint(segmentBaseX+85,segmentBaseY+10 ,5,5 ,&secondicon,WHITE,buff);
         iconPrint(segmentBaseX+85,segmentBaseY+56,5,5 ,&secondicon,WHITE,buff);
-    }else if(xTaskGetTickCount()-animationTime >100){
+    }else if(xTaskGetTickCount()-animationTime >140){
         animationTime = xTaskGetTickCount();
     }
 // date 2024-08-08 day
-    char tempFrame[15] ;
-    snprintf(tempFrame, sizeof(tempFrame), "%d-%d-%d-%s",current_time.year,current_time.month,current_time.day,
+    char tempFrame[17] ;
+    snprintf(tempFrame, sizeof(tempFrame), "%d-%d-%d  %s",current_time.year,current_time.month,current_time.day,
     day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
 
-    printf("\ntime frame %s",tempFrame);
-    uint16_t len = (buff->width-(strlen(tempFrame)*LETTER_WIDTH))-3;//x start poss
-    WriteString(len, buff->height-(LETTER_HEIGHT+3),tempFrame,buff);
-}
+    uint16_t len = 160- (pixleLen(2,&tempFrame)/2);//x start poss
+    WriteString(2,len, 130,tempFrame,buff);
 
+/*
+    WriteString(2,5, 0,"abcdefghijklmnopqrstuvwxyz",buff);
+    WriteString(2,5, 130,"ABCDEFGHIJKLMNOPQRSTUVWXYZ",buff);
+    WriteString(2,5, 160,"1234567890",buff);
+*/
+
+}
+uint16_t pixleLen(uint8_t letSize, char *str){
+
+    uint16_t len=0;
+        while (*str) {
+            if(letSize==1){
+            // len = table1len[(uint8_t)*str];
+            }else if(letSize==2){
+            len += table1len[(uint8_t)*str];
+            }
+            str++;
+        }
+
+    return len;
+
+}
 void timeDisplay(uint8_t x, uint8_t y, uint8_t value,camera_fb_t *buff){
     
     switch(value){
@@ -455,8 +586,6 @@ void wrighSingle7segment(int x_offset, int y_offset, char c, camera_fb_t *buff) 
             printf("Character position out of bounds\n");
             return;
         }
-
-
 
         for (int y = 0; y < HEIGHT_32; y++) {
             for (int x = 0; x <= WIDTH_32; x++) {

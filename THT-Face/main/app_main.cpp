@@ -77,7 +77,7 @@ void app_main()
     uint8_t minute;
     uint8_t second;
 */
-    time_library_time_t initial_time = {2024, 8, 8, 5, 16, 0};
+    time_library_time_t initial_time = {2024, 8, 7, 5, 16, 0};
     time_library_init(&initial_time);
 //--------------------------------------------------------------
 

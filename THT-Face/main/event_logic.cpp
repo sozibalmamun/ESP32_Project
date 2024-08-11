@@ -30,9 +30,10 @@ void event_generate(void *arg)
         {
         case KEY_SHORT_PRESS:
             recognizer_state = RECOGNIZE;
-            // disable sleep by button
+            // disable sleep by button--------
             sleepTimeOut = xTaskGetTickCount();
             sleepEnable=false;
+            //--------------------------------
 
             break;
 

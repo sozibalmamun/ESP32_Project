@@ -57,25 +57,6 @@ void app_main()
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
     register_lcd(xQueueLCDFrame, NULL, true);
 
-
-
-        // if(true){
-
-        //     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
-        //     // Send the pointers to the queue
-        //     register_lcd(xQueueAIFrame, NULL, true);
-
-        // }else{
-
-        //     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
-        //     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
-        //     register_lcd(xQueueLCDFrame, NULL, true);
-
-        // }
-
-
-
-
     vTaskDelay(pdMS_TO_TICKS(10));
 
     // Initialize NVS
@@ -101,11 +82,25 @@ void app_main()
     time_library_init(&initial_time);
 //--------------------------------------------------------------
 
+    ESP_LOGI(TAG, "app_main finished");
 
 
     while(true){
 
 
+        // if(true){
+
+        //     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
+        //     // Send the pointers to the queue
+        //     register_lcd(xQueueAIFrame, NULL, true);
+
+        // }else{
+
+        //     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
+        //     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
+        //     register_lcd(xQueueLCDFrame, NULL, true);
+
+        // }
 
 
 
@@ -121,9 +116,4 @@ void app_main()
     }
 
 
-
-
-
-
-    ESP_LOGI(TAG, "app_main finished");
 }

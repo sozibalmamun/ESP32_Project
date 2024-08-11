@@ -147,10 +147,9 @@ static void task_process_handler(void *arg)
                    // _gEvent = RECOGNIZE;// due to no button for recognize
 
                    if(CmdEnroll==ENROLING)_gEvent=ENROLL;// 1 for enroling 
-                   vTaskDelay(10);
                    //---------------sleep weakup------------
                     sleepTimeOut = xTaskGetTickCount();
-                    sleepEnable=false;
+                    sleepEnable = false;
                     //--------------------------------------
 
                 }else if(CmdEnroll==ENROLING){

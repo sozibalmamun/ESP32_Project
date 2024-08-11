@@ -39,7 +39,9 @@ static const char *TAG = "human_face_recognition";
  uint16_t personId;
 
 
-
+//---------------sleep--------------------
+extern uint8_t sleepEnable;
+extern TickType_t sleepTimeOut; 
 
 //---------------------------------------
 
@@ -143,8 +145,13 @@ static void task_process_handler(void *arg)
                 if (detect_results.size() == 1){
                     is_detected = true;
                    // _gEvent = RECOGNIZE;// due to no button for recognize
+
                    if(CmdEnroll==ENROLING)_gEvent=ENROLL;// 1 for enroling 
                    vTaskDelay(10);
+                   //---------------sleep weakup------------
+                    sleepTimeOut = xTaskGetTickCount();
+                    sleepEnable=false;
+                    //--------------------------------------
 
                 }else if(CmdEnroll==ENROLING){
                     

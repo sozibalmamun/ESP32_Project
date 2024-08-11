@@ -17,6 +17,10 @@ static key_state_t key_state;
 static key_name_t adc_button_name;
 static recognizer_state_t recognizer_state;
 
+extern uint8_t sleepEnable;
+extern TickType_t sleepTimeOut; 
+
+
 void event_generate(void *arg)
 {
     while (1)
@@ -26,6 +30,10 @@ void event_generate(void *arg)
         {
         case KEY_SHORT_PRESS:
             recognizer_state = RECOGNIZE;
+            // disable sleep by button
+            sleepTimeOut = xTaskGetTickCount();
+            sleepEnable=false;
+
             break;
 
         case KEY_LONG_PRESS:

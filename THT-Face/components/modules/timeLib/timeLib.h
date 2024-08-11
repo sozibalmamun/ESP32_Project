@@ -30,6 +30,7 @@ void time_library_init(time_library_time_t *initial_time);
 void time_library_set_time(time_library_time_t *time);
 // Function to get the current time
 void time_library_get_time(time_library_time_t *time);
+//get time 12/24 type
 uint8_t get_time(time_library_time_t *time, bool is_12);
 // Function to calculate the day of the week
 uint8_t calculate_day_of_week(uint16_t year, uint8_t month, uint8_t day);

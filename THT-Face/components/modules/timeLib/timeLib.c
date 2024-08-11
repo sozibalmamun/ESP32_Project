@@ -96,10 +96,10 @@ uint8_t  get_time(time_library_time_t *time, bool is_12) {
         if (time->hour == 0) {
             time->hour = 12; // Midnight
         } else if (time->hour > 12) {
-            PM=1; //AM
+            PM=1; //PM
             time->hour -= 12; // Convert to 12-hour format
         }else if(time->hour < 12){
-            PM=2;// PM
+            PM=2;// am
         }
         return PM;
 

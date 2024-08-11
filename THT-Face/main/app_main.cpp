@@ -13,7 +13,8 @@
 
 #include "timeLib.h"
 
-
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
 
 static const char *TAG = "app_main";
 
@@ -23,6 +24,11 @@ static QueueHandle_t xQueueKeyState = NULL;
 static QueueHandle_t xQueueEventLogic = NULL;
 
 #define GPIO_BOOT GPIO_NUM_0
+
+extern uint8_t sleepEnable;
+extern TickType_t sleepTimeOut; 
+
+
 
 extern "C" 
 void app_main()
@@ -44,12 +50,31 @@ void app_main()
 
     // Continue with other initializations
     
-    // register_button(GPIO_BOOT, xQueueKeyState);
+    register_button(GPIO_BOOT, xQueueKeyState);
     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
      // register_adc_button(buttons, 4, xQueueKeyState);
-    // register_event(xQueueKeyState, xQueueEventLogic);
+    register_event(xQueueKeyState, xQueueEventLogic);
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
     register_lcd(xQueueLCDFrame, NULL, true);
+
+
+
+        // if(true){
+
+        //     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
+        //     // Send the pointers to the queue
+        //     register_lcd(xQueueAIFrame, NULL, true);
+
+        // }else{
+
+        //     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
+        //     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
+        //     register_lcd(xQueueLCDFrame, NULL, true);
+
+        // }
+
+
+
 
     vTaskDelay(pdMS_TO_TICKS(10));
 
@@ -75,6 +100,30 @@ void app_main()
     time_library_time_t initial_time = {2024, 8, 7, 17, 16, 0};
     time_library_init(&initial_time);
 //--------------------------------------------------------------
+
+
+
+    while(true){
+
+
+
+
+
+                // sleepTimeOut = xTaskGetTickCount();
+
+        if(xTaskGetTickCount()-sleepTimeOut>6000){
+            sleepEnable=true;
+
+        }
+
+
+
+    }
+
+
+
+
+
 
     ESP_LOGI(TAG, "app_main finished");
 }

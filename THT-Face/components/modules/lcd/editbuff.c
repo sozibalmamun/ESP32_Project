@@ -7,6 +7,10 @@
 
 
 uint8_t wifiStatus;
+uint8_t sleepEnable=0;
+TickType_t sleepTimeOut=0; 
+
+
 
 
 
@@ -17,7 +21,7 @@ void editDisplayBuff(camera_fb_t **buff){
     time_library_time_t current_time;
     uint8_t clockType = get_time(&current_time, 1);
 
-    if(true){// sleep time display
+    if(sleepEnable==1){// sleep time display
 
         sleepTimeDate(*buff,current_time);
 
@@ -31,15 +35,21 @@ void editDisplayBuff(camera_fb_t **buff){
 
                 iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
                 
-                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+12,WIFI_WIDTH,3,&animationTime,WHITE,*buff);
+                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+12,WIFI_WIDTH,3,&wifiAnimation01,WHITE,*buff);
+
             }else if(xTaskGetTickCount()-animationTime> 50 && xTaskGetTickCount()-animationTime< 100){
-                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+8,WIFI_WIDTH,4,&animationTime,WHITE,*buff);
+
+                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+8,WIFI_WIDTH,4,&wifiAnimation02,WHITE,*buff);
+
             }else if(xTaskGetTickCount()-animationTime> 100 && xTaskGetTickCount()-animationTime< 150){
+
                 iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
-                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+5,WIFI_WIDTH,5,&animationTime,WHITE,*buff);
+
+                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+5,WIFI_WIDTH,5,&wifiAnimation03,WHITE,*buff);
+
             }else if(xTaskGetTickCount()-animationTime> 150 && xTaskGetTickCount()-animationTime< 200){
 
-                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,6,&animationTime,WHITE,*buff);
+                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,6,&wifiAnimation04,WHITE,*buff);
 
             }else if(xTaskGetTickCount()-animationTime> 250){
                 animationTime = xTaskGetTickCount();
@@ -105,22 +115,23 @@ void iconPrint(int x_offset, int y_offset, uint8_t w, uint8_t h,char* logobuff,u
 }
 void writeSn(camera_fb_t *buff){
 
-    char tempFrame[13] ;
-    snprintf(tempFrame, sizeof(tempFrame), "SN-%09llu", generate_unique_id());
+    char tempFrame[17] ;
+    snprintf(tempFrame, sizeof(tempFrame), "SN-AA00%09llu", generate_unique_id());
 
     uint16_t len = (buff->width-(pixleLen(1,&tempFrame )))-3;   //x start poss
 
     WriteString(1,len, buff->height-(tablehight[1]+3),tempFrame,buff);
 }
+
 void writedateTime(camera_fb_t *buff ,time_library_time_t current_time,uint8_t clockType){
 
 //2024-08-10 3.47 PM
 
     char tempFrame[30] ;
-    snprintf(tempFrame, sizeof(tempFrame), "%d-%d-%d  %d.%d  %s",current_time.year,current_time.month,current_time.day, 
-    current_time.hour, current_time.minute, clockType==2 ? "PM" : clockType==1?"AM" :" ");
-
-    WriteString(1,2,2,tempFrame,buff);
+    snprintf(tempFrame, sizeof(tempFrame), "%d-%d-%d   %d.%d %s",current_time.year,current_time.month,current_time.day, 
+    current_time.hour, current_time.minute, clockType==1 ? "PM" : clockType==2?"AM" :" ");
+    // printf("\nclock type %d",clockType);
+    WriteString(1,4,5,tempFrame,buff);
 
 }
 

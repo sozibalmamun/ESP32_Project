@@ -25,7 +25,7 @@ void WriteString(uint8_t letterSize, int x_offset, int y_offset, const char *str
 // void wrightChar(int x_offset, int y_offset, char c, camera_fb_t *buff);
 void wrightChar(uint8_t letterSize, int x_offset, int y_offset, char c, camera_fb_t *buff);
 void writeSn(camera_fb_t *buff);
-void writedateTime(camera_fb_t *buff);
+void writedateTime(camera_fb_t *buff,time_library_time_t current_time,uint8_t clockType);
 uint16_t pixleLen(uint8_t letSize, char *str);
 
 void sleepTimeDate(camera_fb_t *buff, time_library_time_t current_time);

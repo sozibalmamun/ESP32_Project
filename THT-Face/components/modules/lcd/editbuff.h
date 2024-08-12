@@ -8,6 +8,7 @@
 
 
 extern qrcode_t qrInfo;
+#define DEVICE_VERSION_ID "AA00"
 
 #ifdef __cplusplus
 extern "C"

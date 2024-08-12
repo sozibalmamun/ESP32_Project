@@ -12,7 +12,7 @@
 
 
 extern uint8_t wifiStatus;
-extern uint64_t uniqueId;
+// extern uint64_t uniqueId;
 
 extern esp_websocket_client_handle_t client;
 

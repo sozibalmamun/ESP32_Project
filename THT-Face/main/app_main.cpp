@@ -18,7 +18,7 @@
 #include "freertos/queue.h"
 
 //----------------bt-----------------------
-// #include "Conectivity/ble_spp_server.h"
+#include "Conectivity/ble_spp_server.h"
 
 //-------------------------------------
 
@@ -92,6 +92,7 @@ void app_main()
 //--------------------------------------------------------------
 
 //-----------------------------------
+    // startBle();
 
 
 

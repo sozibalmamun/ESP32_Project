@@ -18,16 +18,7 @@
 #include "freertos/queue.h"
 
 //----------------bt-----------------------
-
-#include "esp_nimble_hci.h"
-#include "nimble/nimble_port.h"
-#include "nimble/nimble_port_freertos.h"
-#include "host/ble_hs.h"
-#include "host/util/util.h"
-#include "console/console.h"
-#include "services/gap/ble_svc_gap.h"
-// #include "ble_spp_server.h"
-#include "driver/uart.h"
+// #include "Conectivity/ble_spp_server.h"
 
 //-------------------------------------
 
@@ -99,6 +90,10 @@ void app_main()
     time_library_time_t initial_time = {2024, 8, 7, 17, 16, 0};
     time_library_init(&initial_time);
 //--------------------------------------------------------------
+
+//-----------------------------------
+
+
 
     ESP_LOGI(TAG, "app_main finished");
 

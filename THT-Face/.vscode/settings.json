@@ -30,7 +30,8 @@
         "time.h": "c",
         "cstdlib": "cpp",
         "timelib.h": "c",
-        "blespp.h": "c"
+        "blespp.h": "c",
+        "ble_spp_server.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM3",

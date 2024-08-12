@@ -6,7 +6,9 @@
 #include "stdint.h"
 
 
+
 uint8_t wifiStatus;
+uint64_t uniqueId;
 volatile uint8_t sleepEnable=0;
 TickType_t sleepTimeOut=0; 
 
@@ -65,10 +67,19 @@ void editDisplayBuff(camera_fb_t **buff){
                 }
             }
 
-            char tempFrame[10] ;
-            snprintf(tempFrame, sizeof(tempFrame), "%09llu", generate_unique_id());
+            // char tempFrame[15] ;
+            // snprintf(tempFrame, sizeof(tempFrame), "%09llu", generate_unique_id());//uniqueId
+            // createQrcode(tempFrame , *buff);
+            // writeSn(*buff);
+
+            uint64_t Id= generate_unique_id();
+
+            char tempFrame[15] ;
+            snprintf(tempFrame, sizeof(tempFrame), "%09llu", Id);//uniqueId
             createQrcode(tempFrame , *buff);
             writeSn(*buff);
+        
+
 
         }else 
         {
@@ -110,10 +121,10 @@ void iconPrint(int x_offset, int y_offset, uint8_t w, uint8_t h,char* logobuff,u
         }
     }
 }
-void writeSn(camera_fb_t *buff){
+void writeSn(camera_fb_t *buff ,uint64_t id){
 
     char tempFrame[17] ;
-    snprintf(tempFrame, sizeof(tempFrame), "SN-AA00%09llu", generate_unique_id());
+    snprintf(tempFrame, sizeof(tempFrame), "SN-AA00%09llu", id);
 
     uint16_t len = (buff->width-(pixleLen(1,&tempFrame )))-3;   //x start poss
 

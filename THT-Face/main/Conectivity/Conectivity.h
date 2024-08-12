@@ -10,7 +10,10 @@
 #include "esp_websocket_client.h"
 
 
+
 extern uint8_t wifiStatus;
+extern uint64_t uniqueId;
+
 extern esp_websocket_client_handle_t client;
 
 
@@ -19,10 +22,11 @@ extern "C" {
 #endif
 
 void wifi_connection(void);
-
 //save wifi info
 // void save_wifi_info(const char* ssid, const char* pass);
 // void read_wifi_info(char* ssid, char* pass);
+// uint64_t generate_unique_id(void);
+
 extern uint8_t get_wifi_signal_strength();
 // esp_err_t read_wifi_credentials(char *ssid, size_t ssid_len, char *pass, size_t pass_len) ;
 // esp_err_t save_wifi_credentials(const char *ssid, const char *pass) ;

@@ -7,11 +7,8 @@
 
 
 uint8_t wifiStatus;
-uint8_t sleepEnable=0;
+volatile uint8_t sleepEnable=0;
 TickType_t sleepTimeOut=0; 
-
-
-
 
 
 void editDisplayBuff(camera_fb_t **buff){

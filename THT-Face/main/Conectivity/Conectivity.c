@@ -1,5 +1,16 @@
 #include "Conectivity.h"
 
+
+
+
+
+//--------------------------------------------------------------------------------
+
+
+
+//--------------------------------------------------------------------------------------
+
+
 #define     TAG_WI_FI       "Wifi Debug"
 #define     TAG_FS          "FS Debug"
 #define     DEVICE_NAME         "THT-Face"
@@ -106,7 +117,6 @@ void wifi_connection(void) {
 }
 
 
-
 // void print_hostname() {
 //     esp_netif_t *netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
 //     if (netif == NULL) {
@@ -151,67 +161,72 @@ void wifi_connection(void) {
 //     }
 // }
 
-// void bt_init(void)
+//--------------------------------BT-------------------------------------------------------------------
+
+
+
+// void
+// app_main(void)
 // {
-//     esp_err_t ret;
-//     // Initialize NVS for Bluetooth
-//     ret = nvs_flash_init();
+//     int rc;
+
+//     /* Initialize NVS — it is used to store PHY calibration data */
+//     esp_err_t ret = nvs_flash_init();
 //     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
 //         ESP_ERROR_CHECK(nvs_flash_erase());
 //         ret = nvs_flash_init();
 //     }
 //     ESP_ERROR_CHECK(ret);
 
-//     // Initialize the BT controller to allocate task and other resources.
-//     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-//     ret = esp_bt_controller_init(&bt_cfg);
-//     if (ret) {
-//         ESP_LOGE(BT_TAG, "%s initialize controller failed\n", __func__);
-//         return;
+//     ESP_ERROR_CHECK(esp_nimble_hci_and_controller_init());
+
+//     nimble_port_init();
+
+//     /* Initialize connection_handle array */
+//     for (int i = 0; i <= CONFIG_BT_NIMBLE_MAX_CONNECTIONS; i++) {
+//         conn_handle_subs[i] = false;
 //     }
 
-//     // Enable BT controller
-//     ret = esp_bt_controller_enable(ESP_BT_MODE_BTDM);
-//     if (ret) {
-//         ESP_LOGE(BT_TAG, "%s enable controller failed\n", __func__);
-//         return;
-//     }
+//     /* Initialize uart driver and start uart task */
+//     ble_spp_uart_init();
 
-//     // Initialize and enable Bluedroid stack
-//     ret = esp_bluedroid_init();
-//     if (ret) {
-//         ESP_LOGE(BT_TAG, "%s initialize bluedroid failed\n", __func__);
-//         return;
-//     }
+//     /* Initialize the NimBLE host configuration. */
+//     ble_hs_cfg.reset_cb = ble_spp_server_on_reset;
+//     ble_hs_cfg.sync_cb = ble_spp_server_on_sync;
+//     ble_hs_cfg.gatts_register_cb = gatt_svr_register_cb;
+//     ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
 
-//     ret = esp_bluedroid_enable();
-//     if (ret) {
-//         ESP_LOGE(BT_TAG, "%s enable bluedroid failed\n", __func__);
-//         return;
-//     }
-// }
+//     ble_hs_cfg.sm_io_cap = CONFIG_EXAMPLE_IO_TYPE;
+// #ifdef CONFIG_EXAMPLE_BONDING
+//     ble_hs_cfg.sm_bonding = 1;
+// #endif
+// #ifdef CONFIG_EXAMPLE_MITM
+//     ble_hs_cfg.sm_mitm = 1;
+// #endif
+// #ifdef CONFIG_EXAMPLE_USE_SC
+//     ble_hs_cfg.sm_sc = 1;
+// #else
+//     ble_hs_cfg.sm_sc = 0;
+// #endif
+// #ifdef CONFIG_EXAMPLE_BONDING
+//     ble_hs_cfg.sm_our_key_dist = 1;
+//     ble_hs_cfg.sm_their_key_dist = 1;
+// #endif
 
-// void gatts_profile_event_handler(esp_gatts_cb_event_t event,
-//                                  esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
-//     switch (event) {
-//         case ESP_GATTS_WRITE_EVT: {
-//             if (param->write.handle == /* handle of your characteristic */) {
-//                 // Assuming credentials are sent in the format "SSID:PASSWORD"
-//                 char received_data[128];
-//                 memcpy(received_data, param->write.value, param->write.len);
-//                 received_data[param->write.len] = '\0';
 
-//                 char *ssid = strtok(received_data, ":");
-//                 char *password = strtok(NULL, ":");
+//     rc = new_gatt_svr_init();
+//     assert(rc == 0);
 
-//                 if (ssid && password) {
-//                     ESP_LOGI(GATTS_TAG, "Received SSID: %s, Password: %s", ssid, password);
-//                     // Connect to WiFi with the received credentials
-//                     wifi_init_sta(ssid, password);
-//                 }
-//             }
-//             break;
-//         }
-//         // Handle other events
-//     }
+//     /* Register custom service */
+//     rc = gatt_svr_register();
+//     assert(rc == 0);
+
+//     /* Set the default device name. */
+//     rc = ble_svc_gap_device_name_set("nimble-ble-spp-svr");
+//     assert(rc == 0);
+
+//     /* XXX Need to have template for store */
+//     ble_store_config_init();
+
+//     nimble_port_freertos_init(ble_spp_server_host_task);
 // }

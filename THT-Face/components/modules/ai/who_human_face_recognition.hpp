@@ -15,6 +15,7 @@ typedef enum
 } recognizer_state_t;
 
 // CMD handle from server
+#define IDLEENROL       0x00
 #define ENROLING        0x01
 #define ENROLED         0x02
 #define DUPLICATE       0x03

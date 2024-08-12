@@ -4,17 +4,35 @@
 #include "who_button.h"
 #include "event_logic.hpp"
 #include "who_adc_button.h"
+
 #include "Conectivity/Conectivity.h"
+
 #include "esp_log.h"
 #include "esp_system.h"
 #include "nvs_flash.h"
 
-// #include "time/time.h"
 
 #include "timeLib.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
+
+//----------------bt-----------------------
+
+#include "esp_nimble_hci.h"
+#include "nimble/nimble_port.h"
+#include "nimble/nimble_port_freertos.h"
+#include "host/ble_hs.h"
+#include "host/util/util.h"
+#include "console/console.h"
+#include "services/gap/ble_svc_gap.h"
+// #include "ble_spp_server.h"
+#include "driver/uart.h"
+
+//-------------------------------------
+
+
+
 
 static const char *TAG = "app_main";
 
@@ -25,7 +43,7 @@ static QueueHandle_t xQueueEventLogic = NULL;
 
 #define GPIO_BOOT GPIO_NUM_0
 
-extern uint8_t sleepEnable;
+extern volatile uint8_t sleepEnable;
 extern TickType_t sleepTimeOut; 
 
 
@@ -84,7 +102,6 @@ void app_main()
 
     ESP_LOGI(TAG, "app_main finished");
 
-
     while(true){
 
 
@@ -104,10 +121,11 @@ void app_main()
 
 
 
-                // sleepTimeOut = xTaskGetTickCount();
+        // sleepTimeOut = xTaskGetTickCount();
+        if(xTaskGetTickCount()-sleepTimeOut>6000 && xTaskGetTickCount()-sleepTimeOut< 6500){
 
-        if(xTaskGetTickCount()-sleepTimeOut>6000){
             sleepEnable=true;
+            // printf("\nsleepEnable");
 
         }
 

@@ -29,7 +29,8 @@
         "conectivity.h": "c",
         "time.h": "c",
         "cstdlib": "cpp",
-        "timelib.h": "c"
+        "timelib.h": "c",
+        "blespp.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM3",

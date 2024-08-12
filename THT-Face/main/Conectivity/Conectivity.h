@@ -31,7 +31,6 @@ extern uint8_t get_wifi_signal_strength();
 extern uint64_t generate_unique_id(void);
 extern void stompAppStart(void);
 
-
 #ifdef __cplusplus
 }
 #endif

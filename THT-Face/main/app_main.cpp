@@ -18,7 +18,8 @@
 #include "freertos/queue.h"
 
 //----------------bt-----------------------
-#include "Conectivity/ble_spp_server.h"
+
+
 
 //-------------------------------------
 
@@ -36,7 +37,13 @@ static QueueHandle_t xQueueEventLogic = NULL;
 
 extern volatile uint8_t sleepEnable;
 extern TickType_t sleepTimeOut; 
+//---------------------------------------------------------------------------------------------------
 
+
+
+
+
+//--------------------------------------blufi end-----------------------------------------------------------
 
 
 extern "C" 
@@ -91,8 +98,11 @@ void app_main()
     time_library_init(&initial_time);
 //--------------------------------------------------------------
 
+
+
+
 //-----------------------------------
-    // startBle();
+  
 
 
 

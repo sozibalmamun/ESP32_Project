@@ -4,7 +4,14 @@
 #define BLUFI_EXAMPLE_H
 
 #include "esp_blufi_api.h"
+#include "esp_websocket_client.h"
 
+
+
+extern uint8_t wifiStatus;
+// extern uint64_t uniqueId;
+
+extern esp_websocket_client_handle_t client;
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,7 +35,10 @@ int esp_blufi_gap_register_callback(void);
 esp_err_t esp_blufi_host_init(void);
 esp_err_t esp_blufi_host_and_cb_init(esp_blufi_callbacks_t *callbacks);
 
+
 void bluFiStart(void);
+extern uint64_t generate_unique_id(void);
+extern void stompAppStart(void);
 
 
 #ifdef __cplusplus

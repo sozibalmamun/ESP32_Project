@@ -68,11 +68,11 @@ void app_main()
     // Continue with other initializations
     
     // register_button(GPIO_BOOT, xQueueKeyState);
-    // register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
+    register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
     //  // register_adc_button(buttons, 4, xQueueKeyState);
     // register_event(xQueueKeyState, xQueueEventLogic);
-    // register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
-    // register_lcd(xQueueLCDFrame, NULL, true);
+    register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
+    register_lcd(xQueueLCDFrame, NULL, true);
 
     vTaskDelay(pdMS_TO_TICKS(10));
 
@@ -88,7 +88,6 @@ void app_main()
     vTaskDelay(pdMS_TO_TICKS(10));
 
     // Initialize Wi-Fi
-    // wifi_connection();
 
 //---------------------------
     DisplayFreeMemory("MemDisplay");

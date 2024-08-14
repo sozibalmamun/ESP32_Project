@@ -56,61 +56,31 @@ void app_main()
         ESP_LOGE(TAG, "Failed to create queues");
         esp_restart();
     }
-
-
-    // Continue with other initializations
     
-    // register_button(GPIO_BOOT, xQueueKeyState);
+    register_button(GPIO_BOOT, xQueueKeyState);
     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
     // register_adc_button(buttons, 4, xQueueKeyState);
-    // register_event(xQueueKeyState, xQueueEventLogic);
+    register_event(xQueueKeyState, xQueueEventLogic);
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
     register_lcd(xQueueLCDFrame, NULL, true);
 
     vTaskDelay(pdMS_TO_TICKS(10));
 
-    // Initialize NVS
-    // ret = nvs_flash_init();
-    // if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-    //     ESP_LOGW(TAG, "NVS partition was truncated, erasing...");
-    //     ESP_ERROR_CHECK(nvs_flash_erase());
-    //     ret = nvs_flash_init();
-    // }
-    // ESP_ERROR_CHECK(ret);
 
-    // vTaskDelay(pdMS_TO_TICKS(10));
-
-    // Initialize Wi-Fi
-
-//---------------------------
-    DisplayFreeMemory("MemDisplay");
-
+    // Initialize Conectivity----------------------------
+    // DisplayFreeMemory("MemDisplay");
     bluFiStart();
+    //--------------------------------------------------
 
-//---------------------------
 
-
-//-----------time int here
-
-/*
-     year, month, day, hour, minute, second;
-*/
-    time_library_time_t initial_time = {2024, 8, 7, 17, 16, 0};
+    //-----------time int here
+    time_library_time_t initial_time = {2024, 8, 7, 17, 16, 0};//     year, month, day, hour, minute, second;
     time_library_init(&initial_time);
-//--------------------------------------------------------------
-
-
-
-
-//-----------------------------------
-  
-
-
+    //--------------------------------------------------------------
 
     ESP_LOGI(TAG, "app_main finished");
 
     while(true){
-
 
         // if(true){
 
@@ -125,8 +95,6 @@ void app_main()
         //     register_lcd(xQueueLCDFrame, NULL, true);
 
         // }
-
-
 
         // sleepTimeOut = xTaskGetTickCount();
         if(xTaskGetTickCount()-sleepTimeOut>6000 && xTaskGetTickCount()-sleepTimeOut< 6500){

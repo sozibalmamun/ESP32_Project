@@ -286,11 +286,11 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         esp_wifi_set_config(WIFI_IF_STA, &sta_config);
 
 
-        // char ssid[param->sta_ssid.ssid_len + 1];
-        // strncpy(ssid, (char *)param->sta_ssid.ssid, param->sta_ssid.ssid_len);
-        // ssid[param->sta_ssid.ssid_len] = '\0'; // Null-terminate the SSID string
+        char ssid[param->sta_ssid.ssid_len + 1];
+        strncpy(ssid, (char *)param->sta_ssid.ssid, param->sta_ssid.ssid_len);
+        ssid[param->sta_ssid.ssid_len] = '\0'; // Null-terminate the SSID string
 
-        // BLUFI_INFO("Received STA SSID: %s\n", ssid);
+        BLUFI_INFO("Received STA SSID: %s\n", ssid);
 
        
         break;
@@ -301,11 +301,11 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         sta_config.sta.password[param->sta_passwd.passwd_len] = '\0';
         esp_wifi_set_config(WIFI_IF_STA, &sta_config);
 
-        // char password[param->sta_passwd.passwd_len + 1];
-        // strncpy(password, (char *)param->sta_passwd.passwd, param->sta_passwd.passwd_len);
-        // password[param->sta_passwd.passwd_len] = '\0'; // Null-terminate the password string
+        char password[param->sta_passwd.passwd_len + 1];
+        strncpy(password, (char *)param->sta_passwd.passwd, param->sta_passwd.passwd_len);
+        password[param->sta_passwd.passwd_len] = '\0'; // Null-terminate the password string
 
-        // BLUFI_INFO("Received STA PASSWORD: %s\n", password);
+        BLUFI_INFO("Received STA PASSWORD: %s\n", password);
 
         break;
  

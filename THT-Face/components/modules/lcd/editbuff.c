@@ -72,11 +72,11 @@ void editDisplayBuff(camera_fb_t **buff){
             // createQrcode(tempFrame , *buff);
             // writeSn(*buff);
 
-            uint64_t Id= generate_unique_id();
-            char tempFrame[15] ;
-            snprintf(tempFrame, sizeof(tempFrame), "%s%010llu",DEVICE_VERSION_ID, Id);//uniqueId
-            createQrcode(tempFrame , *buff);
-            writeSn(*buff, Id);
+            // uint64_t Id= generate_unique_id();
+            // char tempFrame[15] ;
+            // snprintf(tempFrame, sizeof(tempFrame), "%s%010llu",DEVICE_VERSION_ID, Id);//uniqueId
+            // createQrcode(tempFrame , *buff);
+            // writeSn(*buff, Id);
         
 
 

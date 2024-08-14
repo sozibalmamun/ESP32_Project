@@ -19,7 +19,7 @@
 
 //----------------bt-----------------------
 
-
+#include "blufi_example.h"
 
 //-------------------------------------
 
@@ -41,10 +41,17 @@ extern TickType_t sleepTimeOut;
 
 
 
-
-
 //--------------------------------------blufi end-----------------------------------------------------------
 
+
+void DisplayFreeMemory(char *str)
+{
+	printf("--------------- heap free size PSRAM %s:%d,total size:%d\r\n", str,(int)heap_caps_get_free_size( MALLOC_CAP_SPIRAM ),
+	heap_caps_get_total_size(MALLOC_CAP_SPIRAM));
+	printf("--------------- heap free size in processor %s:%ld,total size:%d\r\n",str,(long)heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
+	heap_caps_get_total_size(MALLOC_CAP_INTERNAL));
+
+}
 
 extern "C" 
 void app_main()
@@ -66,12 +73,12 @@ void app_main()
 
     // Continue with other initializations
     
-    register_button(GPIO_BOOT, xQueueKeyState);
-    register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
-     // register_adc_button(buttons, 4, xQueueKeyState);
-    register_event(xQueueKeyState, xQueueEventLogic);
-    register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
-    register_lcd(xQueueLCDFrame, NULL, true);
+    // register_button(GPIO_BOOT, xQueueKeyState);
+    // register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
+    //  // register_adc_button(buttons, 4, xQueueKeyState);
+    // register_event(xQueueKeyState, xQueueEventLogic);
+    // register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
+    // register_lcd(xQueueLCDFrame, NULL, true);
 
     vTaskDelay(pdMS_TO_TICKS(10));
 
@@ -87,7 +94,15 @@ void app_main()
     vTaskDelay(pdMS_TO_TICKS(10));
 
     // Initialize Wi-Fi
-    wifi_connection();
+    // wifi_connection();
+
+//---------------------------
+    DisplayFreeMemory("MemDisplay");
+
+    bluFiStart();
+
+//---------------------------
+
 
 //-----------time int here
 

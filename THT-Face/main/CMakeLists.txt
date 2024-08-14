@@ -11,11 +11,10 @@
                              "StomeClient/StomeClient.c" 
                              "dataHandler/dataHandler.c" 
                              "enrol/enrol.c" 
-                             "Conectivity/Conectivity.c"
 
-                             "blufi_example_main.c"
-                             "blufi_security.c"
-                             "blufi_init.c"
+                             "Conectivity/blufi_example_main.c"
+                             "Conectivity/blufi_security.c"
+                             "Conectivity/blufi_init.c"
 
                              
                     INCLUDE_DIRS ".")

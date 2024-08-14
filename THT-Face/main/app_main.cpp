@@ -5,7 +5,7 @@
 #include "event_logic.hpp"
 #include "who_adc_button.h"
 
-#include "Conectivity/Conectivity.h"
+#include "Conectivity/blufi_example.h"
 
 #include "esp_log.h"
 #include "esp_system.h"
@@ -16,12 +16,6 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
-
-//----------------bt-----------------------
-
-#include "blufi_example.h"
-
-//-------------------------------------
 
 
 

@@ -4,14 +4,11 @@
 #include "esp_log.h"
 #include "esp_blufi.h"
 #include "blufi_example.h"
-#ifdef CONFIG_BT_BLUEDROID_ENABLED
 #include "esp_bt.h"
 #include "esp_bt_main.h"
 #include "esp_bt_device.h"
-#endif
 
 
-#ifdef CONFIG_BT_BLUEDROID_ENABLED
 esp_err_t esp_blufi_host_init(void)
 {
     int ret;
@@ -67,4 +64,3 @@ esp_err_t esp_blufi_host_and_cb_init(esp_blufi_callbacks_t *example_callbacks)
     return ESP_OK;
 
 }
-#endif /* CONFIG_BT_BLUEDROID_ENABLED */

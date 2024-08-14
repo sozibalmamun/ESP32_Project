@@ -34,6 +34,7 @@
 #include "esp_blufi.h"
 
 
+#include "handleQrCode.h"
 
 
 
@@ -59,9 +60,9 @@ const int CONNECTED_BIT = BIT0;
 static uint8_t example_wifi_retry = 0;
 
 /* store the station info for send back to phone */
-static bool gl_sta_connected = false;
+uint8_t wifiStatus=0;
 static bool gl_sta_got_ip = false;
-static bool ble_is_connected = false;
+bool ble_is_connected = false;
 static uint8_t gl_sta_bssid[6];
 static uint8_t gl_sta_ssid[32];
 static int gl_sta_ssid_len;
@@ -171,20 +172,18 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
     case WIFI_EVENT_STA_START:////ok
 
         example_wifi_connect();
-        printf("WIFI CONNECTING....\n");
+        // printf("WIFI CONNECTING....\n");
 
         break;
 
     case WIFI_EVENT_STA_CONNECTED:{
         printf("WiFi CONNECTED\n");
 
-        wifiStatus=0x01;
-
         vTaskDelay(500);
         stompAppStart();
 
 
-        gl_sta_connected = true;
+        wifiStatus=0x01;
         gl_sta_is_connecting = false;
         event = (wifi_event_sta_connected_t*) event_data;
         memcpy(gl_sta_bssid, event->bssid, 6);
@@ -206,7 +205,8 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
         example_wifi_connect();
 
         blufi_security_deinit();
-        esp_blufi_adv_start();
+        blufiAddStart();
+
 
 
         break;
@@ -250,34 +250,30 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
      * now, as a example, we do it more simply */
     switch (event) {
     case ESP_BLUFI_EVENT_INIT_FINISH:
-        BLUFI_INFO("BLUFI init finish\n");
-        esp_blufi_adv_start();
+        // BLUFI_INFO("BLUFI init finish\n");
+        blufiAddStart();
+
         break;
     case ESP_BLUFI_EVENT_DEINIT_FINISH:
-        BLUFI_INFO("BLUFI deinit finish\n");
+        // BLUFI_INFO("BLUFI deinit finish\n");
         break;
     case ESP_BLUFI_EVENT_BLE_CONNECT:
         BLUFI_INFO("BLUFI ble connect\n");
         ble_is_connected = true;
         esp_blufi_adv_stop();
         blufi_security_init();
+        sleepTimeOut = xTaskGetTickCount();
+        sleepEnable=false;
         break;
     case ESP_BLUFI_EVENT_BLE_DISCONNECT:
-        BLUFI_INFO("BLUFI ble disconnect\n");
+        // BLUFI_INFO("BLUFI ble disconnect\n");
         ble_is_connected = false;
         blufi_security_deinit();
-        esp_blufi_adv_start();
+
+        blufiAddStart();
+
         break;
 
-    case ESP_BLUFI_EVENT_REPORT_ERROR:
-        BLUFI_ERROR("BLUFI report error, error code %d\n", param->report_error.state);
-        esp_blufi_send_error_info(param->report_error.state);
-        break;
-
-    case ESP_BLUFI_EVENT_RECV_SLAVE_DISCONNECT_BLE:
-        BLUFI_INFO("blufi close a gatt connection");
-        esp_blufi_disconnect();
-        break;
 
 	case ESP_BLUFI_EVENT_RECV_STA_SSID:{//ok
 
@@ -286,11 +282,11 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         esp_wifi_set_config(WIFI_IF_STA, &sta_config);
 
 
-        char ssid[param->sta_ssid.ssid_len + 1];
-        strncpy(ssid, (char *)param->sta_ssid.ssid, param->sta_ssid.ssid_len);
-        ssid[param->sta_ssid.ssid_len] = '\0'; // Null-terminate the SSID string
+        // char ssid[param->sta_ssid.ssid_len + 1];
+        // strncpy(ssid, (char *)param->sta_ssid.ssid, param->sta_ssid.ssid_len);
+        // ssid[param->sta_ssid.ssid_len] = '\0'; // Null-terminate the SSID string
 
-        BLUFI_INFO("Received STA SSID: %s\n", ssid);
+        // BLUFI_INFO("Received STA SSID: %s\n", ssid);
 
        
         break;
@@ -301,11 +297,11 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         sta_config.sta.password[param->sta_passwd.passwd_len] = '\0';
         esp_wifi_set_config(WIFI_IF_STA, &sta_config);
 
-        char password[param->sta_passwd.passwd_len + 1];
-        strncpy(password, (char *)param->sta_passwd.passwd, param->sta_passwd.passwd_len);
-        password[param->sta_passwd.passwd_len] = '\0'; // Null-terminate the password string
+        // char password[param->sta_passwd.passwd_len + 1];
+        // strncpy(password, (char *)param->sta_passwd.passwd, param->sta_passwd.passwd_len);
+        // password[param->sta_passwd.passwd_len] = '\0'; // Null-terminate the password string
 
-        BLUFI_INFO("Received STA PASSWORD: %s\n", password);
+        // BLUFI_INFO("Received STA PASSWORD: %s\n", password);
 
         break;
  
@@ -315,7 +311,13 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
     }
 }
 
+void blufiAddStart(void){
 
+    esp_blufi_adv_start();
+    char tempFrame[14] ;
+    snprintf(tempFrame, sizeof(tempFrame), "%s%9llu",DEVICE_VERSION_ID, generate_unique_id());//uniqueId
+    esp_ble_gap_set_device_name(tempFrame);
+}
 
 void bluFiStart(void)
 {
@@ -336,18 +338,18 @@ void bluFiStart(void)
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
     ret = esp_bt_controller_init(&bt_cfg);
     if (ret) {
-        BLUFI_ERROR("%s initialize bt controller failed: %s\n", __func__, esp_err_to_name(ret));
+        // BLUFI_ERROR("%s initialize bt controller failed: %s\n", __func__, esp_err_to_name(ret));
     }
 
     ret = esp_bt_controller_enable(ESP_BT_MODE_BLE);
     if (ret) {
-        BLUFI_ERROR("%s enable bt controller failed: %s\n", __func__, esp_err_to_name(ret));
+        // BLUFI_ERROR("%s enable bt controller failed: %s\n", __func__, esp_err_to_name(ret));
         return;
     }
 
     ret = esp_blufi_host_and_cb_init(&example_callbacks);
     if (ret) {
-        BLUFI_ERROR("%s initialise failed: %s\n", __func__, esp_err_to_name(ret));
+        // BLUFI_ERROR("%s initialise failed: %s\n", __func__, esp_err_to_name(ret));
         return;
     }
 

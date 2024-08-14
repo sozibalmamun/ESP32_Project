@@ -6,11 +6,8 @@
 #include "esp_blufi_api.h"
 #include "esp_websocket_client.h"
 
-
-
-extern uint8_t wifiStatus;
-// extern uint64_t uniqueId;
-
+extern volatile uint8_t sleepEnable;
+extern TickType_t sleepTimeOut; 
 extern esp_websocket_client_handle_t client;
 
 #ifdef __cplusplus
@@ -37,6 +34,8 @@ esp_err_t esp_blufi_host_and_cb_init(esp_blufi_callbacks_t *callbacks);
 
 
 void bluFiStart(void);
+
+void blufiAddStart(void);
 extern uint64_t generate_unique_id(void);
 extern void stompAppStart(void);
 

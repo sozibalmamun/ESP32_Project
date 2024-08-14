@@ -6,11 +6,10 @@
 #include "stdint.h"
 
 
-
-uint8_t wifiStatus;
-// uint64_t uniqueId;
 volatile uint8_t sleepEnable=0;
-TickType_t sleepTimeOut=0; 
+volatile TickType_t sleepTimeOut=0; 
+extern bool ble_is_connected;
+extern uint8_t wifiStatus;
 
 
 void editDisplayBuff(camera_fb_t **buff){
@@ -30,9 +29,12 @@ void editDisplayBuff(camera_fb_t **buff){
 
         if(wifiStatus==0){
 
+            if(ble_is_connected)iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
+
+
             if( xTaskGetTickCount()-animationTime< 50){
 
-                iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
+            if(!ble_is_connected)iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
                 
                 iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+12,WIFI_WIDTH,3,&wifiAnimation01,WHITE,*buff);
 
@@ -42,7 +44,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
             }else if(xTaskGetTickCount()-animationTime> 100 && xTaskGetTickCount()-animationTime< 150){
 
-                iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
+            if(!ble_is_connected)iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
 
                 iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+5,WIFI_WIDTH,5,&wifiAnimation03,WHITE,*buff);
 
@@ -55,9 +57,9 @@ void editDisplayBuff(camera_fb_t **buff){
             }
             iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,7,7 ,&noWifiIcon,RED,*buff);
 
-            for (int y = qrInfo.yOfset-3; y < qrInfo.yOfset-3 + qrInfo.erase_size; y++)
+            for (uint8_t y = qrInfo.yOfset-3; y < qrInfo.yOfset-3 + qrInfo.erase_size; y++)
             {
-                for (int x = qrInfo.xOfset-3; x < qrInfo.xOfset-3 + qrInfo.erase_size; x++)
+                for (uint16_t x = qrInfo.xOfset-3; x < qrInfo.xOfset-3 + qrInfo.erase_size; x++)
                 {
                     int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
 
@@ -73,10 +75,10 @@ void editDisplayBuff(camera_fb_t **buff){
             // writeSn(*buff);
 
             // uint64_t Id= generate_unique_id();
-            // char tempFrame[15] ;
-            // snprintf(tempFrame, sizeof(tempFrame), "%s%010llu",DEVICE_VERSION_ID, Id);//uniqueId
-            // createQrcode(tempFrame , *buff);
-            // writeSn(*buff, Id);
+            char tempFrame[14] ;
+            snprintf(tempFrame, sizeof(tempFrame), "%s%9llu",DEVICE_VERSION_ID, generate_unique_id());//uniqueId
+            createQrcode(tempFrame , *buff);
+            writeSn(*buff, generate_unique_id());
         
 
 
@@ -99,7 +101,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
 }
 
-void iconPrint(int x_offset, int y_offset, uint8_t w, uint8_t h,char* logobuff,uint16_t color ,camera_fb_t *buff) {
+void iconPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,char* logobuff,uint16_t color ,camera_fb_t *buff) {
     // Ensure logo fits within the buffer dimensions
     if (x_offset + w > buff->width || y_offset + h > buff->height) {
         printf("Logo position out of bounds\n");
@@ -122,8 +124,8 @@ void iconPrint(int x_offset, int y_offset, uint8_t w, uint8_t h,char* logobuff,u
 }
 void writeSn(camera_fb_t *buff ,uint64_t id){
 
-    char tempFrame[17] ;
-    snprintf(tempFrame, sizeof(tempFrame), "SN-%s%09llu",DEVICE_VERSION_ID, id);
+    char tempFrame[19] ;
+    snprintf(tempFrame, sizeof(tempFrame), "SN-%s%9llu",DEVICE_VERSION_ID, id);
 
     uint16_t len = (buff->width-(pixleLen(1,&tempFrame )))-3;   //x start poss
 
@@ -144,7 +146,7 @@ void writedateTime(camera_fb_t *buff ,time_library_time_t current_time,uint8_t c
 
 
 // Function to render a string onto the display buffer
-void WriteString(uint8_t letterSize, int x_offset, int y_offset, const char *str, camera_fb_t *buff) {
+void WriteString(uint8_t letterSize, uint16_t x_offset, uint8_t y_offset, const char *str, camera_fb_t *buff) {
     
     uint8_t letterWidth;
 
@@ -170,7 +172,7 @@ void WriteString(uint8_t letterSize, int x_offset, int y_offset, const char *str
 }
 
 // Function to render a character onto the display buffer
-void wrightChar(uint8_t letterSize, int x_offset, int y_offset, char c, camera_fb_t *buff) {
+void wrightChar(uint8_t letterSize, uint16_t x_offset, uint8_t y_offset, char c, camera_fb_t *buff) {
     
 
     // Get the bitmap data for the character
@@ -195,10 +197,10 @@ void wrightChar(uint8_t letterSize, int x_offset, int y_offset, char c, camera_f
     }
 
 
-    for (int y = 0; y < tablehight[letterSize] ; y++) {
-        for (int x = 0; x <= letterWidth; x++) {
+    for (uint8_t y = 0; y < tablehight[letterSize] ; y++) {
+        for (uint8_t x = 0; x <= letterWidth; x++) {
 
-            int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
+            uint32_t buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
             // Get the pixel value from the character data
             if (char_data[y] & (1 << (16-x))) {
                 // Draw white (pixel set)
@@ -346,7 +348,7 @@ void timeDisplay(uint8_t x, uint8_t y, uint8_t value,camera_fb_t *buff){
     wrighSingle7segment(segmentBaseX-3, segmentBaseY+2,'f',buff);
     wrighSingle7segment(segmentBaseX+1, segmentBaseY+27,'g',buff);
 */
-void WriteMulti7segment(int x_offset, int y_offset, const char *str, camera_fb_t *buff) {
+void WriteMulti7segment(uint16_t x_offset, uint8_t y_offset, const char *str, camera_fb_t *buff) {
 
     while (*str) {
 
@@ -389,7 +391,7 @@ void WriteMulti7segment(int x_offset, int y_offset, const char *str, camera_fb_t
     }
 }
 // Function to render a character onto the display buffer a
-void wrighSingle7segment(int x_offset, int y_offset, char c, camera_fb_t *buff) {
+void wrighSingle7segment(uint16_t x_offset, uint8_t y_offset, char c, camera_fb_t *buff) {
     
     if(c=='a'|| c=='g'||c=='d'){
 
@@ -405,10 +407,10 @@ void wrighSingle7segment(int x_offset, int y_offset, char c, camera_fb_t *buff) 
             return;
         }
 
-        for (int y = 0; y < HEIGHT_32; y++) {
-            for (int x = 0; x <= WIDTH_32; x++) {
+        for (uint8_t y = 0; y < HEIGHT_32; y++) {
+            for (uint8_t x = 0; x <= WIDTH_32; x++) {
 
-                int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
+                uint32_t buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
                 // Get the pixel value from the character data
                 if (char_data[y] & (1 << (WIDTH_32-x))) {
                     // Draw white (pixel set)
@@ -431,9 +433,9 @@ void wrighSingle7segment(int x_offset, int y_offset, char c, camera_fb_t *buff) 
             return;
         }
 
-        for (int y = 0; y < HEIGHT_8; y++) {
-            for (int x = 0; x <= WIDTH_8; x++) {
-                int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
+        for (uint8_t y = 0; y < HEIGHT_8; y++) {
+            for (uint8_t x = 0; x <= WIDTH_8; x++) {
+                uint32_t buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
                 // Get the pixel value from the character data
                 if (char_data[y] & (1 << (WIDTH_8-x))) {
                     // Draw white (pixel set)

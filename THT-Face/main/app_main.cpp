@@ -14,6 +14,7 @@
 
 #include "timeLib.h"
 
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 
@@ -28,14 +29,6 @@ static QueueHandle_t xQueueKeyState = NULL;
 static QueueHandle_t xQueueEventLogic = NULL;
 
 #define GPIO_BOOT GPIO_NUM_0
-
-extern volatile uint8_t sleepEnable;
-extern TickType_t sleepTimeOut; 
-//---------------------------------------------------------------------------------------------------
-
-
-
-//--------------------------------------blufi end-----------------------------------------------------------
 
 
 void DisplayFreeMemory(char *str)
@@ -69,7 +62,7 @@ void app_main()
     
     // register_button(GPIO_BOOT, xQueueKeyState);
     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
-    //  // register_adc_button(buttons, 4, xQueueKeyState);
+    // register_adc_button(buttons, 4, xQueueKeyState);
     // register_event(xQueueKeyState, xQueueEventLogic);
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
     register_lcd(xQueueLCDFrame, NULL, true);

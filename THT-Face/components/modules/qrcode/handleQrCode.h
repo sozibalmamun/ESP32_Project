@@ -5,6 +5,8 @@
 #include "stdbool.h"
 #include "esp_camera.h"
 
+#define DEVICE_VERSION_ID "AA00"
+
 
 typedef struct {
 uint16_t xOfset;

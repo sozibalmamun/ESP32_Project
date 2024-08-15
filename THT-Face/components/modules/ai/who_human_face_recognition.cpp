@@ -446,13 +446,13 @@ void copyPersonImage(camera_fb_t **src, imageData_t **dst, int x, int y, int rec
 
     // Copy the rectangle area from the source to the destination
     for (int row = 0; row < rect_height; row++) {
-        uint8_t src_index = ((y + row) * (*src)->width + x) * bytes_per_pixel;
-        uint8_t dst_index = row * rect_width * bytes_per_pixel;
-        memcpy((*dst)->buf[dst_index], (*src)->buf[src_index], rect_width * bytes_per_pixel);
+        int src_index = ((y + row) * (*src)->width + x) * bytes_per_pixel;
+        int dst_index = row * rect_width * bytes_per_pixel;
+        memcpy(&((*dst)->buf[dst_index]), &((*src)->buf[src_index]), rect_width * bytes_per_pixel);
     }
 
+    // Edit the image after copying
     editImage(*dst);
-
 }
 
 void editImage(imageData_t *buff ){
@@ -464,10 +464,10 @@ void editImage(imageData_t *buff ){
     {
         for (uint16_t x = boxPosition[0]; x < boxPosition[0] + (boxPosition[2]-boxPosition[0]); x++)
         {
-            // int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
+            int index = (y *buff->width + x) * 2; // Assuming 2 bytes per pixel
 
-            // (*buff)->buf[index] = 0xff;
-            // (*buff)->buf[index + 1] = 0xff;
+            buff->buf[index] = 0xff;
+            buff->buf[index + 1] = 0xff;
         
         }
     }

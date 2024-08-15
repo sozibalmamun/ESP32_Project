@@ -5,6 +5,10 @@
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 
+
+#include "esp_camera.h"
+
+
 typedef enum
 {
     IDLE = 0,
@@ -25,7 +29,15 @@ typedef enum
 #define ID_INVALID      0X06
 
 
+typedef struct {
+    uint8_t * buf;              /*!< Pointer to the pixel data */
+    size_t len;                 /*!< Length of the buffer in bytes */
+    size_t width;               /*!< Width of the buffer in pixels */
+    size_t height;              /*!< Height of the buffer in pixels */
+} imageData_t;
 
+void copyPersonImage(camera_fb_t **src, imageData_t **dst, int x, int y, int rect_width, int rect_height);
+void editImage(imageData_t *buff );
 
 
 void register_human_face_recognition(QueueHandle_t frame_i,

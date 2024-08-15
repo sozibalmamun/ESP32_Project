@@ -1,7 +1,7 @@
 #include "who_human_face_recognition.hpp"
 
 #include "esp_log.h"
-#include "esp_camera.h"
+// #include "esp_camera.h"
 
 #include "dl_image.hpp"
 #include "fb_gfx.h"
@@ -74,7 +74,6 @@ typedef enum
 #define FRAME_DELAY_NUM 16
 
 //-------------------------------------
-void editImage(camera_fb_t **buff );
 
 //-------------------------------------
 
@@ -118,6 +117,7 @@ static int rgb_printf(camera_fb_t *fb, uint32_t color, const char *format, ...)
 static void task_process_handler(void *arg)
 {
     camera_fb_t *frame = NULL;
+    imageData_t *cropFrame = NULL;
 
     HumanFaceDetectMSR01 detector(0.3F, 0.3F, 10, 0.3F);
     HumanFaceDetectMNP01 detector2(0.4F, 0.3F, 10);
@@ -191,7 +191,30 @@ static void task_process_handler(void *arg)
 
                         //---------------------------------------------------------------------------
                         // print_detection_result(detect_candidates);
-                        editImage(&frame);
+                        // editImage(&frame);
+/*
+
+
+    for (uint8_t y = boxPosition[1]; y < boxPosition[1] + (boxPosition[3]-boxPosition[1]); y++)
+    {
+        for (uint16_t x = boxPosition[0]; x < boxPosition[0] + (boxPosition[2]-boxPosition[0]); x++)
+        {
+            int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
+
+            // (*buff)->buf[index] = 0xff;
+            // (*buff)->buf[index + 1] = 0xff;
+        
+        }
+    }
+
+
+*/
+
+
+
+
+
+                        copyPersonImage(&frame, &cropFrame, boxPosition[0], boxPosition[1], boxPosition[2]-boxPosition[0], boxPosition[3]-boxPosition[1]);
                     
                         //--------------------------------------------------------------------------
                         // duplicate 
@@ -400,35 +423,48 @@ static void task_process_handler(void *arg)
 //     }
 // }
 
-void copy_image(const char *src, camera_fb_t *dst, int src_width, int x, int y, int rect_width, int rect_height) {
+void copyPersonImage(camera_fb_t **src, imageData_t **dst, int x, int y, int rect_width, int rect_height) {
+    if (x + rect_width > (*src)->width || y + rect_height > (*src)->height) {
+        printf("Error: Rectangle out of bounds\n");
+        return;
+    }
+
     // Calculate the size of the rectangle in bytes
     int bytes_per_pixel = 2; // Assuming RGB565 format, 2 bytes per pixel
     int dst_len = rect_width * rect_height * bytes_per_pixel;
 
     // Allocate memory for the destination buffer
-    dst->buf = (uint8_t *)malloc(dst_len);
-    dst->width = rect_width;
-    dst->height = rect_height;
-    dst->len = dst_len;
+    (*dst)->buf = (uint8_t *)malloc(dst_len);
+    if ((*dst)->buf == NULL) {
+        printf("Error: Unable to allocate memory for the destination buffer\n");
+        return;
+    }
+
+    (*dst)->width = rect_width;
+    (*dst)->height = rect_height;
+    (*dst)->len = dst_len;
 
     // Copy the rectangle area from the source to the destination
     for (int row = 0; row < rect_height; row++) {
-        int src_index = ((y + row) * src_width + x) * bytes_per_pixel;
-        int dst_index = row * rect_width * bytes_per_pixel;
-        memcpy(&dst->buf[dst_index], &src[src_index], rect_width * bytes_per_pixel);
+        uint8_t src_index = ((y + row) * (*src)->width + x) * bytes_per_pixel;
+        uint8_t dst_index = row * rect_width * bytes_per_pixel;
+        memcpy((*dst)->buf[dst_index], (*src)->buf[src_index], rect_width * bytes_per_pixel);
     }
+
+    editImage(*dst);
+
 }
 
-void editImage(camera_fb_t **buff ){
+void editImage(imageData_t *buff ){
 
-    // boxPosition[0] ;
+
     printf("detection_editImage  %3d %3d %3d %3d", boxPosition[0], boxPosition[1], boxPosition[2], boxPosition[3]);
 
     for (uint8_t y = boxPosition[1]; y < boxPosition[1] + (boxPosition[3]-boxPosition[1]); y++)
     {
         for (uint16_t x = boxPosition[0]; x < boxPosition[0] + (boxPosition[2]-boxPosition[0]); x++)
         {
-            int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
+            // int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
 
             // (*buff)->buf[index] = 0xff;
             // (*buff)->buf[index + 1] = 0xff;

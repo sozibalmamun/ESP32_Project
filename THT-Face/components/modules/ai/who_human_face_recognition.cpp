@@ -400,24 +400,24 @@ static void task_process_handler(void *arg)
 //     }
 // }
 
-// void copy_image(const char *src, camera_fb_t *dst, int src_width, int x, int y, int rect_width, int rect_height) {
-//     // Calculate the size of the rectangle in bytes
-//     int bytes_per_pixel = 2; // Assuming RGB565 format, 2 bytes per pixel
-//     int dst_len = rect_width * rect_height * bytes_per_pixel;
+void copy_image(const char *src, camera_fb_t *dst, int src_width, int x, int y, int rect_width, int rect_height) {
+    // Calculate the size of the rectangle in bytes
+    int bytes_per_pixel = 2; // Assuming RGB565 format, 2 bytes per pixel
+    int dst_len = rect_width * rect_height * bytes_per_pixel;
 
-//     // Allocate memory for the destination buffer
-//     dst->buf = (uint8_t *)malloc(dst_len);
-//     dst->width = rect_width;
-//     dst->height = rect_height;
-//     dst->len = dst_len;
+    // Allocate memory for the destination buffer
+    dst->buf = (uint8_t *)malloc(dst_len);
+    dst->width = rect_width;
+    dst->height = rect_height;
+    dst->len = dst_len;
 
-//     // Copy the rectangle area from the source to the destination
-//     for (int row = 0; row < rect_height; row++) {
-//         int src_index = ((y + row) * src_width + x) * bytes_per_pixel;
-//         int dst_index = row * rect_width * bytes_per_pixel;
-//         memcpy(&dst->buf[dst_index], &src[src_index], rect_width * bytes_per_pixel);
-//     }
-// }
+    // Copy the rectangle area from the source to the destination
+    for (int row = 0; row < rect_height; row++) {
+        int src_index = ((y + row) * src_width + x) * bytes_per_pixel;
+        int dst_index = row * rect_width * bytes_per_pixel;
+        memcpy(&dst->buf[dst_index], &src[src_index], rect_width * bytes_per_pixel);
+    }
+}
 
 void editImage(camera_fb_t **buff ){
 
@@ -430,8 +430,8 @@ void editImage(camera_fb_t **buff ){
         {
             int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
 
-            (*buff)->buf[index] = 0xff;
-            (*buff)->buf[index + 1] = 0xff;
+            // (*buff)->buf[index] = 0xff;
+            // (*buff)->buf[index + 1] = 0xff;
         
         }
     }

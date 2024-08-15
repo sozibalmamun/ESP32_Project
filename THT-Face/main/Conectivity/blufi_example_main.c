@@ -66,7 +66,7 @@ bool ble_is_connected = false;
 static uint8_t gl_sta_bssid[6];
 static uint8_t gl_sta_ssid[32];
 static int gl_sta_ssid_len;
-static wifi_sta_list_t gl_sta_list;
+// static wifi_sta_list_t gl_sta_list;
 static bool gl_sta_is_connecting = false;
 static esp_blufi_extra_info_t gl_sta_conn_info;
 
@@ -119,48 +119,48 @@ static bool example_wifi_reconnect(void)
     return ret;
 }
 
-static int softap_get_current_connection_number(void)
-{
-    esp_err_t ret;
-    ret = esp_wifi_ap_get_sta_list(&gl_sta_list);
-    if (ret == ESP_OK)
-    {
-        return gl_sta_list.num;
-    }
+// static int softap_get_current_connection_number(void)
+// {
+//     esp_err_t ret;
+//     ret = esp_wifi_ap_get_sta_list(&gl_sta_list);
+//     if (ret == ESP_OK)
+//     {
+//         return gl_sta_list.num;
+//     }
 
-    return 0;
-}
+//     return 0;
+// }
 
-static void ip_event_handler(void* arg, esp_event_base_t event_base,
-                                int32_t event_id, void* event_data)
-{
-    wifi_mode_t mode;
+// static void ip_event_handler(void* arg, esp_event_base_t event_base,
+//                                 int32_t event_id, void* event_data)
+// {
+//     wifi_mode_t mode;
 
-    switch (event_id) {
-    case IP_EVENT_STA_GOT_IP: {
-        esp_blufi_extra_info_t info;
+//     switch (event_id) {
+//     case IP_EVENT_STA_GOT_IP: {
+//         esp_blufi_extra_info_t info;
 
-        xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
-        esp_wifi_get_mode(&mode);
+//         xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
+//         esp_wifi_get_mode(&mode);
 
-        memset(&info, 0, sizeof(esp_blufi_extra_info_t));
-        memcpy(info.sta_bssid, gl_sta_bssid, 6);
-        info.sta_bssid_set = true;
-        info.sta_ssid = gl_sta_ssid;
-        info.sta_ssid_len = gl_sta_ssid_len;
-        gl_sta_got_ip = true;
-        if (ble_is_connected == true) {
-            esp_blufi_send_wifi_conn_report(mode, ESP_BLUFI_STA_CONN_SUCCESS, softap_get_current_connection_number(), &info);
-        } else {
-            BLUFI_INFO("BLUFI BLE is not connected yet\n");
-        }
-        break;
-    }
-    default:
-        break;
-    }
-    return;
-}
+//         memset(&info, 0, sizeof(esp_blufi_extra_info_t));
+//         memcpy(info.sta_bssid, gl_sta_bssid, 6);
+//         info.sta_bssid_set = true;
+//         info.sta_ssid = gl_sta_ssid;
+//         info.sta_ssid_len = gl_sta_ssid_len;
+//         gl_sta_got_ip = true;
+//         if (ble_is_connected == true) {
+//             esp_blufi_send_wifi_conn_report(mode, ESP_BLUFI_STA_CONN_SUCCESS, softap_get_current_connection_number(), &info);
+//         } else {
+//             BLUFI_INFO("BLUFI BLE is not connected yet\n");
+//         }
+//         break;
+//     }
+//     default:
+//         break;
+//     }
+//     return;
+// }
 
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)

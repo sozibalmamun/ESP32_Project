@@ -88,7 +88,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
             if(wifiStatus==2){
 
-                iconPrint(NETWORK_ICON_POSS_X+14,NETWORK_ICON_POSS_Y+9,7,7 ,&connectedIcon,GREEN,*buff);
+                iconPrint(NETWORK_ICON_POSS_X+14,NETWORK_ICON_POSS_Y+8,7,7 ,&connectedIcon,GREEN,*buff);
 
             }else{
 

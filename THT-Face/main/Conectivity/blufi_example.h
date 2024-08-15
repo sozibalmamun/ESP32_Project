@@ -34,7 +34,6 @@ esp_err_t esp_blufi_host_and_cb_init(esp_blufi_callbacks_t *callbacks);
 
 
 void bluFiStart(void);
-
 void blufiAddStart(void);
 extern uint64_t generate_unique_id(void);
 extern void stompAppStart(void);

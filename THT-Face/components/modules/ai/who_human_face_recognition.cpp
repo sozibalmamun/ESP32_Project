@@ -20,7 +20,7 @@
 
 #include "who_ai_utils.hpp"
 
-#include "editbuff.h"
+uint8_t boxPosition[5];
 
 
 using namespace std;
@@ -73,7 +73,10 @@ typedef enum
 #define RGB565_MASK_BLUE 0x001F
 #define FRAME_DELAY_NUM 16
 
+//-------------------------------------
+void editImage(camera_fb_t **buff );
 
+//-------------------------------------
 
 static void rgb_print(camera_fb_t *fb, uint32_t color, const char *str)
 {
@@ -146,16 +149,15 @@ static void task_process_handler(void *arg)
             {
                 std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3});
                 std::list<dl::detect::result_t> &detect_results = detector2.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_candidates);
-
-
-
-
+                
+                //----------------------------working with image--------------------------
+                draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
+                //-----------------------------------------------------------------------
 
                 if (detect_results.size() == 1){
                     is_detected = true;
                     
                 //    if(CmdEnroll==IDLEENROL)_gEvent = RECOGNIZE;// due to no button for recognize
-                    if(CmdEnroll==IDLEENROL || _gEvent==ENROLL)_gEvent = RECOGNIZE;// due to no button for recognize
 
                    if(CmdEnroll==ENROLING)_gEvent=ENROLL;// 1 for enroling 
 
@@ -163,8 +165,6 @@ static void task_process_handler(void *arg)
                     sleepTimeOut = xTaskGetTickCount();
                     sleepEnable = false;
                     //--------------------------------------
-
-                    // print_detection_result(detect_results);testing
 
 
                 }else if(CmdEnroll==ENROLING){
@@ -188,6 +188,12 @@ static void task_process_handler(void *arg)
                     case ENROLL:{
 
                         vTaskDelay(10);
+
+                        //---------------------------------------------------------------------------
+                        // print_detection_result(detect_candidates);
+                        editImage(&frame);
+                    
+                        //--------------------------------------------------------------------------
                         // duplicate 
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
                         //print_detection_result(detect_results);
@@ -219,7 +225,9 @@ static void task_process_handler(void *arg)
                     case DELETE:
                         vTaskDelay(10);
                         // recognizer->delete_id(true);
-                        if(recognizer->delete_id(personId,true)== -1 ){// invalide id if "-1"
+                        // if(recognizer->delete_id(personId,true)== -1 ){// invalide id if "-1"// custom id delete logic
+                        if(recognizer->delete_id(true)== -1 ){// invalide id if "-1"
+
 
                             ESP_LOGE("DELETE", "% d IDs invalided", personId);
                             CmdEnroll=ID_INVALID; // delete done 
@@ -266,7 +274,6 @@ static void task_process_handler(void *arg)
                         else{
                             rgb_print(frame, RGB565_MASK_RED, "who ?");
                             ESP_LOGI(TAG,"\nWho ?");
-                            // printf("who done");
                             }
                         break;
 
@@ -300,7 +307,7 @@ static void task_process_handler(void *arg)
 #if !CONFIG_IDF_TARGET_ESP32S3
                     // print_detection_result(detect_results);
 #endif
-                    draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_results);
+                    // draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_results);
                 }
             }
 
@@ -393,26 +400,43 @@ static void task_process_handler(void *arg)
 //     }
 // }
 
-void copy_image(const char *src, camera_fb_t *dst, int src_width, int x, int y, int rect_width, int rect_height) {
-    // Calculate the size of the rectangle in bytes
-    int bytes_per_pixel = 2; // Assuming RGB565 format, 2 bytes per pixel
-    int dst_len = rect_width * rect_height * bytes_per_pixel;
+// void copy_image(const char *src, camera_fb_t *dst, int src_width, int x, int y, int rect_width, int rect_height) {
+//     // Calculate the size of the rectangle in bytes
+//     int bytes_per_pixel = 2; // Assuming RGB565 format, 2 bytes per pixel
+//     int dst_len = rect_width * rect_height * bytes_per_pixel;
 
-    // Allocate memory for the destination buffer
-    dst->buf = (uint8_t *)malloc(dst_len);
-    dst->width = rect_width;
-    dst->height = rect_height;
-    dst->len = dst_len;
+//     // Allocate memory for the destination buffer
+//     dst->buf = (uint8_t *)malloc(dst_len);
+//     dst->width = rect_width;
+//     dst->height = rect_height;
+//     dst->len = dst_len;
 
-    // Copy the rectangle area from the source to the destination
-    for (int row = 0; row < rect_height; row++) {
-        int src_index = ((y + row) * src_width + x) * bytes_per_pixel;
-        int dst_index = row * rect_width * bytes_per_pixel;
-        memcpy(&dst->buf[dst_index], &src[src_index], rect_width * bytes_per_pixel);
+//     // Copy the rectangle area from the source to the destination
+//     for (int row = 0; row < rect_height; row++) {
+//         int src_index = ((y + row) * src_width + x) * bytes_per_pixel;
+//         int dst_index = row * rect_width * bytes_per_pixel;
+//         memcpy(&dst->buf[dst_index], &src[src_index], rect_width * bytes_per_pixel);
+//     }
+// }
+
+void editImage(camera_fb_t **buff ){
+
+    // boxPosition[0] ;
+    printf("detection_editImage  %3d %3d %3d %3d", boxPosition[0], boxPosition[1], boxPosition[2], boxPosition[3]);
+
+    for (uint8_t y = boxPosition[1]; y < boxPosition[1] + (boxPosition[3]-boxPosition[1]); y++)
+    {
+        for (uint16_t x = boxPosition[0]; x < boxPosition[0] + (boxPosition[2]-boxPosition[0]); x++)
+        {
+            int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
+
+            (*buff)->buf[index] = 0xff;
+            (*buff)->buf[index + 1] = 0xff;
+        
+        }
     }
+
 }
-
-
 
 
 

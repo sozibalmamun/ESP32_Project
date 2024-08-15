@@ -11,7 +11,6 @@ volatile TickType_t sleepTimeOut=0;
 extern bool ble_is_connected;
 extern uint8_t wifiStatus;
 
-uint8_t boxPosition[5];
 
 void editDisplayBuff(camera_fb_t **buff){
 
@@ -89,7 +88,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
             if(wifiStatus==2){
 
-                iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,7,7 ,&connectedIcon,GREEN,*buff);
+                iconPrint(NETWORK_ICON_POSS_X+14,NETWORK_ICON_POSS_Y+9,7,7 ,&connectedIcon,GREEN,*buff);
 
             }else{
 
@@ -450,25 +449,3 @@ void wrighSingle7segment(uint16_t x_offset, uint8_t y_offset, char c, camera_fb_
 }
 
 
-void editImage(camera_fb_t **buff ){
-
-        // boxPosition[0] ;
-        printf("detection_editImage  %3d %3d %3d %3d", boxPosition[0], boxPosition[1], boxPosition[2], boxPosition[3]);
-
-            for (uint8_t y = boxPosition[1]; y < boxPosition[1] + (boxPosition[3]-boxPosition[1]); y++)
-            {
-                for (uint16_t x = boxPosition[0]; x < boxPosition[0] + (boxPosition[2]-boxPosition[0]); x++)
-                {
-                    int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
-
-                    (*buff)->buf[index] = 0xff;
-                    (*buff)->buf[index + 1] = 0xff;
-                
-                }
-            }
-
-
-
-
-
-}

@@ -15,7 +15,6 @@ extern "C"
 #endif
 
 
-void editImage(camera_fb_t **buff);
 
 void editDisplayBuff(camera_fb_t **buff);
 uint64_t generate_unique_id(void);

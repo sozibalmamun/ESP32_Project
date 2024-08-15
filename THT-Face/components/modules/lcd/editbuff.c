@@ -11,6 +11,7 @@ volatile TickType_t sleepTimeOut=0;
 extern bool ble_is_connected;
 extern uint8_t wifiStatus;
 
+uint8_t boxPosition[5];
 
 void editDisplayBuff(camera_fb_t **buff){
 
@@ -104,7 +105,7 @@ void editDisplayBuff(camera_fb_t **buff){
 void iconPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,char* logobuff,uint16_t color ,camera_fb_t *buff) {
     // Ensure logo fits within the buffer dimensions
     if (x_offset + w > buff->width || y_offset + h > buff->height) {
-        printf("Logo position out of bounds\n");
+        // printf("Logo position out of bounds\n");
         
         return;
     }
@@ -403,7 +404,7 @@ void wrighSingle7segment(uint16_t x_offset, uint8_t y_offset, char c, camera_fb_
 
         // Ensure the character fits within the buffer dimensions
         if (x_offset + WIDTH_32 > buff->width || y_offset + WIDTH_32 > buff->height) {
-            printf("Character position out of bounds\n");
+            // printf("Character position out of bounds\n");
             return;
         }
 
@@ -429,7 +430,7 @@ void wrighSingle7segment(uint16_t x_offset, uint8_t y_offset, char c, camera_fb_
         const uint8_t *char_data = segment_table2[(uint8_t)c];
         // Ensure the character fits within the buffer dimensions
         if (x_offset + WIDTH_8 > buff->width || y_offset + WIDTH_8 > buff->height) {
-            printf("Character position out of bounds\n");
+            // printf("Character position out of bounds\n");
             return;
         }
 
@@ -445,5 +446,29 @@ void wrighSingle7segment(uint16_t x_offset, uint8_t y_offset, char c, camera_fb_
             }
         }
     }
+
+}
+
+
+void editImage(camera_fb_t **buff ){
+
+        // boxPosition[0] ;
+        printf("detection_editImage  %3d %3d %3d %3d", boxPosition[0], boxPosition[1], boxPosition[2], boxPosition[3]);
+
+            for (uint8_t y = boxPosition[1]; y < boxPosition[1] + (boxPosition[3]-boxPosition[1]); y++)
+            {
+                for (uint16_t x = boxPosition[0]; x < boxPosition[0] + (boxPosition[2]-boxPosition[0]); x++)
+                {
+                    int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
+
+                    (*buff)->buf[index] = 0xff;
+                    (*buff)->buf[index + 1] = 0xff;
+                
+                }
+            }
+
+
+
+
 
 }

@@ -4,6 +4,8 @@
 #include "dl_detect_define.hpp"
 #include "esp_camera.h"
 
+
+
 /**
  * @brief Draw detection result on RGB565 image.
  * 

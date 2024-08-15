@@ -99,7 +99,7 @@ void app_main()
         // sleepTimeOut = xTaskGetTickCount();
         if(xTaskGetTickCount()-sleepTimeOut>6000 && xTaskGetTickCount()-sleepTimeOut< 6500){
 
-            sleepEnable=true;
+            // sleepEnable=true;
             // printf("\nsleepEnable");
 
         }

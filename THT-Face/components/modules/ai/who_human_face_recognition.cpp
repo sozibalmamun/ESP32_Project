@@ -20,6 +20,7 @@
 
 #include "who_ai_utils.hpp"
 
+#include "editbuff.h"
 
 
 using namespace std;
@@ -72,9 +73,14 @@ typedef enum
 #define RGB565_MASK_BLUE 0x001F
 #define FRAME_DELAY_NUM 16
 
+
+
 static void rgb_print(camera_fb_t *fb, uint32_t color, const char *str)
 {
-    fb_gfx_print(fb, (fb->width - (strlen(str) * 14)) / 2, 10, color, str);
+    // fb_gfx_print(fb, (fb->width - (strlen(str) * 14)) / 2, 10, color, str);// old
+
+        fb_gfx_print(fb, (fb->width - (strlen(str) * 14)) / 2, 195, color, str);// edited
+
 }
 
 static int rgb_printf(camera_fb_t *fb, uint32_t color, const char *format, ...)
@@ -109,6 +115,7 @@ static int rgb_printf(camera_fb_t *fb, uint32_t color, const char *format, ...)
 static void task_process_handler(void *arg)
 {
     camera_fb_t *frame = NULL;
+
     HumanFaceDetectMSR01 detector(0.3F, 0.3F, 10, 0.3F);
     HumanFaceDetectMNP01 detector2(0.4F, 0.3F, 10);
 
@@ -140,15 +147,25 @@ static void task_process_handler(void *arg)
                 std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3});
                 std::list<dl::detect::result_t> &detect_results = detector2.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_candidates);
 
+
+
+
+
                 if (detect_results.size() == 1){
                     is_detected = true;
                     
-                   if(CmdEnroll==IDLEENROL)_gEvent = RECOGNIZE;// due to no button for recognize
+                //    if(CmdEnroll==IDLEENROL)_gEvent = RECOGNIZE;// due to no button for recognize
+                    if(CmdEnroll==IDLEENROL || _gEvent==ENROLL)_gEvent = RECOGNIZE;// due to no button for recognize
+
                    if(CmdEnroll==ENROLING)_gEvent=ENROLL;// 1 for enroling 
+
                    //---------------sleep weakup------------
                     sleepTimeOut = xTaskGetTickCount();
                     sleepEnable = false;
                     //--------------------------------------
+
+                    // print_detection_result(detect_results);testing
+
 
                 }else if(CmdEnroll==ENROLING){
                     
@@ -249,7 +266,7 @@ static void task_process_handler(void *arg)
                         else{
                             rgb_print(frame, RGB565_MASK_RED, "who ?");
                             ESP_LOGI(TAG,"\nWho ?");
-                            printf("who done");
+                            // printf("who done");
                             }
                         break;
 
@@ -281,7 +298,7 @@ static void task_process_handler(void *arg)
                 if (detect_results.size())
                 {
 #if !CONFIG_IDF_TARGET_ESP32S3
-                    print_detection_result(detect_results);
+                    // print_detection_result(detect_results);
 #endif
                     draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_results);
                 }
@@ -308,6 +325,96 @@ static void task_process_handler(void *arg)
         }
     }
 }
+
+
+// static void task_process_handler(void *arg)
+// {
+//     camera_fb_t *frame = NULL;
+
+//     HumanFaceDetectMSR01 detector(0.3F, 0.3F, 10, 0.3F);
+//     HumanFaceDetectMNP01 detector2(0.4F, 0.3F, 10);
+
+// #if CONFIG_MFN_V1
+// #if CONFIG_S8
+//     FaceRecognition112V1S8 *recognizer = new FaceRecognition112V1S8();
+// #elif CONFIG_S16
+//     FaceRecognition112V1S16 *recognizer = new FaceRecognition112V1S16();
+// #endif
+// #endif
+//     show_state_t frame_show_state = SHOW_STATE_IDLE;
+//     recognizer_state_t _gEvent;
+//     recognizer->set_partition(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "fr");
+//     int partition_result = recognizer->set_ids_from_flash();
+
+//     while (true)
+//     {
+//         xSemaphoreTake(xMutex, portMAX_DELAY);
+//         _gEvent = gEvent;
+//         gEvent = DETECT;
+//         xSemaphoreGive(xMutex);
+
+//         if (_gEvent)
+//         {
+//             bool is_detected = false;
+
+//             if (xQueueReceive(xQueueFrameI, &frame, portMAX_DELAY))
+//             {
+//                 std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3});
+//                 std::list<dl::detect::result_t> &detect_results = detector2.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_candidates);
+               
+               
+//                 print_detection_result(detect_candidates);
+//                 draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
+//                 // draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_results);
+//                 if (detect_candidates.size() == 1){
+//                     editImage(&frame);
+//                 }
+//             }
+
+//             if (xQueueFrameO)
+//             {
+
+//                 xQueueSend(xQueueFrameO, &frame, portMAX_DELAY);
+//             }
+//             else if (gReturnFB)
+//             {
+//                 esp_camera_fb_return(frame);
+//             }
+//             else
+//             {
+//                 free(frame);
+//             }
+
+//             if (xQueueResult && is_detected)
+//             {
+//                 xQueueSend(xQueueResult, &recognize_result, portMAX_DELAY);
+//             }
+//         }
+//     }
+// }
+
+void copy_image(const char *src, camera_fb_t *dst, int src_width, int x, int y, int rect_width, int rect_height) {
+    // Calculate the size of the rectangle in bytes
+    int bytes_per_pixel = 2; // Assuming RGB565 format, 2 bytes per pixel
+    int dst_len = rect_width * rect_height * bytes_per_pixel;
+
+    // Allocate memory for the destination buffer
+    dst->buf = (uint8_t *)malloc(dst_len);
+    dst->width = rect_width;
+    dst->height = rect_height;
+    dst->len = dst_len;
+
+    // Copy the rectangle area from the source to the destination
+    for (int row = 0; row < rect_height; row++) {
+        int src_index = ((y + row) * src_width + x) * bytes_per_pixel;
+        int dst_index = row * rect_width * bytes_per_pixel;
+        memcpy(&dst->buf[dst_index], &src[src_index], rect_width * bytes_per_pixel);
+    }
+}
+
+
+
+
 
 static void task_event_handler(void *arg)
 {

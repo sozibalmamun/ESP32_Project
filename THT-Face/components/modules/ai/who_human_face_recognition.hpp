@@ -28,15 +28,15 @@ typedef enum
 #define DELETED         0X05
 #define ID_INVALID      0X06
 
-
 typedef struct {
-    uint8_t * buf;              /*!< Pointer to the pixel data */
-    size_t len;                 /*!< Length of the buffer in bytes */
-    size_t width;               /*!< Width of the buffer in pixels */
-    size_t height;              /*!< Height of the buffer in pixels */
+    uint8_t *buf;             /*!< Pointer to the copied pixel data */
+    size_t len;               /*!< Length of the buffer in bytes */
+    size_t width;             /*!< Width of the buffer in pixels */
+    size_t height;            /*!< Height of the buffer in pixels */
 } imageData_t;
 
-void copyPersonImage(camera_fb_t **src, imageData_t **dst, int x, int y, int rect_width, int rect_height);
+void copy_rectangle(const camera_fb_t *src, imageData_t *dst, int x_start, int x_end, int y_start, int y_end);
+
 void editImage(imageData_t *buff );
 
 

@@ -43,6 +43,7 @@ static const char *TAG = "human_face_recognition";
 //---------------sleep--------------------
 extern volatile uint8_t sleepEnable;
 extern TickType_t sleepTimeOut; 
+// extern bool stompSend(char * buff, char* topic);
 
 //---------------------------------------
 
@@ -114,10 +115,69 @@ static int rgb_printf(camera_fb_t *fb, uint32_t color, const char *format, ...)
     return len;
 }
 
+void copy_rectangle(const camera_fb_t *src, imageData_t *dst, int x_start, int x_end, int y_start, int y_end) {
+    // Ensure the coordinates are within the bounds of the source image
+    if (x_start < 0 || x_end > src->width || y_start < 0 || y_end > src->height || x_start >= x_end || y_start >= y_end) {
+        printf("Invalid rectangle coordinates\n");
+        return;
+    }
+
+    // Calculate the width and height of the rectangle
+    int rect_width = x_end - x_start;
+    int rect_height = y_end - y_start;
+
+    // Allocate memory for the destination buffer
+    dst->width = rect_width;
+    dst->height = rect_height;
+    dst->len = rect_width * rect_height * 2; // Assuming 2 bytes per pixel (RGB565)
+    dst->buf = (uint8_t *)malloc(dst->len);
+
+    if (!dst->buf) {
+        printf("Memory allocation failed\n");
+        return;
+    }
+
+    // Copy the pixels from the source to the destination buffer
+    for (int y = y_start; y < y_end; y++) {
+        for (int x = x_start; x < x_end; x++) {
+            // Calculate the source and destination indices
+            int src_index = (y * src->width + x) * 2; // 2 bytes per pixel
+            int dst_index = ((y - y_start) * rect_width + (x - x_start)) * 2;
+
+            // Copy the pixel data
+            dst->buf[dst_index] = src->buf[src_index];
+            dst->buf[dst_index + 1] = src->buf[src_index + 1];
+        }
+    }
+}
+
+
+void editImage(imageData_t *buff ){
+
+
+    printf("\nDetection Image info: %3d %3d %3d %3d", boxPosition[0], boxPosition[1], boxPosition[2], boxPosition[3]);
+    printf("\nCppy Image Info  %3d %3d %3d", buff->len, buff->width, buff->height);
+
+    // for (uint8_t y = 0; y < buff->width; y++)
+    // {
+    //     for (uint16_t x = 0; x < buff->len; x++)
+    //     {
+    //         int index = (y *buff->width + x) * 2; // Assuming 2 bytes per pixel
+
+    //         buff->buf[index] = 0xff;
+    //         buff->buf[index + 1] = 0xff;
+        
+    //     }
+    // }
+
+}
+
+
+
 static void task_process_handler(void *arg)
 {
     camera_fb_t *frame = NULL;
-    imageData_t *cropFrame = NULL;
+    imageData_t cropFrame;
 
     HumanFaceDetectMSR01 detector(0.3F, 0.3F, 10, 0.3F);
     HumanFaceDetectMNP01 detector2(0.4F, 0.3F, 10);
@@ -150,10 +210,6 @@ static void task_process_handler(void *arg)
                 std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3});
                 std::list<dl::detect::result_t> &detect_results = detector2.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_candidates);
                 
-                //----------------------------working with image--------------------------
-                draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
-                //-----------------------------------------------------------------------
-
                 if (detect_results.size() == 1){
                     is_detected = true;
                     
@@ -189,33 +245,14 @@ static void task_process_handler(void *arg)
 
                         vTaskDelay(10);
 
-                        //---------------------------------------------------------------------------
-                        // print_detection_result(detect_candidates);
-                        // editImage(&frame);
-/*
+                        //----------------------------working with image--------------------------
+                        draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
+                        copy_rectangle(frame, &cropFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]);
+                        
+                        // Edit the image after copying
+                        // editImage(&cropFrame);
+                        // stompSend((char*)cropFrame.buf, "/app/cloud");
 
-
-    for (uint8_t y = boxPosition[1]; y < boxPosition[1] + (boxPosition[3]-boxPosition[1]); y++)
-    {
-        for (uint16_t x = boxPosition[0]; x < boxPosition[0] + (boxPosition[2]-boxPosition[0]); x++)
-        {
-            int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
-
-            // (*buff)->buf[index] = 0xff;
-            // (*buff)->buf[index + 1] = 0xff;
-        
-        }
-    }
-
-
-*/
-
-
-
-
-
-                        copyPersonImage(&frame, &cropFrame, boxPosition[0], boxPosition[1], boxPosition[2]-boxPosition[0], boxPosition[3]-boxPosition[1]);
-                    
                         //--------------------------------------------------------------------------
                         // duplicate 
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
@@ -330,7 +367,7 @@ static void task_process_handler(void *arg)
 #if !CONFIG_IDF_TARGET_ESP32S3
                     // print_detection_result(detect_results);
 #endif
-                    // draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_results);
+                    draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_results);
                 }
             }
 
@@ -422,57 +459,6 @@ static void task_process_handler(void *arg)
 //         }
 //     }
 // }
-
-void copyPersonImage(camera_fb_t **src, imageData_t **dst, int x, int y, int rect_width, int rect_height) {
-    if (x + rect_width > (*src)->width || y + rect_height > (*src)->height) {
-        printf("Error: Rectangle out of bounds\n");
-        return;
-    }
-
-    // Calculate the size of the rectangle in bytes
-    int bytes_per_pixel = 2; // Assuming RGB565 format, 2 bytes per pixel
-    int dst_len = rect_width * rect_height * bytes_per_pixel;
-
-    // Allocate memory for the destination buffer
-    (*dst)->buf = (uint8_t *)malloc(dst_len);
-    if ((*dst)->buf == NULL) {
-        printf("Error: Unable to allocate memory for the destination buffer\n");
-        return;
-    }
-
-    (*dst)->width = rect_width;
-    (*dst)->height = rect_height;
-    (*dst)->len = dst_len;
-
-    // Copy the rectangle area from the source to the destination
-    for (int row = 0; row < rect_height; row++) {
-        int src_index = ((y + row) * (*src)->width + x) * bytes_per_pixel;
-        int dst_index = row * rect_width * bytes_per_pixel;
-        memcpy(&((*dst)->buf[dst_index]), &((*src)->buf[src_index]), rect_width * bytes_per_pixel);
-    }
-
-    // Edit the image after copying
-    editImage(*dst);
-}
-
-void editImage(imageData_t *buff ){
-
-
-    printf("detection_editImage  %3d %3d %3d %3d", boxPosition[0], boxPosition[1], boxPosition[2], boxPosition[3]);
-
-    for (uint8_t y = boxPosition[1]; y < boxPosition[1] + (boxPosition[3]-boxPosition[1]); y++)
-    {
-        for (uint16_t x = boxPosition[0]; x < boxPosition[0] + (boxPosition[2]-boxPosition[0]); x++)
-        {
-            int index = (y *buff->width + x) * 2; // Assuming 2 bytes per pixel
-
-            buff->buf[index] = 0xff;
-            buff->buf[index + 1] = 0xff;
-        
-        }
-    }
-
-}
 
 
 

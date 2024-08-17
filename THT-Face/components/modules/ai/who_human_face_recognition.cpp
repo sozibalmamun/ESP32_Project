@@ -262,7 +262,10 @@ static void task_process_handler(void *arg)
 
 
                         //----------------------------working with image--------------------------
+                        vTaskDelay(10);
                         draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
+                        vTaskDelay(10);
+
                         while(!copy_rectangle(frame, &cropFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]) ) {
                             
                             rgb_printf(frame, RGB565_MASK_RED, "Aline The Face");// at invalid face

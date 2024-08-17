@@ -13,7 +13,8 @@ set(src_dirs
                 trace
                 imu
                 timeLib
-                qrcode)
+                qrcode
+                CloudDataHandle)
 
 set(include_dirs    
                     ai
@@ -25,7 +26,8 @@ set(include_dirs
                     trace
                     imu
                     timeLib
-                    qrcode)
+                    qrcode
+                    CloudDataHandle)
 
 set(requires    esp32-camera
                 esp-dl

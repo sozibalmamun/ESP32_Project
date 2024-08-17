@@ -8,7 +8,7 @@
 
 extern volatile uint8_t sleepEnable;
 extern TickType_t sleepTimeOut; 
-extern esp_websocket_client_handle_t client;
+esp_websocket_client_handle_t client;
 
 #ifdef __cplusplus
 extern "C" {

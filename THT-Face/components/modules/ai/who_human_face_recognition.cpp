@@ -1,8 +1,6 @@
 #include "who_human_face_recognition.hpp"
 
 #include "esp_log.h"
-// #include "esp_camera.h"
-
 #include "dl_image.hpp"
 #include "fb_gfx.h"
 
@@ -43,7 +41,6 @@ static const char *TAG = "human_face_recognition";
 //---------------sleep--------------------
 extern volatile uint8_t sleepEnable;
 extern TickType_t sleepTimeOut; 
-// extern bool stompSend(char * buff, char* topic);
 
 //---------------------------------------
 
@@ -66,7 +63,8 @@ typedef enum
     SHOW_STATE_DELETE,
     SHOW_STATE_RECOGNIZE,
     SHOW_STATE_ENROLL,
-    SHOW_DUPLICATE
+    SHOW_DUPLICATE,
+    INVALID
 } show_state_t;
 
 #define RGB565_MASK_RED 0xF800
@@ -115,11 +113,14 @@ static int rgb_printf(camera_fb_t *fb, uint32_t color, const char *format, ...)
     return len;
 }
 
-void copy_rectangle(const camera_fb_t *src, imageData_t *dst, int x_start, int x_end, int y_start, int y_end) {
+bool copy_rectangle(const camera_fb_t *src, imageData_t *dst, int x_start, int x_end, int y_start, int y_end) {
     // Ensure the coordinates are within the bounds of the source image
     if (x_start < 0 || x_end > src->width || y_start < 0 || y_end > src->height || x_start >= x_end || y_start >= y_end) {
         printf("Invalid rectangle coordinates\n");
-        return;
+
+        printf("\nImage Info  xs:%3d xe:%3d ys:%3d ye:%3d", x_start,x_end, y_start,y_end);
+
+        return false;
     }
 
     // Calculate the width and height of the rectangle
@@ -132,10 +133,13 @@ void copy_rectangle(const camera_fb_t *src, imageData_t *dst, int x_start, int x
     dst->len = rect_width * rect_height * 2; // Assuming 2 bytes per pixel (RGB565)
     dst->buf = (uint8_t *)malloc(dst->len);
 
+    printf("\nCopy Image Info  L:%3d w:%3d h:%3d", dst->len, dst->width, dst->height);
+
     if (!dst->buf) {
         printf("Memory allocation failed\n");
-        return;
+        return false;
     }
+
 
     // Copy the pixels from the source to the destination buffer
     for (int y = y_start; y < y_end; y++) {
@@ -149,6 +153,7 @@ void copy_rectangle(const camera_fb_t *src, imageData_t *dst, int x_start, int x
             dst->buf[dst_index + 1] = src->buf[src_index + 1];
         }
     }
+    return true;
 }
 
 
@@ -244,16 +249,6 @@ static void task_process_handler(void *arg)
                     case ENROLL:{
 
                         vTaskDelay(10);
-
-                        //----------------------------working with image--------------------------
-                        draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
-                        copy_rectangle(frame, &cropFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]);
-                        
-                        // Edit the image after copying
-                        // editImage(&cropFrame);
-                        // stompSend((char*)cropFrame.buf, "/app/cloud");
-
-                        //--------------------------------------------------------------------------
                         // duplicate 
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
                         //print_detection_result(detect_results);
@@ -264,6 +259,24 @@ static void task_process_handler(void *arg)
                         break;
                         }
                         // duplicat end
+
+
+                        //----------------------------working with image--------------------------
+                        draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
+                        while(!copy_rectangle(frame, &cropFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]) ) {
+                            
+                            rgb_printf(frame, RGB565_MASK_RED, "Aline The Face");// at invalid face
+                            frame_show_state = INVALID;
+                            break;
+                        }
+                        
+                        // Edit the image after copying
+                        // editImage(&cropFrame);
+                        // stompSend((char*)cropFrame.buf, "/app/cloud");
+
+                        //--------------------------------------------------------------------------
+
+
 
 
                         // recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
@@ -351,6 +364,12 @@ static void task_process_handler(void *arg)
 
                     break;
                     }
+                    case INVALID:
+
+                        rgb_printf(frame, RGB565_MASK_RED, "Please watchthe camera");// at invalid face
+
+                    break;
+
                     default:
                         break;
                     }

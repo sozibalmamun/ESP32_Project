@@ -99,6 +99,7 @@ void editDisplayBuff(camera_fb_t **buff){
         }
     }
 
+
 }
 
 void iconPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,char* logobuff,uint16_t color ,camera_fb_t *buff) {
@@ -419,6 +420,7 @@ void wrighSingle7segment(uint16_t x_offset, uint8_t y_offset, char c, camera_fb_
                 }
             }
         }
+        
 
     }else{
 

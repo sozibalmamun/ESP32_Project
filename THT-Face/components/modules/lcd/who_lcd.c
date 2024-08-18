@@ -112,21 +112,21 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
     return ESP_OK;
 }
 
-void app_lcd_draw_wallpaper()
-{
-    scr_info_t lcd_info;
-    g_lcd.get_info(&lcd_info);
+// void app_lcd_draw_wallpaper()
+// {
+//     scr_info_t lcd_info;
+//     g_lcd.get_info(&lcd_info);
 
-    uint16_t *pixels = (uint16_t *)heap_caps_malloc((logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-    if (NULL == pixels)
-    {
-        ESP_LOGE(TAG, "Memory for bitmap is not enough");
-        return;
-    }
-    memcpy(pixels, logo_en_240x240_lcd, (logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t));
-    g_lcd.draw_bitmap(0, 0, logo_en_240x240_lcd_width, logo_en_240x240_lcd_height, (uint16_t *)pixels);
-    heap_caps_free(pixels);
-}
+//     uint16_t *pixels = (uint16_t *)heap_caps_malloc((logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+//     if (NULL == pixels)
+//     {
+//         ESP_LOGE(TAG, "Memory for bitmap is not enough");
+//         return;
+//     }
+//     memcpy(pixels, logo_en_240x240_lcd, (logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t));
+//     g_lcd.draw_bitmap(0, 0, logo_en_240x240_lcd_width, logo_en_240x240_lcd_height, (uint16_t *)pixels);
+//     heap_caps_free(pixels);
+// }
 
 void app_lcd_set_color(int color)
 {
@@ -154,20 +154,20 @@ void app_lcd_set_color(int color)
 }
 
 
-void app_lcd_draw_wallpaper_try()
-{
-    scr_info_t lcd_info;
-    g_lcd.get_info(&lcd_info);
+// void app_lcd_draw_wallpaper_try()
+// {
+//     scr_info_t lcd_info;
+//     g_lcd.get_info(&lcd_info);
 
-    uint16_t *pixels = (uint16_t *)heap_caps_malloc((logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-    if (NULL == pixels)
-    {
-        ESP_LOGE(TAG, "Memory for bitmap is not enough");
-        return;
-    }
-    memcpy(pixels, logo_en_240x240_lcd, (logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t));
-    g_lcd.draw_bitmap(0, 0, logo_en_240x240_lcd_width, logo_en_240x240_lcd_height, (uint16_t *)pixels);
-    heap_caps_free(pixels);
-}
+//     uint16_t *pixels = (uint16_t *)heap_caps_malloc((logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+//     if (NULL == pixels)
+//     {
+//         ESP_LOGE(TAG, "Memory for bitmap is not enough");
+//         return;
+//     }
+//     memcpy(pixels, logo_en_240x240_lcd, (logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t));
+//     g_lcd.draw_bitmap(0, 0, logo_en_240x240_lcd_width, logo_en_240x240_lcd_height, (uint16_t *)pixels);
+//     heap_caps_free(pixels);
+// }
 
 

@@ -1,4 +1,5 @@
 #include "StomeClient.h"
+#include "timeLib.h"
 
 
 
@@ -66,7 +67,7 @@ bool stompSend(char * buff, char* topic){
 
     uint16_t currentIndex=0;
     uint16_t buffLen =strlen(buff);
-    // ESP_LOGI(TAGSTOMP, "Sending  total len :%d\n", buffLen);
+    ESP_LOGI(TAGSTOMP, "Sending  total len :%d\n", buffLen);
 
     do{
         memset(tempFrame,0,sizeof(tempFrame));
@@ -145,11 +146,17 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
             else if(data->data_ptr[0]=='h'){
                 ESP_LOGI(TAG, "Ping");
+                //---------------------------------------------------------------
+                time_library_time_t current_time;
+                uint8_t clockType = get_time(&current_time, 1);
+                char tempFrame[17] ;
+                snprintf(tempFrame, sizeof(tempFrame), "%d-%d-%d  %s",current_time.year,current_time.month,current_time.day,
+                day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
 
-                // if(!stompSend("testdata", PUBLISH_TOPIC)){
-                // ESP_LOGI(TAGSTOMP, "Data sending error");
-                // }
-
+                if(!stompSend(tempFrame, PUBLISH_TOPIC)){
+                ESP_LOGI(TAGSTOMP, "ping sending error");
+                }
+                //--------------------------------------------------------------
             }else if(data->data_ptr[0]=='c'){
 
                 ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);

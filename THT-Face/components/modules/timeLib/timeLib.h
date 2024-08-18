@@ -8,7 +8,6 @@
 #include "esp_log.h"
 
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif

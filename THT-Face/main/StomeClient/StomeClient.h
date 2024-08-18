@@ -95,17 +95,19 @@ const char echo_org_ssl_ca_cert[]  = \
 "-----END CERTIFICATE-----\n";
 
 extern uint8_t wifiStatus;
-
+extern const char* day_names[];
 
 
 void stomp_client_connect(void);
 void stomp_client_subscribe(char* topic);
-bool stompSend(char * buff, char* topic);
+// bool stompSend(char * buff, char* topic);
 void stomeAck(const char * message);
 void stomp_client_handle_message( const char *message);
 void stomp_client_int( stompInfo_cfg_t stompSetup );
 void stompAppStart(void);
+
 extern void dataHandele(const char *rx_buffer);
+extern bool stompSend(char * buff, char* topic);
 
 
 

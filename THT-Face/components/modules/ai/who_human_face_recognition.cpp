@@ -17,6 +17,8 @@
 #endif
 
 #include "who_ai_utils.hpp"
+#include "CloudDataHandle.h"
+
 
 uint8_t boxPosition[5];
 
@@ -114,34 +116,31 @@ static int rgb_printf(camera_fb_t *fb, uint32_t color, const char *format, ...)
 }
 
 bool copy_rectangle(const camera_fb_t *src, imageData_t *dst, int x_start, int x_end, int y_start, int y_end) {
-    // Ensure the coordinates are within the bounds of the source image
-    if (x_start < 0 || x_end > src->width || y_start < 0 || y_end > src->height || x_start >= x_end || y_start >= y_end) {
-        printf("Invalid rectangle coordinates\n");
-
-        printf("\nImage Info  xs:%3d xe:%3d ys:%3d ye:%3d", x_start,x_end, y_start,y_end);
-
+    // Validate inputs
+    if (!src || !src->buf || !dst || x_start < 0 || y_start < 0 || x_end > src->width || y_end > src->height || x_start >= x_end || y_start >= y_end) {
         return false;
     }
 
-    // Calculate the width and height of the rectangle
+    // Calculate rectangle dimensions
     int rect_width = x_end - x_start;
     int rect_height = y_end - y_start;
 
+    // Calculate the size of the rectangle in bytes
+    int bytes_per_pixel = 2; // Assuming RGB565 format, 2 bytes per pixel
+    int dst_len = rect_width * rect_height * bytes_per_pixel;
+
     // Allocate memory for the destination buffer
+    dst->buf = (uint8_t *)malloc(dst_len);
+    if (!dst->buf) {
+
+        printf("memory allocation fail");
+        return false; // Memory allocation failed
+    }
     dst->width = rect_width;
     dst->height = rect_height;
-    dst->len = rect_width * rect_height * 2; // Assuming 2 bytes per pixel (RGB565)
-    dst->buf = (uint8_t *)malloc(dst->len);
+    dst->len = dst_len;
 
-    printf("\nCopy Image Info  L:%3d w:%3d h:%3d", dst->len, dst->width, dst->height);
-
-    if (!dst->buf) {
-        printf("Memory allocation failed\n");
-        return false;
-    }
-
-
-    // Copy the pixels from the source to the destination buffer
+    // Copy the rectangle area from the source to the destination
     for (int y = y_start; y < y_end; y++) {
         for (int x = x_start; x < x_end; x++) {
             // Calculate the source and destination indices
@@ -151,10 +150,43 @@ bool copy_rectangle(const camera_fb_t *src, imageData_t *dst, int x_start, int x
             // Copy the pixel data
             dst->buf[dst_index] = src->buf[src_index];
             dst->buf[dst_index + 1] = src->buf[src_index + 1];
+
         }
     }
+
     return true;
 }
+
+
+// bool copy_rectangle(const camera_fb_t *src, int x_start, int x_end, int y_start, int y_end) {
+
+
+//     // Calculate the width and height of the rectangle
+//     int rect_width = x_end - x_start;
+//     int rect_height = y_end - y_start;
+//     uint8_t len = rect_width * rect_height * 2; // Assuming 2 bytes per pixel (RGB565)
+
+//     printf("\nCopy Image Info  L:%3d w:%3d h:%3d", len, rect_width, rect_height);
+
+//     uint8_t buf[len];
+//     // Copy the pixels from the source to the destination buffer
+//     for (int y = y_start; y < y_end; y++) {
+//         for (int x = x_start; x < x_end; x++) {
+//             // Calculate the source and destination indices
+//             int src_index = (y * src->width + x) * 2; // 2 bytes per pixel
+//             int dst_index = ((y - y_start) * rect_width + (x - x_start)) * 2;
+
+//             // Copy the pixel data
+//             buf[dst_index] = src->buf[src_index];
+//             buf[dst_index + 1] = src->buf[src_index + 1];
+
+//         }
+//     }
+//     imagesend(buf);
+//     memset(buf,0,len);
+
+//     return 1;
+// }
 
 
 void editImage(imageData_t *buff ){
@@ -182,7 +214,6 @@ void editImage(imageData_t *buff ){
 static void task_process_handler(void *arg)
 {
     camera_fb_t *frame = NULL;
-    imageData_t cropFrame;
 
     HumanFaceDetectMSR01 detector(0.3F, 0.3F, 10, 0.3F);
     HumanFaceDetectMNP01 detector2(0.4F, 0.3F, 10);
@@ -248,7 +279,7 @@ static void task_process_handler(void *arg)
                     {
                     case ENROLL:{
 
-                        vTaskDelay(10);
+                        // vTaskDelay(10);
                         // duplicate 
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
                         //print_detection_result(detect_results);
@@ -262,16 +293,25 @@ static void task_process_handler(void *arg)
 
 
                         //----------------------------working with image--------------------------
-                        vTaskDelay(10);
+                        // vTaskDelay(10);
+                        print_detection_result(detect_candidates);
                         draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
-                        vTaskDelay(10);
+                        imageData_t cropFrame;
 
-                        while(!copy_rectangle(frame, &cropFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]) ) {
-                            
-                            rgb_printf(frame, RGB565_MASK_RED, "Aline The Face");// at invalid face
+                        if(!copy_rectangle(frame,&cropFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]))
+                        {
                             frame_show_state = INVALID;
+                            heap_caps_free(cropFrame.buf);
+
                             break;
                         }
+                        
+                        // {
+                            
+                        //     rgb_printf(frame, RGB565_MASK_RED, "Aline The Face");// at invalid face
+                        //     frame_show_state = INVALID;
+                        //     break;
+                        // }
                         
                         // Edit the image after copying
                         // editImage(&cropFrame);
@@ -284,13 +324,15 @@ static void task_process_handler(void *arg)
 
                         // recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
                         recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, personName, true);// due to add name
+
+
                         ESP_LOGW("ENROLL", "ID %d is enrolled", recognizer->get_enrolled_ids().back().id);
                         frame_show_state = SHOW_STATE_ENROLL;
                         break;
                     }
                     case RECOGNIZE:{
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
-                        print_detection_result(detect_results);
+                        // print_detection_result(detect_results);
                         if (recognize_result.id > 0)
                             ESP_LOGI("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
                         else
@@ -369,10 +411,9 @@ static void task_process_handler(void *arg)
                     }
                     case INVALID:
 
-                        rgb_printf(frame, RGB565_MASK_RED, "Please watchthe camera");// at invalid face
+                        rgb_printf(frame, RGB565_MASK_RED, "Don't Move");// at invalid face
 
                     break;
-
                     default:
                         break;
                     }

@@ -194,23 +194,26 @@ return true;
 
 
 bool imagesent(uint8_t *buff, uint16_t buffLen, char* topic) {
-    char tempFrame[CHANK_SIZE+1]; 
+
+    char tempFrame[(CHANK_SIZE * 2) + 1]; // +1 for null-terminator
     memset(tempFrame,0,sizeof(tempFrame));
 
     uint16_t currentIndex=0;
     ESP_LOGI(TAGSTOMP, "Sending  total chank :%d\n", (int)ceil(buffLen/CHANK_SIZE));
 
     do{
+
+        // uint16_t chunkLen = (buffLen <= CHANK_SIZE) ? buffLen : CHANK_SIZE;
         memset(tempFrame,0,sizeof(tempFrame));
         if(buffLen<=CHANK_SIZE){
             // currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],buffLen) : memcpy(&tempFrame,&buff[currentIndex],buffLen);
         if(currentIndex){
             for (int i = 0; i < buffLen-1; i++) {
-                sprintf(&tempFrame[i], "%02x", buff[(currentIndex-1) + i]);
+                sprintf(&tempFrame[i*2], "%02x", buff[(currentIndex-1) + i]);
             }
         }else{
             for (int i = 0; i < buffLen-1; i++) {
-                sprintf(&tempFrame[i], "%02x", buff[currentIndex + i]);
+                sprintf(&tempFrame[i*2], "%02x", buff[currentIndex + i]);
             }
         }
             buffLen= buffLen - buffLen;
@@ -219,12 +222,12 @@ bool imagesent(uint8_t *buff, uint16_t buffLen, char* topic) {
         }else{
             // currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame)-1) : memcpy(&tempFrame,&buff[currentIndex],sizeof(tempFrame)-1);
         if(currentIndex){
-            for (int i = 0; i < sizeof(tempFrame)-1; i++) {
-                sprintf(&tempFrame[i], "%02x", buff[(currentIndex-1) + i]);
+            for (int i = 0; i < CHANK_SIZE-1; i++) {
+                sprintf(&tempFrame[i*2], "%02x", buff[(currentIndex-1) + i]);
             }
         }else{
-            for (int i = 0; i < sizeof(tempFrame)-1; i++) {
-                sprintf(&tempFrame[i], "%02x", buff[currentIndex + i]);
+            for (int i = 0; i < CHANK_SIZE-1; i++) {
+                sprintf(&tempFrame[i*2], "%02x", buff[currentIndex + i]);
             }
         }
 

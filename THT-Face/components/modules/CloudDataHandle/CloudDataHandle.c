@@ -44,20 +44,20 @@ static void cloudeHandlerTask(void *arg)
                 // Log the image details
                 ESP_LOGI(TAG, "Received image len: %d w: %d h: %d", image->len, image->width, image->height);
 
-// bool imagesent(uint8_t * buff, char* topic);
+                for(int i=0 ; i<128;i++){
 
+                    printf("%x",image->buf[i] );
 
+                }
                 // Send the image data to the cloud
                 if(!imagesent(image->buf,image->len, "/app/cloud")){
 
                     ESP_LOGE(TAG, "Fail Sending image data.");
 
                 }
-                for(int i=0 ; i<256;i++){
+                    ESP_LOGE(TAG, "\ntest image data ");
 
-                    printf( "test image data: %x",image->buf[i] );
 
-                }
                 // Free the image buffer if it was dynamically allocated
                 heap_caps_free(image->buf);
                 image->buf = NULL;

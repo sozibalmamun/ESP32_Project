@@ -53,6 +53,11 @@ static QueueHandle_t xQueueEvent = NULL;
 static QueueHandle_t xQueueFrameO = NULL;
 static QueueHandle_t xQueueResult = NULL;
 
+static QueueHandle_t xQueueCloud = NULL;
+
+
+
+
 static recognizer_state_t gEvent = DETECT;
 static bool gReturnFB = true;
 static face_info_t recognize_result;
@@ -116,29 +121,24 @@ static int rgb_printf(camera_fb_t *fb, uint32_t color, const char *format, ...)
 }
 
 bool copy_rectangle(const camera_fb_t *src, imageData_t *dst, int x_start, int x_end, int y_start, int y_end) {
-    // Validate inputs
-    if (!src || !src->buf || !dst || x_start < 0 || y_start < 0 || x_end > src->width || y_end > src->height || x_start >= x_end || y_start >= y_end) {
-        return false;
-    }
 
     // Calculate rectangle dimensions
     int rect_width = x_end - x_start;
     int rect_height = y_end - y_start;
 
-    // Calculate the size of the rectangle in bytes
-    int bytes_per_pixel = 2; // Assuming RGB565 format, 2 bytes per pixel
-    int dst_len = rect_width * rect_height * bytes_per_pixel;
+
+    dst->width = rect_width;
+    dst->height = rect_height;
+    dst->len = rect_width * rect_height * 2;
 
     // Allocate memory for the destination buffer
-    dst->buf = (uint8_t *)malloc(dst_len);
+    dst->buf = (uint8_t *)heap_caps_malloc(dst->len,MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     if (!dst->buf) {
 
         printf("memory allocation fail");
         return false; // Memory allocation failed
     }
-    dst->width = rect_width;
-    dst->height = rect_height;
-    dst->len = dst_len;
+
 
     // Copy the rectangle area from the source to the destination
     for (int y = y_start; y < y_end; y++) {
@@ -293,7 +293,6 @@ static void task_process_handler(void *arg)
 
 
                         //----------------------------working with image--------------------------
-                        // vTaskDelay(10);
                         print_detection_result(detect_candidates);
                         draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
                         imageData_t cropFrame;
@@ -302,10 +301,10 @@ static void task_process_handler(void *arg)
                         {
                             frame_show_state = INVALID;
                             heap_caps_free(cropFrame.buf);
-
                             break;
                         }
-                        
+                        // heap_caps_free(cropFrame.buf);
+
                         // {
                             
                         //     rgb_printf(frame, RGB565_MASK_RED, "Aline The Face");// at invalid face
@@ -315,7 +314,23 @@ static void task_process_handler(void *arg)
                         
                         // Edit the image after copying
                         // editImage(&cropFrame);
-                        // stompSend((char*)cropFrame.buf, "/app/cloud");
+
+                        if(xQueueCloud){
+                            xQueueSend(xQueueCloud, &cropFrame, portMAX_DELAY);
+                            printf("y rtoos");
+                        }else printf("n rtoos");
+
+
+                        // printf("\nCopy Image Info  L:%3d w:%3d h:%3d", cropFrame.len, cropFrame.width, cropFrame.height);
+
+                        // if(!stompSend((char*)cropFrame.buf, "/app/cloud")){
+
+                        //     frame_show_state = INVALID;
+                        //     heap_caps_free(cropFrame.buf);
+                        //     break;
+                        // }
+                        
+                        // heap_caps_free(cropFrame.buf);
 
                         //--------------------------------------------------------------------------
 
@@ -541,12 +556,19 @@ void register_human_face_recognition(const QueueHandle_t frame_i,
                                      const QueueHandle_t event,
                                      const QueueHandle_t result,
                                      const QueueHandle_t frame_o,
+
+                                     const QueueHandle_t cloud,
+
                                      const bool camera_fb_return)
 {
     xQueueFrameI = frame_i;
     xQueueFrameO = frame_o;
     xQueueEvent = event;
     xQueueResult = result;
+
+    xQueueCloud= cloud;
+
+
     gReturnFB = camera_fb_return;
     xMutex = xSemaphoreCreateMutex();
 

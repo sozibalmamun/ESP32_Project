@@ -52,7 +52,7 @@ extern "C" {
 #define     PORT            3091
 #define     PATH            "/CloudSocket-Dev/websocket/"
 
-#define     CHANK_SIZE     256 //512//760//256
+#define     CHANK_SIZE      256 //512//760//256
 
 typedef struct {
     const char                  *uri;                       /*!< Websocket URI, the information on the URI can be overrides the other fields below, if any */

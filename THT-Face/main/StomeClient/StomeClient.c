@@ -31,7 +31,9 @@ void stomp_client_connect() {
 void stomp_client_subscribe(char* topic) {
     
     char connect_frame[100] ;
-    snprintf(connect_frame, sizeof(connect_frame), "[\"SUBSCRIBE\\nid:sub-0\\ndestination:%s\\nack:client\\n\\n\\u0000\"]", topic);
+    // snprintf(connect_frame, sizeof(connect_frame), "[\"SUBSCRIBE\\nid:sub-0\\ndestination:%s\\nack:client\\n\\n\\u0000\"]", topic);//done
+    snprintf(connect_frame, sizeof(connect_frame), "[\"SUBSCRIBE\\nid:sub-0\\ndestination:%s\\nack:auto\\n\\n\\u0000\"]", topic);
+
     if(esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY)>0){
         
         wifiStatus=0x02;
@@ -75,6 +77,8 @@ bool stompSend(char * buff, char* topic){
             currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],buffLen) : memcpy(&tempFrame,&buff[currentIndex],buffLen);
             // memcpy(&tempFrame,&buff[currentIndex-1],buffLen);
             buffLen= buffLen - buffLen;
+            ESP_LOGI(TAGSTOMP, "Sending last Chank\n");
+
         }else{
 
             currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame)-1) : memcpy(&tempFrame,&buff[currentIndex],sizeof(tempFrame)-1);
@@ -85,18 +89,24 @@ bool stompSend(char * buff, char* topic){
         tempFrame[strlen(tempFrame)] = '\0';  // Null-terminate the chunk
 
 
-        char connect_frame[strlen(tempFrame)+37+strlen(topic)];memset(connect_frame,0,sizeof(connect_frame));
+        char connect_frame[strlen(tempFrame)+37+strlen(topic)];
+        memset(connect_frame,0,sizeof(connect_frame));
 
         // ESP_LOGI(TAGSTOMP, "Sending  tempFrame len :%d dynamic pac len %d\n", strlen(tempFrame) ,sizeof(connect_frame));
 
-        snprintf(connect_frame, sizeof(connect_frame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, tempFrame);
-        // ESP_LOGI(TAGSTOMP, "Sending  connect_frame len :%d\n", strlen(connect_frame));
+        snprintf(connect_frame, sizeof(connect_frame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, "tempFrame");
 
-        // ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", connect_frame);
+        ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", connect_frame);
 
-        if(!esp_websocket_client_is_connected(client))return false;
+        if(!esp_websocket_client_is_connected(client)){
 
+            ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
+            wifiStatus=0x01;
+
+            return false;//
+        }
         if(esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY)!=ESP_OK){
+
             // ESP_LOGI(TAGSTOMP, "Sending STOMP   sent len :%d  remain   %d\n", currentIndex,buffLen);
 
             currentIndex+= CHANK_SIZE;
@@ -147,19 +157,21 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
             else if(data->data_ptr[0]=='h'){
                 ESP_LOGI(TAG, "Ping");
                 //---------------------------------------------------------------
+
                 time_library_time_t current_time;
                 uint8_t clockType = get_time(&current_time, 1);
-                char tempFrame[17] ;
-                snprintf(tempFrame, sizeof(tempFrame), "%d-%d-%d  %s",current_time.year,current_time.month,current_time.day,
+                char tempFrame[27] ;
+                snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",current_time.year,current_time.month,current_time.day,current_time.hour,current_time.minute,current_time.second,
                 day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
 
                 if(!stompSend(tempFrame, PUBLISH_TOPIC)){
-                ESP_LOGI(TAGSTOMP, "ping sending error");
+                ESP_LOGI(TAGSTOMP, "sending error");
                 }
                 //--------------------------------------------------------------
             }else if(data->data_ptr[0]=='c'){
 
-                ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
+                // ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
+                wifiStatus=0x01;
                 stompAppStart();
             }
             // ESP_LOGI(TAG, "WEBSOCKET_free");

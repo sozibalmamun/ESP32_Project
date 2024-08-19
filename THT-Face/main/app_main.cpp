@@ -18,6 +18,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 
+#include "CloudDataHandle.h"
 
 
 
@@ -27,6 +28,10 @@ static QueueHandle_t xQueueAIFrame = NULL;
 static QueueHandle_t xQueueLCDFrame = NULL;
 static QueueHandle_t xQueueKeyState = NULL;
 static QueueHandle_t xQueueEventLogic = NULL;
+
+static QueueHandle_t xQueueCloudEvent = NULL;
+
+
 
 #define GPIO_BOOT GPIO_NUM_0
 
@@ -43,6 +48,7 @@ void DisplayFreeMemory(char *str)
 extern "C" 
 void app_main()
 {
+
     esp_err_t ret;
 
     ESP_LOGI(TAG, "Starting app_main");
@@ -51,6 +57,10 @@ void app_main()
     xQueueLCDFrame = xQueueCreate(2, sizeof(camera_fb_t *));
     xQueueKeyState = xQueueCreate(1, sizeof(int *));
     xQueueEventLogic = xQueueCreate(1, sizeof(int *));
+
+    xQueueCloudEvent = xQueueCreate(1, sizeof(int *));
+
+
 
     if (xQueueAIFrame == NULL || xQueueLCDFrame == NULL || xQueueKeyState == NULL || xQueueEventLogic == NULL) {
         ESP_LOGE(TAG, "Failed to create queues");
@@ -61,8 +71,10 @@ void app_main()
     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
     // register_adc_button(buttons, 4, xQueueKeyState);
     register_event(xQueueKeyState, xQueueEventLogic);
-    register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
+    register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloudEvent ,false);
     register_lcd(xQueueLCDFrame, NULL, true);
+
+    cloudHandel(xQueueCloudEvent);
 
     vTaskDelay(pdMS_TO_TICKS(10));
 
@@ -77,6 +89,9 @@ void app_main()
     time_library_time_t initial_time = {2024, 8, 7, 17, 16, 0};//     year, month, day, hour, minute, second;
     time_library_init(&initial_time);
     //--------------------------------------------------------------
+
+
+
 
     ESP_LOGI(TAG, "app_main finished");
 

@@ -364,7 +364,7 @@ static void task_process_handler(void *arg)
 
                         }else rgb_printf(frame, RGB565_MASK_RED, "%d IDs invalided", personId);
 
-                        personId=0;
+                        personId=0;// deafalt for test
 
                         break;
 

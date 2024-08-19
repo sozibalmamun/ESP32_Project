@@ -52,7 +52,7 @@ extern "C" {
 #define     PORT            3091
 #define     PATH            "/CloudSocket-Dev/websocket/"
 
-#define     CHANK_SIZE      128//256 //512//760//256
+#define     CHANK_SIZE      256 //512//760//256 //128
 
 typedef struct {
     const char                  *uri;                       /*!< Websocket URI, the information on the URI can be overrides the other fields below, if any */
@@ -109,7 +109,7 @@ void stompAppStart(void);
 extern void dataHandele(const char *rx_buffer);
 extern bool stompSend(char * buff, char* topic);
 
-extern bool imagesent(uint8_t *buff, uint16_t buffLen, char* topic);
+extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w , char* topic);
 
 
 

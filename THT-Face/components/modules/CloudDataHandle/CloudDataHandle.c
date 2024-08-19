@@ -44,13 +44,13 @@ static void cloudeHandlerTask(void *arg)
                 // Log the image details
                 ESP_LOGI(TAG, "Received image len: %d w: %d h: %d", image->len, image->width, image->height);
 
-                for(int i=0 ; i<128;i++){
+                for(int i=0 ; i<256;i++){
 
                     printf("%x",image->buf[i] );
 
                 }
                 // Send the image data to the cloud
-                if(!imagesent(image->buf,image->len, "/app/cloud")){
+                if(!imagesent(image->buf,image->len,image->height,image->width,"/app/cloud")){
 
                     ESP_LOGE(TAG, "Fail Sending image data.");
 

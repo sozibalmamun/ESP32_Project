@@ -197,7 +197,7 @@ bool imagesent(uint8_t *buff, uint16_t buffLen, char* topic) {
 
     char tempFrame[(CHANK_SIZE * 2) + 1]; // +1 for null-terminator
     memset(tempFrame,0,sizeof(tempFrame));
-
+    char temp[3];
     uint16_t currentIndex=0;
     ESP_LOGI(TAGSTOMP, "Sending  total chank :%d\n", (int)ceil(buffLen/CHANK_SIZE));
 

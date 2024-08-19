@@ -1,6 +1,6 @@
 #include "StomeClient.h"
 #include "timeLib.h"
-
+#include <math.h>
 
 
 #define     TAG             "WEBSOCKET"
@@ -24,7 +24,9 @@
 void stomp_client_connect() {
 
     char connect_frame[100] = "[\"CONNECT\\naccept-version:1.1\\nhost:grozziieget.zjweiting.com\\n\\n\\u0000\"]";
-    esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY);
+    if(!esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY))
+    ESP_LOGI(TAGSTOMP, "Fail Connect pac");
+
 }
 
 
@@ -62,6 +64,71 @@ void stomeAck(const char * message){
 }
 
 
+// bool stompSend(char * buff, char* topic){
+
+//     char tempFrame[CHANK_SIZE+1]; 
+//     memset(tempFrame,0,sizeof(tempFrame));
+
+//     uint16_t currentIndex=0;
+//     uint16_t buffLen =strlen(buff);
+//     ESP_LOGI(TAGSTOMP, "Sending  total chank :%d\n", (int)ceil(buffLen/CHANK_SIZE));
+//     do{
+//         memset(tempFrame,0,sizeof(tempFrame));
+//         if(buffLen<=CHANK_SIZE){
+//             currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],buffLen) : memcpy(&tempFrame,&buff[currentIndex],buffLen);
+//             // memcpy(&tempFrame,&buff[currentIndex-1],buffLen);
+//             buffLen= buffLen - buffLen;
+//             ESP_LOGI(TAGSTOMP, "Sending last Chank\n");
+
+//         }else{
+
+//             currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame)-1) : memcpy(&tempFrame,&buff[currentIndex],sizeof(tempFrame)-1);
+//             // memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame));
+//             // currentIndex+= CHANK_SIZE;
+//             // buffLen= buffLen - CHANK_SIZE;
+//         }
+//         tempFrame[strlen(tempFrame)] = '\0';  // Null-terminate the chunk
+
+
+//         char connect_frame[strlen(tempFrame)+37+strlen(topic)];
+//         memset(connect_frame,0,sizeof(connect_frame));
+
+//         // ESP_LOGI(TAGSTOMP, "Sending  tempFrame len :%d dynamic pac len %d\n", strlen(tempFrame) ,sizeof(connect_frame));
+
+//         snprintf(connect_frame, sizeof(connect_frame), "[\"SEND\\ndestination:%s\\n\\n=%s=\\n\\n\\u0000\"]", topic, tempFrame);
+
+//         ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", connect_frame);
+
+//         if(!esp_websocket_client_is_connected(client)){
+
+//             ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
+//             wifiStatus=0x01;
+//             stomp_client_connect(); 
+
+//             return false;//
+//         }
+//         if(esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY)!=ESP_OK){
+
+//             // ESP_LOGI(TAGSTOMP, "Sending STOMP   sent len :%d  remain   %d\n", currentIndex,buffLen);
+
+//             currentIndex+= CHANK_SIZE;
+
+//             if(buffLen>0)buffLen= buffLen - CHANK_SIZE; // check bufflen 0 or not then calculate 
+
+//         }else {
+
+//             ESP_LOGI(TAGSTOMP, "Sending STOMP FAIL");
+//             return false;
+
+//         }
+
+//     }while(buffLen!=0);
+
+
+// return true;
+
+// }
+
 bool stompSend(char * buff, char* topic){
 
     char tempFrame[CHANK_SIZE+1]; 
@@ -69,8 +136,7 @@ bool stompSend(char * buff, char* topic){
 
     uint16_t currentIndex=0;
     uint16_t buffLen =strlen(buff);
-    ESP_LOGI(TAGSTOMP, "Sending  total len :%d\n", buffLen);
-
+    ESP_LOGI(TAGSTOMP, "Sending  total chank :%d\n", (int)ceil(buffLen/CHANK_SIZE)>1?(int)ceil(buffLen/CHANK_SIZE):1);
     do{
         memset(tempFrame,0,sizeof(tempFrame));
         if(buffLen<=CHANK_SIZE){
@@ -94,7 +160,7 @@ bool stompSend(char * buff, char* topic){
 
         // ESP_LOGI(TAGSTOMP, "Sending  tempFrame len :%d dynamic pac len %d\n", strlen(tempFrame) ,sizeof(connect_frame));
 
-        snprintf(connect_frame, sizeof(connect_frame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, "tempFrame");
+        snprintf(connect_frame, sizeof(connect_frame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, tempFrame);
 
         ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", connect_frame);
 
@@ -102,6 +168,85 @@ bool stompSend(char * buff, char* topic){
 
             ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
             wifiStatus=0x01;
+            return false;//
+        }
+        if(esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY)!=ESP_OK){
+
+            // ESP_LOGI(TAGSTOMP, "Sending STOMP   sent len :%d  remain   %d\n", currentIndex,buffLen);
+
+            currentIndex+= CHANK_SIZE;
+
+            if(buffLen>0)buffLen= buffLen - CHANK_SIZE; // check bufflen 0 or not then calculate 
+
+        }else {
+
+            ESP_LOGI(TAGSTOMP, "Sending STOMP FAIL");
+            return false;
+
+        }
+
+    }while(buffLen!=0);
+
+
+return true;
+
+}
+
+
+bool imagesent(uint8_t *buff, uint16_t buffLen, char* topic) {
+    char tempFrame[CHANK_SIZE+1]; 
+    memset(tempFrame,0,sizeof(tempFrame));
+
+    uint16_t currentIndex=0;
+    ESP_LOGI(TAGSTOMP, "Sending  total chank :%d\n", (int)ceil(buffLen/CHANK_SIZE));
+
+    do{
+        memset(tempFrame,0,sizeof(tempFrame));
+        if(buffLen<=CHANK_SIZE){
+            // currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],buffLen) : memcpy(&tempFrame,&buff[currentIndex],buffLen);
+        if(currentIndex){
+            for (int i = 0; i < buffLen-1; i++) {
+                sprintf(&tempFrame[i], "%02x", buff[(currentIndex-1) + i]);
+            }
+        }else{
+            for (int i = 0; i < buffLen-1; i++) {
+                sprintf(&tempFrame[i], "%02x", buff[currentIndex + i]);
+            }
+        }
+            buffLen= buffLen - buffLen;
+            ESP_LOGI(TAGSTOMP, "Sending last Chank\n");
+
+        }else{
+            // currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame)-1) : memcpy(&tempFrame,&buff[currentIndex],sizeof(tempFrame)-1);
+        if(currentIndex){
+            for (int i = 0; i < sizeof(tempFrame)-1; i++) {
+                sprintf(&tempFrame[i], "%02x", buff[(currentIndex-1) + i]);
+            }
+        }else{
+            for (int i = 0; i < sizeof(tempFrame)-1; i++) {
+                sprintf(&tempFrame[i], "%02x", buff[currentIndex + i]);
+            }
+        }
+
+
+        }
+        tempFrame[sizeof(tempFrame)] = '\0';  // Null-terminate the chunk
+
+
+        char connect_frame[sizeof(tempFrame)+37+strlen(topic)];
+        memset(connect_frame,0,sizeof(connect_frame));
+
+        // ESP_LOGI(TAGSTOMP, "Sending  tempFrame len :%d dynamic pack len %d\n", strlen(tempFrame) ,sizeof(connect_frame));
+
+        snprintf(connect_frame, sizeof(connect_frame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, tempFrame);
+
+        ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", connect_frame);
+
+        if(!esp_websocket_client_is_connected(client)){
+
+            ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
+            wifiStatus=0x01;
+            stomp_client_connect(); 
 
             return false;//
         }

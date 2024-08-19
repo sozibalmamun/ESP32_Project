@@ -21,7 +21,9 @@ typedef struct {
 
 
 bool imagesend( uint8_t* buff);
-bool stompSend(char * buff, char* topic);
+// bool stompSend(char * buff, char* topic);
+bool imagesent(uint8_t *buff, uint16_t buffLen, char* topic);
+
 
 void cloudHandel(const QueueHandle_t input );
 

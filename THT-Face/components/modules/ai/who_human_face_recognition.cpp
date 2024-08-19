@@ -175,35 +175,6 @@ bool copy_rectangle(const camera_fb_t *src, imageData_t **dst, int x_start, int 
 
 
 
-// bool copy_rectangle(const camera_fb_t *src, int x_start, int x_end, int y_start, int y_end) {
-//     // Calculate the width and height of the rectangle
-//     int rect_width = x_end - x_start;
-//     int rect_height = y_end - y_start;
-//     uint8_t len = rect_width * rect_height * 2; // Assuming 2 bytes per pixel (RGB565)
-
-//     printf("\nCopy Image Info  L:%3d w:%3d h:%3d", len, rect_width, rect_height);
-
-//     uint8_t buf[len];
-//     // Copy the pixels from the source to the destination buffer
-//     for (int y = y_start; y < y_end; y++) {
-//         for (int x = x_start; x < x_end; x++) {
-//             // Calculate the source and destination indices
-//             int src_index = (y * src->width + x) * 2; // 2 bytes per pixel
-//             int dst_index = ((y - y_start) * rect_width + (x - x_start)) * 2;
-
-//             // Copy the pixel data
-//             buf[dst_index] = src->buf[src_index];
-//             buf[dst_index + 1] = src->buf[src_index + 1];
-
-//         }
-//     }
-//     imagesend(buf);
-//     memset(buf,0,len);
-
-//     return 1;
-// }
-
-
 void editImage(imageData_t *buff ){
 
 
@@ -321,50 +292,20 @@ static void task_process_handler(void *arg)
                         {
                             frame_show_state = INVALID;
                             heap_caps_free(cropFrame->buf);
+                            heap_caps_free(cropFrame);
                             break;
                         }
-                        // if (cropFrame) {
-                        //     // Process cropFrame (e.g., send it to the cloud)
-                            
-                        //     // Once done, free the memory
-                        //     heap_caps_free(cropFrame->buf);
-                        //     heap_caps_free(cropFrame);
-                        // }
-                        // {
-                            
-                        //     rgb_printf(frame, RGB565_MASK_RED, "Aline The Face");// at invalid face
-                        //     frame_show_state = INVALID;
-                        //     break;
-                        // }
-                        
-                        // Edit the image after copying
-                        // editImage(&cropFrame);
-                        printf("\nCopy Image Info  L:%3d w:%3d h:%3d", cropFrame->len, cropFrame->width, cropFrame->height);
+
+                        // printf("\nCopy Image Info  L:%3d w:%3d h:%3d", cropFrame->len, cropFrame->width, cropFrame->height);
 
                         if (xQueueCloud) {
-                            printf("Sending cropFrame to xQueueCloud...\n");
+                            // printf("Sending cropFrame to xQueueCloud...\n");
                             xQueueSend(xQueueCloud, &cropFrame, portMAX_DELAY);
                         } else {
                             printf("xQueueCloud is NULL, cannot send cropFrame.\n");
                         }
 
-
-
-                        // printf("\nCopy Image Info  L:%3d w:%3d h:%3d", cropFrame.len, cropFrame.width, cropFrame.height);
-
-                        // if(!stompSend((char*)cropFrame.buf, "/app/cloud")){
-
-                        //     frame_show_state = INVALID;
-                        //     heap_caps_free(cropFrame.buf);
-                        //     break;
-                        // }
-                        
-                        // heap_caps_free(cropFrame.buf);
-
                         //--------------------------------------------------------------------------
-
-
-
 
                         // recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
                         recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, personName, true);// due to add name

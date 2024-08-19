@@ -29,21 +29,21 @@ static QueueHandle_t xQueueLCDFrame = NULL;
 static QueueHandle_t xQueueKeyState = NULL;
 static QueueHandle_t xQueueEventLogic = NULL;
 
-static QueueHandle_t xQueueCloudEvent = NULL;
+static QueueHandle_t xQueueCloud = NULL;
 
 
 
 #define GPIO_BOOT GPIO_NUM_0
 
 
-void DisplayFreeMemory(char *str)
-{
-	printf("--------------- heap free size PSRAM %s:%d,total size:%d\r\n", str,(int)heap_caps_get_free_size( MALLOC_CAP_SPIRAM ),
-	heap_caps_get_total_size(MALLOC_CAP_SPIRAM));
-	printf("--------------- heap free size in processor %s:%ld,total size:%d\r\n",str,(long)heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
-	heap_caps_get_total_size(MALLOC_CAP_INTERNAL));
+// void DisplayFreeMemory(char *str)
+// {
+// 	printf("--------------- heap free size PSRAM %s:%d,total size:%d\r\n", str,(int)heap_caps_get_free_size( MALLOC_CAP_SPIRAM ),
+// 	heap_caps_get_total_size(MALLOC_CAP_SPIRAM));
+// 	printf("--------------- heap free size in processor %s:%ld,total size:%d\r\n",str,(long)heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
+// 	heap_caps_get_total_size(MALLOC_CAP_INTERNAL));
 
-}
+// }
 
 extern "C" 
 void app_main()
@@ -58,7 +58,7 @@ void app_main()
     xQueueKeyState = xQueueCreate(1, sizeof(int *));
     xQueueEventLogic = xQueueCreate(1, sizeof(int *));
 
-    xQueueCloudEvent = xQueueCreate(1, sizeof(int *));
+    xQueueCloud = xQueueCreate(3, sizeof(int *));
 
 
 
@@ -71,11 +71,11 @@ void app_main()
     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
     // register_adc_button(buttons, 4, xQueueKeyState);
     register_event(xQueueKeyState, xQueueEventLogic);
-    register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloudEvent ,false);
+    register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false);
+
+    cloudHandel(xQueueCloud);
+
     register_lcd(xQueueLCDFrame, NULL, true);
-
-    cloudHandel(xQueueCloudEvent);
-
     vTaskDelay(pdMS_TO_TICKS(10));
 
 

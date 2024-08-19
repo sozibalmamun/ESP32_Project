@@ -33,7 +33,7 @@ typedef enum
 
 // bool copy_rectangle(const camera_fb_t *src, int x_start, int x_end, int y_start, int y_end);
 
-bool copy_rectangle(const camera_fb_t *src,imageData_t* dst, int x_start, int x_end, int y_start, int y_end);
+bool copy_rectangle(const camera_fb_t *src,imageData_t** dst, int x_start, int x_end, int y_start, int y_end);
 
 
 void editImage(imageData_t *buff );

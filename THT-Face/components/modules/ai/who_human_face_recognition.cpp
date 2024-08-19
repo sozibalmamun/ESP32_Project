@@ -119,38 +119,54 @@ static int rgb_printf(camera_fb_t *fb, uint32_t color, const char *format, ...)
     }
     return len;
 }
+bool copy_rectangle(const camera_fb_t *src, imageData_t **dst, int x_start, int x_end, int y_start, int y_end) {
+    // Validate rectangle dimensions
+    if (x_start >= x_end || y_start >= y_end) {
+        printf("Invalid rectangle dimensions\n");
+        return false;
+    }
 
-bool copy_rectangle(const camera_fb_t *src, imageData_t *dst, int x_start, int x_end, int y_start, int y_end) {
+    // Allocate memory for the destination imageData_t structure
+    *dst = (imageData_t *)heap_caps_malloc(sizeof(imageData_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    if (*dst == NULL) {
+        printf("Memory allocation for cropFrame structure failed\n");
+        return false;
+    }
 
     // Calculate rectangle dimensions
     int rect_width = x_end - x_start;
     int rect_height = y_end - y_start;
+    int bytes_per_pixel = 2; // Assuming RGB565 format
+    (*dst)->width = rect_width;
+    (*dst)->height = rect_height;
+    (*dst)->len = rect_width * rect_height * bytes_per_pixel;
 
-
-    dst->width = rect_width;
-    dst->height = rect_height;
-    dst->len = rect_width * rect_height * 2;
-
-    // Allocate memory for the destination buffer
-    dst->buf = (uint8_t *)heap_caps_malloc(dst->len,MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-    if (!dst->buf) {
-
-        printf("memory allocation fail");
-        return false; // Memory allocation failed
+    // Validate the calculated size
+    if ((*dst)->len <= 0 || (*dst)->len > src->len) {
+        printf("Invalid calculated len: %d\n", (*dst)->len);
+        heap_caps_free(*dst);
+        *dst = NULL;
+        return false;
     }
 
+    // Allocate memory for the destination buffer
+    (*dst)->buf = (uint8_t *)heap_caps_malloc((*dst)->len, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    if (!(*dst)->buf) {
+        printf("Memory allocation for cropFrame buffer failed\n");
+        heap_caps_free(*dst);
+        *dst = NULL;
+        return false;
+    }
 
     // Copy the rectangle area from the source to the destination
     for (int y = y_start; y < y_end; y++) {
         for (int x = x_start; x < x_end; x++) {
-            // Calculate the source and destination indices
-            int src_index = (y * src->width + x) * 2; // 2 bytes per pixel
-            int dst_index = ((y - y_start) * rect_width + (x - x_start)) * 2;
-
-            // Copy the pixel data
-            dst->buf[dst_index] = src->buf[src_index];
-            dst->buf[dst_index + 1] = src->buf[src_index + 1];
-
+            int src_index = (y * src->width + x) * bytes_per_pixel;
+            int dst_index = ((y - y_start) * rect_width + (x - x_start)) * bytes_per_pixel;
+            
+            // Perform the copy safely
+            (*dst)->buf[dst_index] = src->buf[src_index];
+            (*dst)->buf[dst_index + 1] = src->buf[src_index + 1];
         }
     }
 
@@ -158,9 +174,8 @@ bool copy_rectangle(const camera_fb_t *src, imageData_t *dst, int x_start, int x
 }
 
 
+
 // bool copy_rectangle(const camera_fb_t *src, int x_start, int x_end, int y_start, int y_end) {
-
-
 //     // Calculate the width and height of the rectangle
 //     int rect_width = x_end - x_start;
 //     int rect_height = y_end - y_start;
@@ -214,6 +229,8 @@ void editImage(imageData_t *buff ){
 static void task_process_handler(void *arg)
 {
     camera_fb_t *frame = NULL;
+    imageData_t *cropFrame = NULL;
+
 
     HumanFaceDetectMSR01 detector(0.3F, 0.3F, 10, 0.3F);
     HumanFaceDetectMNP01 detector2(0.4F, 0.3F, 10);
@@ -295,16 +312,24 @@ static void task_process_handler(void *arg)
                         //----------------------------working with image--------------------------
                         print_detection_result(detect_candidates);
                         draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
-                        imageData_t cropFrame;
+                        // imageData_t cropFrame;
+
+                        // imageData_t *cropFrame = NULL;
+
 
                         if(!copy_rectangle(frame,&cropFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]))
                         {
                             frame_show_state = INVALID;
-                            heap_caps_free(cropFrame.buf);
+                            heap_caps_free(cropFrame->buf);
                             break;
                         }
-                        // heap_caps_free(cropFrame.buf);
-
+                        // if (cropFrame) {
+                        //     // Process cropFrame (e.g., send it to the cloud)
+                            
+                        //     // Once done, free the memory
+                        //     heap_caps_free(cropFrame->buf);
+                        //     heap_caps_free(cropFrame);
+                        // }
                         // {
                             
                         //     rgb_printf(frame, RGB565_MASK_RED, "Aline The Face");// at invalid face
@@ -314,11 +339,15 @@ static void task_process_handler(void *arg)
                         
                         // Edit the image after copying
                         // editImage(&cropFrame);
+                        printf("\nCopy Image Info  L:%3d w:%3d h:%3d", cropFrame->len, cropFrame->width, cropFrame->height);
 
-                        if(xQueueCloud){
+                        if (xQueueCloud) {
+                            printf("Sending cropFrame to xQueueCloud...\n");
                             xQueueSend(xQueueCloud, &cropFrame, portMAX_DELAY);
-                            printf("y rtoos");
-                        }else printf("n rtoos");
+                        } else {
+                            printf("xQueueCloud is NULL, cannot send cropFrame.\n");
+                        }
+
 
 
                         // printf("\nCopy Image Info  L:%3d w:%3d h:%3d", cropFrame.len, cropFrame.width, cropFrame.height);

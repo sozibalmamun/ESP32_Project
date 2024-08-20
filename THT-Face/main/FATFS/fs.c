@@ -1,43 +1,97 @@
 
 #include "fs.h"
 
+static const char *TAG = "init_fatfs";
+
 
 void init_fatfs() {
-    const char *base_path = "/fatfs";
-    const char *partition_label = "storage";
+    // const char *base_path = "/fatfs";
+    // const char *partition_label = "storage";
     
+    // esp_vfs_fat_mount_config_t mount_config = {
+    //     .format_if_mount_failed = true,
+    //     .max_files = 5,
+    //     .allocation_unit_size = CONFIG_WL_SECTOR_SIZE
+    // };
+
+
+    // esp_err_t ret = esp_vfs_fat_spiflash_mount(base_path, partition_label, &mount_config, &s_wl_handle);
+    // if (ret != ESP_OK) {
+    //     ESP_LOGE(TAG, "Failed to mount FATFS (%s)", esp_err_to_name(ret));
+    //     return;
+    // }
+
     esp_vfs_fat_mount_config_t mount_config = {
-        .format_if_mount_failed = true,
+        .format_if_mount_failed = false,
         .max_files = 5,
-        .allocation_unit_size = CONFIG_WL_SECTOR_SIZE
+        .allocation_unit_size = CONFIG_WL_SECTOR_SIZE,
     };
 
-    esp_err_t ret = esp_vfs_fat_spiflash_mount(base_path, partition_label, &mount_config, &s_wl_handle);
-
+    esp_err_t ret = esp_vfs_fat_spiflash_mount("/storage", "storage", &mount_config, &s_wl_handle);
     if (ret != ESP_OK) {
-        ESP_LOGE("init_fatfs", "Failed to mount FATFS (%s)", esp_err_to_name(ret));
+        ESP_LOGE(TAG, "Failed to mount FATFS (%s)", esp_err_to_name(ret));
         return;
     }
 
-    ESP_LOGI("init_fatfs", "FATFS mounted successfully");
+    ESP_LOGI(TAG, "FATFS mounted successfully");
+
 }
+
+void print_memory_status(void) {
+    
+    FATFS *fs = s_wl_handle;  // Use the mounted FATFS object
+    DWORD free_clusters;
+    FRESULT res;
+
+    // Get the free space in clusters
+    res = f_getfree("/storage", &free_clusters, &fs);
+    if (res != FR_OK) {
+        ESP_LOGE(TAG, "Failed to get free space: %d", res);
+        return;
+    }
+
+    // Calculate total and free space in bytes
+    DWORD total_clusters = fs->n_fatent - 2;  // Total clusters - reserved clusters
+    DWORD cluster_size = fs->csize * 512;     // Size of one cluster in bytes
+    DWORD total_space = total_clusters * cluster_size;
+    DWORD free_space = free_clusters * cluster_size;
+    DWORD used_space = total_space - free_space;
+
+    ESP_LOGI(TAG, "Total Space: %u  bytes", total_space);
+    ESP_LOGI(TAG, "Free Space:  %u  bytes", free_space);
+    ESP_LOGI(TAG, "Used Space:  %u  bytes", used_space);
+}
+
 
 
 
 void create_directories() {
     // Create /faces directory
-    int res = mkdir("/fatfs/faces", 0777);
-    if (res != 0 && errno != EEXIST) {
+//     int res = mkdir(FACE_DIRECTORIES, 0777);
+//     if (res != 0 && errno != EEXIST) {
 
-        ESP_LOGE("create_directories", "Failed to create /faces directory");
-    }
+//         ESP_LOGE("create_directories", "Failed to create /faces directory");
+//     }
 
-    // Create /attendance directory
-    res = mkdir("/fatfs/attendance", 0777);
-    if (res != 0 && errno != EEXIST) {
+//     // Create /attendance directory
+//     res = mkdir(LOG_DIRECTORIES, 0777);
+//     if (res != 0 && errno != EEXIST) {
 
-        ESP_LOGE("create_directories", "Failed to create /attendance directory");
-    }
+//         ESP_LOGE("create_directories", "Failed to create /attendance directory");
+
+//     }
+
+// Check if the directory creation is successful
+if (mkdir("/storage/faces", 0777) != 0) {
+    ESP_LOGE(TAG, "Failed to create directory: /storage/faces");
+}
+
+if (mkdir("/storage/attendance", 0777) != 0) {
+    ESP_LOGE(TAG, "Failed to create directory: /storage/attendance");
+}
+
+
+
 }
 
 
@@ -126,7 +180,7 @@ void delete_face_data(uint32_t person_id) {
     }
 }
 
-void log_attendance(uint32_t person_id, const char* timestamp) {
+void wright_log_attendance(uint32_t person_id, const char* timestamp) {
     char log_file_name[64];
     snprintf(log_file_name, sizeof(log_file_name), "/fatfs/attendance/%s.log", timestamp);
 

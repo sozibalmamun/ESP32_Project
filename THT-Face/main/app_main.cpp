@@ -21,24 +21,7 @@
 #include "CloudDataHandle.h"
 
 //--------fatfs-------------------
-// #include <stdlib.h>
-// #include <stdio.h>
-// #include <string.h>
-
-// #include "esp_log.h"
-// #include "esp_vfs_fat.h"
-// #include "wear_levelling.h"
-// #include "esp_vfs.h"
-// #include "esp_log.h"
-// #include "sys/stat.h"
-
-// #include "esp_flash.h"
-// #include "esp_flash_spi_init.h"
-// #include "esp_partition.h"
-// #include "esp_system.h"
-
 #include "FATFS/fs.h"
-
 //-------------------------------
 
 
@@ -113,13 +96,21 @@ void app_main()
     time_library_time_t initial_time = {2024, 8, 7, 17, 16, 0};//     year, month, day, hour, minute, second;
     time_library_init(&initial_time);
     //--------------------------------------------------------------
-
+    //-------------------------
+    init_fatfs();
+    print_memory_status();
+    create_directories();
+    //-------------------------
 
 
 
     ESP_LOGI(TAG, "app_main finished");
 
     while(true){
+
+
+
+
 
         // if(true){
 
@@ -140,6 +131,9 @@ void app_main()
 
             // sleepEnable=true;
             // printf("\nsleepEnable");
+
+            wright_log_attendance( 1111111111111,  "sozib");
+            read_attendance_log("sozib");
 
         }
 

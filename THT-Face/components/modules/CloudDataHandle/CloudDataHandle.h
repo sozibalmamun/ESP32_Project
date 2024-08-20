@@ -21,10 +21,19 @@ typedef struct {
 
 
 bool imagesend( uint8_t* buff);
-// bool stompSend(char * buff, char* topic);
 bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w , char* topic);
-
 void cloudHandel(const QueueHandle_t input );
+
+
+//---------------fs system-------------------------------------------------------------------------------------------------------
+void save_face_data(uint32_t person_id, const char* name, uint32_t image_width, uint32_t image_length, const uint8_t* image_data);
+void read_face_data(uint32_t person_id);
+void delete_face_data(uint32_t person_id);
+void wright_log_attendance(uint32_t person_id, const char* timestamp);
+void read_attendance_log(const char* date);
+void delete_attendance_log(const char* date);
+void print_memory_status(void);
+//---------------------------------------------------------------------
 
 #ifdef __cplusplus
 }

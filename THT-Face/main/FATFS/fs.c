@@ -1,26 +1,107 @@
 
 #include "fs.h"
 
-static const char *TAG = "init_fatfs";
+static const char *TAG = "FAT";
 
-
-void init_fatfs() {
-
-    esp_vfs_fat_mount_config_t mount_config = {
-        .format_if_mount_failed = true,//false int 
+// Function to initialize and mount FAT filesystem
+esp_err_t init_fatfs(void) {
+    esp_err_t ret;
+    const esp_vfs_fat_mount_config_t mount_config = {
         .max_files = 5,
-        .allocation_unit_size = CONFIG_WL_SECTOR_SIZE,
+        .format_if_mount_failed = true,
+        .allocation_unit_size = CONFIG_WL_SECTOR_SIZE
     };
 
-    esp_err_t ret = esp_vfs_fat_spiflash_mount("/storage", "storage", &mount_config, &s_wl_handle);
+    // Mount FATFS partition
+    ret = esp_vfs_fat_spiflash_mount(MOUNT_POINT, "storage", &mount_config, &s_wl_handle);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to mount FATFS (%s)", esp_err_to_name(ret));
-        return;
+        ESP_LOGE("init_fatfs", "Failed to mount FATFS (%s)", esp_err_to_name(ret));
+        return ret;
+    }
+    ESP_LOGI("init_fatfs", "FATFS mounted successfully");
+
+
+    return ESP_OK;
+}
+
+void create_directories(void) {
+    // Ensure that FATFS is mounted before creating directories
+    // if (init_fatfs() != ESP_OK) {
+    //     ESP_LOGE("create_directories", "FATFS not mounted. Cannot create directories.");
+    //     return;
+    // }
+
+    struct stat st;
+    if (stat(BASE_PATH "/log", &st) == 0) {
+        if (S_ISDIR(st.st_mode)) {
+            ESP_LOGI("FAT", "Directory /attendance already exists");
+        } else {
+            ESP_LOGE("FAT", "/attendance exists but is not a directory");
+        }
+    } else {
+        // If the directory does not exist, try to create it
+        int res = mkdir(BASE_PATH "/log", 0777);
+        if (res != 0 && errno != EEXIST) {
+            ESP_LOGE("FAT", "Failed to create directory: %s", BASE_PATH "/attendance");
+        } else {
+            ESP_LOGI("FAT", "Directory /attendance created");
+        }
     }
 
-    ESP_LOGI(TAG, "FATFS mounted successfully");
 
+    if (stat(BASE_PATH "/faces", &st) == 0) {
+        if (S_ISDIR(st.st_mode)) {
+            ESP_LOGI("FAT", "Directory /faces already exists");
+        } else {
+            ESP_LOGE("FAT", "/faces exists but is not a directory");
+        }
+    } else {
+        // If the directory does not exist, try to create it
+        int res = mkdir(BASE_PATH "/faces", 0777);
+        if (res != 0 && errno != EEXIST) {
+            ESP_LOGE("FAT", "Failed to create directory: %s", BASE_PATH "/faces");
+        } else {
+            ESP_LOGI("FAT", "Directory /faces created");
+        }
+    }
+
+
+
+
+    // // Create /faces directory
+    // int res = mkdir(BASE_PATH "/faces", 0777);
+    // if (res != 0 && errno != EEXIST) {
+    //     ESP_LOGE("FAT", "Failed to create directory: %s", BASE_PATH "/faces");
+    // } else {
+    //     ESP_LOGI("FAT", "Directory /faces created");
+    // }
+
+    // // Create /attendance directory
+    // res = mkdir(BASE_PATH "/attendance", 0777);
+    // if (res != 0 && errno != EEXIST) {
+    //     ESP_LOGE("FAT", "Failed to create directory: %s", BASE_PATH "/attendance");
+    // } else {
+    //     ESP_LOGI("FAT", "Directory /attendance created");
+    // }
 }
+
+// void init_fatfs() {
+
+//     esp_vfs_fat_mount_config_t mount_config = {
+//         .format_if_mount_failed = true,//false int 
+//         .max_files = 5,
+//         .allocation_unit_size = CONFIG_WL_SECTOR_SIZE,
+//     };
+
+//     esp_err_t ret = esp_vfs_fat_spiflash_mount("/storage", "storage", &mount_config, &s_wl_handle);
+//     if (ret != ESP_OK) {
+//         ESP_LOGE(TAG, "Failed to mount FATFS (%s)", esp_err_to_name(ret));
+//         return;
+//     }
+
+//     ESP_LOGI(TAG, "FATFS mounted successfully");
+
+// }
 
 void print_memory_status(void) {
 
@@ -50,34 +131,34 @@ void print_memory_status(void) {
 
 
 
-void create_directories() {
-    // Create /faces directory
-//     int res = mkdir(FACE_DIRECTORIES, 0777);
-//     if (res != 0 && errno != EEXIST) {
+// void create_directories() {
+//     // Create /faces directory
+// //     int res = mkdir(FACE_DIRECTORIES, 0777);
+// //     if (res != 0 && errno != EEXIST) {
 
-//         ESP_LOGE("create_directories", "Failed to create /faces directory");
-//     }
+// //         ESP_LOGE("create_directories", "Failed to create /faces directory");
+// //     }
 
-//     // Create /attendance directory
-//     res = mkdir(LOG_DIRECTORIES, 0777);
-//     if (res != 0 && errno != EEXIST) {
+// //     // Create /attendance directory
+// //     res = mkdir(LOG_DIRECTORIES, 0777);
+// //     if (res != 0 && errno != EEXIST) {
 
-//         ESP_LOGE("create_directories", "Failed to create /attendance directory");
+// //         ESP_LOGE("create_directories", "Failed to create /attendance directory");
 
-//     }
+// //     }
 
-// Check if the directory creation is successful
-if (mkdir("/storage/faces", 0777) != 0) {
-    ESP_LOGE(TAG, "Failed to create directory: /storage/faces");
-}
+// // Check if the directory creation is successful
+// if (mkdir("/storage/faces", 0777) != 0) {
+//     ESP_LOGE(TAG, "Failed to create directory: /storage/faces");
+// }
 
-if (mkdir("/storage/attendance", 0777) != 0) {
-    ESP_LOGE(TAG, "Failed to create directory: /storage/attendance");
-}
+// if (mkdir("/storage/attendance", 0777) != 0) {
+//     ESP_LOGE(TAG, "Failed to create directory: /storage/attendance");
+// }
 
 
 
-}
+// }
 
 
 
@@ -167,9 +248,7 @@ void delete_face_data(uint32_t person_id) {
 
 void wright_log_attendance(uint32_t person_id, const char* timestamp) {
     char log_file_name[64];
-    // snprintf(log_file_name, sizeof(log_file_name), "/fatfs/attendance/%s.log", timestamp);storage
-    snprintf(log_file_name, sizeof(log_file_name), "/storage/attendance/%s.log", timestamp);
-
+    snprintf(log_file_name, sizeof(log_file_name), "/fatfs/log/%s.log", timestamp);//storage
 
 
     FILE* f = fopen(log_file_name, "a");
@@ -179,14 +258,14 @@ void wright_log_attendance(uint32_t person_id, const char* timestamp) {
     }
 
     // Write attendance log: person ID and timestamp
-    fprintf(f, "Person ID: %d, Time: %s\n", person_id, timestamp);
+    fprintf(f, "%d %s\n", person_id, timestamp);
 
     fclose(f);
     ESP_LOGI("log_attendance", "Attendance logged for Person ID %d at %s", person_id, timestamp);
 }
 void read_attendance_log(const char* date) {
     char log_file_name[64];
-    snprintf(log_file_name, sizeof(log_file_name), "/fatfs/attendance/%s.log", date);
+    snprintf(log_file_name, sizeof(log_file_name), "/fatfs/log/%s.log", date);
 
     FILE* f = fopen(log_file_name, "r");
     if (f == NULL) {
@@ -196,15 +275,16 @@ void read_attendance_log(const char* date) {
 
     char line[128];
     while (fgets(line, sizeof(line), f) != NULL) {
-        ESP_LOGI("read_attendance_log", "%s", line);
+        // ESP_LOGI("read_attendance_log", "%s", line);
     }
+    ESP_LOGI("read_attendance_log", "%s", line);
 
     fclose(f);
-    ESP_LOGI("read_attendance_log", "Finished reading attendance log for date %s", date);
+    // ESP_LOGI("read_attendance_log", "Finished reading attendance log for date %s", date);
 }
 void delete_attendance_log(const char* date) {
     char log_file_name[64];
-    snprintf(log_file_name, sizeof(log_file_name), "/fatfs/attendance/%s.log", date);
+    snprintf(log_file_name, sizeof(log_file_name), "/fatfs/log/%s.log", date);
 
     int res = remove(log_file_name);
     if (res == 0) {

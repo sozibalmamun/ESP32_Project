@@ -33,6 +33,7 @@ void wright_log_attendance(uint32_t person_id, const char* timestamp);
 void read_attendance_log(const char* date);
 void delete_attendance_log(const char* date);
 void print_memory_status(void);
+void process_attendance_files(void);
 //---------------------------------------------------------------------
 
 #ifdef __cplusplus

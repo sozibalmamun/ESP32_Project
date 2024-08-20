@@ -8,27 +8,6 @@ static const char *TAG = "CLOUD";
 
 static QueueHandle_t xQueueCloudI = NULL;
 
-// bool imagesend(uint8_t *buff, size_t len, const char *topic)
-// {
-//     // Ensure the buffer is not NULL
-//     if (buff == NULL)
-//     {
-//         ESP_LOGE(TAG, "Buffer is NULL, cannot send image.");
-//         return false;
-//     }
-
-//     // Attempt to send the image buffer using stompSend
-//     if (stompSend((char *)buff, (char *)topic))
-//     {
-//         ESP_LOGI(TAG, "Image successfully sent to topic: %s", topic);
-//         return true;
-//     }
-//     else
-//     {
-//         ESP_LOGE(TAG, "Failed to send image to topic: %s", topic);
-//         return false;
-//     }
-// }
 
 static void cloudeHandlerTask(void *arg)
 {

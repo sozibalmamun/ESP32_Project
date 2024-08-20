@@ -91,15 +91,17 @@ void app_main()
     bluFiStart();
     //--------------------------------------------------
 
-
-    //-----------time int here
+    //-----------time int here-------------------------------------
     time_library_time_t initial_time = {2024, 8, 7, 17, 16, 0};//     year, month, day, hour, minute, second;
     time_library_init(&initial_time);
     //--------------------------------------------------------------
     //-------------------------
-    init_fatfs();
-    print_memory_status();
-    create_directories();
+    // Initialize and mount FATFS
+    if (init_fatfs()== ESP_OK) {
+        // Create directories
+        create_directories();
+        print_memory_status();
+    }
     //-------------------------
 
 
@@ -132,8 +134,10 @@ void app_main()
             // sleepEnable=true;
             // printf("\nsleepEnable");
 
-            wright_log_attendance( 1111111111111,  "sozib");
+            wright_log_attendance( 9999,  "sozib");
             read_attendance_log("sozib");
+            delete_attendance_log("sozib");
+
 
         }
 

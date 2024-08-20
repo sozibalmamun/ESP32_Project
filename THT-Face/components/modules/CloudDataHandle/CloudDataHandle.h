@@ -7,6 +7,12 @@
 #include "freertos/queue.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
+#include "timeLib.h"
+
+
+#define  ATTENDANCE_DIR  "/fatfs/log"
+
+
 
 #ifdef __cplusplus
 extern "C"
@@ -20,8 +26,9 @@ typedef struct {
 } imageData_t;
 
 
-bool imagesend( uint8_t* buff);
 bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w , char* topic);
+bool stompSend(char * buff, char* topic);
+
 void cloudHandel(const QueueHandle_t input );
 
 

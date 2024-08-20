@@ -2,7 +2,7 @@
 #include "esp_system.h"
 #include "esp_log.h"
 
-extern bool stompSend(char *buff, char *topic);
+// extern bool stompSend(char *buff, char *topic);
 
 static const char *TAG = "CLOUD";
 
@@ -52,8 +52,29 @@ static void cloudeHandlerTask(void *arg)
     }
 }
 
+// static void attendanceHandlerTask(void *arg)
+// {
+//     const TickType_t xDelay = pdMS_TO_TICKS(10000); // Run every 10 seconds
+
+//     while (true)
+//     {
+//         // Process attendance files
+//         process_attendance_files();
+
+//         // Delay to allow periodic checking
+//         vTaskDelay(xDelay);
+//     }
+// }
+
+
 void cloudHandel(const QueueHandle_t input)
 {
     xQueueCloudI = input;
     xTaskCreatePinnedToCore(cloudeHandlerTask, TAG, 4 * 1024, NULL, 5, NULL, 0);
+
 }
+// void logHandle(void){
+
+//     xTaskCreatePinnedToCore(attendanceHandlerTask, "AttendanceTask", 4 * 1024, NULL, 5, NULL, 0);
+
+// }

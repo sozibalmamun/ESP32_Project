@@ -6,8 +6,3 @@ factory, app,  factory, 0x010000, 0x800000,
 nvs,     data, nvs,     0x810000, 0x4000,
 fr,      data,       ,  0x814000, 0x300000,
 storage, data, fat,     0xB14000, 0x200000,
-
-
-
-
-

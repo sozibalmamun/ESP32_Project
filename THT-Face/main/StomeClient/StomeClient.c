@@ -141,28 +141,23 @@ bool stompSend(char * buff, char* topic){
         memset(tempFrame,0,sizeof(tempFrame));
         if(buffLen<=CHANK_SIZE){
             currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],buffLen) : memcpy(&tempFrame,&buff[currentIndex],buffLen);
-            // memcpy(&tempFrame,&buff[currentIndex-1],buffLen);
             buffLen= buffLen - buffLen;
             ESP_LOGI(TAGSTOMP, "Sending last Chank\n");
 
         }else{
 
             currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame)-1) : memcpy(&tempFrame,&buff[currentIndex],sizeof(tempFrame)-1);
-            // memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame));
-            // currentIndex+= CHANK_SIZE;
-            // buffLen= buffLen - CHANK_SIZE;
+
         }
         tempFrame[strlen(tempFrame)] = '\0';  // Null-terminate the chunk
 
 
-        char connect_frame[strlen(tempFrame)+37+strlen(topic)];
-        memset(connect_frame,0,sizeof(connect_frame));
+        char sendingFrame[strlen(tempFrame)+37+strlen(topic)];
+        memset(sendingFrame,0,sizeof(sendingFrame));
 
-        // ESP_LOGI(TAGSTOMP, "Sending  tempFrame len :%d dynamic pac len %d\n", strlen(tempFrame) ,sizeof(connect_frame));
+        snprintf(sendingFrame, sizeof(sendingFrame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, tempFrame);
 
-        snprintf(connect_frame, sizeof(connect_frame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, tempFrame);
-
-        ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", connect_frame);
+        ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", sendingFrame);
 
         if(!esp_websocket_client_is_connected(client)){
 
@@ -170,7 +165,7 @@ bool stompSend(char * buff, char* topic){
             wifiStatus=0x01;
             return false;//
         }
-        if(esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY)!=ESP_OK){
+        if(esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY)!=ESP_OK){
 
             // ESP_LOGI(TAGSTOMP, "Sending STOMP   sent len :%d  remain   %d\n", currentIndex,buffLen);
 

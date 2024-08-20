@@ -20,6 +20,11 @@
 #include "esp_system.h"
 #include <errno.h>
 
+#include "handleQrCode.h"
+#include "timeLib.h"
+
+
+
 static wl_handle_t s_wl_handle = WL_INVALID_HANDLE;
 
 #define  FACE_DIRECTORIES "/fatfs/faces"
@@ -30,6 +35,9 @@ static wl_handle_t s_wl_handle = WL_INVALID_HANDLE;
 #define BASE_PATH "/fatfs"
 #define MOUNT_POINT "/fatfs"
 
+#define     PUBLISH_TOPIC       "/app/cloud"
+
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,6 +45,7 @@ extern "C" {
 
 esp_err_t init_fatfs(void);
 void create_directories();
+bool sendFilePath(const char *file_path);
 
 extern void save_face_data(uint32_t person_id, const char* name, uint32_t image_width, uint32_t image_length, const uint8_t* image_data);
 extern void read_face_data(uint32_t person_id);
@@ -46,6 +55,10 @@ extern void read_attendance_log(const char* date);
 extern void delete_attendance_log(const char* date);
 extern void print_memory_status(void);
 extern void process_attendance_files(void);
+extern bool stompSend(char * buff, char* topic);
+extern uint64_t generate_unique_id(void);
+
+
 
 
 

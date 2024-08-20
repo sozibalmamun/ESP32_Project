@@ -253,15 +253,15 @@ void wright_log_attendance(uint32_t person_id, const char* timestamp) {
 
     FILE* f = fopen(log_file_name, "a");
     if (f == NULL) {
-        ESP_LOGE("log_attendance", "Failed to open log file for writing");
+        // ESP_LOGE("log_attendance", "Failed to open log file for writing");
         return;
     }
 
     // Write attendance log: person ID and timestamp
-    fprintf(f, "%d %s\n", person_id, timestamp);
+    fprintf(f, "%s %d\n", timestamp,person_id);
 
     fclose(f);
-    ESP_LOGI("log_attendance", "Attendance logged for Person ID %d at %s", person_id, timestamp);
+    ESP_LOGI(TAG, "logged ID %d at %s", person_id, timestamp);
 }
 void read_attendance_log(const char* date) {
     char log_file_name[64];
@@ -269,7 +269,7 @@ void read_attendance_log(const char* date) {
 
     FILE* f = fopen(log_file_name, "r");
     if (f == NULL) {
-        ESP_LOGE("read_attendance_log", "Failed to open attendance log for date %s", date);
+        // ESP_LOGE("read_attendance_log", "Failed to open attendance log for date %s", date);
         return;
     }
 
@@ -294,3 +294,71 @@ void delete_attendance_log(const char* date) {
     }
 }
 
+void process_attendance_files() {
+    DIR *dir;
+    struct dirent *entry;
+
+    if ((dir = opendir(ATTENDANCE_DIR)) == NULL) {
+        ESP_LOGE("Attendance", "Failed to open directory: %s", ATTENDANCE_DIR);
+        return;
+    }
+
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_REG) {  // Only process regular files
+            char file_path[512];
+            snprintf(file_path, sizeof(file_path), "%s/%s", ATTENDANCE_DIR, entry->d_name);
+
+            ESP_LOGI("log", "Found file: %s", file_path);
+
+            // Send the file via STOMP
+            if (sendFilePath(file_path)) {
+                // If successful, delete the file
+                if (remove(file_path) == 0) {
+                    ESP_LOGI("log", "Successfully deleted file: %s", file_path);
+                    break;  // Stop after sending and deleting one file
+                } else {
+                    ESP_LOGE("log", "Failed to delete file: %s", file_path);
+                }
+            } else {
+                ESP_LOGE("log", "Failed to send file via STOMP: %s", file_path);
+            }
+        }
+    }
+
+    closedir(dir);
+}
+
+
+bool sendFilePath(const char *file_path) {
+    // Open the file
+    FILE *file = fopen(file_path, "r");
+    if (file == NULL) {
+        ESP_LOGE("STOMP", "Failed to open file: %s", file_path);
+        return false;
+    }
+
+    // Read the file content (this is a placeholder; adapt as needed)
+    char buffer[100];
+    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+        // Here you would send the content via STOMP
+
+        time_library_time_t current_time;
+        get_time(&current_time, 1);
+        char tempFrame[280] ;
+        snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s %s%9llu",
+        current_time.year,current_time.month,current_time.day,current_time.hour, current_time.minute,current_time.second,// device time
+        buffer,DEVICE_VERSION_ID ,generate_unique_id());//log time+ idA+ device id
+
+
+
+        if (!stompSend(buffer,PUBLISH_TOPIC)) {
+             ESP_LOGE(TAG, "Error sending log");
+        }
+    }
+
+    fclose(file);
+
+    // Simulate successful send
+    ESP_LOGI("STOMP", "File sent successfully: %s", file_path);
+    return true;
+}

@@ -24,11 +24,6 @@
 #include "FATFS/fs.h"
 //-------------------------------
 
-
-// #include "fs.h"
-
-
-
 static const char *TAG = "app_main";
 
 static QueueHandle_t xQueueAIFrame = NULL;
@@ -134,12 +129,15 @@ void app_main()
             // sleepEnable=true;
             // printf("\nsleepEnable");
 
-            wright_log_attendance( 9999,  "sozib");
-            read_attendance_log("sozib");
-            delete_attendance_log("sozib");
+            // wright_log_attendance( 9999,  "sozib");
+            // read_attendance_log("sozib");
+            // delete_attendance_log("sozib");
+
+            process_attendance_files();
 
 
         }
+
 
 
 

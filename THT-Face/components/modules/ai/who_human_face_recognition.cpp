@@ -242,8 +242,8 @@ static void task_process_handler(void *arg)
                    if(CmdEnroll==ENROLING)_gEvent=ENROLL;// 1 for enroling 
 
                    //---------------sleep weakup------------
-                    sleepTimeOut = xTaskGetTickCount();
-                    sleepEnable = false;
+                    // sleepTimeOut = xTaskGetTickCount();
+                    // sleepEnable = false;
                     //--------------------------------------
 
 
@@ -318,8 +318,19 @@ static void task_process_handler(void *arg)
                     case RECOGNIZE:{
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
                         // print_detection_result(detect_results);
-                        if (recognize_result.id > 0)
-                            ESP_LOGI("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
+                        if (recognize_result.id > 0){
+
+                        ESP_LOGI("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
+                        //--------------------------------here save the log file here----------------------------------
+                        time_library_time_t current_time;
+                        get_time(&current_time, 1);
+                        char tempFrame[30] ;
+                        snprintf(tempFrame, sizeof(tempFrame), "%d%d%d%d%d",
+                        current_time.month,current_time.day,current_time.hour, current_time.minute,current_time.second);
+                        wright_log_attendance(recognize_result.id, tempFrame);
+                        //----------------------------------------------------------------------------------------------
+
+                        }
                         else
                             ESP_LOGE("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
                         frame_show_state = SHOW_STATE_RECOGNIZE;
@@ -372,7 +383,6 @@ static void task_process_handler(void *arg)
                         if (recognize_result.id > 0){
                             // rgb_printf(frame, RGB565_MASK_GREEN, "ID %d", recognize_result.id);
                             rgb_printf(frame, RGB565_MASK_GREEN, "ID %d Name %s", recognize_result.id,recognize_result.name.c_str());// debug due to display name
-
                         }
                         else{
                             rgb_print(frame, RGB565_MASK_RED, "who ?");

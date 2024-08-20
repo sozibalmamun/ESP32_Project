@@ -19,7 +19,30 @@
 #include "freertos/queue.h"
 
 #include "CloudDataHandle.h"
-#include "fs.h"
+
+//--------fatfs-------------------
+// #include <stdlib.h>
+// #include <stdio.h>
+// #include <string.h>
+
+// #include "esp_log.h"
+// #include "esp_vfs_fat.h"
+// #include "wear_levelling.h"
+// #include "esp_vfs.h"
+// #include "esp_log.h"
+// #include "sys/stat.h"
+
+// #include "esp_flash.h"
+// #include "esp_flash_spi_init.h"
+// #include "esp_partition.h"
+// #include "esp_system.h"
+
+#include "FATFS/fs.h"
+
+//-------------------------------
+
+
+// #include "fs.h"
 
 
 

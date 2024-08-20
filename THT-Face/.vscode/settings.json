@@ -69,7 +69,8 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "typeinfo": "cpp",
-        "clouddatahandle.h": "c"
+        "clouddatahandle.h": "c",
+        "fs.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM3",

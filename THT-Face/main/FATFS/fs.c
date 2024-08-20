@@ -1,3 +1,4 @@
+
 #include "fs.h"
 
 
@@ -27,12 +28,14 @@ void create_directories() {
     // Create /faces directory
     int res = mkdir("/fatfs/faces", 0777);
     if (res != 0 && errno != EEXIST) {
+
         ESP_LOGE("create_directories", "Failed to create /faces directory");
     }
 
     // Create /attendance directory
     res = mkdir("/fatfs/attendance", 0777);
     if (res != 0 && errno != EEXIST) {
+
         ESP_LOGE("create_directories", "Failed to create /attendance directory");
     }
 }

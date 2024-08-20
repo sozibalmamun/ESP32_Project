@@ -15,6 +15,7 @@
                              "Conectivity/blufi_example_main.c"
                              "Conectivity/blufi_security.c"
                              "Conectivity/blufi_init.c"
+                             "FATFS/fs.c"
 
                              
                     INCLUDE_DIRS ".")

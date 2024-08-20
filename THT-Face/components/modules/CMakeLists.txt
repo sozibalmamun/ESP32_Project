@@ -15,7 +15,7 @@ set(src_dirs
                 timeLib
                 qrcode
                 CloudDataHandle
-                FATFS)
+                )
 
 set(include_dirs    
                     ai
@@ -29,7 +29,7 @@ set(include_dirs
                     timeLib
                     qrcode
                     CloudDataHandle
-                    FATFS)
+                    )
 
 set(requires    esp32-camera
                 esp-dl

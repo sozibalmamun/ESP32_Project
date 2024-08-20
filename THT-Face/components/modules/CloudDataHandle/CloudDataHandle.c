@@ -49,6 +49,9 @@ static void cloudeHandlerTask(void *arg)
                     printf("%x",image->buf[i] );
 
                 }
+
+
+                
                 // Send the image data to the cloud
                 if(!imagesent(image->buf,image->len,image->height,image->width,"/app/cloud")){
 

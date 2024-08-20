@@ -205,10 +205,10 @@ bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w , char* top
     snprintf(imageInfo, sizeof(imageInfo), "[\"SEND\\ndestination:%s\\n\\n%d%d%d\\n\\n\\u0000\"]", topic, buffLen,h ,w );
     if(esp_websocket_client_send_text(client, imageInfo, strlen(imageInfo), portMAX_DELAY)!=ESP_OK){
             
-            ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
-            wifiStatus=0x01;
-            stomp_client_connect(); 
-            return false;// 
+        ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
+        wifiStatus=0x01;
+        stomp_client_connect();
+        return false;
     }
 
     do{

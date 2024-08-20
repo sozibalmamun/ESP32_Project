@@ -19,6 +19,7 @@
 #include "freertos/queue.h"
 
 #include "CloudDataHandle.h"
+#include "fs.h"
 
 
 

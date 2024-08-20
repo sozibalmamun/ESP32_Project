@@ -14,7 +14,8 @@ set(src_dirs
                 imu
                 timeLib
                 qrcode
-                CloudDataHandle)
+                CloudDataHandle
+                FATFS)
 
 set(include_dirs    
                     ai
@@ -27,7 +28,8 @@ set(include_dirs
                     imu
                     timeLib
                     qrcode
-                    CloudDataHandle)
+                    CloudDataHandle
+                    FATFS)
 
 set(requires    esp32-camera
                 esp-dl

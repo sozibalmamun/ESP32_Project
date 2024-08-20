@@ -5,24 +5,9 @@ static const char *TAG = "init_fatfs";
 
 
 void init_fatfs() {
-    // const char *base_path = "/fatfs";
-    // const char *partition_label = "storage";
-    
-    // esp_vfs_fat_mount_config_t mount_config = {
-    //     .format_if_mount_failed = true,
-    //     .max_files = 5,
-    //     .allocation_unit_size = CONFIG_WL_SECTOR_SIZE
-    // };
-
-
-    // esp_err_t ret = esp_vfs_fat_spiflash_mount(base_path, partition_label, &mount_config, &s_wl_handle);
-    // if (ret != ESP_OK) {
-    //     ESP_LOGE(TAG, "Failed to mount FATFS (%s)", esp_err_to_name(ret));
-    //     return;
-    // }
 
     esp_vfs_fat_mount_config_t mount_config = {
-        .format_if_mount_failed = false,
+        .format_if_mount_failed = true,//false int 
         .max_files = 5,
         .allocation_unit_size = CONFIG_WL_SECTOR_SIZE,
     };
@@ -38,7 +23,7 @@ void init_fatfs() {
 }
 
 void print_memory_status(void) {
-    
+
     FATFS *fs = s_wl_handle;  // Use the mounted FATFS object
     DWORD free_clusters;
     FRESULT res;
@@ -182,7 +167,10 @@ void delete_face_data(uint32_t person_id) {
 
 void wright_log_attendance(uint32_t person_id, const char* timestamp) {
     char log_file_name[64];
-    snprintf(log_file_name, sizeof(log_file_name), "/fatfs/attendance/%s.log", timestamp);
+    // snprintf(log_file_name, sizeof(log_file_name), "/fatfs/attendance/%s.log", timestamp);storage
+    snprintf(log_file_name, sizeof(log_file_name), "/storage/attendance/%s.log", timestamp);
+
+
 
     FILE* f = fopen(log_file_name, "a");
     if (f == NULL) {

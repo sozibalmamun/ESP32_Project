@@ -25,11 +25,7 @@ esp_err_t init_fatfs(void) {
 }
 
 void create_directories(void) {
-    // Ensure that FATFS is mounted before creating directories
-    // if (init_fatfs() != ESP_OK) {
-    //     ESP_LOGE("create_directories", "FATFS not mounted. Cannot create directories.");
-    //     return;
-    // }
+
 
     struct stat st;
     if (stat(BASE_PATH "/log", &st) == 0) {
@@ -47,7 +43,8 @@ void create_directories(void) {
             ESP_LOGI("FAT", "Directory /attendance created");
         }
     }
-
+    
+    vTaskDelay(pdMS_TO_TICKS(20));
 
     if (stat(BASE_PATH "/faces", &st) == 0) {
         if (S_ISDIR(st.st_mode)) {
@@ -65,100 +62,60 @@ void create_directories(void) {
         }
     }
 
-
-
-
-    // // Create /faces directory
-    // int res = mkdir(BASE_PATH "/faces", 0777);
-    // if (res != 0 && errno != EEXIST) {
-    //     ESP_LOGE("FAT", "Failed to create directory: %s", BASE_PATH "/faces");
-    // } else {
-    //     ESP_LOGI("FAT", "Directory /faces created");
-    // }
-
-    // // Create /attendance directory
-    // res = mkdir(BASE_PATH "/attendance", 0777);
-    // if (res != 0 && errno != EEXIST) {
-    //     ESP_LOGE("FAT", "Failed to create directory: %s", BASE_PATH "/attendance");
-    // } else {
-    //     ESP_LOGI("FAT", "Directory /attendance created");
-    // }
 }
 
-// void init_fatfs() {
+void print_memory_status() {
+    FATFS *fs;
+    DWORD fre_clust, fre_sect, tot_sect;
 
-//     esp_vfs_fat_mount_config_t mount_config = {
-//         .format_if_mount_failed = true,//false int 
-//         .max_files = 5,
-//         .allocation_unit_size = CONFIG_WL_SECTOR_SIZE,
-//     };
+    if (f_getfree("/storage", &fre_clust, &fs) == FR_OK) {
+        tot_sect = (fs->n_fatent - 2) * fs->csize * 512;
+        fre_sect = fre_clust * fs->csize * 512;
 
-//     esp_err_t ret = esp_vfs_fat_spiflash_mount("/storage", "storage", &mount_config, &s_wl_handle);
-//     if (ret != ESP_OK) {
-//         ESP_LOGE(TAG, "Failed to mount FATFS (%s)", esp_err_to_name(ret));
-//         return;
-//     }
+        ESP_LOGI("FAT", "Total Space: %" PRIu32 " bytes", (uint32_t)tot_sect);
+        ESP_LOGI("FAT", "Free Space:  %" PRIu32 " bytes", (uint32_t)fre_sect);
+        ESP_LOGI("FAT", "Used Space:  %" PRIu32 " bytes", (uint32_t)(tot_sect - fre_sect));
+    } else {
+        ESP_LOGE("FAT", "Failed to get FATFS free space info");
+    }
+}
 
-//     ESP_LOGI(TAG, "FATFS mounted successfully");
-
-// }
-
-void print_memory_status(void) {
-
-    FATFS *fs = s_wl_handle;  // Use the mounted FATFS object
-    DWORD free_clusters;
-    FRESULT res;
-
-    // Get the free space in clusters
-    res = f_getfree("/storage", &free_clusters, &fs);
-    if (res != FR_OK) {
-        ESP_LOGE(TAG, "Failed to get free space: %d", res);
+static void delete_all_in_dir(const char *dirname) {
+    DIR *dir = opendir(dirname);
+    if (!dir) {
+        ESP_LOGE(TAG, "Failed to open directory: %s", dirname);
         return;
     }
 
-    // Calculate total and free space in bytes
-    DWORD total_clusters = fs->n_fatent - 2;  // Total clusters - reserved clusters
-    DWORD cluster_size = fs->csize * 512;     // Size of one cluster in bytes
-    DWORD total_space = total_clusters * cluster_size;
-    DWORD free_space = free_clusters * cluster_size;
-    DWORD used_space = total_space - free_space;
-
-    ESP_LOGI(TAG, "Total Space: %u  bytes", total_space);
-    ESP_LOGI(TAG, "Free Space:  %u  bytes", free_space);
-    ESP_LOGI(TAG, "Used Space:  %u  bytes", used_space);
+    struct dirent *entry;
+    char path[500];
+    while ((entry = readdir(dir)) != NULL) {
+        snprintf(path, sizeof(path), "%s/%s", dirname, entry->d_name);
+        
+        if (entry->d_type == DT_DIR) {
+            if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+                delete_all_in_dir(path);  // Recursively delete subdirectories
+                rmdir(path);  // Remove the directory after its contents are deleted
+                ESP_LOGI(TAG, "Deleted directory: %s", path);
+            }
+        } else {
+            unlink(path);  // Delete the file
+            ESP_LOGI(TAG, "Deleted file: %s", path);
+        }
+    }
+    closedir(dir);
 }
 
-
-
-
-// void create_directories() {
-//     // Create /faces directory
-// //     int res = mkdir(FACE_DIRECTORIES, 0777);
-// //     if (res != 0 && errno != EEXIST) {
-
-// //         ESP_LOGE("create_directories", "Failed to create /faces directory");
-// //     }
-
-// //     // Create /attendance directory
-// //     res = mkdir(LOG_DIRECTORIES, 0777);
-// //     if (res != 0 && errno != EEXIST) {
-
-// //         ESP_LOGE("create_directories", "Failed to create /attendance directory");
-
-// //     }
-
-// // Check if the directory creation is successful
-// if (mkdir("/storage/faces", 0777) != 0) {
-//     ESP_LOGE(TAG, "Failed to create directory: /storage/faces");
-// }
-
-// if (mkdir("/storage/attendance", 0777) != 0) {
-//     ESP_LOGE(TAG, "Failed to create directory: /storage/attendance");
-// }
-
-
-
-// }
+void format_fatfs() {
+    ESP_LOGI("FAT", "Formatting FATFS partition...");
+    // Erase the entire partition
+    esp_err_t ret = wl_erase_range(s_wl_handle, 0, WL_FLASH_SIZE);
+    if (ret != ESP_OK) {
+        ESP_LOGE("FAT", "Failed to erase FATFS partition: %s", esp_err_to_name(ret));
+    } else {
+        ESP_LOGI("FAT", "FATFS partition formatted successfully");
+    }
+}
 
 
 
@@ -245,24 +202,45 @@ void delete_face_data(uint32_t person_id) {
         ESP_LOGE("delete_face_data", "Failed to delete face data for Person ID %d", person_id);
     }
 }
+void write_log_attendance(uint32_t person_id, char* timestamp) {//wright_log_attendance
+    char tempStamp[20];
+    strncpy(tempStamp, timestamp, sizeof(tempStamp)); // Copy timestamp to a temporary buffer
+    tempStamp[sizeof(tempStamp) - 1] = '\0'; // Ensure null-termination
 
-void wright_log_attendance(uint32_t person_id, const char* timestamp) {
-    char log_file_name[64];
-    snprintf(log_file_name, sizeof(log_file_name), "/fatfs/log/%s.log", timestamp);//storage
+    // Replace spaces with underscores in the copied timestamp
+    char* p = tempStamp;
+    while (*p) {
+        if (*p == ' ') *p = '_';
+        p++;
+    }
+    ESP_LOGI("log_attendance", "log file: %s", tempStamp);
 
+    char log_file_name[37]; // Initialize with an empty string
+    memset(log_file_name,0,sizeof(log_file_name));
+
+    // Build the file path using strcat
+    strcat(log_file_name, "/storage/log/");
+    strcat(log_file_name, tempStamp);
+    strcat(log_file_name, ".log");
+    
+
+
+    ESP_LOGI("log_attendance", "Encoded log file name: %s", log_file_name);
 
     FILE* f = fopen(log_file_name, "a");
     if (f == NULL) {
-        // ESP_LOGE("log_attendance", "Failed to open log file for writing");
+        ESP_LOGE("log_attendance", "Failed to open log file for writing");
         return;
     }
 
     // Write attendance log: person ID and timestamp
-    fprintf(f, "%s %d\n", timestamp,person_id);
+    fprintf(f, "%s %d\n", timestamp, person_id);
 
     fclose(f);
-    ESP_LOGI(TAG, "logged ID %d at %s", person_id, timestamp);
+    ESP_LOGI("log_attendance", "Logged ID %d at %s", person_id, timestamp);
 }
+
+
 void read_attendance_log(const char* date) {
     char log_file_name[64];
     snprintf(log_file_name, sizeof(log_file_name), "/fatfs/log/%s.log", date);
@@ -305,8 +283,14 @@ void process_attendance_files() {
 
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_REG) {  // Only process regular files
-            char file_path[512];
-            snprintf(file_path, sizeof(file_path), "%s/%s", ATTENDANCE_DIR, entry->d_name);
+            char file_path[30];
+            memset(file_path,0,sizeof(file_path));
+            strcat(file_path, ATTENDANCE_DIR);
+            strcat(file_path, "/");
+            strcat(file_path, entry->d_name);
+            
+
+            // snprintf(file_path, sizeof(file_path), "%s/%s", ATTENDANCE_DIR, entry->d_name);
 
             ESP_LOGI("log", "Found file: %s", file_path);
 
@@ -338,22 +322,25 @@ bool sendFilePath(const char *file_path) {
     }
 
     // Read the file content (this is a placeholder; adapt as needed)
-    char buffer[100];
+    char buffer[20];
     while (fgets(buffer, sizeof(buffer), file) != NULL) {
         // Here you would send the content via STOMP
 
         time_library_time_t current_time;
         get_time(&current_time, 1);
         char tempFrame[280] ;
-        snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s %s%9llu",
+        snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s %s%09llu",
         current_time.year,current_time.month,current_time.day,current_time.hour, current_time.minute,current_time.second,// device time
         buffer,DEVICE_VERSION_ID ,generate_unique_id());//log time+ idA+ device id
 
+        ESP_LOGW(TAG, "buff log %s", tempFrame);
 
 
-        if (!stompSend(buffer,PUBLISH_TOPIC)) {
+        if (!stompSend(tempFrame,PUBLISH_TOPIC)) {
              ESP_LOGE(TAG, "Error sending log");
+            return false;
         }
+
     }
 
     fclose(file);

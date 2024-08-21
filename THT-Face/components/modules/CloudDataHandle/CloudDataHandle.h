@@ -18,17 +18,19 @@
 extern "C"
 {
 #endif
+
+extern uint8_t wifiStatus;
+
+
+
 typedef struct {
     uint8_t *buf;             /*!< Pointer to the copied pixel data */
     size_t len;               /*!< Length of the buffer in bytes */
     size_t width;             /*!< Width of the buffer in pixels */
     size_t height;            /*!< Height of the buffer in pixels */
 } imageData_t;
-
-
 bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w , char* topic);
 bool stompSend(char * buff, char* topic);
-
 void cloudHandel(const QueueHandle_t input );
 
 
@@ -36,10 +38,11 @@ void cloudHandel(const QueueHandle_t input );
 void save_face_data(uint32_t person_id, const char* name, uint32_t image_width, uint32_t image_length, const uint8_t* image_data);
 void read_face_data(uint32_t person_id);
 void delete_face_data(uint32_t person_id);
-void wright_log_attendance(uint32_t person_id, const char* timestamp);
+void write_log_attendance(uint32_t person_id,  char* timestamp);
 void read_attendance_log(const char* date);
 void delete_attendance_log(const char* date);
 void print_memory_status(void);
+void format_fatfs(void);
 void process_attendance_files(void);
 //---------------------------------------------------------------------
 

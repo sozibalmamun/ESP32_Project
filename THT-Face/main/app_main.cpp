@@ -92,10 +92,13 @@ void app_main()
     //--------------------------------------------------------------
     //-------------------------
     // Initialize and mount FATFS
+
     if (init_fatfs()== ESP_OK) {
         // Create directories
+        // format_fatfs();
         create_directories();
         print_memory_status();
+
     }
     //-------------------------
 
@@ -129,16 +132,12 @@ void app_main()
             // sleepEnable=true;
             // printf("\nsleepEnable");
 
-            // wright_log_attendance( 9999,  "sozib");
+            // write_log_attendance( 9999,  "sozib");
             // read_attendance_log("sozib");
             // delete_attendance_log("sozib");
-
-            process_attendance_files();
-
-
         }
 
-
+    // process_attendance_files()
 
 
     }

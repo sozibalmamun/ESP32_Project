@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include "stdbool.h"
 #include "esp_camera.h"
+#include "globalScope.h"
 
-#define DEVICE_VERSION_ID "AA00"
 
 
 typedef struct {

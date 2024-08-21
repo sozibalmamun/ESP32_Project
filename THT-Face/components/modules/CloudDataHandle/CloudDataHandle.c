@@ -52,25 +52,34 @@ static void cloudeHandlerTask(void *arg)
     }
 }
 
-// static void attendanceHandlerTask(void *arg)
-// {
-//     const TickType_t xDelay = pdMS_TO_TICKS(10000); // Run every 10 seconds
-
-//     while (true)
-//     {
-//         // Process attendance files
-//         process_attendance_files();
-
-//         // Delay to allow periodic checking
-//         vTaskDelay(xDelay);
-//     }
-// }
-
-
-void cloudHandel(const QueueHandle_t input)
+static void attendanceHandlerTask(void *arg)
 {
+    const TickType_t xDelay = pdMS_TO_TICKS(500); // Run every 5 seconds
+
+    while (true)
+    {
+        // Process attendance files
+        if(wifiStatus==2){
+
+            ESP_LOGE(TAG, "log procesing");
+            process_attendance_files();
+            vTaskDelay(xDelay);
+
+        }
+
+        // Delay to allow periodic checking
+    }
+}
+
+
+void cloudHandel(const QueueHandle_t input )
+{
+
+    xTaskCreatePinnedToCore(attendanceHandlerTask, "AttendanceTask", 4 * 1024, NULL, 5, NULL, 0);
     xQueueCloudI = input;
     xTaskCreatePinnedToCore(cloudeHandlerTask, TAG, 4 * 1024, NULL, 5, NULL, 0);
+
+
 
 }
 // void logHandle(void){

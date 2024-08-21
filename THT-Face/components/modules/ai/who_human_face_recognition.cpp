@@ -325,9 +325,10 @@ static void task_process_handler(void *arg)
                         time_library_time_t current_time;
                         get_time(&current_time, 1);
                         char tempFrame[30] ;
-                        snprintf(tempFrame, sizeof(tempFrame), "%d%d%d%d%d",
-                        current_time.month,current_time.day,current_time.hour, current_time.minute,current_time.second);
-                        wright_log_attendance(recognize_result.id, tempFrame);
+                        snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d",
+                        current_time.year, current_time.month, current_time.day, current_time.hour, current_time.minute, current_time.second);
+                        write_log_attendance(recognize_result.id, tempFrame);
+                        free(tempFrame);
                         //----------------------------------------------------------------------------------------------
 
                         }

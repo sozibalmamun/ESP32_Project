@@ -24,17 +24,15 @@
 #include "lwip/netdb.h"
 
 #include "esp_log.h"
+#include "globalScope.h"
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-#define     PUBLISH_TOPIC       "/app/cloud"
-#define     SUBCRIBE_TOPIC       "/topic/cloud"
-
-
-
+// #define     PUBLISH_TOPIC       "/app/cloud"
 
 #define IDLEENROL               0
 #define ENROLING                0x01
@@ -47,12 +45,7 @@ extern "C" {
 
 
 
-#define     THT             "wss://grozziieget.zjweiting.com:3091/CloudSocket-Dev/websocket/"
-#define     HOST            "grozziieget.zjweiting.com"
-#define     PORT            3091
-#define     PATH            "/CloudSocket-Dev/websocket/"
 
-#define     CHANK_SIZE      256 //512//760//256 //128
 
 typedef struct {
     const char                  *uri;                       /*!< Websocket URI, the information on the URI can be overrides the other fields below, if any */
@@ -63,6 +56,7 @@ typedef struct {
 
 
 esp_websocket_client_handle_t client;
+
 const char echo_org_ssl_ca_cert[]  = \
 "-----BEGIN CERTIFICATE-----\n" \
 "MIIFBzCCA++gAwIBAgIRALIM7VUuMaC/NDp1KHQ76aswDQYJKoZIhvcNAQELBQAw\n" \
@@ -94,7 +88,9 @@ const char echo_org_ssl_ca_cert[]  = \
 "Zale8OMckn/BU3O/3aFNLHLfET2H2hT6Wb3nwxjpLIfXmSVcVd8A58XH0g==\n" \
 "-----END CERTIFICATE-----\n";
 
+
 extern uint8_t wifiStatus;
+
 extern const char* day_names[];
 
 
@@ -108,7 +104,6 @@ void stompAppStart(void);
 
 extern void dataHandele(const char *rx_buffer);
 extern bool stompSend(char * buff, char* topic);
-
 extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w , char* topic);
 
 

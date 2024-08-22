@@ -39,8 +39,8 @@ void save_face_data(uint32_t person_id, const char* name, uint32_t image_width, 
 void read_face_data(uint32_t person_id);
 void delete_face_data(uint32_t person_id);
 void write_log_attendance(uint32_t person_id,  char* timestamp);
-void read_attendance_log(const char* date);
-void delete_attendance_log(const char* date);
+// void read_attendance_log(const char* date);
+// void delete_attendance_log(const char* date);
 void print_memory_status(void);
 void format_fatfs(void);
 void process_attendance_files(void);

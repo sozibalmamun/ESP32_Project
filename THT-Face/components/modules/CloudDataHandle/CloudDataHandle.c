@@ -60,10 +60,7 @@ static void attendanceHandlerTask(void *arg)
     {
         // Process attendance files
         if(wifiStatus==2){
-
-            ESP_LOGE(TAG, "log procesing");
             process_attendance_files();
-
         }
         vTaskDelay(xDelay);
 
@@ -75,7 +72,7 @@ static void attendanceHandlerTask(void *arg)
 void cloudHandel(const QueueHandle_t input )
 {
 
-    xTaskCreatePinnedToCore(attendanceHandlerTask, "AttendanceTask", 4 * 1024, NULL,2, NULL, 0);
+    xTaskCreatePinnedToCore(attendanceHandlerTask, "AttendanceTask", 4 * 1024, NULL,1, NULL, 0);
     xQueueCloudI = input;
     xTaskCreatePinnedToCore(cloudeHandlerTask, TAG, 4 * 1024, NULL, 5, NULL, 0);
 

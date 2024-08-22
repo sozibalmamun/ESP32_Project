@@ -246,6 +246,8 @@ void delete_face_data(uint32_t person_id) {
 //     ESP_LOGI("attendance", "ID: %d at: %s.log", person_id, timestamp);
 // }
 
+
+
 void write_log_attendance(uint32_t person_id, char* timestamp) {
 
     // remove space
@@ -259,8 +261,11 @@ void write_log_attendance(uint32_t person_id, char* timestamp) {
     }
     *ptr_write = '\0'; // Null-terminate the modified string
 
-    char log_file_name[25];
-    snprintf(log_file_name, sizeof(log_file_name), "%s%s.log",ATTENDANCE_DIR, timestamp);
+    char log_file_name[30];
+    snprintf(log_file_name, sizeof(log_file_name), "%s/%s.log",ATTENDANCE_DIR, timestamp);
+
+    ESP_LOGI("log_attendance", "Encoded log file name: %s", log_file_name);
+
 
     FILE* f = fopen(log_file_name, "a");
     if (f == NULL) {
@@ -277,47 +282,49 @@ void write_log_attendance(uint32_t person_id, char* timestamp) {
 
 
 
-void read_attendance_log(const char* date) {
-    char log_file_name[64];
+// void read_attendance_log(const char* date) {
+//     char log_file_name[64];
 
-    snprintf(log_file_name, sizeof(log_file_name), "/fatfs/log/%s.log", date);
+//     snprintf(log_file_name, sizeof(log_file_name), "/fatfs/log/%s.log", date);
 
-    FILE* f = fopen(log_file_name, "r");
-    if (f == NULL) {
-        // ESP_LOGE("read_attendance_log", "Failed to open attendance log for date %s", date);
-        return;
-    }
+//     FILE* f = fopen(log_file_name, "r");
+//     if (f == NULL) {
+//         // ESP_LOGE("read_attendance_log", "Failed to open attendance log for date %s", date);
+//         return;
+//     }
 
-    char line[128];
-    while (fgets(line, sizeof(line), f) != NULL) {
-        // ESP_LOGI("read_attendance_log", "%s", line);
-    }
-    ESP_LOGI("read_attendance_log", "%s", line);
+//     char line[128];
+//     while (fgets(line, sizeof(line), f) != NULL) {
+//         // ESP_LOGI("read_attendance_log", "%s", line);
+//     }
+//     ESP_LOGI("read_attendance_log", "%s", line);
 
-    fclose(f);
-    // ESP_LOGI("read_attendance_log", "Finished reading attendance log for date %s", date);
-}
-void delete_attendance_log(const char* date) {
-    char log_file_name[64];
-    snprintf(log_file_name, sizeof(log_file_name), "/fatfs/log/%s.log", date);
+//     fclose(f);
+//     // ESP_LOGI("read_attendance_log", "Finished reading attendance log for date %s", date);
+// }
+// void delete_attendance_log(const char* date) {
+//     char log_file_name[64];
+//     snprintf(log_file_name, sizeof(log_file_name), "/fatfs/log/%s.log", date);
 
-    int res = remove(log_file_name);
-    if (res == 0) {
-        ESP_LOGI("delete_attendance_log", "Deleted attendance log for date %s", date);
-    } else {
-        ESP_LOGE("delete_attendance_log", "Failed to delete attendance log for date %s", date);
-    }
-}
+//     int res = remove(log_file_name);
+//     if (res == 0) {
+//         ESP_LOGI("delete_attendance_log", "Deleted attendance log for date %s", date);
+//     } else {
+//         ESP_LOGE("delete_attendance_log", "Failed to delete attendance log for date %s", date);
+//     }
+// }
 
 void process_attendance_files() {
+
+
     DIR *dir;
     struct dirent *entry;
 
+
     if ((dir = opendir(ATTENDANCE_DIR)) == NULL) {
-        ESP_LOGE("Attendance", "Failed to open directory: %s", ATTENDANCE_DIR);
+        // ESP_LOGE("Attendance", "Failed to open directory: %s", ATTENDANCE_DIR);
         return;
     }
-
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_REG) {  // Only process regular files
             char file_path[30];
@@ -326,26 +333,22 @@ void process_attendance_files() {
             strcat(file_path, "/");
             strcat(file_path, entry->d_name);
             
-
-            // snprintf(file_path, sizeof(file_path), "%s/%s", ATTENDANCE_DIR, entry->d_name);
-
-            ESP_LOGI("log", "Found file: %s", file_path);
+            ESP_LOGI("log", "Procesing...%s", file_path);
 
             // Send the file via STOMP
             if (sendFilePath(file_path)) {
                 // If successful, delete the file
                 if (remove(file_path) == 0) {
-                    ESP_LOGI("log", "Successfully deleted file: %s", file_path);
+                    ESP_LOGI("log", "deleted file: %s", file_path);
                     break;  // Stop after sending and deleting one file
                 } else {
-                    ESP_LOGE("log", "Failed to delete file: %s", file_path);
+                    // ESP_LOGE("log", "Failed to delete file: %s", file_path);
                 }
             } else {
-                ESP_LOGE("log", "Failed to send file via STOMP: %s", file_path);
+                // ESP_LOGE("log", "Failed to send file via STOMP: %s", file_path);
             }
         }
     }
-
     closedir(dir);
 }
 
@@ -366,7 +369,9 @@ bool sendFilePath(const char *file_path) {
         time_library_time_t current_time;
         get_time(&current_time, 1);
         char tempFrame[280] ;
-        snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s %s%09llu",
+        //AA00242829068 069276
+
+        snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s %s%9llu",
         current_time.year,current_time.month,current_time.day,current_time.hour, current_time.minute,current_time.second,// device time
         buffer,DEVICE_VERSION_ID ,generate_unique_id());//log time+ idA+ device id
 

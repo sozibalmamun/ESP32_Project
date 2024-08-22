@@ -52,8 +52,8 @@ extern void save_face_data(uint32_t person_id, const char* name, uint32_t image_
 extern void read_face_data(uint32_t person_id);
 extern void delete_face_data(uint32_t person_id);
 extern void write_log_attendance(uint32_t person_id,  char* timestamp);
-extern void read_attendance_log(const char* date);
-extern void delete_attendance_log(const char* date);
+// extern void read_attendance_log(const char* date);
+// extern void delete_attendance_log(const char* date);
 extern void print_memory_status(void);
 extern void format_fatfs(void);
 extern void process_attendance_files(void);

@@ -126,8 +126,9 @@ void format_fatfs() {
 
 
 void save_face_data(uint32_t person_id, const char* name, uint32_t image_width, uint32_t image_length, const uint8_t* image_data) {
+   
     char file_name[64];
-    snprintf(file_name, sizeof(file_name), "/fatfs/faces/person_%d.dat", person_id);
+    snprintf(file_name, sizeof(file_name), "/fatfs/faces/%d.dat", person_id);
 
     FILE* f = fopen(file_name, "wb");
     if (f == NULL) {
@@ -302,5 +303,106 @@ bool sendFilePath(const char *file_path) {
     fclose(file);
     // Simulate successful send
     // ESP_LOGI("STOMP", "File sent successfully: %s", file_path);
+    return true;
+}
+
+
+bool process_and_send_faces(const char* topic) {
+
+    DIR* dir = opendir(FACE_DIRECTORIES);
+    if (dir == NULL) {
+        ESP_LOGE("process_faces", "Failed to open directory: %s", FACE_DIRECTORIES);
+        return false;
+    }
+
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_REG) {  // Regular file
+
+            char file_path[269];
+            snprintf(file_path, sizeof(file_path), "%s/%s", FACE_DIRECTORIES, entry->d_name);
+
+            FILE* f = fopen(file_path, "rb");
+            if (f == NULL) {
+                ESP_LOGE("process_faces", "Failed to open file: %s", file_path);
+                continue;
+            }
+
+            // Read person ID
+            uint16_t person_id;
+            if (fread(&person_id, sizeof(person_id), 1, f) != 1) {
+                ESP_LOGE("process_and_send_faces", "Failed to read person ID from file: %s", file_path);
+                fclose(f);
+                continue;
+            }
+
+            ESP_LOGE("process_faces", "person_id: %d", person_id);
+
+            // Read name length and name
+            uint8_t name_len;
+            if (fread(&name_len, sizeof(name_len), 1, f) != 1) {
+                ESP_LOGE("process_and_send_faces", "Failed to read name length from file: %s", file_path);
+                fclose(f);
+                continue;
+            }
+            ESP_LOGE("process_faces", "name_len: %d", name_len);
+
+            char name[15];
+            if (name_len >= sizeof(name)) {
+                ESP_LOGE("process_and_send_faces", "Name length exceeds buffer size in file: %s", file_path);
+                fclose(f);
+                continue;
+            }
+
+            if (fread(name, name_len, 1, f) != 1) {
+                ESP_LOGE("process_and_send_faces", "Failed to read name from file: %s", file_path);
+                fclose(f);
+                continue;
+            }
+            name[name_len] = '\0';  // Null-terminate the name string
+
+            // Read image dimensions
+            uint8_t image_width, image_length;
+            if (fread(&image_width, sizeof(image_width), 1, f) != 1 || fread(&image_length, sizeof(image_length), 1, f) != 1) {
+                ESP_LOGE("process_and_send_faces", "Failed to read image dimensions from file: %s", file_path);
+                fclose(f);
+                continue;
+            }
+
+            // Read image data
+            uint8_t* image_data = malloc(image_length);
+            if (image_data == NULL) {
+                ESP_LOGE("process_and_send_faces", "Failed to allocate memory for image data from file: %s", file_path);
+                fclose(f);
+                continue;
+            }
+
+            if (fread(image_data, image_length, 1, f) != 1) {
+                ESP_LOGE("process_and_send_faces", "Failed to read image data from file: %s", file_path);
+                free(image_data);
+                fclose(f);
+                continue;
+            }
+
+            fclose(f);
+
+            // Send the image data
+            bool sent = imagesent(image_data, image_length, image_width, image_length, name, person_id, topic);
+            free(image_data);
+
+            if (sent) {
+                // Delete the file if sent successfully
+                if (remove(file_path) == 0) {
+                    ESP_LOGI("process_and_send_faces", "File sent and deleted: %s", file_path);
+                } else {
+                    ESP_LOGE("process_and_send_faces", "Failed to delete file: %s", file_path);
+                }
+            } else {
+                ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_path);
+            }
+        }
+    }
+
+    closedir(dir);
     return true;
 }

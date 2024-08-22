@@ -30,20 +30,24 @@ static void cloudeHandlerTask(void *arg)
 
                 // }
 
+                ESP_LOGE(TAG, "\ntest image storing.... ");
+                save_face_data(image->id, image->Name, image->width, image->height, image->buf);
+                ESP_LOGE(TAG, "\ntest image saved ");
 
-                
-                // Send the image data to the cloud
-                if(!imagesent(image->buf,image->len,image->height,image->width,image->Name ,image->id,"/app/cloud")){
+                // // Send the image data to the cloud
+                // if(!imagesent(image->buf,image->len,image->height,image->width,image->Name ,image->id,"/app/cloud")){
 
-                    ESP_LOGE(TAG, "Fail Sending image data.");
+                //     ESP_LOGE(TAG, "Fail Sending image data.");
 
-                }
-                    ESP_LOGE(TAG, "\ntest image data ");
+                // }
+                //     ESP_LOGE(TAG, "\ntest image data ");
 
 
                 // Free the image buffer if it was dynamically allocated
                 heap_caps_free(image->buf);
                 image->buf = NULL;
+
+
             }
             else
             {
@@ -62,6 +66,8 @@ static void attendanceHandlerTask(void *arg)
         // Process attendance files
         if(wifiStatus==2 && CPUBgflag==0){
             process_attendance_files();
+            process_and_send_faces("/app/cloud");
+
         }
         vTaskDelay(xDelay);
 

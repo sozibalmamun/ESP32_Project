@@ -29,6 +29,7 @@ typedef struct {
     uint16_t id;
     char* Name;
 } imageData_t;
+
 bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic);
 bool stompSend(char * buff, char* topic);
 void cloudHandel(const QueueHandle_t input );
@@ -39,8 +40,7 @@ void save_face_data(uint32_t person_id, const char* name, uint32_t image_width, 
 void read_face_data(uint32_t person_id);
 void delete_face_data(uint32_t person_id);
 void write_log_attendance(uint16_t person_id,  uint8_t* timestamp);
-// void read_attendance_log(const char* date);
-// void delete_attendance_log(const char* date);
+bool process_and_send_faces(const char* topic);
 void print_memory_status(void);
 void format_fatfs(void);
 void process_attendance_files(void);

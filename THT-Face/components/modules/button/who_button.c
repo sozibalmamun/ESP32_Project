@@ -96,5 +96,5 @@ void register_button(const gpio_num_t key_io_num, const QueueHandle_t key_state_
 {
     xQueueKeyStateO = key_state_o;
     key_init(key_io_num);
-    xTaskCreatePinnedToCore(key_trigger, "key_scan_task", 1024, NULL, 5, NULL, 0);
+    xTaskCreatePinnedToCore(key_trigger, "key_scan_task", 1024, NULL, 1, NULL, 0);
 }

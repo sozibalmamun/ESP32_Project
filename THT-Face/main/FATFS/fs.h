@@ -45,7 +45,7 @@ extern "C" {
 esp_err_t init_fatfs(void);
 void create_directories();
 bool sendFilePath(const char *file_path);
-void format_fatfs_without_wl();
+void delete_all_directories(const char* path);
 
 
 extern void save_face_data(uint32_t person_id, const char* name, uint32_t image_width, uint32_t image_length, const uint8_t* image_data);

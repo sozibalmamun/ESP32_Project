@@ -400,6 +400,8 @@ void stomp_client_int( stompInfo_cfg_t stompSetup ) {
     websocket_cfg.use_global_ca_store = true;// ok 
     websocket_cfg.skip_cert_common_name_check = true;
     websocket_cfg.disable_auto_reconnect = false;
+    // websocket_cfg.task_stack = 8192;  // Increased stack size
+    websocket_cfg.task_prio = 5;      // Set an appropriate task priority
 
 
     // ESP_LOGI(TAG, "Constructed WebSocket URL: %s", websocket_cfg.uri);

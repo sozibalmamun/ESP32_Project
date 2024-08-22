@@ -7,7 +7,7 @@ static const char *TAG = "FAT";
 esp_err_t init_fatfs(void) {
     esp_err_t ret;
     const esp_vfs_fat_mount_config_t mount_config = {
-        .max_files = 5,
+        .max_files = 10,
         .format_if_mount_failed = true,
         .allocation_unit_size = CONFIG_WL_SECTOR_SIZE
     };
@@ -30,9 +30,9 @@ void create_directories(void) {
     struct stat st;
     if (stat(BASE_PATH "/log", &st) == 0) {
         if (S_ISDIR(st.st_mode)) {
-            ESP_LOGI("FAT", "Directory /attendance already exists");
+            ESP_LOGI("FAT", "Directory /log already exists");
         } else {
-            ESP_LOGE("FAT", "/attendance exists but is not a directory");
+            ESP_LOGE("FAT", "/log exists but is not a directory");
         }
     } else {
         // If the directory does not exist, try to create it
@@ -43,7 +43,7 @@ void create_directories(void) {
             ESP_LOGI("FAT", "Directory /attendance created");
         }
     }
-    
+
     vTaskDelay(pdMS_TO_TICKS(20));
 
     if (stat(BASE_PATH "/faces", &st) == 0) {
@@ -80,29 +80,35 @@ void print_memory_status() {
     }
 }
 
-static void delete_all_in_dir(const char *dirname) {
-    DIR *dir = opendir(dirname);
-    if (!dir) {
-        ESP_LOGE(TAG, "Failed to open directory: %s", dirname);
+
+void delete_all_directories(const char* path) {
+    struct dirent *entry;
+    DIR *dir = opendir(path);
+
+    if (dir == NULL) {
+        ESP_LOGE("FAT", "Failed to open directory: %s", path);
         return;
     }
 
-    struct dirent *entry;
-    char path[500];
     while ((entry = readdir(dir)) != NULL) {
-        snprintf(path, sizeof(path), "%s/%s", dirname, entry->d_name);
-        
-        if (entry->d_type == DT_DIR) {
-            if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
-                delete_all_in_dir(path);  // Recursively delete subdirectories
-                rmdir(path);  // Remove the directory after its contents are deleted
-                ESP_LOGI(TAG, "Deleted directory: %s", path);
+        char full_path[300];
+        snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
+
+        struct stat st;
+        if (stat(full_path, &st) == 0) {
+            if (S_ISDIR(st.st_mode)) {
+                if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+                    delete_all_directories(full_path); // Recursively delete subdirectories
+                    rmdir(full_path); // Delete the directory
+                    ESP_LOGI("FAT", "Deleted directory: %s", full_path);
+                }
+            } else {
+                unlink(full_path); // Delete the file
+                ESP_LOGI("FAT", "Deleted file: %s", full_path);
             }
-        } else {
-            unlink(path);  // Delete the file
-            ESP_LOGI(TAG, "Deleted file: %s", path);
         }
     }
+
     closedir(dir);
 }
 
@@ -202,47 +208,78 @@ void delete_face_data(uint32_t person_id) {
         ESP_LOGE("delete_face_data", "Failed to delete face data for Person ID %d", person_id);
     }
 }
-void write_log_attendance(uint32_t person_id, char* timestamp) {//wright_log_attendance
-    char tempStamp[20];
-    strncpy(tempStamp, timestamp, sizeof(tempStamp)); // Copy timestamp to a temporary buffer
-    tempStamp[sizeof(tempStamp) - 1] = '\0'; // Ensure null-termination
 
-    // Replace spaces with underscores in the copied timestamp
-    char* p = tempStamp;
-    while (*p) {
-        if (*p == ' ') *p = '_';
-        p++;
-    }
-    ESP_LOGI("log_attendance", "log file: %s", tempStamp);
-
-    char log_file_name[37]; // Initialize with an empty string
-    memset(log_file_name,0,sizeof(log_file_name));
-
-    // Build the file path using strcat
-    strcat(log_file_name, "/storage/log/");
-    strcat(log_file_name, tempStamp);
-    strcat(log_file_name, ".log");
+// void write_log_attendance(uint32_t person_id, char* timestamp) {//wright_log_attendance
     
+//     remove space
+//     char* ptr = timestamp+2;
+//     char* ptr_write = timestamp+2;
+//     while (*ptr) {
+//         if (*ptr != ' ') {
+//             *ptr_write++ = *ptr;
+//         }
+//         ptr++;
+//     }
+//     *ptr_write = '\0'; // Null-terminate the modified string
+
+//     // Build the file path using strcat
+//     const char log_file_name[40];
+//     memset(log_file_name,0,sizeof(log_file_name));
+//     strcat(log_file_name, ATTENDANCE_DIR);
+//     strcat(log_file_name, "/");
+//     strcat(log_file_name, timestamp);
+//     strcat(log_file_name, ".log");
 
 
-    ESP_LOGI("log_attendance", "Encoded log file name: %s", log_file_name);
+//     ESP_LOGI("log_attendance", "Encoded log file name: %s", log_file_name);
+
+//     FILE* f = fopen( "timestamp.log", "a");
+//     if (f == NULL) {
+//         ESP_LOGE("attendance", "Failed to open log file for writing");
+//         return;
+//     }
+
+//     // Write attendance log: person ID and timestamp
+//     fprintf(f, "%s %d\n", timestamp, person_id);
+//     fclose(f);
+
+//     ESP_LOGI("attendance", "ID: %d at: %s.log", person_id, timestamp);
+// }
+
+void write_log_attendance(uint32_t person_id, char* timestamp) {
+
+    // remove space
+    char* ptr = timestamp;
+    char* ptr_write = timestamp;
+    while (*ptr) {
+        if (*ptr != ' ') {
+            *ptr_write++ = *ptr;
+        }
+        ptr++;
+    }
+    *ptr_write = '\0'; // Null-terminate the modified string
+
+    char log_file_name[25];
+    snprintf(log_file_name, sizeof(log_file_name), "%s%s.log",ATTENDANCE_DIR, timestamp);
 
     FILE* f = fopen(log_file_name, "a");
     if (f == NULL) {
         ESP_LOGE("log_attendance", "Failed to open log file for writing");
         return;
     }
-
     // Write attendance log: person ID and timestamp
-    fprintf(f, "%s %d\n", timestamp, person_id);
-
+    fprintf(f, "%s %d", timestamp,person_id);
     fclose(f);
-    ESP_LOGI("log_attendance", "Logged ID %d at %s", person_id, timestamp);
+    ESP_LOGI("attendance", "Attendance ID: %d at: %s", person_id, timestamp);
 }
+
+
+
 
 
 void read_attendance_log(const char* date) {
     char log_file_name[64];
+
     snprintf(log_file_name, sizeof(log_file_name), "/fatfs/log/%s.log", date);
 
     FILE* f = fopen(log_file_name, "r");

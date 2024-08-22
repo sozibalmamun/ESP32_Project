@@ -87,7 +87,7 @@ void app_main()
     //--------------------------------------------------
 
     //-----------time int here-------------------------------------
-    time_library_time_t initial_time = {2024, 8, 7, 17, 16, 0};//     year, month, day, hour, minute, second;
+    time_library_time_t initial_time = {2024, 12, 12, 17, 16, 15};//     year, month, day, hour, minute, second;
     time_library_init(&initial_time);
     //--------------------------------------------------------------
     //-------------------------
@@ -96,6 +96,7 @@ void app_main()
     if (init_fatfs()== ESP_OK) {
         // Create directories
         // format_fatfs();
+        // delete_all_directories("/storage");
         create_directories();
         print_memory_status();
 
@@ -133,7 +134,7 @@ void app_main()
             // printf("\nsleepEnable");
 
             // write_log_attendance( 9999,  "sozib");
-            // read_attendance_log("sozib");
+            read_attendance_log("sozib");
             // delete_attendance_log("sozib");
         }
 

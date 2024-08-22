@@ -326,9 +326,8 @@ static void task_process_handler(void *arg)
                         get_time(&current_time, 1);
                         char tempFrame[30] ;
                         snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d",
-                        current_time.year, current_time.month, current_time.day, current_time.hour, current_time.minute, current_time.second);
+                        (current_time.year-2000),current_time.month, current_time.day, current_time.hour, current_time.minute, current_time.second);
                         write_log_attendance(recognize_result.id, tempFrame);
-                        free(tempFrame);
                         //----------------------------------------------------------------------------------------------
 
                         }
@@ -553,7 +552,7 @@ void register_human_face_recognition(const QueueHandle_t frame_i,
     gReturnFB = camera_fb_return;
     xMutex = xSemaphoreCreateMutex();
 
-    xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 0);
+    xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
         // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
 
     if (xQueueEvent)

@@ -134,7 +134,7 @@ void app_main()
             // printf("\nsleepEnable");
 
             // write_log_attendance( 9999,  "sozib");
-            read_attendance_log("sozib");
+            // read_attendance_log("sozib");
             // delete_attendance_log("sozib");
         }
 

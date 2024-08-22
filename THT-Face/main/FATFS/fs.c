@@ -209,47 +209,14 @@ void delete_face_data(uint32_t person_id) {
     }
 }
 
-// void write_log_attendance(uint32_t person_id, char* timestamp) {//wright_log_attendance
-    
-//     remove space
-//     char* ptr = timestamp+2;
-//     char* ptr_write = timestamp+2;
-//     while (*ptr) {
-//         if (*ptr != ' ') {
-//             *ptr_write++ = *ptr;
-//         }
-//         ptr++;
-//     }
-//     *ptr_write = '\0'; // Null-terminate the modified string
-
-//     // Build the file path using strcat
-//     const char log_file_name[40];
-//     memset(log_file_name,0,sizeof(log_file_name));
-//     strcat(log_file_name, ATTENDANCE_DIR);
-//     strcat(log_file_name, "/");
-//     strcat(log_file_name, timestamp);
-//     strcat(log_file_name, ".log");
-
-
-//     ESP_LOGI("log_attendance", "Encoded log file name: %s", log_file_name);
-
-//     FILE* f = fopen( "timestamp.log", "a");
-//     if (f == NULL) {
-//         ESP_LOGE("attendance", "Failed to open log file for writing");
-//         return;
-//     }
-
-//     // Write attendance log: person ID and timestamp
-//     fprintf(f, "%s %d\n", timestamp, person_id);
-//     fclose(f);
-
-//     ESP_LOGI("attendance", "ID: %d at: %s.log", person_id, timestamp);
-// }
-
 
 
 void write_log_attendance(uint32_t person_id, char* timestamp) {
 
+
+    char tempTimeStamp[17]; // Make sure this has enough space
+    strncpy(tempTimeStamp, timestamp, sizeof(tempTimeStamp));
+    
     // remove space
     char* ptr = timestamp;
     char* ptr_write = timestamp;
@@ -264,7 +231,7 @@ void write_log_attendance(uint32_t person_id, char* timestamp) {
     char log_file_name[30];
     snprintf(log_file_name, sizeof(log_file_name), "%s/%s.log",ATTENDANCE_DIR, timestamp);
 
-    ESP_LOGI("log_attendance", "Encoded log file name: %s", log_file_name);
+    // ESP_LOGI("log_attendance", "Encoded log file name: %s", log_file_name);
 
 
     FILE* f = fopen(log_file_name, "a");
@@ -273,9 +240,9 @@ void write_log_attendance(uint32_t person_id, char* timestamp) {
         return;
     }
     // Write attendance log: person ID and timestamp
-    fprintf(f, "%s %d", timestamp,person_id);
+    fprintf(f, "%s %d", tempTimeStamp,person_id);
     fclose(f);
-    ESP_LOGI("attendance", "Attendance ID: %d at: %s", person_id, timestamp);
+    ESP_LOGI("attendance", "Attendance ID: %d at: %s", person_id, log_file_name);
 }
 
 
@@ -364,30 +331,26 @@ bool sendFilePath(const char *file_path) {
     // Read the file content (this is a placeholder; adapt as needed)
     char buffer[20];
     while (fgets(buffer, sizeof(buffer), file) != NULL) {
-        // Here you would send the content via STOMP
 
+        // Here you would send the content via STOMP
         time_library_time_t current_time;
         get_time(&current_time, 1);
-        char tempFrame[280] ;
-        //AA00242829068 069276
+        char tempFrame[50];
+        snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",
+        (current_time.year-2000), current_time.month, current_time.day,
+        current_time.hour, current_time.minute, current_time.second, // device time
+        buffer); // log time + id
 
-        snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s %s%9llu",
-        current_time.year,current_time.month,current_time.day,current_time.hour, current_time.minute,current_time.second,// device time
-        buffer,DEVICE_VERSION_ID ,generate_unique_id());//log time+ idA+ device id
-
-        ESP_LOGW(TAG, "buff log %s", tempFrame);
-
+        // ESP_LOGW(TAG, "buff log %s", tempFrame);
 
         if (!stompSend(tempFrame,PUBLISH_TOPIC)) {
-             ESP_LOGE(TAG, "Error sending log");
+            //  ESP_LOGE(TAG, "Error sending log");
             return false;
         }
 
     }
-
     fclose(file);
-
     // Simulate successful send
-    ESP_LOGI("STOMP", "File sent successfully: %s", file_path);
+    // ESP_LOGI("STOMP", "File sent successfully: %s", file_path);
     return true;
 }

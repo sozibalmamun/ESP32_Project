@@ -54,7 +54,7 @@ static void cloudeHandlerTask(void *arg)
 
 static void attendanceHandlerTask(void *arg)
 {
-    const TickType_t xDelay = pdMS_TO_TICKS(500); // Run every 5 seconds
+    const TickType_t xDelay = pdMS_TO_TICKS(500); // Run every 1 seconds
 
     while (true)
     {

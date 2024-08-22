@@ -142,7 +142,7 @@ bool stompSend(char * buff, char* topic){
         if(buffLen<=CHANK_SIZE){
             currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],buffLen) : memcpy(&tempFrame,&buff[currentIndex],buffLen);
             buffLen= buffLen - buffLen;
-            ESP_LOGI(TAGSTOMP, "Sending last Chank\n");
+            // ESP_LOGI(TAGSTOMP, "Sending last Chank\n");
 
         }else{
 

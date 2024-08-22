@@ -104,9 +104,7 @@ void stompAppStart(void);
 
 extern void dataHandele(const char *rx_buffer);
 extern bool stompSend(char * buff, char* topic);
-extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w , char* topic);
-
-
+extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic);
 
 
 #ifdef __cplusplus

@@ -283,11 +283,6 @@ static void task_process_handler(void *arg)
                         //----------------------------working with image--------------------------
                         print_detection_result(detect_candidates);
                         draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
-                        // imageData_t cropFrame;
-
-                        // imageData_t *cropFrame = NULL;
-
-
                         if(!copy_rectangle(frame,&cropFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]))
                         {
                             frame_show_state = INVALID;
@@ -295,8 +290,19 @@ static void task_process_handler(void *arg)
                             heap_caps_free(cropFrame);
                             break;
                         }
+                        //--------------------------------------------------------------------------
 
-                        // printf("\nCopy Image Info  L:%3d w:%3d h:%3d", cropFrame->len, cropFrame->width, cropFrame->height);
+                        // recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
+                        recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, personName, true);// due to add name
+                        ESP_LOGW("ENROLL", "ID %d is enrolled", recognizer->get_enrolled_ids().back().id);
+
+                        //-------------------------pass value to struc via task----------------------------
+                       // printf("\nCopy Image Info  L:%3d w:%3d h:%3d", cropFrame->len, cropFrame->width, cropFrame->height);
+
+                        cropFrame->id= recognizer->get_enrolled_ids().back().id;
+                        cropFrame->Name= "personName";
+
+
 
                         if (xQueueCloud) {
                             // printf("Sending cropFrame to xQueueCloud...\n");
@@ -305,13 +311,12 @@ static void task_process_handler(void *arg)
                             printf("xQueueCloud is NULL, cannot send cropFrame.\n");
                         }
 
-                        //--------------------------------------------------------------------------
 
-                        // recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
-                        recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, personName, true);// due to add name
+                        //---------------------------------------------------------------------------------
 
 
-                        ESP_LOGW("ENROLL", "ID %d is enrolled", recognizer->get_enrolled_ids().back().id);
+
+
                         frame_show_state = SHOW_STATE_ENROLL;
                         break;
                     }

@@ -26,8 +26,10 @@ typedef struct {
     size_t len;               /*!< Length of the buffer in bytes */
     size_t width;             /*!< Width of the buffer in pixels */
     size_t height;            /*!< Height of the buffer in pixels */
+    uint16_t id;
+    char* Name;
 } imageData_t;
-bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w , char* topic);
+bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic);
 bool stompSend(char * buff, char* topic);
 void cloudHandel(const QueueHandle_t input );
 

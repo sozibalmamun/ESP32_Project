@@ -188,7 +188,7 @@ return true;
 }
 
 
-bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w , char* topic) {
+bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic) {
 
     char tempFrame[(CHANK_SIZE * 2) + 1]; // +1 for null-terminator
     memset(tempFrame,0,sizeof(tempFrame));
@@ -196,15 +196,9 @@ bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w , char* top
     ESP_LOGI(TAGSTOMP, "Sending  total chank :%d\n", (int)ceil(buffLen/CHANK_SIZE)+1);
 
     // sent image info
-    char imageInfo[50];
-    snprintf(imageInfo, sizeof(imageInfo), "[\"SEND\\ndestination:%s\\n\\n%d%d%d\\n\\n\\u0000\"]", topic, buffLen,h ,w );
-    if(esp_websocket_client_send_text(client, imageInfo, strlen(imageInfo), portMAX_DELAY)!=ESP_OK){
-            
-        ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
-        wifiStatus=0x01;
-        stomp_client_connect();
-        return false;
-    }
+    char imageInfo[30];
+    snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d",buffLen, h, w, name, id);
+    stompSend(imageInfo,topic);
 
     do{
 

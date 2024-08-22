@@ -211,75 +211,24 @@ void delete_face_data(uint32_t person_id) {
 
 
 
-void write_log_attendance(uint32_t person_id, char* timestamp) {
+void write_log_attendance(uint16_t person_id, uint8_t* timestamp) {
+
+    char log_file[31];// file like: /fatfs/log/2412121716.log
+    snprintf(log_file, sizeof(log_file), "%s/%d%d%d%d%d.log",ATTENDANCE_DIR, timestamp[0],timestamp[1],timestamp[2],timestamp[3],timestamp[4]);
+
+    ESP_LOGI("log_attendance", "Encoded log file name: %s", log_file);
 
 
-    char tempTimeStamp[17]; // Make sure this has enough space
-    strncpy(tempTimeStamp, timestamp, sizeof(tempTimeStamp));
-    
-    // remove space
-    char* ptr = timestamp;
-    char* ptr_write = timestamp;
-    while (*ptr) {
-        if (*ptr != ' ') {
-            *ptr_write++ = *ptr;
-        }
-        ptr++;
-    }
-    *ptr_write = '\0'; // Null-terminate the modified string
-
-    char log_file_name[30];
-    snprintf(log_file_name, sizeof(log_file_name), "%s/%s.log",ATTENDANCE_DIR, timestamp);
-
-    // ESP_LOGI("log_attendance", "Encoded log file name: %s", log_file_name);
-
-
-    FILE* f = fopen(log_file_name, "a");
+    FILE* f = fopen(log_file, "a");
     if (f == NULL) {
         ESP_LOGE("log_attendance", "Failed to open log file for writing");
         return;
     }
     // Write attendance log: person ID and timestamp
-    fprintf(f, "%s %d", tempTimeStamp,person_id);
+    fprintf(f, "%d %d %d %d %d %d %d ", timestamp[0],timestamp[1],timestamp[2],timestamp[3],timestamp[4],timestamp[5],person_id);
     fclose(f);
-    ESP_LOGI("attendance", "Attendance ID: %d at: %s", person_id, log_file_name);
+    ESP_LOGI("attendance", "Attendance ID: %d at: %s", person_id, log_file);
 }
-
-
-
-
-
-// void read_attendance_log(const char* date) {
-//     char log_file_name[64];
-
-//     snprintf(log_file_name, sizeof(log_file_name), "/fatfs/log/%s.log", date);
-
-//     FILE* f = fopen(log_file_name, "r");
-//     if (f == NULL) {
-//         // ESP_LOGE("read_attendance_log", "Failed to open attendance log for date %s", date);
-//         return;
-//     }
-
-//     char line[128];
-//     while (fgets(line, sizeof(line), f) != NULL) {
-//         // ESP_LOGI("read_attendance_log", "%s", line);
-//     }
-//     ESP_LOGI("read_attendance_log", "%s", line);
-
-//     fclose(f);
-//     // ESP_LOGI("read_attendance_log", "Finished reading attendance log for date %s", date);
-// }
-// void delete_attendance_log(const char* date) {
-//     char log_file_name[64];
-//     snprintf(log_file_name, sizeof(log_file_name), "/fatfs/log/%s.log", date);
-
-//     int res = remove(log_file_name);
-//     if (res == 0) {
-//         ESP_LOGI("delete_attendance_log", "Deleted attendance log for date %s", date);
-//     } else {
-//         ESP_LOGE("delete_attendance_log", "Failed to delete attendance log for date %s", date);
-//     }
-// }
 
 void process_attendance_files() {
 
@@ -300,7 +249,7 @@ void process_attendance_files() {
             strcat(file_path, "/");
             strcat(file_path, entry->d_name);
             
-            ESP_LOGI("log", "Procesing...%s", file_path);
+            // ESP_LOGI("log", "Procesing...%s", file_path);
 
             // Send the file via STOMP
             if (sendFilePath(file_path)) {
@@ -321,6 +270,7 @@ void process_attendance_files() {
 
 
 bool sendFilePath(const char *file_path) {
+
     // Open the file
     FILE *file = fopen(file_path, "r");
     if (file == NULL) {
@@ -329,19 +279,19 @@ bool sendFilePath(const char *file_path) {
     }
 
     // Read the file content (this is a placeholder; adapt as needed)
-    char buffer[20];
+    char buffer[512];
     while (fgets(buffer, sizeof(buffer), file) != NULL) {
 
         // Here you would send the content via STOMP
         time_library_time_t current_time;
-        get_time(&current_time, 1);
-        char tempFrame[50];
+        get_time(&current_time, 0);
+        char tempFrame[strlen(buffer)+30];
         snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",
         (current_time.year-2000), current_time.month, current_time.day,
         current_time.hour, current_time.minute, current_time.second, // device time
         buffer); // log time + id
 
-        // ESP_LOGW(TAG, "buff log %s", tempFrame);
+        ESP_LOGW(TAG, "buff log %s", tempFrame);
 
         if (!stompSend(tempFrame,PUBLISH_TOPIC)) {
             //  ESP_LOGE(TAG, "Error sending log");

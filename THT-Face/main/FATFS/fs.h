@@ -51,7 +51,7 @@ void delete_all_directories(const char* path);
 extern void save_face_data(uint32_t person_id, const char* name, uint32_t image_width, uint32_t image_length, const uint8_t* image_data);
 extern void read_face_data(uint32_t person_id);
 extern void delete_face_data(uint32_t person_id);
-extern void write_log_attendance(uint32_t person_id,  char* timestamp);
+extern void write_log_attendance(uint16_t person_id,  uint8_t* timestamp);
 // extern void read_attendance_log(const char* date);
 // extern void delete_attendance_log(const char* date);
 extern void print_memory_status(void);

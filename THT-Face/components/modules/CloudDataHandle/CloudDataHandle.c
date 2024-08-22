@@ -5,6 +5,7 @@
 // extern bool stompSend(char *buff, char *topic);
 
 static const char *TAG = "CLOUD";
+uint8_t CPUBgflag;
 
 static QueueHandle_t xQueueCloudI = NULL;
 
@@ -59,7 +60,7 @@ static void attendanceHandlerTask(void *arg)
     while (true)
     {
         // Process attendance files
-        if(wifiStatus==2){
+        if(wifiStatus==2 && CPUBgflag==0){
             process_attendance_files();
         }
         vTaskDelay(xDelay);

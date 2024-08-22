@@ -30,8 +30,7 @@ typedef enum
 #define DELETED         0X05
 #define ID_INVALID      0X06
 
-
-// bool copy_rectangle(const camera_fb_t *src, int x_start, int x_end, int y_start, int y_end);
+extern uint8_t CPUBgflag;
 
 bool copy_rectangle(const camera_fb_t *src,imageData_t** dst, int x_start, int x_end, int y_start, int y_end);
 

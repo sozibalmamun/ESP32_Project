@@ -21,8 +21,6 @@ extern "C"
 
 extern uint8_t wifiStatus;
 
-
-
 typedef struct {
     uint8_t *buf;             /*!< Pointer to the copied pixel data */
     size_t len;               /*!< Length of the buffer in bytes */
@@ -38,7 +36,7 @@ void cloudHandel(const QueueHandle_t input );
 void save_face_data(uint32_t person_id, const char* name, uint32_t image_width, uint32_t image_length, const uint8_t* image_data);
 void read_face_data(uint32_t person_id);
 void delete_face_data(uint32_t person_id);
-void write_log_attendance(uint32_t person_id,  char* timestamp);
+void write_log_attendance(uint16_t person_id,  uint8_t* timestamp);
 // void read_attendance_log(const char* date);
 // void delete_attendance_log(const char* date);
 void print_memory_status(void);

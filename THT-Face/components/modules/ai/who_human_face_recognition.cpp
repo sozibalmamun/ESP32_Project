@@ -316,6 +316,7 @@ static void task_process_handler(void *arg)
                         break;
                     }
                     case RECOGNIZE:{
+                        CPUBgflag=1;
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
                         // print_detection_result(detect_results);
                         if (recognize_result.id > 0){
@@ -323,11 +324,18 @@ static void task_process_handler(void *arg)
                         ESP_LOGI("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
                         //--------------------------------here save the log file here----------------------------------
                         time_library_time_t current_time;
-                        get_time(&current_time, 1);
-                        char tempFrame[30] ;
-                        snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d",
-                        (current_time.year-2000),current_time.month, current_time.day, current_time.hour, current_time.minute, current_time.second);
-                        write_log_attendance(recognize_result.id, tempFrame);
+                        get_time(&current_time, 0);
+                        uint8_t tempTimeFrame[6];
+                        memset(tempTimeFrame,0,sizeof(tempTimeFrame));
+                        tempTimeFrame[0] = current_time.year-2000;
+                        tempTimeFrame[1] = current_time.month;
+                        tempTimeFrame[2] = current_time.day;
+                        tempTimeFrame[3] = current_time.hour;
+                        tempTimeFrame[4] = current_time.minute;
+                        tempTimeFrame[5] = current_time.second;
+                        write_log_attendance(recognize_result.id, tempTimeFrame);
+                        CPUBgflag=0;
+
                         //----------------------------------------------------------------------------------------------
 
                         }

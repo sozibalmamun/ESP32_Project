@@ -157,13 +157,13 @@ void process_command(const char* buffer) {
                 // printf("  - Name: %s\n", id);
                 // idDeletingOngoing();
 
+
                 return;
             } else {
                 printf("CRC check failed.\n");
                 
                 CmdEnroll = DELETE_CMD;
-                idDeletingOngoing();
-
+                // idDeletingOngoing();
                 return;
             }
 

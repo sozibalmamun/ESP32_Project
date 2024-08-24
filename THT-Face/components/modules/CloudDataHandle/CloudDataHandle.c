@@ -65,9 +65,7 @@ static void attendanceHandlerTask(void *arg)
         // Process attendance files
         if(wifiStatus==2 && CPUBgflag==0){
             process_attendance_files();
-            // read_face_data(1);
             process_and_send_faces("/app/cloud");
-
         }
         vTaskDelay(xDelay);
 

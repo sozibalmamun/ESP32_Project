@@ -69,10 +69,14 @@ void app_main()
         esp_restart();
     }
     
-    register_button(GPIO_BOOT, xQueueKeyState);//core 0
+    // register_button(GPIO_BOOT, xQueueKeyState);//core 0
     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);//core 1
     // register_adc_button(buttons, 4, xQueueKeyState);//core 0
+    // register_event(xQueueKeyState, xQueueEventLogic);//core 0
+    
     register_event(xQueueKeyState, xQueueEventLogic);//core 0
+
+
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false); //core 1+1
 
     cloudHandel(xQueueCloud);// core 0

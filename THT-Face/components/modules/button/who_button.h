@@ -10,6 +10,8 @@ typedef enum
     KEY_DOUBLE_CLICK,
 } key_state_t;
 
+extern  volatile uint8_t CmdEnroll;
+
 #ifdef __cplusplus
 extern "C"
 {

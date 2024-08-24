@@ -139,7 +139,6 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
         vTaskDelay(500);
         stompAppStart();
 
-
         wifiStatus=0x01;
         gl_sta_is_connecting = false;
         event = (wifi_event_sta_connected_t*) event_data;
@@ -161,6 +160,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
         esp_websocket_client_stop(client);
         esp_websocket_client_destroy(client);
         client = NULL;
+        
         }
 
         printf("Retrying to Connect...\n");

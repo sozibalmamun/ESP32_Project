@@ -17,9 +17,13 @@
 
 
 
-#define     PUBLISH_TOPIC       "/app/cloud"
-#define     SUBCRIBE_TOPIC       "/topic/cloud"
-#define     CHANK_SIZE      256 //512//760//256 //128
+#define     PUBLISH_TOPIC         "/app/cloud"
+#define     SUBCRIBE_TOPIC        "/topic/cloud"
+
+#define     IMAGE_CHANK_SIZE      100 //512//760//256 //128
+#define     CHANK_SIZE            512 //512//760//256 //128
+
+
 
 
 

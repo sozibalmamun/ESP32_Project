@@ -1,5 +1,5 @@
 #include "timeLib.h"
-
+#include "globalScope.h"
 
 static const char *TAG = "TimeLib";
 
@@ -11,7 +11,7 @@ static uint32_t reference_tick_count;
 
 
 static const uint8_t days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-const char* day_names[] = {
+const DATA_FLASH char* day_names[] = {
     "Sun", "Mon", "Tue", "Wed", "Thu", "Fri" ,"Sat"
 };
 // Function to check if a year is a leap year

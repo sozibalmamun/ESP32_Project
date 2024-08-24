@@ -9,7 +9,10 @@
 #include "esp_wifi.h"
 #include "esp_log.h"
 
-
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
+#include "freertos/task.h"
+#include "freertos/semphr.h"
 
 
 

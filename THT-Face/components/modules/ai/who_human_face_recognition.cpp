@@ -21,6 +21,7 @@
 
 
 uint8_t boxPosition[5];
+static uint16_t StopMultipleAttaneId=0;
 
 
 using namespace std;
@@ -218,7 +219,7 @@ static void task_process_handler(void *arg)
                     
                 //    if(CmdEnroll==IDLEENROL)_gEvent = RECOGNIZE;// due to no button for recognize
 
-                   if(CmdEnroll==ENROLING)_gEvent=ENROLL;// 1 for enroling 
+                //    if(CmdEnroll==ENROLING)_gEvent=ENROLL;// 1 for enroling 
 
                    //---------------sleep weakup------------
                     // sleepTimeOut = xTaskGetTickCount();
@@ -226,18 +227,19 @@ static void task_process_handler(void *arg)
                     //--------------------------------------
 
 
-                }else if(CmdEnroll==ENROLING){
-                    
-                    rgb_printf(frame, RGB565_MASK_GREEN, "Start Enroling");// debug due to display name
-
-                }else if(CmdEnroll==DELETE_CMD){// deleting person 
-
-                    // rgb_printf(frame, RGB565_MASK_GREEN, "Start Deliting id%d",personId);// debug due to display name
-                    _gEvent=DELETE;
-                    is_detected = true;
-                    // ESP_LOGE("DELETE", "% d ID:",personId );
-
                 }
+                // else if(CmdEnroll==ENROLING){
+                    
+                //     rgb_printf(frame, RGB565_MASK_GREEN, "Start Enroling");// debug due to display name
+
+                // }else if(CmdEnroll==DELETE_CMD){// deleting person 
+
+                //     // rgb_printf(frame, RGB565_MASK_GREEN, "Start Deliting id%d",personId);// debug due to display name
+                //     _gEvent=DELETE;
+                //     is_detected = true;
+                //     // ESP_LOGE("DELETE", "% d ID:",personId );
+
+                // }
 
             
                 if (is_detected)
@@ -300,27 +302,32 @@ static void task_process_handler(void *arg)
                         break;
                     }
                     case RECOGNIZE:{
-                        CPUBgflag=1;
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
                         // print_detection_result(detect_results);
                         if (recognize_result.id > 0){
 
-                        ESP_LOGI("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
-                        //--------------------------------here save the log file here----------------------------------
-                        time_library_time_t current_time;
-                        get_time(&current_time, 0);
-                        uint8_t tempTimeFrame[6];
-                        memset(tempTimeFrame,0,sizeof(tempTimeFrame));
-                        tempTimeFrame[0] = current_time.year-2000;
-                        tempTimeFrame[1] = current_time.month;
-                        tempTimeFrame[2] = current_time.day;
-                        tempTimeFrame[3] = current_time.hour;
-                        tempTimeFrame[4] = current_time.minute;
-                        tempTimeFrame[5] = current_time.second;
-                        write_log_attendance(recognize_result.id, tempTimeFrame);
-                        CPUBgflag=0;
+                            CPUBgflag=1;
+                            ESP_LOGI("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
 
-                        //----------------------------------------------------------------------------------------------
+                            if(StopMultipleAttaneId!=recognize_result.id){
+
+                                StopMultipleAttaneId=recognize_result.id;
+                                //--------------------------------here save the log file here----------------------------------
+                                time_library_time_t current_time;
+                                get_time(&current_time, 0);
+                                uint8_t tempTimeFrame[6];
+                                memset(tempTimeFrame,0,sizeof(tempTimeFrame));
+                                tempTimeFrame[0] = current_time.year-2000;
+                                tempTimeFrame[1] = current_time.month;
+                                tempTimeFrame[2] = current_time.day;
+                                tempTimeFrame[3] = current_time.hour;
+                                tempTimeFrame[4] = current_time.minute;
+                                tempTimeFrame[5] = current_time.second;
+                                write_log_attendance(recognize_result.id, tempTimeFrame);
+
+                                //----------------------------------------------------------------------------------------------
+                            }
+                            CPUBgflag=0;
 
                         }
                         else
@@ -336,11 +343,11 @@ static void task_process_handler(void *arg)
 
 
                             ESP_LOGE("DELETE", "% d IDs invalided", personId);
-                            CmdEnroll=ID_INVALID; // delete done 
+                            // CmdEnroll=ID_INVALID; // delete done 
 
                         }else{
 
-                            CmdEnroll=DELETED;// delete done
+                            // CmdEnroll=DELETED;// delete done
                             ESP_LOGE("DELETE", "% d IDs left", personId);
 
                         }

@@ -41,13 +41,12 @@ static void cloudeHandlerTask(void *arg)
 
                 // }
                 //     ESP_LOGE(TAG, "\ntest image data ");
-
+                vTaskDelay(100);
 
                 // Free the image buffer if it was dynamically allocated
                 heap_caps_free(image->buf);
                 image->buf = NULL;
-
-
+                CPUBgflag=0;
             }
             else
             {
@@ -66,6 +65,7 @@ static void attendanceHandlerTask(void *arg)
         // Process attendance files
         if(wifiStatus==2 && CPUBgflag==0){
             process_attendance_files();
+            // read_face_data(1);
             process_and_send_faces("/app/cloud");
 
         }

@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "globalScope.h"
+
 #define WIFI_WIDTH 16
 #define WIFI_HEIGHT 15
 #define BLE_W 11
@@ -36,6 +38,10 @@
 TickType_t animationTime=0; 
 extern const char* day_names[];
 
+// #define DATA_FLASH __attribute__((section(".rodata")))
+
+// Store an array in flash
+// const MY_DATA_IN_FLASH uint8_t largeArray[] = {0x01, 0x02, 0x03, /* ... */};
 
 
 
@@ -45,7 +51,7 @@ extern "C"
 #endif
 
 //16x15
-const uint8_t wifiIcon[] = {
+const DATA_FLASH uint8_t wifiIcon[] = {
 
 1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,
 1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,
@@ -64,20 +70,20 @@ const uint8_t wifiIcon[] = {
 1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,
 
 };
-uint8_t wifiAnimation01[]={
+const DATA_FLASH uint8_t wifiAnimation01[]={
 1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,
 1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,
 1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1
 
 };
-uint8_t wifiAnimation02[]={
+const DATA_FLASH uint8_t wifiAnimation02[]={
 1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,
 1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,
 1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,
 1,1,1,1,0,1,1,1,1,1,1,0,1,1,1,1,
 
 };
-uint8_t wifiAnimation03[]={
+const DATA_FLASH uint8_t wifiAnimation03[]={
 1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,
 1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,
 1,1,1,0,0,0,1,1,1,1,0,0,0,1,1,1,
@@ -85,7 +91,7 @@ uint8_t wifiAnimation03[]={
 1,1,0,0,1,1,1,1,1,1,1,1,0,0,1,1,
 
 };
-uint8_t wifiAnimation04[]={
+const DATA_FLASH uint8_t wifiAnimation04[]={
 1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,
 1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,
 1,1,1,0,0,0,1,1,1,1,0,0,0,1,1,1,
@@ -95,7 +101,7 @@ uint8_t wifiAnimation04[]={
 };
 
 //7x7
-uint8_t connectedIcon[]={
+const DATA_FLASH uint8_t connectedIcon[]={
  1,1,0,1,0,1,1,
  1,1,0,1,0,0,1,
  1,1,0,1,0,0,0,
@@ -105,7 +111,7 @@ uint8_t connectedIcon[]={
  1,1,0,1,0,1,1,
 };
 //2x7
-uint8_t disconnectedIcon[]={
+const DATA_FLASH uint8_t disconnectedIcon[]={
 0,0,
 0,0,
 0,0,
@@ -115,7 +121,7 @@ uint8_t disconnectedIcon[]={
 0,0,
 
 };
-uint8_t noWifiIcon[]={
+const DATA_FLASH uint8_t noWifiIcon[]={
     1,0,0,1,0,0,1,
     1,1,0,0,0,1,1,
     1,1,1,0,1,1,1,
@@ -126,7 +132,7 @@ uint8_t noWifiIcon[]={
 
 };
 //w-11, h-17
-uint8_t bleIcon[]={
+const DATA_FLASH uint8_t bleIcon[]={
 
     1,1,1,1,0,0,1,1,1,1,1,
     1,1,1,1,0,0,0,1,1,1,1,
@@ -146,7 +152,7 @@ uint8_t bleIcon[]={
 
 };
 
-uint8_t secondicon[]={
+const DATA_FLASH uint8_t secondicon[]={
     0,0,0,0,0,
     0,0,0,0,0,
     0,0,0,0,0,
@@ -155,7 +161,7 @@ uint8_t secondicon[]={
 };
 
 //----------------------time icon------------7segment----------------------------------------32*6/
-const  uint32_t a[]={
+const DATA_FLASH uint32_t a[]={
 
     0b00111111111111111111111111111100,
     0b00011111111111111111111111111000,
@@ -165,7 +171,7 @@ const  uint32_t a[]={
     0b00000001111111111111111110000000
 };
 //8*26
-const uint8_t b[]={
+const DATA_FLASH uint8_t b[]={
     0b00000010,
     0b00000110,
     0b00001110,
@@ -196,7 +202,7 @@ const uint8_t b[]={
 
 };
 //6*26
-const uint8_t c[]={
+const DATA_FLASH uint8_t c[]={
     0b00001000,
     0b00011100,
     0b00111110,
@@ -226,7 +232,7 @@ const uint8_t c[]={
 
 };
 //30*6
-const uint32_t d[]={
+const DATA_FLASH uint32_t d[]={
 
     0b00000001111111111111111110000000,
     0b00000011111111111111111111000000,
@@ -237,7 +243,7 @@ const uint32_t d[]={
 
 };
 //6*26
-const uint8_t e[]={
+const DATA_FLASH uint8_t e[]={
     0b00010000,
     0b00111000,
     0b01111100,
@@ -267,7 +273,7 @@ const uint8_t e[]={
 
 };
 //6*26
-const uint8_t f[]={
+const DATA_FLASH uint8_t f[]={
     0b01000000,
     0b01100000,
     0b01110000,
@@ -297,7 +303,7 @@ const uint8_t f[]={
 
 };
 //27*6
-const uint32_t g[]={
+const DATA_FLASH DATA_FLASH uint32_t g[]={
 0b00000111111111111111111110000000,
 0b00001111111111111111111111000000,
 0b00011111111111111111111111100000,
@@ -305,13 +311,13 @@ const uint32_t g[]={
 0b00001111111111111111111111000000,
 0b00000111111111111111111110000000
 };
-const uint32_t *segment_table1[]={
+const  uint32_t *segment_table1[]={
     ['a']=a,
     ['d']=d,
     ['g']=g
 
 };
-const uint8_t *segment_table2[]={
+const  uint8_t *segment_table2[]={
     ['b']=b,
     ['c']=c,
     ['e']=e,
@@ -324,7 +330,7 @@ const uint8_t *segment_table2[]={
  * 
  ******************************************************************************/
 
-const uint16_t charSignNeg[] = { // "-"
+const DATA_FLASH uint16_t charSignNeg[] = { // "-"
 
     0b0000000000000000,
     0b0000000000000000,
@@ -338,7 +344,7 @@ const uint16_t charSignNeg[] = { // "-"
     0b0000000000000000
 
 };
-const uint16_t dot[]={
+const DATA_FLASH uint16_t dot[]={
 
 
     0b0000000000000000,
@@ -352,7 +358,7 @@ const uint16_t dot[]={
     0b0110000000000000,
     0b0110000000000000
 };
-const uint16_t space1[]={
+const DATA_FLASH uint16_t space1[]={
 
     0b0000000000000000,
     0b0000000000000000,
@@ -367,7 +373,7 @@ const uint16_t space1[]={
 
 };
 
-const uint16_t char_0[] = {
+const DATA_FLASH uint16_t char_0[] = {
 
     0b0011100000000000,
     0b0110110000000000,
@@ -382,7 +388,7 @@ const uint16_t char_0[] = {
 
 
 };
-const uint16_t char_1[]={
+const DATA_FLASH uint16_t char_1[]={
 
     0b0001100000000000,
     0b0111100000000000,  
@@ -396,7 +402,7 @@ const uint16_t char_1[]={
     0b0111111000000000
 };
 
-const uint16_t char_2[]={
+const DATA_FLASH uint16_t char_2[]={
 
     0b0111110000000000,
     0b1100011000000000,
@@ -410,7 +416,7 @@ const uint16_t char_2[]={
     0b1111111000000000
 
 };
-const uint16_t char_3[]={
+const DATA_FLASH uint16_t char_3[]={
     0b0111110000000000,
     0b1100011000000000,
     0b1100011000000000,
@@ -424,7 +430,7 @@ const uint16_t char_3[]={
 
 };
 
-const uint16_t char_4[]={
+const DATA_FLASH uint16_t char_4[]={
 
     0b0001110000000000,
     0b0011110000000000,
@@ -438,7 +444,7 @@ const uint16_t char_4[]={
     0b0011111000000000
 
 };
-const uint16_t char_5[]={
+const DATA_FLASH uint16_t char_5[]={
 
     0b1111111100000000,
     0b1100001100000000,
@@ -452,7 +458,7 @@ const uint16_t char_5[]={
     0b1111110000000000
 
 };
-const uint16_t char_6[]={
+const DATA_FLASH uint16_t char_6[]={
 
     0b0011110000000000,
     0b0110000000000000,
@@ -466,7 +472,7 @@ const uint16_t char_6[]={
     0b0111110000000000
 };
 
-const uint16_t char_7[]={
+const DATA_FLASH uint16_t char_7[]={
 
     0b1111111000000000,
     0b1100011000000000,
@@ -479,7 +485,7 @@ const uint16_t char_7[]={
     0b0001100000000000,
     0b0011000000000000  
 };
-const uint16_t char_8[]={
+const DATA_FLASH uint16_t char_8[]={
 
     0b0111110000000000,
     0b1100011000000000,
@@ -493,7 +499,7 @@ const uint16_t char_8[]={
     0b0111110000000000
 
 };
-const uint16_t char_9[]={
+const DATA_FLASH uint16_t char_9[]={
     0b0111110000000000,
     0b1100011000000000,
     0b1100011000000000,
@@ -506,7 +512,7 @@ const uint16_t char_9[]={
     0b0011100000000000
 };
 
-const uint16_t char_A[]={
+const DATA_FLASH uint16_t char_A[]={
 	0b0000110000000000,
     0b0001111000000000,
     0b0011111100000000,
@@ -519,7 +525,7 @@ const uint16_t char_A[]={
     0b1100000011000000,
 
 };
-const uint16_t char_N[]={
+const DATA_FLASH uint16_t char_N[]={
 
 
     0b1100001100000000,
@@ -533,7 +539,7 @@ const uint16_t char_N[]={
     0b1100001100000000,
     0b1100001100000000
 };
-const uint16_t char_S[]={
+const DATA_FLASH uint16_t char_S[]={
 
     0b0111110000000000,
     0b1100011000000000,
@@ -548,7 +554,7 @@ const uint16_t char_S[]={
 
 };
 
-const uint16_t char_M[]={
+const DATA_FLASH uint16_t char_M[]={
     0b1110000011100000,
     0b1111000111100000,
     0b1101101101100000,
@@ -560,7 +566,7 @@ const uint16_t char_M[]={
     0b1100000001100000,
     0b1100000001100000,
 };
-const uint16_t char_P[]={
+const DATA_FLASH uint16_t char_P[]={
     0b0111111000000000,
     0b1100001100000000,
     0b1100000110000000,
@@ -577,7 +583,7 @@ const uint16_t char_P[]={
 };
 
 
-const uint8_t table0len[]={
+const DATA_FLASH uint8_t table0len[]={
 
     ['0'] = 8,
     ['1'] = 8,
@@ -602,7 +608,7 @@ const uint8_t table0len[]={
 
 };
 
-const uint8_t tablehight[]={
+const  uint8_t tablehight[]={
     0,10,22
 };
 
@@ -639,7 +645,7 @@ const uint8_t *font_table0[] = {
  * Description: Characters size 2
  ******************************************************************************/
 
-const uint16_t zero_s2[]={
+const DATA_FLASH uint16_t zero_s2[]={
     
 	// @462 '0' (9 pixels wide)
 	0x00000, //          
@@ -665,7 +671,7 @@ const uint16_t zero_s2[]={
 	0x0000, //          
 	0x0000 //  
 };     
-const uint16_t one_s2[]={
+const DATA_FLASH uint16_t one_s2[]={
 
 	// @506 '1' (9 pixels wide)
 	0x0000, //          
@@ -691,7 +697,7 @@ const uint16_t one_s2[]={
 	0x0000, //          
 	0x0000 //          
 };
-const uint16_t two_s2[]={
+const DATA_FLASH uint16_t two_s2[]={
 
 	// @550 '2' (8 pixels wide)
 	0x0000, //         
@@ -717,7 +723,7 @@ const uint16_t two_s2[]={
 	0x0000, //         
 	0x0000 //         
 };
-const uint16_t three_s2[]={
+const DATA_FLASH uint16_t three_s2[]={
 
 	// @572 '3' (8 pixels wide)
 	0x0000, //         
@@ -743,7 +749,7 @@ const uint16_t three_s2[]={
 	0x0000, //         
 	0x0000 //         
 };
-const uint16_t four_s2[]={
+const DATA_FLASH uint16_t four_s2[]={
 
 	// @594 '4' (10 pixels wide)
 	0x0000, //           
@@ -769,7 +775,7 @@ const uint16_t four_s2[]={
 	0x0000, //           
 	0x0000 //           
 };
-const uint16_t five_s2[]={
+const DATA_FLASH uint16_t five_s2[]={
 
 	// @638 '5' (8 pixels wide)
 	0x0000, //         
@@ -795,7 +801,7 @@ const uint16_t five_s2[]={
 	0x0000, //         
 	0x0000 //         
 };
-const uint16_t six_s2[]={
+const DATA_FLASH uint16_t six_s2[]={
 
 	// @660 '6' (9 pixels wide)
 	0x0000, //          
@@ -821,7 +827,7 @@ const uint16_t six_s2[]={
 	0x0000, //          
 	0x0000 //          
 };
-const uint16_t seven_s2[]={
+const DATA_FLASH uint16_t seven_s2[]={
 
 	// @704 '7' (9 pixels wide)
 	0x0000, //          
@@ -847,7 +853,7 @@ const uint16_t seven_s2[]={
 	0x0000, //          
 	0x0000 //          
 };
-const uint16_t eight_s2[]={
+const DATA_FLASH uint16_t eight_s2[]={
 
 	// @748 '8' (9 pixels wide)
 	0x0000, //          
@@ -873,7 +879,7 @@ const uint16_t eight_s2[]={
 	0x0000, //          
 	0x0000 //          
 };
-const uint16_t nine_s2[]={
+const DATA_FLASH uint16_t nine_s2[]={
 
 	// @792 '9' (9 pixels wide)
 	0x0000, //          
@@ -900,7 +906,7 @@ const uint16_t nine_s2[]={
 	0x0000, //    
 };
 
-const uint16_t A_s2[]={
+const DATA_FLASH uint16_t A_s2[]={
 
 	// @1100 'A' (12 pixels wide)
 	0x0000, //             
@@ -926,7 +932,7 @@ const uint16_t A_s2[]={
 	0x0000, //             
 	0x0000, //             
 };
-const uint16_t B_s2[]={
+const DATA_FLASH uint16_t B_s2[]={
 
 	// @1144 'B' (9 pixels wide)
 	0x0000, //          
@@ -952,7 +958,7 @@ const uint16_t B_s2[]={
 	0x0000, //          
 	0x0000, //          
 };
-const uint16_t C_s2[]={
+const DATA_FLASH uint16_t C_s2[]={
 
 	// @1188 'C' (10 pixels wide)
 	0x0000, //           
@@ -978,7 +984,7 @@ const uint16_t C_s2[]={
 	0x0000, //           
 	0x0000, //           
 };
-const uint16_t D_s2[]={
+const DATA_FLASH uint16_t D_s2[]={
 
 	// @1232 'D' (11 pixels wide)
 	0x0000, //            
@@ -1004,7 +1010,7 @@ const uint16_t D_s2[]={
 	0x0000, //            
 	0x0000, //            
 };
-const uint16_t E_s2[]={
+const DATA_FLASH uint16_t E_s2[]={
 
 	// @1276 'E' (8 pixels wide)
 	0x0000, //         
@@ -1030,7 +1036,7 @@ const uint16_t E_s2[]={
 	0x0000, //         
 	0x0000 //         
 };
-const uint16_t F_s2[]={
+const DATA_FLASH uint16_t F_s2[]={
 
 	// @1298 'F' (8 pixels wide)
 	0x0000, //         
@@ -1056,7 +1062,7 @@ const uint16_t F_s2[]={
 	0x0000, //         
 	0x0000 //         
 };
-const uint16_t G_s2[]={
+const DATA_FLASH uint16_t G_s2[]={
 
 	// @1320 'G' (11 pixels wide)
 	0x0000, //            
@@ -1082,7 +1088,7 @@ const uint16_t G_s2[]={
 	0x0000, //            
 	0x0000 //            
 };
-const uint16_t H_s2[]={
+const DATA_FLASH uint16_t H_s2[]={
 
 	// @1364 'H' (10 pixels wide)
 	0x0000, //           
@@ -1108,7 +1114,7 @@ const uint16_t H_s2[]={
 	0x0000, //           
 	0x0000 //           
 };
-const uint16_t I_s2[]={
+const DATA_FLASH uint16_t I_s2[]={
 
 	// @1408 'I' (2 pixels wide)
 	0x0000, //   
@@ -1134,7 +1140,7 @@ const uint16_t I_s2[]={
 	0x0000, //   
 	0x0000, //   
 };
-const uint16_t J_s2[]={
+const DATA_FLASH uint16_t J_s2[]={
 
 	// @1430 'J' (5 pixels wide)
 	0x00, //      
@@ -1160,7 +1166,7 @@ const uint16_t J_s2[]={
 	0x00, //      
 	0x00, //      
 };
-const uint16_t K_s2[]={
+const DATA_FLASH uint16_t K_s2[]={
 
 	// @1452 'K' (11 pixels wide)
 	0x00, 0x00, //            
@@ -1186,7 +1192,7 @@ const uint16_t K_s2[]={
 	0x00, 0x00, //            
 	0x00, 0x00, //            
 };
-const uint16_t L_s2[]={
+const DATA_FLASH uint16_t L_s2[]={
 
 	// @1496 'L' (9 pixels wide)
 	0x00, 0x00, //          
@@ -1212,7 +1218,7 @@ const uint16_t L_s2[]={
 	0x00, 0x00, //          
 	0x00, 0x00, //          
 };
-const uint16_t M_s2[]={
+const DATA_FLASH uint16_t M_s2[]={
 
 	// @1540 'M' (13 pixels wide)
 	0x0000, //              
@@ -1238,7 +1244,7 @@ const uint16_t M_s2[]={
 	0x0000, //              
 	0x0000, //              
 };
-const uint16_t N_s2[]={
+const DATA_FLASH uint16_t N_s2[]={
 
 	// @1584 'N' (10 pixels wide)
 	0x0000, //           
@@ -1264,7 +1270,7 @@ const uint16_t N_s2[]={
 	0x0000, //           
 	0x0000 //           
 };
-const uint16_t O_s2[]={
+const DATA_FLASH uint16_t O_s2[]={
 
 	// @1628 'O' (12 pixels wide)
 	0x00, 0x00, //             
@@ -1290,7 +1296,7 @@ const uint16_t O_s2[]={
 	0x00, 0x00, //             
 	0x00, 0x00, //             
 };
-const uint16_t P_s2[]={
+const DATA_FLASH uint16_t P_s2[]={
 
 	// @1672 'P' (9 pixels wide)
 	0x00, 0x00, //          
@@ -1316,7 +1322,7 @@ const uint16_t P_s2[]={
 	0x00, 0x00, //          
 	0x00, 0x00, //          
 };
-const uint16_t Q_s2[]={
+const DATA_FLASH uint16_t Q_s2[]={
 
 	// @1716 'Q' (13 pixels wide)
 	0x00, 0x00, //              
@@ -1342,7 +1348,7 @@ const uint16_t Q_s2[]={
 	0x01, 0xF8, //        ######
 	0x00, 0x00, //              
 };
-const uint16_t R_s2[]={
+const DATA_FLASH uint16_t R_s2[]={
 
 	// @1760 'R' (10 pixels wide)
 	0x00, 0x00, //           
@@ -1368,7 +1374,7 @@ const uint16_t R_s2[]={
 	0x00, 0x00, //           
 	0x00, 0x00, //           
 };
-const uint16_t S_s2[]={
+const DATA_FLASH uint16_t S_s2[]={
 
 	// @1804 'S' (9 pixels wide)
 	0x0000, //          
@@ -1394,7 +1400,7 @@ const uint16_t S_s2[]={
 	0x0000, //          
 	0x0000, //          
 };
-const uint16_t T_s2[]={
+const DATA_FLASH uint16_t T_s2[]={
 
 	// @1848 'T' (12 pixels wide)
 	0x0000, //             
@@ -1420,7 +1426,7 @@ const uint16_t T_s2[]={
 	0x0000, //             
 	0x0000//             
 };
-const uint16_t U_s2[]={
+const DATA_FLASH uint16_t U_s2[]={
 
 	// @1892 'U' (10 pixels wide)
 	0x00, 0x00, //           
@@ -1446,7 +1452,7 @@ const uint16_t U_s2[]={
 	0x00, 0x00, //           
 	0x00, 0x00, //           
 };
-const uint16_t V_s2[]={
+const DATA_FLASH uint16_t V_s2[]={
 
 	// @1936 'V' (12 pixels wide)
 	0x00, 0x00, //             
@@ -1472,7 +1478,7 @@ const uint16_t V_s2[]={
 	0x00, 0x00, //             
 	0x00, 0x00, //             
 };
-const uint16_t W_s2[]={
+const DATA_FLASH uint16_t W_s2[]={
 
 	// @1980 'W' (17 pixels wide)
 	0x0000, //                  
@@ -1498,7 +1504,7 @@ const uint16_t W_s2[]={
 	0x0000,  //                  
 	0x0000 //                  
 };
-const uint16_t X_s2[]={
+const DATA_FLASH uint16_t X_s2[]={
 
 	// @2046 'X' (11 pixels wide)
 	0x00, 0x00, //            
@@ -1524,7 +1530,7 @@ const uint16_t X_s2[]={
 	0x00, 0x00, //            
 	0x00, 0x00, //            
 };
-const uint16_t Y_s2[]={
+const DATA_FLASH uint16_t Y_s2[]={
 
 	// @2090 'Y' (12 pixels wide)
 	0x00, 0x00, //             
@@ -1550,7 +1556,7 @@ const uint16_t Y_s2[]={
 	0x00, 0x00, //             
 	0x00, 0x00, //             
 };
-const uint16_t Z_s2[]={
+const DATA_FLASH uint16_t Z_s2[]={
 
 	// @2134 'Z' (10 pixels wide)
 	0x00, 0x00, //           
@@ -1579,7 +1585,7 @@ const uint16_t Z_s2[]={
 };
 
 
-const uint16_t a_s2[]={
+const DATA_FLASH uint16_t a_s2[]={
 
 	// @2354 'a' (8 pixels wide)
 	0x0000, //         
@@ -1605,7 +1611,7 @@ const uint16_t a_s2[]={
 	0x0000, //         
 	0x0000, //         
 };
-const uint16_t b_s2[]={
+const DATA_FLASH uint16_t b_s2[]={
 
 	// @2376 'b' (9 pixels wide)
 	0x0000, //          
@@ -1631,7 +1637,7 @@ const uint16_t b_s2[]={
 	0x0000, //          
 	0x0000, //          
 };
-const uint16_t c_s2[]={
+const DATA_FLASH uint16_t c_s2[]={
 
 	// @2420 'c' (8 pixels wide)
 	0x0000, //         
@@ -1657,7 +1663,7 @@ const uint16_t c_s2[]={
 	0x0000, //         
 	0x0000, //         
 };
-const uint16_t d_s2[]={
+const DATA_FLASH uint16_t d_s2[]={
 
 	// @2442 'd' (9 pixels wide)
 	0x0000, //          
@@ -1683,7 +1689,7 @@ const uint16_t d_s2[]={
 	0x0000, //          
 	0x0000, //          
 };
-const uint16_t e_s2[]={
+const DATA_FLASH uint16_t e_s2[]={
 
 	// @2486 'e' (9 pixels wide)
 	0x0000, //          
@@ -1709,7 +1715,7 @@ const uint16_t e_s2[]={
 	0x0000, //          
 	0x0000, //          
 };
-const uint16_t f_s2[]={
+const DATA_FLASH uint16_t f_s2[]={
 
 	// @2530 'f' (7 pixels wide)
 	0x0000, //        
@@ -1735,7 +1741,7 @@ const uint16_t f_s2[]={
 	0x0000, //        
 	0x0000, //        
 };
-const uint16_t g_s2[]={
+const DATA_FLASH uint16_t g_s2[]={
 
 	// @2552 'g' (9 pixels wide)
 	0x0000, //          
@@ -1761,7 +1767,7 @@ const uint16_t g_s2[]={
 	0x3E00, //   #####  
 	0x0000, //          
 };
-const uint16_t h_s2[]={
+const DATA_FLASH uint16_t h_s2[]={
 
 	// @2596 'h' (9 pixels wide)
 	0x0000, //         
@@ -1787,7 +1793,7 @@ const uint16_t h_s2[]={
 	0x0000, //         
 	0x0000, //         
 };
-const uint16_t i_s2[]={
+const DATA_FLASH uint16_t i_s2[]={
 
 	// @2618 'i' (2 pixels wide)
 	0x0000, //   
@@ -1813,7 +1819,7 @@ const uint16_t i_s2[]={
 	0x0000, //   
 	0x0000, //   
 };
-const uint16_t j_s2[]={
+const DATA_FLASH uint16_t j_s2[]={
 
 	// @2640 'j' (4 pixels wide)
 	0x0000, //     
@@ -1839,7 +1845,7 @@ const uint16_t j_s2[]={
 	0xE000, // ### 
 	0x0000, //     
 };
-const uint16_t k_s2[]={
+const DATA_FLASH uint16_t k_s2[]={
 
 	// @2662 'k' (9 pixels wide)
 	0x00, 0x00, //          
@@ -1865,7 +1871,7 @@ const uint16_t k_s2[]={
 	0x00, 0x00, //          
 	0x00, 0x00, //          
 };
-const uint16_t l_s2[]={
+const DATA_FLASH uint16_t l_s2[]={
 
 	// @2706 'l' (4 pixels wide)
 	0x00, //     
@@ -1891,7 +1897,7 @@ const uint16_t l_s2[]={
 	0x00, //     
 	0x00, //     
 };
-const uint16_t m_s2[]={
+const DATA_FLASH uint16_t m_s2[]={
 
 	// @2728 'm' (14 pixels wide)
 	0x00, 0x00, //               
@@ -1917,7 +1923,7 @@ const uint16_t m_s2[]={
 	0x00, 0x00, //               
 	0x00, 0x00, //               
 };
-const uint16_t n_s2[]={
+const DATA_FLASH uint16_t n_s2[]={
 
 	// @2772 'n' (8 pixels wide)
 	0x0000, //         
@@ -1943,7 +1949,7 @@ const uint16_t n_s2[]={
 	0x0000, //         
 	0x0000, //         
 };
-const uint16_t o_s2[]={
+const DATA_FLASH uint16_t o_s2[]={
 
 	// @2794 'o' (9 pixels wide)
 	0x0000, //          
@@ -1969,7 +1975,7 @@ const uint16_t o_s2[]={
 	0x0000, //          
 	0x0000 //          
 };
-const uint16_t p_s2[]={
+const DATA_FLASH uint16_t p_s2[]={
 
 	// @2838 'p' (9 pixels wide)
 	0x00, 0x00, //          
@@ -1995,7 +2001,7 @@ const uint16_t p_s2[]={
 	0xC0, 0x00, // ##       
 	0x00, 0x00, //          
 };
-const uint16_t q_s2[]={
+const DATA_FLASH uint16_t q_s2[]={
 
 	// @2882 'q' (9 pixels wide)
 	0x00, 0x00, //          
@@ -2021,7 +2027,7 @@ const uint16_t q_s2[]={
 	0x01, 0x80, //        ##
 	0x00, 0x00, //          
 };
-const uint16_t r_s2[]={
+const DATA_FLASH uint16_t r_s2[]={
 
 	// @2926 'r' (6 pixels wide)
 	0x0000, //       
@@ -2047,7 +2053,7 @@ const uint16_t r_s2[]={
 	0x0000, //       
 	0x0000, //       
 };
-const uint16_t s_s2[]={
+const DATA_FLASH uint16_t s_s2[]={
 
 	// @2948 's' (7 pixels wide)
 	0x0000, //        
@@ -2073,7 +2079,7 @@ const uint16_t s_s2[]={
 	0x0000, //        
 	0x0000 //        
 };
-const uint16_t t_s2[]={
+const DATA_FLASH uint16_t t_s2[]={
 
 	// @2970 't' (7 pixels wide)
 	0x0000, //        
@@ -2099,7 +2105,7 @@ const uint16_t t_s2[]={
 	0x0000, //        
 	0x0000, //        
 };
-const uint16_t u_s2[]={
+const DATA_FLASH uint16_t u_s2[]={
 
 	// @2992 'u' (8 pixels wide)
 	0x0000, //         
@@ -2125,7 +2131,7 @@ const uint16_t u_s2[]={
 	0x0000, //         
 	0x0000, //         
 };
-const uint16_t v_s2[]={
+const DATA_FLASH uint16_t v_s2[]={
 
 	// @3014 'v' (10 pixels wide)
 	0x0000, //           
@@ -2151,7 +2157,7 @@ const uint16_t v_s2[]={
 	0x0000, //           
 	0x0000  //           
 };
-const uint16_t w_s2[]={
+const DATA_FLASH uint16_t w_s2[]={
 
 	// @3058 'w' (16 pixels wide)
 	0x0000, //                 
@@ -2177,7 +2183,7 @@ const uint16_t w_s2[]={
 	0x0000, //                 
 	0x0000, //                 
 };
-const uint16_t x_s2[]={
+const DATA_FLASH uint16_t x_s2[]={
 
 	// @3102 'x' (10 pixels wide)
 	0x0000, //           
@@ -2203,7 +2209,7 @@ const uint16_t x_s2[]={
 	0x0000, //           
 	0x0000, //           
 };
-const uint16_t y_s2[]={
+const DATA_FLASH uint16_t y_s2[]={
 
 	// @3146 'y' (10 pixels wide)
 	0x0000, //           
@@ -2229,7 +2235,7 @@ const uint16_t y_s2[]={
 	0x7000, //  ###      
 	0x0000, //           
 };
-const uint16_t z_s2[]={
+const DATA_FLASH uint16_t z_s2[]={
 
 	// @3190 'z' (7 pixels wide)
 	0x0000, //        
@@ -2256,7 +2262,7 @@ const uint16_t z_s2[]={
 	0x0000, //        
 };
 
-const uint16_t signedNeg[]={
+const DATA_FLASH uint16_t signedNeg[]={
 
     0x0000, //      
 	0x0000, //      
@@ -2283,7 +2289,7 @@ const uint16_t signedNeg[]={
 
 };
 
-const uint16_t space[]={
+const DATA_FLASH uint16_t space[]={
 
 	0x0000, //   
 	0x0000, //   

@@ -29,6 +29,10 @@
 #define     PATH            "/CloudSocket-Dev/websocket/"
 
 
+
+#define DATA_FLASH __attribute__((section(".rodata")))
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif

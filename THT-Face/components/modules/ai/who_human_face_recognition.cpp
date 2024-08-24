@@ -175,27 +175,6 @@ bool copy_rectangle(const camera_fb_t *src, imageData_t **dst, int x_start, int 
 
 
 
-void editImage(imageData_t *buff ){
-
-
-    printf("\nDetection Image info: %3d %3d %3d %3d", boxPosition[0], boxPosition[1], boxPosition[2], boxPosition[3]);
-    printf("\nCppy Image Info  %3d %3d %3d", buff->len, buff->width, buff->height);
-
-    // for (uint8_t y = 0; y < buff->width; y++)
-    // {
-    //     for (uint16_t x = 0; x < buff->len; x++)
-    //     {
-    //         int index = (y *buff->width + x) * 2; // Assuming 2 bytes per pixel
-
-    //         buff->buf[index] = 0xff;
-    //         buff->buf[index + 1] = 0xff;
-        
-    //     }
-    // }
-
-}
-
-
 
 static void task_process_handler(void *arg)
 {
@@ -266,7 +245,7 @@ static void task_process_handler(void *arg)
                     switch (_gEvent)
                     {
                     case ENROLL:{
-
+                        CPUBgflag=1;
                         // vTaskDelay(10);
                         // duplicate 
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);

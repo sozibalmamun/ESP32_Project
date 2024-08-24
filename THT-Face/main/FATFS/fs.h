@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <inttypes.h>
+#include <dirent.h>  // For directory traversal
+#include <stdint.h>  // For standard integer types
+#include <stdbool.h> // For boolean type
 #include "esp_log.h"
 #include "esp_vfs_fat.h"
 #include "wear_levelling.h"
@@ -27,7 +30,7 @@
 
 static wl_handle_t s_wl_handle = WL_INVALID_HANDLE;
 
-#define  FACE_DIRECTORIES "/fatfs/faces"
+#define  FACE_DIRECTORY "/fatfs/faces"
 #define  ATTENDANCE_DIR  "/fatfs/log"
 
 

@@ -136,7 +136,7 @@ bool stompSend(char * buff, char* topic){
 
     uint16_t currentIndex=0;
     uint16_t buffLen =strlen(buff);
-    ESP_LOGI(TAGSTOMP, "Sending  total chank :%d\n", (int)ceil(buffLen/CHANK_SIZE)>1?(int)ceil(buffLen/CHANK_SIZE):1);
+    ESP_LOGW(TAGSTOMP, "Sending  total chank :%d\n", (int)ceil(buffLen/CHANK_SIZE)>1?(int)ceil(buffLen/CHANK_SIZE):1);
     do{
         memset(tempFrame,0,sizeof(tempFrame));
         if(buffLen<=CHANK_SIZE){
@@ -193,12 +193,13 @@ bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name
     char tempFrame[(CHANK_SIZE * 2) + 1]; // +1 for null-terminator
     memset(tempFrame,0,sizeof(tempFrame));
     uint16_t currentIndex=0;
-    ESP_LOGI(TAGSTOMP, "Sending  total chank :%d\n", (int)ceil(buffLen/CHANK_SIZE)+1);
+    ESP_LOGW(TAGSTOMP, "Sending len:%d total chank :%d \n",buffLen, (int)ceil(buffLen/CHANK_SIZE)+1);
 
     // sent image info
     char imageInfo[30];
     snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d",buffLen, h, w, name, id);
     stompSend(imageInfo,topic);
+
 
     do{
 

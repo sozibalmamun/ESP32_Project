@@ -28,7 +28,7 @@ static const char *TAG = "app_main";
 
 static QueueHandle_t xQueueAIFrame = NULL;
 static QueueHandle_t xQueueLCDFrame = NULL;
-static QueueHandle_t xQueueKeyState = NULL;
+// static QueueHandle_t xQueueKeyState = NULL;
 static QueueHandle_t xQueueEventLogic = NULL;
 
 static QueueHandle_t xQueueCloud = NULL;
@@ -57,26 +57,20 @@ void app_main()
 
     xQueueAIFrame = xQueueCreate(2, sizeof(camera_fb_t *));
     xQueueLCDFrame = xQueueCreate(2, sizeof(camera_fb_t *));
-    xQueueKeyState = xQueueCreate(1, sizeof(int *));
+    // xQueueKeyState = xQueueCreate(1, sizeof(int *));
     xQueueEventLogic = xQueueCreate(1, sizeof(int *));
 
     xQueueCloud = xQueueCreate(3, sizeof(int *));
 
 
 
-    if (xQueueAIFrame == NULL || xQueueLCDFrame == NULL || xQueueKeyState == NULL || xQueueEventLogic == NULL) {
+    if (xQueueAIFrame == NULL || xQueueLCDFrame == NULL ||/* xQueueKeyState == NULL ||*/ xQueueEventLogic == NULL) {
         ESP_LOGE(TAG, "Failed to create queues");
         esp_restart();
     }
     
-    // register_button(GPIO_BOOT, xQueueKeyState);//core 0
-    register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);//core 1
-    // register_adc_button(buttons, 4, xQueueKeyState);//core 0
-    // register_event(xQueueKeyState, xQueueEventLogic);//core 0
-    
-    register_event(xQueueKeyState, xQueueEventLogic);//core 0
-
-
+    register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);//core 1    
+    register_event(xQueueEventLogic);//core 0
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false); //core 1+1
 
     cloudHandel(xQueueCloud);// core 0

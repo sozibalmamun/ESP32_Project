@@ -2,91 +2,54 @@
 #include "event_logic.hpp"
 #include "who_button.h"
 #include "who_human_face_recognition.hpp"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
 
-typedef enum
-{
+typedef enum {
     MENU = 1,
     PLAY,
     UP,
     DOWN
-}key_name_t;
+} key_name_t;
 
-static QueueHandle_t xQueueKeyStateI = NULL;
 static QueueHandle_t xQueueEventO = NULL;
 static key_state_t key_state;
-static key_name_t adc_button_name;
 static recognizer_state_t recognizer_state;
 
 extern volatile uint8_t sleepEnable;
 extern volatile TickType_t sleepTimeOut; 
+extern volatile uint8_t eventState=0; // Ensure this is declared and managed correctly elsewhere
 
+void event_generate(void *arg) {
+    while (1) {
+        // No longer using xQueueReceive, directly using eventState
+        switch (eventState) {
+            case KEY_SHORT_PRESS:
+                // recognizer_state = RECOGNIZE;
+                // sleepTimeOut = xTaskGetTickCount(); // Update timeout to prevent sleep
+                // sleepEnable = false;
+                break;
 
-void event_generate(void *arg)
-{
-    while (1)
-    {
-        xQueueReceive(xQueueKeyStateI, &key_state, portMAX_DELAY);
-        switch (key_state)
-        {
-        case KEY_SHORT_PRESS:
-            recognizer_state = RECOGNIZE;
-            // disable sleep by button--------
-            sleepTimeOut = xTaskGetTickCount();
-            sleepEnable=false;
-            //--------------------------------
-            break;
+            case KEY_LONG_PRESS:
+                recognizer_state = ENROLL;
+                break;
 
-        case KEY_LONG_PRESS:
-            recognizer_state = ENROLL;
-            break;
+            case KEY_DOUBLE_CLICK:
+                recognizer_state = DELETE;
+                break;
 
-        case KEY_DOUBLE_CLICK:
-            recognizer_state = DELETE;
-            break;
-
-        default:
-            recognizer_state = DETECT;
-            break;
+            default:
+                recognizer_state = RECOGNIZE;
+                break;
         }
-        xQueueSend(xQueueEventO, &recognizer_state, portMAX_DELAY);
+
+        xQueueSend(xQueueEventO, &recognizer_state, portMAX_DELAY); // Send the recognizer state to the output queue
+        vTaskDelay(pdMS_TO_TICKS(10)); // Add a small delay to prevent task hogging CPU
     }
 }
 
-
-void event_generate_from_adc_button(void *arg)
-{
-    while (1)
-    {
-        xQueueReceive(xQueueKeyStateI, &adc_button_name, portMAX_DELAY);
-        switch (adc_button_name)
-        {
-        case MENU:
-            recognizer_state = ENROLL;
-            break;
-
-        case PLAY:
-            recognizer_state = DELETE;
-            break;
-
-        case UP:
-            recognizer_state = RECOGNIZE;
-            break;
-
-        case DOWN:
-            recognizer_state = RECOGNIZE;
-            break;
-
-        default:
-            recognizer_state = DETECT;
-            break;
-        }
-        xQueueSend(xQueueEventO, &recognizer_state, portMAX_DELAY);
-    }
-}
-
-void register_event(const QueueHandle_t key_state_i, const QueueHandle_t event_o)
-{
-    xQueueKeyStateI = key_state_i;
+void register_event(const QueueHandle_t event_o) {
     xQueueEventO = event_o;
     xTaskCreatePinnedToCore(event_generate, "event_logic_task", 1024, NULL, 1, NULL, 0);
 }

@@ -228,18 +228,18 @@ static void task_process_handler(void *arg)
 
 
                 }
-                // else if(CmdEnroll==ENROLING){
+                else if(CmdEnroll==ENROLING){
                     
-                //     rgb_printf(frame, RGB565_MASK_GREEN, "Start Enroling");// debug due to display name
+                    rgb_printf(frame, RGB565_MASK_GREEN, "Start Enroling");// debug due to display name
 
-                // }else if(CmdEnroll==DELETE_CMD){// deleting person 
+                }else if(CmdEnroll==DELETE_CMD){// deleting person 
 
-                //     // rgb_printf(frame, RGB565_MASK_GREEN, "Start Deliting id%d",personId);// debug due to display name
-                //     _gEvent=DELETE;
-                //     is_detected = true;
-                //     // ESP_LOGE("DELETE", "% d ID:",personId );
+                    // rgb_printf(frame, RGB565_MASK_GREEN, "Start Deliting id%d",personId);// debug due to display name
+                    _gEvent=DELETE;
+                    is_detected = true;
+                    // ESP_LOGE("DELETE", "% d ID:",personId );
 
-                // }
+                }
 
             
                 if (is_detected)

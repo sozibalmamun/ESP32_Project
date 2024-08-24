@@ -43,6 +43,7 @@
 extern volatile uint8_t CmdEnroll;
 extern char personName[20];
 extern uint16_t personId;
+volatile uint8_t eventState;
 
 // volatile uint8_t  CmdEnroll=IDLEENROL;
 // char personName[20];
@@ -164,6 +165,7 @@ void process_command(const char* buffer) {
                 
                 CmdEnroll = DELETE_CMD;
                 // idDeletingOngoing();
+                eventState=3;
                 return;
             }
 

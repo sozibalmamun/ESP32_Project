@@ -10,4 +10,4 @@
  * @param key_state_i 
  * @param event_o 
  */
-void register_event(const QueueHandle_t key_state_i, const QueueHandle_t event_o);
+void register_event( const QueueHandle_t event_o);

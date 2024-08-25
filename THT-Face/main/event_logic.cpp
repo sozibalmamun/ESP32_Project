@@ -14,38 +14,51 @@ typedef enum {
 } key_name_t;
 
 static QueueHandle_t xQueueEventO = NULL;
-static key_state_t key_state;
+key_state_t key_state ;
 static recognizer_state_t recognizer_state;
 
 extern volatile uint8_t sleepEnable;
 extern volatile TickType_t sleepTimeOut; 
-extern volatile uint8_t eventState=0; // Ensure this is declared and managed correctly elsewhere
+// extern uint8_t volatile eventState;
 
 void event_generate(void *arg) {
+
     while (1) {
-        // No longer using xQueueReceive, directly using eventState
-        switch (eventState) {
+
+
+
+//     KEY_SHORT_PRESS = 1, recg 1
+//     KEY_LONG_PRESS,      enroll 2
+//     KEY_DOUBLE_CLICK,    delete 3
+
+
+        switch (key_state) {
+
             case KEY_SHORT_PRESS:
                 // recognizer_state = RECOGNIZE;
-                // sleepTimeOut = xTaskGetTickCount(); // Update timeout to prevent sleep
-                // sleepEnable = false;
+
                 break;
 
             case KEY_LONG_PRESS:
                 recognizer_state = ENROLL;
+                // eventState=0;
+
                 break;
 
             case KEY_DOUBLE_CLICK:
                 recognizer_state = DELETE;
+
                 break;
 
             default:
-                recognizer_state = RECOGNIZE;
+                recognizer_state = DETECT;
+                // eventState=0;
                 break;
         }
 
         xQueueSend(xQueueEventO, &recognizer_state, portMAX_DELAY); // Send the recognizer state to the output queue
-        vTaskDelay(pdMS_TO_TICKS(10)); // Add a small delay to prevent task hogging CPU
+
+        // vTaskDelay(pdMS_TO_TICKS(10)); // Add a small delay to prevent task hogging CPU
     }
 }
 

@@ -6,6 +6,7 @@
 
 static const char *TAG = "CLOUD";
 uint8_t CPUBgflag;
+extern  volatile uint8_t CmdEnroll;
 
 static QueueHandle_t xQueueCloudI = NULL;
 
@@ -65,7 +66,10 @@ static void attendanceHandlerTask(void *arg)
         // Process attendance files
         if(wifiStatus==2 && CPUBgflag==0){
             process_attendance_files();
-            process_and_send_faces("/app/cloud");
+            process_and_send_faces("/app/cloud"); 
+            if(CmdEnroll!=IDLEENROL)eventFeedback();
+
+
         }
         vTaskDelay(xDelay);
 

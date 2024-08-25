@@ -1,6 +1,7 @@
 
 
 #include "enrol.h"
+#include "who_button.h"
 
 #define TIMEOUT_50_MS         5
 #define TIMEOUT_100_MS        10
@@ -30,28 +31,20 @@
 #define     TAG_ENROL       "ENROL"
 
 
-#define IDLEENROL               0
-#define ENROLING                0x01
-#define ENROLED                 0x02
-#define DUPLICATE               0x03
+// #define IDLEENROL               0
+// #define ENROLING                0x01
+// #define ENROLED                 0x02
+// #define DUPLICATE               0x03
 
-#define DELETE_CMD              0X04
-#define DELETED                 0X05
-#define ID_INVALID              0X06
+// #define DELETE_CMD              0X04
+// #define DELETED                 0X05
+// #define ID_INVALID              0X06
 
 
 extern volatile uint8_t CmdEnroll;
 extern char personName[20];
 extern uint16_t personId;
-volatile uint8_t eventState;
-
-// volatile uint8_t  CmdEnroll=IDLEENROL;
-// char personName[20];
-// uint16_t personId;
-extern bool stompSend(char * buff, char* topic);
-
-
-
+extern key_state_t key_state;
 TickType_t erolTimeOut;
 
 
@@ -128,7 +121,7 @@ void process_command(const char* buffer) {
         uint16_t tempid= chartou16(id);
         // uint16_t tempid= 1;
 
-        printf("id  hex: %x\n",tempid);
+        // printf("id  hex: %x\n",tempid);
 
 
         // Extract the 2-character CRC
@@ -139,11 +132,11 @@ void process_command(const char* buffer) {
         const char* end_cmd_pos = strstr(buffer, "cmdend");
         if (end_cmd_pos != NULL) {
             // Data reception complete, print information
-            uint16_t rxCrc = chartou16(crc_str);
-            printf("  - CRC RCV: %x\n",rxCrc);
+            // uint16_t rxCrc = chartou16(crc_str);
+            // printf("  - CRC RCV: %x\n",rxCrc);
 
-            uint16_t calculated_crc = getCRC16(tempid);
-            printf("  - CRC16 CALCULATED: %x\n", calculated_crc);
+            // uint16_t calculated_crc = getCRC16(tempid);
+            // printf("  - CRC16 CALCULATED: %x\n", calculated_crc);
 
             // personId= tempid;
             personId= 1;// for test delete person by there id
@@ -151,23 +144,26 @@ void process_command(const char* buffer) {
 
 
 
-            if (calculated_crc == rxCrc) {
+            // if (calculated_crc == rxCrc) {
 
-                // CmdEnroll = DELETE_CMD;
-                // printf("CRC check passed.\n");
-                // printf("  - Name: %s\n", id);
-                // idDeletingOngoing();
+            //     // CmdEnroll = DELETE_CMD;
+            //     // printf("CRC check passed.\n");
+            //     // printf("  - Name: %s\n", id);
+            //     // idDeletingOngoing();
 
+//     KEY_SHORT_PRESS = 1,
+//     KEY_LONG_PRESS,
+//     KEY_DOUBLE_CLICK,
 
-                return;
-            } else {
-                printf("CRC check failed.\n");
+            //     return;
+            // } else {
+                printf("cmddl.\n");
                 
-                CmdEnroll = DELETE_CMD;
+                // CmdEnroll = DELETE_CMD;
+                key_state=KEY_DOUBLE_CLICK;
                 // idDeletingOngoing();
-                eventState=3;
                 return;
-            }
+            // }
 
         }
     }
@@ -227,11 +223,7 @@ void enrolOngoing(void){
         }
 }
 
-void idDeletingOngoing(void){
-    bool cmd=true;
-    while(cmd){
-
-
+void eventFeedback(void){
 
         if(CmdEnroll==DELETED){
 
@@ -241,7 +233,6 @@ void idDeletingOngoing(void){
             } else {
                 ESP_LOGI(TAG_ENROL, "back to idle mode\n");
                 CmdEnroll = IDLEENROL;
-                cmd=false;
             }
 
         }else if(CmdEnroll==ID_INVALID){
@@ -252,14 +243,7 @@ void idDeletingOngoing(void){
             } else {
                 ESP_LOGI(TAG_ENROL, "back to idle mode\n");
                 CmdEnroll = IDLEENROL;
-                cmd=false;
             }
 
-        }else {
-
-            // ESP_LOGI(TAG_ENROL, "wait for idle mode\n");
-
         }
-    }
-
 }

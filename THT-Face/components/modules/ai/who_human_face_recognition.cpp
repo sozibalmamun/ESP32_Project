@@ -8,6 +8,9 @@
 #include "human_face_detect_mnp01.hpp"
 #include "face_recognition_tool.hpp"
 
+#include "who_button.h"
+
+
 #if CONFIG_MFN_V1
 #if CONFIG_S8
 #include "face_recognition_112_v1_s8.hpp"
@@ -18,6 +21,8 @@
 
 #include "who_ai_utils.hpp"
 #include "CloudDataHandle.h"
+
+extern key_state_t key_state;
 
 
 uint8_t boxPosition[5];
@@ -80,15 +85,12 @@ typedef enum
 #define RGB565_MASK_BLUE 0x001F
 #define FRAME_DELAY_NUM 16
 
-//-------------------------------------
-
-//-------------------------------------
 
 static void rgb_print(camera_fb_t *fb, uint32_t color, const char *str)
 {
     // fb_gfx_print(fb, (fb->width - (strlen(str) * 14)) / 2, 10, color, str);// old
 
-        fb_gfx_print(fb, (fb->width - (strlen(str) * 14)) / 2, 195, color, str);// edited
+        fb_gfx_print(fb, (fb->width - (strlen(str) * 14)) / 2, 200, color, str);// edited
 
 }
 
@@ -179,8 +181,8 @@ bool copy_rectangle(const camera_fb_t *src, imageData_t **dst, int x_start, int 
 
 static void task_process_handler(void *arg)
 {
+
     camera_fb_t *frame = NULL;
-    imageData_t *cropFrame = NULL;
 
 
     HumanFaceDetectMSR01 detector(0.3F, 0.3F, 10, 0.3F);
@@ -211,37 +213,30 @@ static void task_process_handler(void *arg)
 
             if (xQueueReceive(xQueueFrameI, &frame, portMAX_DELAY))
             {
+
+
+
                 std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3});
                 std::list<dl::detect::result_t> &detect_results = detector2.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_candidates);
+
+                if(_gEvent==DELETE){// deleting person 
+
+                    if(personId!=0){
+                        is_detected= true;
+                        key_state= KEY_IDLE;
+                        ESP_LOGW("DELETE", "% d ID:",personId );
+                    }
+                    
+                }else if(_gEvent==DETECT){
+
+                    if (detect_results.size() == 1){
+                        is_detected = true;
+                        _gEvent=RECOGNIZE;
+                                
+                    }
+
+                }
                 
-                if (detect_results.size() == 1){
-                    is_detected = true;
-                    
-                //    if(CmdEnroll==IDLEENROL)_gEvent = RECOGNIZE;// due to no button for recognize
-
-                //    if(CmdEnroll==ENROLING)_gEvent=ENROLL;// 1 for enroling 
-
-                   //---------------sleep weakup------------
-                    // sleepTimeOut = xTaskGetTickCount();
-                    // sleepEnable = false;
-                    //--------------------------------------
-
-
-                }
-                else if(CmdEnroll==ENROLING){
-                    
-                    rgb_printf(frame, RGB565_MASK_GREEN, "Start Enroling");// debug due to display name
-
-                }else if(CmdEnroll==DELETE_CMD){// deleting person 
-
-                    // rgb_printf(frame, RGB565_MASK_GREEN, "Start Deliting id%d",personId);// debug due to display name
-                    _gEvent=DELETE;
-                    is_detected = true;
-                    // ESP_LOGE("DELETE", "% d ID:",personId );
-
-                }
-
-            
                 if (is_detected)
                 {
                     switch (_gEvent)
@@ -262,6 +257,8 @@ static void task_process_handler(void *arg)
 
 
                         //----------------------------working with image--------------------------
+                        imageData_t *cropFrame = NULL;
+
                         print_detection_result(detect_candidates);
                         draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
                         if(!copy_rectangle(frame,&cropFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]))
@@ -275,14 +272,13 @@ static void task_process_handler(void *arg)
 
                         // recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
                         recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, personName, true);// due to add name
-                        ESP_LOGW("ENROLL", "ID %d is enrolled", recognizer->get_enrolled_ids().back().id);
+                        // ESP_LOGW("ENROLL", "ID %d is enrolled", recognizer->get_enrolled_ids().back().id);
 
                         //-------------------------pass value to struc via task----------------------------
                        // printf("\nCopy Image Info  L:%3d w:%3d h:%3d", cropFrame->len, cropFrame->width, cropFrame->height);
 
                         cropFrame->id= recognizer->get_enrolled_ids().back().id;
-                        cropFrame->Name= "personName";
-
+                        cropFrame->Name= personName;
 
 
                         if (xQueueCloud) {
@@ -294,9 +290,6 @@ static void task_process_handler(void *arg)
 
 
                         //---------------------------------------------------------------------------------
-
-
-
 
                         frame_show_state = SHOW_STATE_ENROLL;
                         break;
@@ -331,28 +324,28 @@ static void task_process_handler(void *arg)
 
                         }
                         else
-                            ESP_LOGE("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
+                            // ESP_LOGE("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
                         frame_show_state = SHOW_STATE_RECOGNIZE;
                         break;
                     }
                     case DELETE:
-                        vTaskDelay(10);
+                        // vTaskDelay(10);
                         // recognizer->delete_id(true);
-                        // if(recognizer->delete_id(personId,true)== -1 ){// invalide id if "-1"// custom id delete logic
-                        if(recognizer->delete_id(true)== -1 ){// invalide id if "-1"
+                        if(recognizer->delete_id(personId,true)== -1 ){// invalide id if "-1"// custom id delete logic
+                        // if(recognizer->delete_id(true)== -1 ){// invalide id if "-1"
 
 
                             ESP_LOGE("DELETE", "% d IDs invalided", personId);
-                            // CmdEnroll=ID_INVALID; // delete done 
+                            CmdEnroll=ID_INVALID; // delete done 
 
                         }else{
 
-                            // CmdEnroll=DELETED;// delete done
+                            CmdEnroll=DELETED;// delete done
                             ESP_LOGE("DELETE", "% d IDs left", personId);
 
                         }
-
                         // ESP_LOGE("DELETE", "% d IDs left", recognizer->get_enrolled_id_num());
+
                         frame_show_state = SHOW_STATE_DELETE;
                         break;
 
@@ -370,10 +363,9 @@ static void task_process_handler(void *arg)
                         // rgb_printf(frame, RGB565_MASK_RED, "%d IDs left", recognizer->get_enrolled_id_num());   #define ID_INVALID      0X06
                         if(CmdEnroll==DELETED){
 
-                            rgb_printf(frame, RGB565_MASK_RED, "%d IDs left", personId);
+                            rgb_printf(frame, RGB565_MASK_RED, "Deleted Id: %d", personId);
 
-                        }else rgb_printf(frame, RGB565_MASK_RED, "%d IDs invalided", personId);
-
+                        }else //rgb_printf(frame, RGB565_MASK_RED, "%d IDs invalided", personId);
                         personId=0;// deafalt for test
 
                         break;
@@ -381,11 +373,11 @@ static void task_process_handler(void *arg)
                     case SHOW_STATE_RECOGNIZE:
                         if (recognize_result.id > 0){
                             // rgb_printf(frame, RGB565_MASK_GREEN, "ID %d", recognize_result.id);
-                            rgb_printf(frame, RGB565_MASK_GREEN, "ID %d Name %s", recognize_result.id,recognize_result.name.c_str());// debug due to display name
+                            rgb_printf(frame, RGB565_MASK_GREEN, "Welcome %s",recognize_result.name.c_str());// debug due to display name
                         }
                         else{
-                            rgb_print(frame, RGB565_MASK_RED, "who ?");
-                            ESP_LOGI(TAG,"\nWho ?");
+                            rgb_print(frame, RGB565_MASK_RED, "Unregister");
+                            ESP_LOGI(TAG,"Not Recognize");
                             }
                         break;
 
@@ -416,6 +408,10 @@ static void task_process_handler(void *arg)
                     {
                         frame_count = 0;
                         frame_show_state = SHOW_STATE_IDLE;
+                    }else if( frame_show_state==SHOW_STATE_RECOGNIZE){
+                        frame_count = 0;
+                        frame_show_state = SHOW_STATE_IDLE;
+
                     }
                 }
 

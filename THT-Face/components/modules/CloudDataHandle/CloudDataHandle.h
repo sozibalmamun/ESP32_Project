@@ -8,6 +8,7 @@
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 #include "timeLib.h"
+#include "globalScope.h"
 
 
 #define  ATTENDANCE_DIR  "/fatfs/log"
@@ -44,7 +45,10 @@ bool process_and_send_faces(const char* topic);
 void print_memory_status(void);
 void format_fatfs(void);
 void process_attendance_files(void);
-//---------------------------------------------------------------------
+//----------------event feedback--------------------------------------------------
+void eventFeedback(void);
+
+
 
 #ifdef __cplusplus
 }

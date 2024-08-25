@@ -5,7 +5,8 @@
 
 typedef enum
 {
-    KEY_SHORT_PRESS = 1,
+    KEY_IDLE,
+    KEY_SHORT_PRESS ,
     KEY_LONG_PRESS,
     KEY_DOUBLE_CLICK,
 } key_state_t;

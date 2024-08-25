@@ -35,13 +35,12 @@ void event_generate(void *arg) {
         switch (key_state) {
 
             case KEY_SHORT_PRESS:
-                // recognizer_state = RECOGNIZE;
+                recognizer_state = ENROLING;
 
                 break;
 
             case KEY_LONG_PRESS:
                 recognizer_state = ENROLL;
-                // eventState=0;
 
                 break;
 
@@ -52,7 +51,6 @@ void event_generate(void *arg) {
 
             default:
                 recognizer_state = DETECT;
-                // eventState=0;
                 break;
         }
 

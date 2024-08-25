@@ -34,16 +34,9 @@ using namespace dl;
 
 static const char *TAG = "human_face_recognition";
 
-// extern from tcp client  for enrolment
-
-// extern volatile uint8_t CmdEnroll;
-// extern char personName[20];
-// extern uint16_t personId;
-
-
- volatile uint8_t CmdEvent;
- char personName[20];
- uint16_t personId;
+volatile uint8_t CmdEvent;
+char personName[20];
+uint16_t personId;
 
 
 //---------------sleep--------------------
@@ -235,6 +228,15 @@ static void task_process_handler(void *arg)
                                 
                     }
 
+                }else if(_gEvent==ENROLING){
+
+                    if (detect_results.size() == 1){
+                        is_detected = true;
+                        _gEvent=ENROLL;
+                                
+                    }else rgb_printf(frame, RGB565_MASK_GREEN, "Start Enroling");// debug due to display name
+
+
                 }
                 
                 if (is_detected)
@@ -249,7 +251,7 @@ static void task_process_handler(void *arg)
                         //print_detection_result(detect_results);
                         if (recognize_result.id > 0){
                         //rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");// debug due to display name
-                        CmdEnroll=DUPLICATE;// 3 FOR DUPLICATE
+                        CmdEvent=DUPLICATE;// 3 FOR DUPLICATE
                         frame_show_state = SHOW_DUPLICATE;
                         break;
                         }
@@ -257,17 +259,17 @@ static void task_process_handler(void *arg)
 
 
                         //----------------------------working with image--------------------------
-                        imageData_t *cropFrame = NULL;
+                        // imageData_t *cropFrame = NULL;
 
-                        print_detection_result(detect_candidates);
-                        draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
-                        if(!copy_rectangle(frame,&cropFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]))
-                        {
-                            frame_show_state = INVALID;
-                            heap_caps_free(cropFrame->buf);
-                            heap_caps_free(cropFrame);
-                            break;
-                        }
+                        // print_detection_result(detect_candidates);
+                        // draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
+                        // if(!copy_rectangle(frame,&cropFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]))
+                        // {
+                        //     frame_show_state = INVALID;
+                        //     heap_caps_free(cropFrame->buf);
+                        //     heap_caps_free(cropFrame);
+                        //     break;
+                        // }
                         //--------------------------------------------------------------------------
 
                         // recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
@@ -277,16 +279,16 @@ static void task_process_handler(void *arg)
                         //-------------------------pass value to struc via task----------------------------
                        // printf("\nCopy Image Info  L:%3d w:%3d h:%3d", cropFrame->len, cropFrame->width, cropFrame->height);
 
-                        cropFrame->id= recognizer->get_enrolled_ids().back().id;
-                        cropFrame->Name= personName;
+                        // cropFrame->id= recognizer->get_enrolled_ids().back().id;
+                        // cropFrame->Name= personName;
 
 
-                        if (xQueueCloud) {
-                            // printf("Sending cropFrame to xQueueCloud...\n");
-                            xQueueSend(xQueueCloud, &cropFrame, portMAX_DELAY);
-                        } else {
-                            printf("xQueueCloud is NULL, cannot send cropFrame.\n");
-                        }
+                        // if (xQueueCloud) {
+                        //     // printf("Sending cropFrame to xQueueCloud...\n");
+                        //     xQueueSend(xQueueCloud, &cropFrame, portMAX_DELAY);
+                        // } else {
+                        //     printf("xQueueCloud is NULL, cannot send cropFrame.\n");
+                        // }
 
 
                         //---------------------------------------------------------------------------------
@@ -336,11 +338,11 @@ static void task_process_handler(void *arg)
 
 
                             ESP_LOGE("DELETE", "Invalided ID: %d", personId);
-                            CmdEnroll=ID_INVALID; // delete done 
+                            CmdEvent=ID_INVALID; // delete done 
 
                         }else{
 
-                            CmdEnroll=DELETED;// delete done
+                            CmdEvent=DELETED;// delete done
                             ESP_LOGE("DELETE", "IDs left %d", personId);
 
                         }
@@ -361,7 +363,7 @@ static void task_process_handler(void *arg)
                     {
                     case SHOW_STATE_DELETE:
                         // rgb_printf(frame, RGB565_MASK_RED, "%d IDs left", recognizer->get_enrolled_id_num());   #define ID_INVALID      0X06
-                        if(CmdEnroll==DELETED){
+                        if(CmdEvent==DELETED){
 
                             rgb_printf(frame, RGB565_MASK_RED, "Deleted Id: %d", personId);
 
@@ -382,7 +384,7 @@ static void task_process_handler(void *arg)
                         break;
 
                     case SHOW_STATE_ENROLL:{
-                        CmdEnroll=ENROLED;// 2 means enrol done
+                        CmdEvent=ENROLED;// 2 means enrol done
 
                         rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id); 
                         personId=recognizer->get_enrolled_ids().back().id;

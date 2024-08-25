@@ -5,16 +5,16 @@
 #define WL_FLASH_SIZE      2097152//2097152 // 2 MB in bytes 190464  
 
 // CMD Enrol handle from server
-#define IDLEENROL       0x00
-#define ENROLING        0x01
-#define ENROLED         0x02
-#define DUPLICATE       0x03
+#define IDLE_EVENT          0x00
+#define ENROLING_EVENT      0x01
+#define ENROLED             0x02
+#define DUPLICATE           0x03
 
-#define DELETE_CMD      0X04
-#define DELETED         0X05
-#define ID_INVALID      0X06
-#define ID_DATA_ERROR      0X07
-#define NAME_DATA_ERROR      0X08
+#define DELETE_CMD          0X04
+#define DELETED             0X05
+#define ID_INVALID          0X06
+#define ID_DATA_ERROR       0X07
+#define NAME_DATA_ERROR     0X08
 
 
 

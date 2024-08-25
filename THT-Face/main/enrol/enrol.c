@@ -52,11 +52,11 @@ void process_command(const char* buffer) {
     
     // if(strlen(buffer)>10)resizeBuffer();
   // Check if the buffer starts with "cmdEnrol" (case-sensitive)
-    if (strncmp(buffer, "cmdEnrol", strlen("cmdEnrol")) == 0) {
+    if (strncmp(buffer, "cmdenrol", strlen("cmdenrol")) == 0) {
        
         // init_crc16_table();
         // Extract the name (assuming space separates name and ID)
-        const char* name_start = buffer + strlen("cmdEnrol") + 1;
+        const char* name_start = buffer + strlen("cmdenrol") + 1;
         const char* space_pos = strchr(name_start, ' ');
         if (space_pos == NULL) {
             // Handle invalid format (no space)
@@ -73,33 +73,32 @@ void process_command(const char* buffer) {
         uint16_t rxCrc = hex_to_uint16(crc_str);
 
         // Check for end command string (case-sensitive)
-        const char* end_cmd_pos = strstr(buffer, "cmdEnd");
+        const char* end_cmd_pos = strstr(buffer, "cmdend");
         if (end_cmd_pos != NULL) {
             // Data reception complete, print information
-            printf("Enrollment data received:\n");
             printf("  - CRC RCV: %x\n",rxCrc);
-
             uint16_t calculated_crc = crc16(personName, strlen(personName));
             printf("  - CRC16 CALCULATED: %x\n", calculated_crc);
 
-            if (calculated_crc == rxCrc) {
-                printf("\ncmd enroll flag status %d",CmdEvent);
+            // if (calculated_crc == rxCrc) {
 
-                CmdEvent = ENROLING;
-                erolTimeOut = xTaskGetTickCount();
+                CmdEvent = ENROLING_EVENT;
+
+                // erolTimeOut = xTaskGetTickCount();
                 printf("CRC check passed.\n");
                 printf("  - Name: %s\n", personName);
                 memset(tcpBuffer, 0, strlen(tcpBuffer));
 
-                enrolOngoing();
+                key_state=KEY_SHORT_PRESS;
 
                 return;
-            } else {
-                printf("CRC check failed.\n");
-                memset(tcpBuffer, 0, strlen(tcpBuffer));
-                CmdEvent = IDLEENROL;
-                return;
-            }
+
+            // } else {
+            //     printf("CRC check failed.\n");
+            //     memset(tcpBuffer, 0, strlen(tcpBuffer));
+            //     CmdEvent = NAME_DATA_ERROR;
+            //     return;
+            // }
         }
 
     }else if(strncmp(buffer, "cmddl", strlen("cmddl")) == 0){
@@ -131,72 +130,17 @@ void process_command(const char* buffer) {
             const uint16_t calculated_crc = crc16(id, strlen(id));
             const uint16_t rxCrc = hex_to_uint16(crc_str);
 
+            printf("  - CRC RCV: %x\n",rxCrc);
+            printf("  - CRC16 CALCULATED: %x\n", calculated_crc);
+
             if (calculated_crc == rxCrc) {
 
                 key_state=KEY_DOUBLE_CLICK;
-                printf("  - CRC RCV: %x\n",rxCrc);
-                printf("  - CRC16 CALCULATED: %x\n", calculated_crc);
                 personId= chartoDeci(id);// for test delete person by there id
                 return;
-            }else CmdEvent = IDLEENROL;
-
-
+            }else CmdEvent = ID_DATA_ERROR;
         }
     }
-}
-
-
-void enrolOngoing(void){
-
-        bool cmd=true;
-        while(cmd){
-
-            if(CmdEvent==ENROLED){
-
-                char personIdStr[12]; // assuming 32-bit uint can be represented in 11 chars + null terminator
-                snprintf(personIdStr, sizeof(personIdStr), "%u", personId);
-                if (!stompSend(personIdStr,PUBLISH_TOPIC)) {
-                    //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
-                } else {
-                    ESP_LOGI(TAG_ENROL, "id sent to client\n");
-                    CmdEvent = IDLEENROL;
-                    cmd=false;
-                }
-            }else if(CmdEvent==DUPLICATE){
-
-                ESP_LOGI(TAG_ENROL, "duplicate ack\n");
-
-                // nack for duplicate person
-                if (!stompSend("NDP",PUBLISH_TOPIC)) {
-                    //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
-                } else {
-                    ESP_LOGI(TAG_ENROL, "back to idle mode\n");
-                    CmdEvent = IDLEENROL;
-                    cmd=false;
-                }
-            }else {
-
-                TickType_t TimeOut = xTaskGetTickCount();
-        
-                if (TimeOut-erolTimeOut> TIMEOUT_15_S ){
-                // ESP_LOGI(TAG_ENROL, "not acking\n");
-                // send(client_sock, "\nwait for..", 8, 0);
-                CmdEvent = IDLEENROL;
-
-                // nack for time out
-                if (!stompSend("NETO",PUBLISH_TOPIC)) {
-                    //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
-                } else {
-                    ESP_LOGI(TAG_ENROL, "back to idle mode\n");
-                    cmd=false;
-                }
-                printf("\ncmd enroll flag status %d",CmdEvent);
-                // vTaskDelay(10);
-
-                }
-            }
-
-        }
 }
 
 void eventFeedback(void){
@@ -208,7 +152,7 @@ void eventFeedback(void){
                 ESP_LOGE("ID DELETE", "Error sending ACK");
             } else {
                 ESP_LOGI(TAG_ENROL, "back to idle mode\n");
-                CmdEvent = IDLEENROL;
+                CmdEvent = IDLE_EVENT;
             }
 
         }else if(CmdEvent==ID_INVALID){
@@ -218,8 +162,71 @@ void eventFeedback(void){
                 ESP_LOGE("ID DELETE", "Error sending NACK");
             } else {
                 ESP_LOGI(TAG_ENROL, "back to idle mode\n");
-                CmdEvent = IDLEENROL;
+                CmdEvent = IDLE_EVENT;
+            }
+
+        }else if(CmdEvent==ID_DATA_ERROR){
+
+            // nack for ID DATA ERROR
+            if (!stompSend("NIDE",PUBLISH_TOPIC)) {
+                ESP_LOGE("ID DELETE", "Error sending NACK");
+            } else {
+                ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+                CmdEvent = IDLE_EVENT;
+            }
+        }else if(CmdEvent==NAME_DATA_ERROR){
+
+            // nack for NAME DATA ERROR
+            if (!stompSend("NNDE",PUBLISH_TOPIC)) {
+                ESP_LOGE("ID DELETE", "Error sending NACK");
+            } else {
+                ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+                CmdEvent = IDLE_EVENT;
+            }
+        }else{
+
+            if(CmdEvent==ENROLED){
+
+                char personIdStr[12]; // assuming 32-bit uint can be represented in 11 chars + null terminator
+                snprintf(personIdStr, sizeof(personIdStr), "%u", personId);
+                if (!stompSend(personIdStr,PUBLISH_TOPIC)) {
+                    //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+                } else {
+                    ESP_LOGI(TAG_ENROL, "id sent to client\n");
+                    CmdEvent = IDLE_EVENT;
+                }
+            }else if(CmdEvent==DUPLICATE){
+
+                ESP_LOGI(TAG_ENROL, "duplicate ack\n");
+
+                // nack for duplicate person
+                if (!stompSend("NDP",PUBLISH_TOPIC)) {
+                    //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+                } else {
+                    ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+                    CmdEvent = IDLE_EVENT;
+                }
+            }else {
+
+                // TickType_t TimeOut = xTaskGetTickCount();
+        
+                // if (TimeOut-erolTimeOut> TIMEOUT_15_S ){
+                // // ESP_LOGI(TAG_ENROL, "not acking\n");
+                // // send(client_sock, "\nwait for..", 8, 0);
+                // CmdEvent = IDLE_EVENT;
+
+                // // nack for time out
+                // if (!stompSend("NETO",PUBLISH_TOPIC)) {
+                //     //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
+                // } else {
+                //     ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+                // }
+                // printf("\ncmd enroll flag status %d",CmdEvent);
+                // // vTaskDelay(10);
+
+                // }
             }
 
         }
+
 }

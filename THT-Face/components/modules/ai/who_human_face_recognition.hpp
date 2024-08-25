@@ -15,8 +15,10 @@ typedef enum
     IDLE = 0,
     DETECT,
     ENROLL,
+    ENROLING,
     RECOGNIZE,
     DELETE,
+
 } recognizer_state_t;
 
 

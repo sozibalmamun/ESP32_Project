@@ -1,6 +1,4 @@
 
-
-
 #include "dataHandler.h"
 
 extern void process_command(const char* buffer);
@@ -158,13 +156,28 @@ void u32tochar (uint32_t data, char* buff) {
   buff[index] = (data >> 24) & 0xFF; index++;
   //  return buff;
 }
-uint16_t chartou16 (char* data) {
+
+// uint16_t chartou16 (char* data) {
+//   uint16_t intout = 0;
+
+//   uint16_t temp = data[1];
+//   intout = data[0] | (temp << 8);
+//   return intout;
+// }
+
+uint16_t chartoDeci(char* data) {
   uint16_t intout = 0;
 
-  uint16_t temp = data[1];
-  intout = data[0] | (temp << 8);
+  while (*data)
+  {
+    intout= intout*10;
+    intout+= (*data)-0x30;
+    data++;
+  }
   return intout;
 }
+
+
 
 uint32_t chartou32 (char* data) {
   uint32_t intout = 0;

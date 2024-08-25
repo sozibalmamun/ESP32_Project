@@ -32,20 +32,6 @@ extern "C" {
 #endif
 
 
-// #define     PUBLISH_TOPIC       "/app/cloud"
-
-#define IDLEENROL               0
-#define ENROLING                0x01
-#define ENROLED                 0x02
-#define DUPLICATE               0x03
-
-#define DELETE_CMD              0X04
-
-#define ACK_SIZE 1024
-
-
-
-
 
 typedef struct {
     const char                  *uri;                       /*!< Websocket URI, the information on the URI can be overrides the other fields below, if any */

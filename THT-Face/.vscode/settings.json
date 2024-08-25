@@ -71,7 +71,8 @@
         "typeinfo": "cpp",
         "clouddatahandle.h": "c",
         "fs.h": "c",
-        "math.h": "c"
+        "math.h": "c",
+        "datahandler.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM5",

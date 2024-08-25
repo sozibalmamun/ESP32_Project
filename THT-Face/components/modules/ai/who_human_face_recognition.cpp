@@ -41,7 +41,7 @@ static const char *TAG = "human_face_recognition";
 // extern uint16_t personId;
 
 
- volatile uint8_t CmdEnroll;
+ volatile uint8_t CmdEvent;
  char personName[20];
  uint16_t personId;
 
@@ -224,7 +224,7 @@ static void task_process_handler(void *arg)
                     if(personId!=0){
                         is_detected= true;
                         key_state= KEY_IDLE;
-                        ESP_LOGW("DELETE", "% d ID:",personId );
+                        ESP_LOGW("DELETE", "ID: %d",personId );
                     }
                     
                 }else if(_gEvent==DETECT){
@@ -335,13 +335,13 @@ static void task_process_handler(void *arg)
                         // if(recognizer->delete_id(true)== -1 ){// invalide id if "-1"
 
 
-                            ESP_LOGE("DELETE", "% d IDs invalided", personId);
+                            ESP_LOGE("DELETE", "Invalided ID: %d", personId);
                             CmdEnroll=ID_INVALID; // delete done 
 
                         }else{
 
                             CmdEnroll=DELETED;// delete done
-                            ESP_LOGE("DELETE", "% d IDs left", personId);
+                            ESP_LOGE("DELETE", "IDs left %d", personId);
 
                         }
                         // ESP_LOGE("DELETE", "% d IDs left", recognizer->get_enrolled_id_num());

@@ -8,21 +8,6 @@
 #define     TAG             "WEBSOCKET"
 #define     TAGSTOMP        "STOMP_CLIENT"
 
-
-// extern volatile uint8_t CmdEnroll;
-// extern char personName[20];
-// extern uint16_t personId;
-
-// volatile uint8_t  CmdEnroll=IDLEENROL;
-// char personName[20];
-// uint16_t personId;
-
-
-// char tcpBuffer[2024]; // Adjust MAX_TRANSACTION_SIZE as needed
-// TickType_t erolTimeOut;
-
-
-
 void stomp_client_connect() {
 
     char connect_frame[100] = "[\"CONNECT\\naccept-version:1.1\\nhost:grozziieget.zjweiting.com\\n\\n\\u0000\"]";

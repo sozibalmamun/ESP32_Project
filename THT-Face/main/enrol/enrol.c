@@ -41,7 +41,7 @@
 // #define ID_INVALID              0X06
 
 
-extern volatile uint8_t CmdEnroll;
+extern volatile uint8_t CmdEvent;
 extern char personName[20];
 extern uint16_t personId;
 extern key_state_t key_state;
@@ -83,9 +83,9 @@ void process_command(const char* buffer) {
             printf("  - CRC16 CALCULATED: %x\n", calculated_crc);
 
             if (calculated_crc == rxCrc) {
-                printf("\ncmd enroll flag status %d",CmdEnroll);
+                printf("\ncmd enroll flag status %d",CmdEvent);
 
-                CmdEnroll = ENROLING;
+                CmdEvent = ENROLING;
                 erolTimeOut = xTaskGetTickCount();
                 printf("CRC check passed.\n");
                 printf("  - Name: %s\n", personName);
@@ -97,7 +97,7 @@ void process_command(const char* buffer) {
             } else {
                 printf("CRC check failed.\n");
                 memset(tcpBuffer, 0, strlen(tcpBuffer));
-                CmdEnroll = IDLEENROL;
+                CmdEvent = IDLEENROL;
                 return;
             }
         }
@@ -112,58 +112,34 @@ void process_command(const char* buffer) {
 
             return;
         }
-        char id[2];//65535 ffff  
+        char id[5];
+        memset(id,0,sizeof(id)); 
 
         strncpy(id, name_start, space_pos - name_start);
-        // id[space_pos - name_start] = '\0'; // Null terminate the name string
-        printf("id  char: %s\n",id);
-
-        uint16_t tempid= chartou16(id);
-        // uint16_t tempid= 1;
-
-        // printf("id  hex: %x\n",tempid);
-
+        id[space_pos - name_start] = '\0'; // Null terminate the name string
 
         // Extract the 2-character CRC
-        char crc_str[2];
-        strncpy(crc_str, space_pos + 1, 2);
+        char crc_str[5];
+        memset(crc_str,0,sizeof(crc_str)); 
+        strncpy(crc_str, space_pos + 1, 4);
+        crc_str[4] = '\0'; // Null terminate the name string
 
         // Check for end command string (case-sensitive)
         const char* end_cmd_pos = strstr(buffer, "cmdend");
         if (end_cmd_pos != NULL) {
             // Data reception complete, print information
-            // uint16_t rxCrc = chartou16(crc_str);
-            // printf("  - CRC RCV: %x\n",rxCrc);
+            const uint16_t calculated_crc = crc16(id, strlen(id));
+            const uint16_t rxCrc = hex_to_uint16(crc_str);
 
-            // uint16_t calculated_crc = getCRC16(tempid);
-            // printf("  - CRC16 CALCULATED: %x\n", calculated_crc);
+            if (calculated_crc == rxCrc) {
 
-            // personId= tempid;
-            personId= 1;// for test delete person by there id
-
-
-
-
-            // if (calculated_crc == rxCrc) {
-
-            //     // CmdEnroll = DELETE_CMD;
-            //     // printf("CRC check passed.\n");
-            //     // printf("  - Name: %s\n", id);
-            //     // idDeletingOngoing();
-
-//     KEY_SHORT_PRESS = 1,
-//     KEY_LONG_PRESS,
-//     KEY_DOUBLE_CLICK,
-
-            //     return;
-            // } else {
-                printf("cmddl.\n");
-                
-                // CmdEnroll = DELETE_CMD;
                 key_state=KEY_DOUBLE_CLICK;
-                // idDeletingOngoing();
+                printf("  - CRC RCV: %x\n",rxCrc);
+                printf("  - CRC16 CALCULATED: %x\n", calculated_crc);
+                personId= chartoDeci(id);// for test delete person by there id
                 return;
-            // }
+            }else CmdEvent = IDLEENROL;
+
 
         }
     }
@@ -175,7 +151,7 @@ void enrolOngoing(void){
         bool cmd=true;
         while(cmd){
 
-            if(CmdEnroll==ENROLED){
+            if(CmdEvent==ENROLED){
 
                 char personIdStr[12]; // assuming 32-bit uint can be represented in 11 chars + null terminator
                 snprintf(personIdStr, sizeof(personIdStr), "%u", personId);
@@ -183,10 +159,10 @@ void enrolOngoing(void){
                     //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
                 } else {
                     ESP_LOGI(TAG_ENROL, "id sent to client\n");
-                    CmdEnroll = IDLEENROL;
+                    CmdEvent = IDLEENROL;
                     cmd=false;
                 }
-            }else if(CmdEnroll==DUPLICATE){
+            }else if(CmdEvent==DUPLICATE){
 
                 ESP_LOGI(TAG_ENROL, "duplicate ack\n");
 
@@ -195,7 +171,7 @@ void enrolOngoing(void){
                     //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
                 } else {
                     ESP_LOGI(TAG_ENROL, "back to idle mode\n");
-                    CmdEnroll = IDLEENROL;
+                    CmdEvent = IDLEENROL;
                     cmd=false;
                 }
             }else {
@@ -205,7 +181,7 @@ void enrolOngoing(void){
                 if (TimeOut-erolTimeOut> TIMEOUT_15_S ){
                 // ESP_LOGI(TAG_ENROL, "not acking\n");
                 // send(client_sock, "\nwait for..", 8, 0);
-                CmdEnroll = IDLEENROL;
+                CmdEvent = IDLEENROL;
 
                 // nack for time out
                 if (!stompSend("NETO",PUBLISH_TOPIC)) {
@@ -214,7 +190,7 @@ void enrolOngoing(void){
                     ESP_LOGI(TAG_ENROL, "back to idle mode\n");
                     cmd=false;
                 }
-                printf("\ncmd enroll flag status %d",CmdEnroll);
+                printf("\ncmd enroll flag status %d",CmdEvent);
                 // vTaskDelay(10);
 
                 }
@@ -225,24 +201,24 @@ void enrolOngoing(void){
 
 void eventFeedback(void){
 
-        if(CmdEnroll==DELETED){
+        if(CmdEvent==DELETED){
 
             // ack for delete id
             if (!stompSend("ADI",PUBLISH_TOPIC)) {
                 ESP_LOGE("ID DELETE", "Error sending ACK");
             } else {
                 ESP_LOGI(TAG_ENROL, "back to idle mode\n");
-                CmdEnroll = IDLEENROL;
+                CmdEvent = IDLEENROL;
             }
 
-        }else if(CmdEnroll==ID_INVALID){
+        }else if(CmdEvent==ID_INVALID){
 
             // nack for delete invalide id
             if (!stompSend("NDII",PUBLISH_TOPIC)) {
                 ESP_LOGE("ID DELETE", "Error sending NACK");
             } else {
                 ESP_LOGI(TAG_ENROL, "back to idle mode\n");
-                CmdEnroll = IDLEENROL;
+                CmdEvent = IDLEENROL;
             }
 
         }

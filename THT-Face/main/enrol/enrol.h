@@ -43,6 +43,8 @@ extern void u16tochar (uint16_t data, char* buff);
 extern void u32tochar (uint32_t data, char* buff);
 extern uint16_t chartou16 (char* data);
 extern uint32_t chartou32 (char* data);
+extern uint16_t chartoDeci(char* data);
+
 extern void toArray(uint16_t slotL, uint8_t *data_buffer);
 
 

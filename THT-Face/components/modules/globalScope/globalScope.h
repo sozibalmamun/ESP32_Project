@@ -13,6 +13,9 @@
 #define DELETE_CMD      0X04
 #define DELETED         0X05
 #define ID_INVALID      0X06
+#define ID_DATA_ERROR      0X07
+#define NAME_DATA_ERROR      0X08
+
 
 
 

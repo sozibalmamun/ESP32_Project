@@ -19,6 +19,8 @@
 #include "lwip/sys.h"        // System applications for lightweight IP apps
 #include "lwip/netdb.h"
 
+#include "globalScope.h"
+
 
 
 #ifdef __cplusplus
@@ -26,7 +28,7 @@ extern "C" {
 #endif
 
 
-const uint32_t crc16_table[16] = {
+const DATA_FLASH uint32_t crc16_table[16] = {
     0x00000000, 0x1db71064, 0x3b6e20c8, 0x26d930ac,
     0x76dc4190, 0x6b6b51f4, 0x4db26158, 0x5005713c,
     0xedb88320, 0xf00f9344, 0xd6d6a3e8, 0xcb61b38c,
@@ -51,6 +53,7 @@ uint16_t chartou16 (char* data);
 uint32_t chartou32 (char* data);
 void toArray(uint16_t slotL, uint8_t *data_buffer);
 
+uint16_t chartoDeci(char* data);
 
 void resizeBuffer(void);
 void extractMessage(const char *buffer, char *output);

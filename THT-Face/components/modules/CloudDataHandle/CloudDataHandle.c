@@ -65,10 +65,10 @@ static void attendanceHandlerTask(void *arg)
     {
         // Process attendance files
         if(wifiStatus==2 && CPUBgflag==0){
-            process_attendance_files();
-            process_and_send_faces("/app/cloud"); 
-            if(CmdEvent!=IDLE_EVENT)eventFeedback();
 
+            if(CmdEvent!=IDLE_EVENT)eventFeedback();
+            process_attendance_files();
+            process_and_send_faces(PUBLISH_TOPIC); 
 
         }
         vTaskDelay(xDelay);

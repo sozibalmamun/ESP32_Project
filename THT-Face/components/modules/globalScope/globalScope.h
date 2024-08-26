@@ -14,7 +14,7 @@
 #define ID_INVALID          0X06
 #define ID_DATA_ERROR       0X07
 #define NAME_DATA_ERROR     0X08
-#define ENROLMENT_TIMEOUT   0x09
+#define ENROLMENT_TIMEOUT   0x0A
 //--------------------------------------------------------------------
 
 //-------------------Time value in ms---------------------------------

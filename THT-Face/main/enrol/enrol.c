@@ -121,77 +121,175 @@ void process_command(const char* buffer) {
 
 void eventFeedback(void){
 
-        if(CmdEvent==DELETED){
 
-            // ack for delete id
-            if (!stompSend("ADI",PUBLISH_TOPIC)) {
-                ESP_LOGE("ID DELETE", "Error sending ACK");
-            } else {
-                ESP_LOGI(TAG_ENROL, "back to idle mode\n");
-                CmdEvent = IDLE_EVENT;
-            }
+    // ESP_LOGE("CmdEvent start", "%x",CmdEvent);
+    switch (CmdEvent)
+    {
+    case DELETED:
+        // ack for delete id
+        if (!stompSend("ADI",PUBLISH_TOPIC)) {
+            ESP_LOGE("ID DELETE", "Error sending ACK");
+        } else {
+            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            CmdEvent = IDLE_EVENT;
+        }        
+        break;
+    case ID_INVALID:
+        // nack for delete invalide id
+        if (!stompSend("NDII",PUBLISH_TOPIC)) {
+            ESP_LOGE("ID DELETE", "Error sending NACK");
+        } else {
+            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            CmdEvent = IDLE_EVENT;
+        }
+        break;    
+    case ID_DATA_ERROR:
 
-        }else if(CmdEvent==ID_INVALID){
-
-            // nack for delete invalide id
-            if (!stompSend("NDII",PUBLISH_TOPIC)) {
-                ESP_LOGE("ID DELETE", "Error sending NACK");
-            } else {
-                ESP_LOGI(TAG_ENROL, "back to idle mode\n");
-                CmdEvent = IDLE_EVENT;
-            }
-
-        }else if(CmdEvent==ID_DATA_ERROR){
-
-            // nack for ID DATA ERROR
-            if (!stompSend("NIDE",PUBLISH_TOPIC)) {
-                ESP_LOGE("ID DELETE", "Error sending NACK");
-            } else {
-                ESP_LOGI(TAG_ENROL, "back to idle mode\n");
-                CmdEvent = IDLE_EVENT;
-            }
-        }else if(CmdEvent==NAME_DATA_ERROR){
-
-            // nack for NAME DATA ERROR
-            if (!stompSend("NNDE",PUBLISH_TOPIC)) {
-                ESP_LOGE("ID DELETE", "Error sending NACK");
-            } else {
-                ESP_LOGI(TAG_ENROL, "back to idle mode\n");
-                CmdEvent = IDLE_EVENT;
-            }
-        }else if(CmdEvent==ENROLED){
-
-                char personIdStr[12]; // assuming 32-bit uint can be represented in 11 chars + null terminator
-                snprintf(personIdStr, sizeof(personIdStr), "%u", personId);
-                if (!stompSend(personIdStr,PUBLISH_TOPIC)) {
-                    //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
-                } else {
-                    ESP_LOGI(TAG_ENROL, "id sent to client\n");
-                    CmdEvent = IDLE_EVENT;
-                }
-        }else if(CmdEvent==DUPLICATE){
-
-                ESP_LOGI(TAG_ENROL, "duplicate ack\n");
-
-                // nack for duplicate person
-                if (!stompSend("NDP",PUBLISH_TOPIC)) {
-                    //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
-                } else {
-                    ESP_LOGI(TAG_ENROL, "back to idle mode\n");
-                    CmdEvent = IDLE_EVENT;
-                }
-        }else if(CmdEvent==ENROLMENT_TIMEOUT) {
-
-                // nack for time out
-                if (!stompSend("NETO",PUBLISH_TOPIC)) {
-                    //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
-                } else {
-                    ESP_LOGI(TAG_ENROL, "back to idle mode\n");
-                    CmdEvent = IDLE_EVENT;
-
-                }
- 
+        // nack for ID DATA ERROR
+        if (!stompSend("NIDE",PUBLISH_TOPIC)) {
+            ESP_LOGE("ID DELETE", "Error sending NACK");
+        } else {
+            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            CmdEvent = IDLE_EVENT;
         }
 
+        break;    
+    case NAME_DATA_ERROR:
+
+        // nack for NAME DATA ERROR
+        if (!stompSend("NNDE",PUBLISH_TOPIC)) {
+            ESP_LOGE("ID DELETE", "Error sending NACK");
+        } else {
+            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            CmdEvent = IDLE_EVENT;
+        }
+
+        break;    
+    case ENROLED:{
+
+        char personIdStr[30]; // assuming 32-bit uint can be represented in 11 chars + null terminator
+
+        snprintf(personIdStr, sizeof(personIdStr), "AED %s %u",personName,personId);
+        if (!stompSend(personIdStr,PUBLISH_TOPIC)) {
+            //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+        } else {
+            ESP_LOGI(TAG_ENROL, "id sent to client\n");
+            CmdEvent = IDLE_EVENT;
+        }
+
+        break; 
+    }   
+    case DUPLICATE:
+
+        // nack for duplicate person
+        if (!stompSend("NDP",PUBLISH_TOPIC)) {
+            //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+        } else {
+            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            CmdEvent = IDLE_EVENT;
+        }
+
+
+        break;    
+    case ENROLMENT_TIMEOUT:
+
+        // nack for time out
+        if (!stompSend("NETO",PUBLISH_TOPIC)) {
+            //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
+        } else {
+            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            CmdEvent = IDLE_EVENT;
+
+        }
+        break;   
+    // case DELETED:
+    //     /* code */
+    //     break;    
+    // case DELETED:
+    //     /* code */
+    //     break;
+    
+    default:
+        break;
+    }
+
+
+
+
+
+
+        // if(CmdEvent==DELETED){
+
+        //     // ack for delete id
+        //     if (!stompSend("ADI",PUBLISH_TOPIC)) {
+        //         ESP_LOGE("ID DELETE", "Error sending ACK");
+        //     } else {
+        //         ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+        //         CmdEvent = IDLE_EVENT;
+        //     }
+
+        // }else if(CmdEvent==ID_INVALID){
+
+        //     // nack for delete invalide id
+        //     if (!stompSend("NDII",PUBLISH_TOPIC)) {
+        //         ESP_LOGE("ID DELETE", "Error sending NACK");
+        //     } else {
+        //         ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+        //         CmdEvent = IDLE_EVENT;
+        //     }
+
+        // }else if(CmdEvent==ID_DATA_ERROR){
+
+        //     // nack for ID DATA ERROR
+        //     if (!stompSend("NIDE",PUBLISH_TOPIC)) {
+        //         ESP_LOGE("ID DELETE", "Error sending NACK");
+        //     } else {
+        //         ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+        //         CmdEvent = IDLE_EVENT;
+        //     }
+        // }else if(CmdEvent==NAME_DATA_ERROR){
+
+        //     // nack for NAME DATA ERROR
+        //     if (!stompSend("NNDE",PUBLISH_TOPIC)) {
+        //         ESP_LOGE("ID DELETE", "Error sending NACK");
+        //     } else {
+        //         ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+        //         CmdEvent = IDLE_EVENT;
+        //     }
+        // }else if(CmdEvent==ENROLED){
+
+        //         char personIdStr[12]; // assuming 32-bit uint can be represented in 11 chars + null terminator
+        //         snprintf(personIdStr, sizeof(personIdStr), "%u", personId);
+        //         if (!stompSend(personIdStr,PUBLISH_TOPIC)) {
+        //             //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+        //         } else {
+        //             ESP_LOGI(TAG_ENROL, "id sent to client\n");
+        //             CmdEvent = IDLE_EVENT;
+        //         }
+        // }else if(CmdEvent==DUPLICATE){
+
+        //         ESP_LOGI(TAG_ENROL, "duplicate ack\n");
+
+        //         // nack for duplicate person
+        //         if (!stompSend("NDP",PUBLISH_TOPIC)) {
+        //             //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+        //         } else {
+        //             ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+        //             CmdEvent = IDLE_EVENT;
+        //         }
+        // }else if(CmdEvent==ENROLMENT_TIMEOUT) {
+
+        //         // nack for time out
+        //         if (!stompSend("NETO",PUBLISH_TOPIC)) {
+        //             //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
+        //         } else {
+        //             ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+        //             CmdEvent = IDLE_EVENT;
+
+        //         }
+ 
+        // }
+
+        // ESP_LOGE("CmdEvent end", "%x",CmdEvent);
 
 }

@@ -34,7 +34,7 @@ using namespace dl;
 
 static const char *TAG = "human_face_recognition";
 
-volatile uint8_t CmdEvent;
+volatile uint8_t CmdEvent =0;
 char personName[20];
 volatile uint16_t personId;
 
@@ -288,6 +288,7 @@ static void task_process_handler(void *arg)
                         draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
                         if(!copy_rectangle(frame,&cropFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]))
                         {
+                            CPUBgflag=0;
                             frame_show_state = INVALID;
                             heap_caps_free(cropFrame);
                             break;

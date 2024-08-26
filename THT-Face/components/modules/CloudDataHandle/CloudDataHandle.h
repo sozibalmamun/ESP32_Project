@@ -11,7 +11,6 @@
 #include "globalScope.h"
 
 
-#define  ATTENDANCE_DIR  "/fatfs/log"
 
 
 

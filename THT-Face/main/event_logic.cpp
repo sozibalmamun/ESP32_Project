@@ -40,7 +40,7 @@ void event_generate(void *arg) {
                 break;
 
             case KEY_LONG_PRESS:
-                recognizer_state = ENROLL;
+                // recognizer_state = ENROLL;
 
                 break;
 

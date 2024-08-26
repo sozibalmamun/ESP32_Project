@@ -36,12 +36,14 @@ static const char *TAG = "human_face_recognition";
 
 volatile uint8_t CmdEvent;
 char personName[20];
-uint16_t personId;
+volatile uint16_t personId;
 
 
-//---------------sleep--------------------
+//---------------time flag--------------------
 extern volatile uint8_t sleepEnable;
 extern TickType_t sleepTimeOut; 
+TickType_t TimeOut;
+
 
 //---------------------------------------
 
@@ -214,7 +216,9 @@ static void task_process_handler(void *arg)
 
                 if(_gEvent==DELETE){// deleting person 
 
-                    if(personId!=0){
+                    vTaskDelay(10);
+                    if(personId!=0){ 
+
                         is_detected= true;
                         key_state= KEY_IDLE;
                         ESP_LOGW("DELETE", "ID: %d",personId );
@@ -228,13 +232,24 @@ static void task_process_handler(void *arg)
                                 
                     }
 
-                }else if(_gEvent==ENROLING){
+                }
+                else if(_gEvent==ENROLING){
 
                     if (detect_results.size() == 1){
-                        is_detected = true;
-                        _gEvent=ENROLL;
-                                
-                    }else rgb_printf(frame, RGB565_MASK_GREEN, "Start Enroling");// debug due to display name
+
+                        if(xTaskGetTickCount()>TimeOut+TIMEOUT_3000_MS){
+
+                            is_detected = true;
+                            _gEvent=ENROLL;
+                            key_state= KEY_IDLE;
+
+                        }
+      
+                    }else {
+
+                        TimeOut= xTaskGetTickCount();
+                        rgb_printf(frame, RGB565_MASK_GREEN, "Start Enroling");// debug due to display name
+                    }
 
 
                 }
@@ -259,17 +274,17 @@ static void task_process_handler(void *arg)
 
 
                         //----------------------------working with image--------------------------
-                        // imageData_t *cropFrame = NULL;
+                        imageData_t *cropFrame = NULL;
 
-                        // print_detection_result(detect_candidates);
-                        // draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
-                        // if(!copy_rectangle(frame,&cropFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]))
-                        // {
-                        //     frame_show_state = INVALID;
-                        //     heap_caps_free(cropFrame->buf);
-                        //     heap_caps_free(cropFrame);
-                        //     break;
-                        // }
+                        print_detection_result(detect_candidates);
+                        draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
+                        if(!copy_rectangle(frame,&cropFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]))
+                        {
+                            frame_show_state = INVALID;
+                            heap_caps_free(cropFrame->buf);
+                            heap_caps_free(cropFrame);
+                            break;
+                        }
                         //--------------------------------------------------------------------------
 
                         // recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
@@ -279,16 +294,16 @@ static void task_process_handler(void *arg)
                         //-------------------------pass value to struc via task----------------------------
                        // printf("\nCopy Image Info  L:%3d w:%3d h:%3d", cropFrame->len, cropFrame->width, cropFrame->height);
 
-                        // cropFrame->id= recognizer->get_enrolled_ids().back().id;
-                        // cropFrame->Name= personName;
+                        cropFrame->id= recognizer->get_enrolled_ids().back().id;
+                        cropFrame->Name= personName;
 
 
-                        // if (xQueueCloud) {
-                        //     // printf("Sending cropFrame to xQueueCloud...\n");
-                        //     xQueueSend(xQueueCloud, &cropFrame, portMAX_DELAY);
-                        // } else {
-                        //     printf("xQueueCloud is NULL, cannot send cropFrame.\n");
-                        // }
+                        if (xQueueCloud) {
+                            // printf("Sending cropFrame to xQueueCloud...\n");
+                            xQueueSend(xQueueCloud, &cropFrame, portMAX_DELAY);
+                        } else {
+                            printf("xQueueCloud is NULL, cannot send cropFrame.\n");
+                        }
 
 
                         //---------------------------------------------------------------------------------
@@ -302,7 +317,9 @@ static void task_process_handler(void *arg)
                         if (recognize_result.id > 0){
 
                             CPUBgflag=1;
-                            ESP_LOGI("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
+                            // ESP_LOGI("RECOGNIZE", "Similarity: %f, Match Name: %s", recognize_result.similarity, recognize_result.name.c_str());
+
+                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_5000_MS)StopMultipleAttaneId=0;
 
                             if(StopMultipleAttaneId!=recognize_result.id){
 
@@ -319,14 +336,14 @@ static void task_process_handler(void *arg)
                                 tempTimeFrame[4] = current_time.minute;
                                 tempTimeFrame[5] = current_time.second;
                                 write_log_attendance(recognize_result.id, tempTimeFrame);
+                                TimeOut=xTaskGetTickCount();
 
                                 //----------------------------------------------------------------------------------------------
                             }
                             CPUBgflag=0;
 
                         }
-                        else
-                            // ESP_LOGE("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
+                        // ESP_LOGE("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
                         frame_show_state = SHOW_STATE_RECOGNIZE;
                         break;
                     }
@@ -334,14 +351,14 @@ static void task_process_handler(void *arg)
                         // vTaskDelay(10);
                         // recognizer->delete_id(true);
                         if(recognizer->delete_id(personId,true)== -1 ){// invalide id if "-1"// custom id delete logic
-                        // if(recognizer->delete_id(true)== -1 ){// invalide id if "-1"
 
-
+                            personId=0;// deafalt for test
                             ESP_LOGE("DELETE", "Invalided ID: %d", personId);
                             CmdEvent=ID_INVALID; // delete done 
 
                         }else{
 
+                            personId=0;// deafalt for test
                             CmdEvent=DELETED;// delete done
                             ESP_LOGE("DELETE", "IDs left %d", personId);
 
@@ -368,7 +385,6 @@ static void task_process_handler(void *arg)
                             rgb_printf(frame, RGB565_MASK_RED, "Deleted Id: %d", personId);
 
                         }else //rgb_printf(frame, RGB565_MASK_RED, "%d IDs invalided", personId);
-                        personId=0;// deafalt for test
 
                         break;
 
@@ -376,11 +392,10 @@ static void task_process_handler(void *arg)
                         if (recognize_result.id > 0){
                             // rgb_printf(frame, RGB565_MASK_GREEN, "ID %d", recognize_result.id);
                             rgb_printf(frame, RGB565_MASK_GREEN, "Welcome %s",recognize_result.name.c_str());// debug due to display name
-                        }
-                        else{
+                        }else{
                             rgb_print(frame, RGB565_MASK_RED, "Unregister");
                             ESP_LOGI(TAG,"Not Recognize");
-                            }
+                        }
                         break;
 
                     case SHOW_STATE_ENROLL:{

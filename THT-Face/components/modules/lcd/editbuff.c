@@ -9,7 +9,7 @@
 volatile uint8_t sleepEnable=0;
 volatile TickType_t sleepTimeOut=0; 
 extern bool ble_is_connected;
-extern uint8_t wifiStatus;
+extern uint8_t networkStatus;
 
 
 void editDisplayBuff(camera_fb_t **buff){
@@ -27,7 +27,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
         writedateTime(*buff , current_time, clockType);
 
-        if(wifiStatus==0){
+        if(networkStatus==WIFI_DISS){
 
             if(ble_is_connected)iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
 
@@ -86,7 +86,7 @@ void editDisplayBuff(camera_fb_t **buff){
         {
             iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcon,WHITE,*buff);
 
-            if(wifiStatus==2){
+            if(networkStatus==STOMP_CONNECTED){
 
                 iconPrint(NETWORK_ICON_POSS_X+14,NETWORK_ICON_POSS_Y+8,7,7 ,&connectedIcon,GREEN,*buff);
 

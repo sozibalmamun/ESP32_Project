@@ -1,5 +1,9 @@
 #pragma once
+//----------------Debug tag name------------------------------------
 
+
+
+//------------------------------------------------------------------
 
 #define DEVICE_VERSION_ID "AA00"// device v
 #define WL_FLASH_SIZE      2097152//FATFS size
@@ -14,7 +18,7 @@
 #define ID_INVALID          0X06
 #define ID_DATA_ERROR       0X07
 #define NAME_DATA_ERROR     0X08
-#define ENROLMENT_TIMEOUT   0x0A
+#define ENROLMENT_TIMEOUT   0x09
 //--------------------------------------------------------------------
 
 //-------------------Time value in ms---------------------------------
@@ -50,7 +54,12 @@
 #define     PUBLISH_TOPIC         "/app/cloud"
 #define     SUBCRIBE_TOPIC        "/topic/cloud"
 //-------------------------------------------------------------------
-
+//-----------network status code-------------------------------------
+#define     WIFI_DISS             0x00
+#define     WIFI_CONNECTED      0x01
+#define     WSS_CONNECTED       0x02
+#define     STOMP_CONNECTED     0x03
+//-------------------------------------------------------------------
 //-------------------------------------------------------------
 #define     IMAGE_CHANK_SIZE      100 //512//760//256 //128
 #define     CHANK_SIZE            512 //512//760//256 //128

@@ -249,7 +249,6 @@ static void task_process_handler(void *arg)
 
                         TimeOut= xTaskGetTickCount();
                         if (xTaskGetTickCount()-erolTimeOut> TIMEOUT_15_S ){
-                            ESP_LOGI("ENROL", "TIME OUT\n");
                             CmdEvent = ENROLMENT_TIMEOUT;
                             key_state= KEY_IDLE;
                             vTaskDelay(10);

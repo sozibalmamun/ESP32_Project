@@ -60,7 +60,7 @@ const int CONNECTED_BIT = BIT0;
 static uint8_t example_wifi_retry = 0;
 
 /* store the station info for send back to phone */
-uint8_t wifiStatus=0;
+uint8_t networkStatus=0;
 static bool gl_sta_got_ip = false;
 bool ble_is_connected = false;
 static uint8_t gl_sta_bssid[6];
@@ -139,7 +139,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
         vTaskDelay(500);
         stompAppStart();
 
-        wifiStatus=0x01;
+        networkStatus=WIFI_CONNECTED;
         gl_sta_is_connecting = false;
         event = (wifi_event_sta_connected_t*) event_data;
         memcpy(gl_sta_bssid, event->bssid, 6);
@@ -154,7 +154,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
     case WIFI_EVENT_STA_DISCONNECTED:{//ok
 
 
-        wifiStatus=0x00;
+        networkStatus=WIFI_DISS;
         // esp_websocket_client_stop( client);
         if (client != NULL) {
         esp_websocket_client_stop(client);

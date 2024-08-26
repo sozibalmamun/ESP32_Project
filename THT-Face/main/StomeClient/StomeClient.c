@@ -4,10 +4,6 @@
 
 
 
-
-#define     TAG             "WEBSOCKET"
-#define     TAGSTOMP        "STOMP_CLIENT"
-
 void stomp_client_connect() {
 
     char connect_frame[100] = "[\"CONNECT\\naccept-version:1.1\\nhost:grozziieget.zjweiting.com\\n\\n\\u0000\"]";
@@ -25,7 +21,7 @@ void stomp_client_subscribe(char* topic) {
 
     if(esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY)>0){
         
-        wifiStatus=0x02;
+        networkStatus=STOMP_CONNECTED;
         ESP_LOGI(TAGSTOMP, " STOMP Subscribed");
     }
 
@@ -89,7 +85,7 @@ void stomeAck(const char * message){
 //         if(!esp_websocket_client_is_connected(client)){
 
 //             ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
-//             wifiStatus=0x01;
+//             networkStatus=0x01;
 //             stomp_client_connect(); 
 
 //             return false;//
@@ -149,14 +145,13 @@ bool stompSend(char * buff, char* topic){
         // if(!esp_websocket_client_is_connected(client)){
 
         //     ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
-        //     wifiStatus=0x01;
+        //     networkStatus=0x01;
         //     return false;//
         // }
 
-        if(wifiStatus != 2){
+        if(networkStatus != STOMP_CONNECTED){
             ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
-            wifiStatus=0x01;
-            stomp_client_connect(); 
+            networkStatus=WSS_CONNECTED;
             return false;//
         }
 
@@ -248,10 +243,9 @@ bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name
             strcat(sentframe, "\\n\\n\\u0000\"]");
 
 
-        if(wifiStatus != 2){
+        if(networkStatus != STOMP_CONNECTED){
             ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
-            wifiStatus=0x01;
-            stomp_client_connect(); 
+            networkStatus=WSS_CONNECTED;
             return false;//
         }
         if(esp_websocket_client_send_text(client, sentframe, strlen(sentframe), portMAX_DELAY)!=ESP_OK){
@@ -282,9 +276,14 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     switch (event_id) {
     case WEBSOCKET_EVENT_CONNECTED:
         // ESP_LOGI(TAG, "WEBSOCKET_EVENT_CONNECTED");
+        networkStatus=WSS_CONNECTED;
+
         break;
     case WEBSOCKET_EVENT_DISCONNECTED:
         ESP_LOGI(TAG, "WEBSOCKET_EVENT_DISCONNECTED");
+
+        networkStatus=WIFI_CONNECTED;
+
 
         break;
     case WEBSOCKET_EVENT_DATA:
@@ -319,7 +318,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
             }else if(data->data_ptr[0]=='c'){
 
                 // ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
-                wifiStatus=0x01;
+                networkStatus=WIFI_CONNECTED;
                 stompAppStart();
             }
             // ESP_LOGI(TAG, "WEBSOCKET_free");

@@ -193,7 +193,9 @@ bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name
     // sent image info
     char imageInfo[30];
     snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d",buffLen, h, w, name, id);
-    if(!stompSend(imageInfo,topic))return false;//
+    if(!stompSend(imageInfo,topic))return false;// sent image info 
+    vTaskDelay(50);
+
 
     do{
 
@@ -310,9 +312,9 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
                 snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",current_time.year,current_time.month,current_time.day,current_time.hour,current_time.minute,current_time.second,
                 day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
 
-                // if(!stompSend(tempFrame, PUBLISH_TOPIC)){
-                // ESP_LOGI(TAGSTOMP, "sending error");
-                // }
+                if(!stompSend(tempFrame, PUBLISH_TOPIC)){
+                ESP_LOGI(TAGSTOMP, "sending error");
+                }
                 //--------------------------------------------------------------
             }else if(data->data_ptr[0]=='c'){
 

@@ -43,7 +43,7 @@ volatile uint16_t personId;
 extern volatile uint8_t sleepEnable;
 extern TickType_t sleepTimeOut; 
 TickType_t TimeOut;
-
+TickType_t erolTimeOut;
 
 //---------------------------------------
 
@@ -142,7 +142,7 @@ bool copy_rectangle(const camera_fb_t *src, imageData_t **dst, int x_start, int 
     // Validate the calculated size
     if ((*dst)->len <= 0 || (*dst)->len > src->len) {
         printf("Invalid calculated len: %d\n", (*dst)->len);
-        heap_caps_free(*dst);
+        // heap_caps_free(*dst);
         *dst = NULL;
         return false;
     }
@@ -248,7 +248,15 @@ static void task_process_handler(void *arg)
                     }else {
 
                         TimeOut= xTaskGetTickCount();
+                        if (xTaskGetTickCount()-erolTimeOut> TIMEOUT_15_S ){
+                            ESP_LOGI("ENROL", "TIME OUT\n");
+                            CmdEvent = ENROLMENT_TIMEOUT;
+                            key_state= KEY_IDLE;
+                            vTaskDelay(10);
+
+                        } 
                         rgb_printf(frame, RGB565_MASK_GREEN, "Start Enroling");// debug due to display name
+
                     }
 
 
@@ -281,7 +289,6 @@ static void task_process_handler(void *arg)
                         if(!copy_rectangle(frame,&cropFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]))
                         {
                             frame_show_state = INVALID;
-                            heap_caps_free(cropFrame->buf);
                             heap_caps_free(cropFrame);
                             break;
                         }
@@ -304,7 +311,6 @@ static void task_process_handler(void *arg)
                         } else {
                             printf("xQueueCloud is NULL, cannot send cropFrame.\n");
                         }
-
 
                         //---------------------------------------------------------------------------------
 
@@ -408,15 +414,17 @@ static void task_process_handler(void *arg)
                     }
                     case SHOW_DUPLICATE:{
                         rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");//   
-                        vTaskDelay(10);
+                        // vTaskDelay(10);
 
-                    break;
+                        break;
                     }
                     case INVALID:
 
-                        rgb_printf(frame, RGB565_MASK_RED, "Don't Move");// at invalid face
+                        erolTimeOut= xTaskGetTickCount();// incrise 15000ms enrolment time
+                        rgb_printf(frame, RGB565_MASK_RED, "Aline Face");// at invalid face
+                        key_state= KEY_SHORT_PRESS;// back to enroling
 
-                    break;
+                        break;
                     default:
                         break;
                     }

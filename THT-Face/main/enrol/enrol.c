@@ -21,7 +21,7 @@ extern char personName[20];
 extern volatile uint16_t personId;
 
 extern key_state_t key_state;
-TickType_t erolTimeOut;
+extern TickType_t erolTimeOut;
 
 
 void process_command(const char* buffer) {
@@ -159,9 +159,7 @@ void eventFeedback(void){
                 ESP_LOGI(TAG_ENROL, "back to idle mode\n");
                 CmdEvent = IDLE_EVENT;
             }
-        }else{
-
-            if(CmdEvent==ENROLED){
+        }else if(CmdEvent==ENROLED){
 
                 char personIdStr[12]; // assuming 32-bit uint can be represented in 11 chars + null terminator
                 snprintf(personIdStr, sizeof(personIdStr), "%u", personId);
@@ -171,7 +169,7 @@ void eventFeedback(void){
                     ESP_LOGI(TAG_ENROL, "id sent to client\n");
                     CmdEvent = IDLE_EVENT;
                 }
-            }else if(CmdEvent==DUPLICATE){
+        }else if(CmdEvent==DUPLICATE){
 
                 ESP_LOGI(TAG_ENROL, "duplicate ack\n");
 
@@ -182,27 +180,18 @@ void eventFeedback(void){
                     ESP_LOGI(TAG_ENROL, "back to idle mode\n");
                     CmdEvent = IDLE_EVENT;
                 }
-            }else {
+        }else if(CmdEvent==ENROLMENT_TIMEOUT) {
 
-                // TickType_t TimeOut = xTaskGetTickCount();
-        
-                if (xTaskGetTickCount()-erolTimeOut> TIMEOUT_15_S ){
-                    // ESP_LOGI(TAG_ENROL, "not acking\n");
+                // nack for time out
+                if (!stompSend("NETO",PUBLISH_TOPIC)) {
+                    //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
+                } else {
+                    ESP_LOGI(TAG_ENROL, "back to idle mode\n");
                     CmdEvent = IDLE_EVENT;
-                    key_state= KEY_IDLE;
-
-                    // nack for time out
-                    if (!stompSend("NETO",PUBLISH_TOPIC)) {
-                        //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
-                    } else {
-                        ESP_LOGI(TAG_ENROL, "back to idle mode\n");
-                    }
-                    printf("\ncmd enroll flag status %d",CmdEvent);
-                    // vTaskDelay(10);
 
                 }
-            }
-
+ 
         }
+
 
 }

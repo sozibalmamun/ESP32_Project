@@ -1,6 +1,7 @@
 #pragma once
 //----------------Debug tag name------------------------------------
-
+// #define     TAG             "Wss"
+// #define     TAGSTOMP        "STOMP_CLIENT"
 
 
 //------------------------------------------------------------------
@@ -48,21 +49,21 @@
 #define TIMEOUT_5_MIN         30000
 //-------------------------------------------------------------------
 
-
+static const char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 //-------------------topic-------------------------------------------
 
 #define     PUBLISH_TOPIC         "/app/cloud"
 #define     SUBCRIBE_TOPIC        "/topic/cloud"
 //-------------------------------------------------------------------
 //-----------network status code-------------------------------------
-#define     WIFI_DISS             0x00
+#define     WIFI_DISS           0x00
 #define     WIFI_CONNECTED      0x01
 #define     WSS_CONNECTED       0x02
 #define     STOMP_CONNECTED     0x03
 //-------------------------------------------------------------------
 //-------------------------------------------------------------
 #define     IMAGE_CHANK_SIZE      100 //512//760//256 //128
-#define     CHANK_SIZE            512 //512//760//256 //128
+#define     CHANK_SIZE            200 //512//760//256 //128
 
 
 

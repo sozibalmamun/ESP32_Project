@@ -84,22 +84,20 @@ void editDisplayBuff(camera_fb_t **buff){
 
         }else 
         {
+
+            // drawImage(50, 50, 75,  69,  &rgb565Data,*buff);
+            display_faces( *buff);
+
             iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcon,WHITE,*buff);
-
             if(networkStatus==STOMP_CONNECTED){
-
                 iconPrint(NETWORK_ICON_POSS_X+14,NETWORK_ICON_POSS_Y+8,7,7 ,&connectedIcon,GREEN,*buff);
-
             }else{
-
                 iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,2,7,&disconnectedIcon,RED,*buff);
-
             }
             animationTime = xTaskGetTickCount();
+
         }
     }
-
-
 }
 
 void iconPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,char* logobuff,uint16_t color ,camera_fb_t *buff) {
@@ -123,6 +121,43 @@ void iconPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,char* l
         }
     }
 }
+
+
+
+
+
+
+
+void drawImage(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t height, uint8_t *image, camera_fb_t *buff) {
+   
+    // Ensure the image fits within the buffer dimensions
+    if (x_offset + width > buff->width || y_offset + height > buff->height) {
+        // Out of bounds, do nothing
+        return;
+    }
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            // Calculate the index in the image data array
+            int image_index = (y * width + x) * 2; // 2 bytes per pixel for RGB565
+
+            // Calculate the index in the framebuffer
+            int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel for RGB565
+
+            // Copy the image pixel to the framebuffer
+            buff->buf[buff_index] = image[image_index]; // High byte of RGB565
+            buff->buf[buff_index + 1] = image[image_index + 1]; // Low byte of RGB565
+        }
+    }
+}
+
+
+
+
+
+
+
+
 void writeSn(camera_fb_t *buff ,uint64_t id){
 
     char tempFrame[19] ;

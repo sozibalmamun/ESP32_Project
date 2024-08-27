@@ -2,7 +2,8 @@
 #include "timeLib.h"
 #include <math.h>
 
-
+#define     TAG             "WSS"
+#define     TAGSTOMP        "STOMP_CLIENT"
 
 void stomp_client_connect() {
 
@@ -119,7 +120,8 @@ bool stompSend(char * buff, char* topic){
 
     uint16_t currentIndex=0;
     uint16_t buffLen =strlen(buff);
-    // ESP_LOGW(TAGSTOMP, "Sending  total chank :%d\n", (int)ceil(buffLen/CHANK_SIZE)>1?(int)ceil(buffLen/CHANK_SIZE):1);
+    // ESP_LOGW(TAGSTOMP, "Sending  total len: %d chank: %d\n", buffLen, (int)ceil(buffLen/CHANK_SIZE)>1?(int)ceil(buffLen/CHANK_SIZE):1);
+
     do{
         memset(tempFrame,0,sizeof(tempFrame));
         if(buffLen<=CHANK_SIZE){
@@ -138,9 +140,18 @@ bool stompSend(char * buff, char* topic){
         char sendingFrame[strlen(tempFrame)+37+strlen(topic)];
         memset(sendingFrame,0,sizeof(sendingFrame));
 
-        snprintf(sendingFrame, sizeof(sendingFrame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, tempFrame);
+        // snprintf(sendingFrame, sizeof(sendingFrame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, tempFrame);
 
-        // ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", sendingFrame);
+
+        strcat(sendingFrame, "[\"SEND\\ndestination:");
+        strcat(sendingFrame, topic);
+        strcat(sendingFrame, "\\n\\n");
+        strcat(sendingFrame, tempFrame);
+        strcat(sendingFrame, "\\n\\n\\u0000\"]");
+
+
+
+        ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", sendingFrame);
 
         // if(!esp_websocket_client_is_connected(client)){
 
@@ -166,6 +177,7 @@ bool stompSend(char * buff, char* topic){
         }else {
 
             ESP_LOGI(TAGSTOMP, "Sending STOMP FAIL");
+            networkStatus=WSS_CONNECTED;
             return false;
 
         }
@@ -187,7 +199,7 @@ bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name
 
     // sent image info
     char imageInfo[30];
-    snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d",buffLen, h, w, name, id);
+    snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d",buffLen, w, h, name, id);
     if(!stompSend(imageInfo,topic))return false;// sent image info 
     vTaskDelay(50);
 
@@ -256,6 +268,7 @@ bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name
 
 
         }else {
+            networkStatus=WSS_CONNECTED;
 
             ESP_LOGI(TAGSTOMP, "Sending STOMP FAIL");
             return false;
@@ -268,6 +281,10 @@ bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name
 return true;
 
 }
+
+
+
+
 
 
 static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)

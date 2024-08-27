@@ -135,8 +135,15 @@ bool copy_rectangle(const camera_fb_t *src, imageData_t **dst, int x_start, int 
     int rect_width = x_end - x_start;
     int rect_height = y_end - y_start;
     int bytes_per_pixel = 2; // Assuming RGB565 format
+
     (*dst)->width = rect_width;
     (*dst)->height = rect_height;
+
+    // (*dst)->width = rect_height;
+    // (*dst)->height =rect_width;
+
+
+
     (*dst)->len = rect_width * rect_height * bytes_per_pixel;
 
     // Validate the calculated size
@@ -208,7 +215,6 @@ static void task_process_handler(void *arg)
 
             if (xQueueReceive(xQueueFrameI, &frame, portMAX_DELAY))
             {
-
 
 
                 std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3});
@@ -325,7 +331,7 @@ static void task_process_handler(void *arg)
                             CPUBgflag=1;
                             // ESP_LOGI("RECOGNIZE", "Similarity: %f, Match Name: %s", recognize_result.similarity, recognize_result.name.c_str());
 
-                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_5000_MS)StopMultipleAttaneId=0;
+                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_10000_MS)StopMultipleAttaneId=0;
 
                             if(StopMultipleAttaneId!=recognize_result.id){
 

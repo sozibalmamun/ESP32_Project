@@ -9,6 +9,8 @@
 #include "freertos/semphr.h"
 #include "timeLib.h"
 #include "globalScope.h"
+#include "esp_camera.h"
+
 
 
 

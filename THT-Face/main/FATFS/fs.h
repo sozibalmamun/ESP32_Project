@@ -62,7 +62,7 @@ bool sendFilePath(const char *file_path);
 extern bool process_and_send_faces(const char* topic);
 extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic);
 
-extern bool display_faces( camera_fb_t *buff);
+extern uint16_t display_faces( camera_fb_t *buff);
 extern void drawImage(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t height, uint8_t *image, camera_fb_t *buff);
 
 

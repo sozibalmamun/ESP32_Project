@@ -11,6 +11,8 @@ volatile TickType_t sleepTimeOut=0;
 extern bool ble_is_connected;
 extern uint8_t networkStatus;
 
+extern uint16_t chankNo;
+
 
 void editDisplayBuff(camera_fb_t **buff){
 
@@ -25,7 +27,6 @@ void editDisplayBuff(camera_fb_t **buff){
 
     }else {// wekup time display
 
-        writedateTime(*buff , current_time, clockType);
 
         if(networkStatus==WIFI_DISS){
 
@@ -86,20 +87,32 @@ void editDisplayBuff(camera_fb_t **buff){
         {
 
             // drawImage(50, 50, 75,  69,  &rgb565Data,*buff);
-            
+            if(networkStatus==STOMP_CONNECTED){
+                
+                uint16_t len = display_faces( *buff);
+                printf("\nChank no %d image len %d",chankNo ,len);
+
+                len =(((chankNo*IMAGE_CHANK_SIZE)/len)*100);
+
+                char tempFrame[30] ;
+                snprintf(tempFrame, sizeof(tempFrame), "%d",len);
+                WriteString(1,10,100,tempFrame,*buff);
+            }
 
             iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcon,WHITE,*buff);
             if(networkStatus==STOMP_CONNECTED){
+
                 iconPrint(NETWORK_ICON_POSS_X+14,NETWORK_ICON_POSS_Y+8,7,7 ,&connectedIcon,GREEN,*buff);
-
-                display_faces( *buff);
-
             }else{
                 iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,2,7,&disconnectedIcon,RED,*buff);
             }
             animationTime = xTaskGetTickCount();
 
         }
+
+        writedateTime(*buff , current_time, clockType);
+
+
     }
 }
 
@@ -140,8 +153,8 @@ void drawImage(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t heigh
     }
     // printf("\n image drw data:\n");
 
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
+    for (int y = 1; y < height; y++) {
+        for (int x = 1; x < width; x++) {
             // Calculate the index in the image data array
             int image_index = (y * width + x) * 2; // 2 bytes per pixel for RGB565
 
@@ -150,10 +163,7 @@ void drawImage(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t heigh
 
             // Copy the image pixel to the framebuffer
             buff->buf[buff_index] = image[image_index]; // High byte of RGB565
-            // printf("%x",image[image_index]);
-
             buff->buf[buff_index + 1] = image[image_index + 1]; // Low byte of RGB565
-            // printf("%x",image[image_index+1]);
 
         }
     }

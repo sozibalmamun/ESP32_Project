@@ -503,7 +503,7 @@ bool process_and_send_faces(const char* topic) {
 // }
 
 ///----------------rnd
-bool display_faces(camera_fb_t *buff) {
+uint16_t display_faces(camera_fb_t *buff) {
     DIR *dir;
     struct dirent *entry;
 
@@ -511,6 +511,8 @@ bool display_faces(camera_fb_t *buff) {
         ESP_LOGE("display_faces", "Failed to open directory: %s", FACE_DIRECTORY);
         return false; // Return false to indicate failure to open directory
     }
+    uint16_t image_length=0;
+
 
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_REG) {  // Only process regular files
@@ -520,7 +522,7 @@ bool display_faces(camera_fb_t *buff) {
             strcat(file_name, "/");
             strcat(file_name, entry->d_name);
 
-            ESP_LOGI("display_faces", "Opening file for reading: %s", file_name);
+            // ESP_LOGI("display_faces", "Opening file for reading: %s", file_name);
 
             FILE* f = fopen(file_name, "rb");
             if (f == NULL) {
@@ -544,7 +546,7 @@ bool display_faces(camera_fb_t *buff) {
             fread(&image_height, sizeof(image_height), 1, f);
 
             // Calculate image size in bytes for RGB565 format (2 bytes per pixel)
-            uint32_t image_length = image_width * image_height * 2;
+            image_length = image_width * image_height * 2;
 
             // Allocate memory for image data
             uint8_t* image_data = (uint8_t *)heap_caps_malloc(image_length, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
@@ -570,16 +572,15 @@ bool display_faces(camera_fb_t *buff) {
                 for (int x = 0; x < 320; x++)
                 {
                     int index = (y * buff->width + x) * 2; // Assuming 2 bytes per pixel
-                    uint8_t currentColor= buff->buf[index];
 
-                    buff->buf[index] = currentColor>50?currentColor-20:currentColor;
-
-                    currentColor= buff->buf[index+1];
-                    buff->buf[index + 1] =  currentColor>50?currentColor-20:currentColor;
+                    buff->buf[index] = 0x42;
+                    buff->buf[index + 1] = 0x08;
                 }
             }
 
-            drawImage(50, 50, image_width, image_height, image_data, buff);
+            uint8_t imageXPoss = (320/2)-(image_width/2);
+            drawImage(imageXPoss, 40, image_width, image_height, image_data, buff);
+
 
 
             // Free allocated memory for image data
@@ -588,5 +589,5 @@ bool display_faces(camera_fb_t *buff) {
     }
 
     closedir(dir);
-    return true; // Return true to indicate successful processing
+    return image_length; // Return true to indicate successful processing
 }

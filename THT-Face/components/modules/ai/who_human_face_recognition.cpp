@@ -234,7 +234,7 @@ static void task_process_handler(void *arg)
 
                     if (detect_results.size() == 1){
                         is_detected = true;
-                        _gEvent=RECOGNIZE;
+                        if(_gEvent!=ENROLING)_gEvent=RECOGNIZE;// enroling is the 1st priority
                                 
                     }
 

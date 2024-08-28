@@ -182,8 +182,8 @@ return true;
 
 bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name, uint16_t id, char* topic) {
     // Calculate the required size for hex string
-    size_t hexStringLen = buffLen * 2 + 1; // 2 characters per byte + null terminator
-    char* hexString =  (char *)heap_caps_malloc(hexStringLen, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM); // (char*)malloc(hexStringLen);    (uint8_t *)heap_caps_malloc(image_length, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    size_t tempLen = buffLen * 2 + 1; // 2 characters per byte + null terminator
+    char* hexString =  (char *)heap_caps_malloc(tempLen, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     if (hexString == NULL) {
         ESP_LOGE(TAGSTOMP, "Memory allocation for hexString failed");
         return false;
@@ -195,13 +195,19 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
     }
 
     // Null-terminate the hex string
-    hexString[hexStringLen - 1] = '\0';
+    hexString[tempLen - 1] = '\0';
 
-    ESP_LOGW(TAGSTOMP, "Total hex string length: %d, Chunks to send: %d\n", strlen(hexString), (int)ceil((double)strlen(hexString) / IMAGE_CHANK_SIZE));
+    uint16_t chankNo= (int)ceil((double)strlen(hexString) / IMAGE_CHANK_SIZE);
+
+
+    ESP_LOGW(TAGSTOMP, "Total hex string length: %d, Chunks to send: %d\n", strlen(hexString), chankNo);
+
+
+
 
     // Send image info
-    char imageInfo[30];
-    snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d", buffLen, w, h, name, id);
+    char imageInfo[35];
+    snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d %d", buffLen, w, h, name, id,chankNo);
     if (!stompSend(imageInfo, topic)) {
         heap_caps_free(hexString);
         return false;
@@ -210,6 +216,7 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
 
     // Send the hex string in chunks
     uint16_t currentIndex = 0;
+    chankNo=1;
     while (currentIndex < strlen(hexString)) {
         char chunk[IMAGE_CHANK_SIZE + 1]; // Buffer for each chunk
         memset(chunk, 0, sizeof(chunk));
@@ -223,21 +230,13 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
         strncpy(chunk, &hexString[currentIndex], chunkLen);
 
         // Prepare the STOMP frame to send
-        char sentFrame[sizeof(chunk) + 47 + strlen(topic)];
+        char sentFrame[sizeof(chunk) + 55 + strlen(topic)];
         memset(sentFrame, 0, sizeof(sentFrame));
 
+        snprintf(sentFrame, sizeof(sentFrame), "[\"SEND\\ndestination:%s\\n\\n%d %d %s\\n\\n\\u0000\"]", topic, id ,chankNo,chunk);
 
-        // snprintf(sentFrame, sizeof(sentFrame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, chunk);
+        printf("Chunk No: %d\n", chankNo);// chank no 
 
-
-        strcat(sentFrame, "[\"SEND\\ndestination:");
-        strcat(sentFrame, topic);
-        strcat(sentFrame, "\\n\\n");
-        strcat(sentFrame, chunk);
-        strcat(sentFrame, "\\n\\n\\u0000\"]");
-
-
-        printf("Chunk len: %d, SentFrame len: %d\n", strlen(chunk), strlen(sentFrame));
 
         if (networkStatus != STOMP_CONNECTED) {
             ESP_LOGE(TAGSTOMP, "Stomp disconnected\n");
@@ -257,6 +256,7 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
         }else{
 
             currentIndex += chunkLen;
+            chankNo++;// no of chank 
             vTaskDelay(30);
         }
 

@@ -86,11 +86,14 @@ void editDisplayBuff(camera_fb_t **buff){
         {
 
             // drawImage(50, 50, 75,  69,  &rgb565Data,*buff);
-            // display_faces( *buff);
+            
 
             iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcon,WHITE,*buff);
             if(networkStatus==STOMP_CONNECTED){
                 iconPrint(NETWORK_ICON_POSS_X+14,NETWORK_ICON_POSS_Y+8,7,7 ,&connectedIcon,GREEN,*buff);
+
+                display_faces( *buff);
+
             }else{
                 iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,2,7,&disconnectedIcon,RED,*buff);
             }
@@ -135,7 +138,7 @@ void drawImage(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t heigh
         // Out of bounds, do nothing
         return;
     }
-    printf("\n image drw data:\n");
+    // printf("\n image drw data:\n");
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
@@ -147,14 +150,14 @@ void drawImage(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t heigh
 
             // Copy the image pixel to the framebuffer
             buff->buf[buff_index] = image[image_index]; // High byte of RGB565
-            printf("%x",image[image_index]);
+            // printf("%x",image[image_index]);
 
             buff->buf[buff_index + 1] = image[image_index + 1]; // Low byte of RGB565
-            printf("%x",image[image_index+1]);
+            // printf("%x",image[image_index+1]);
 
         }
     }
-    printf("\n");
+    // printf("\n");
 
 }
 

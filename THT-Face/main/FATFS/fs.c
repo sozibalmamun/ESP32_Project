@@ -421,6 +421,7 @@ bool process_and_send_faces(const char* topic) {
             if (sent) {
 
                 // Delete the file if sent successfully
+
                 // if (remove(file_name) == 0) {
                 //     ESP_LOGI("process_and_send_faces", "File sent and deleted: %s", file_name);
                 // } else {
@@ -563,7 +564,23 @@ bool display_faces(camera_fb_t *buff) {
 
 
             // Display image using drawImage function
+
+            for (int y = 0; y < 240; y++)
+            {
+                for (int x = 0; x < 320; x++)
+                {
+                    int index = (y * buff->width + x) * 2; // Assuming 2 bytes per pixel
+                    uint8_t currentColor= buff->buf[index];
+
+                    buff->buf[index] = currentColor>50?currentColor-20:currentColor;
+
+                    currentColor= buff->buf[index+1];
+                    buff->buf[index + 1] =  currentColor>50?currentColor-20:currentColor;
+                }
+            }
+
             drawImage(50, 50, image_width, image_height, image_data, buff);
+
 
             // Free allocated memory for image data
             heap_caps_free(image_data);

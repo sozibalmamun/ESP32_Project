@@ -177,6 +177,8 @@ static QueueHandle_t xQueueCloudI = NULL;
 
 static void cloudeHandlerTask(void *arg)
 {
+	const TickType_t xDelay = pdMS_TO_TICKS(500); // Run every 1 seconds
+
     while (true)
     {
         imageData_t *image = NULL;
@@ -198,8 +200,8 @@ static void cloudeHandlerTask(void *arg)
 
                 ESP_LOGE(TAG, "\ntest image storing.... ");
 
-                save_face_data(image->id, image->Name, image->width, image->height, image->buf);
-                // save_face_data(image->id, image->Name, 75, 69, &imageData);
+                // save_face_data(image->id, image->Name, image->width, image->height, image->buf);
+                save_face_data(image->id, image->Name, 75, 69, &imageData);
 
 
                 ESP_LOGE(TAG, "\ntest image saved ");
@@ -223,6 +225,8 @@ static void cloudeHandlerTask(void *arg)
                 ESP_LOGE(TAG, "Received NULL image data.");
             }
         }
+		vTaskDelay(xDelay);
+
     }
 }
 

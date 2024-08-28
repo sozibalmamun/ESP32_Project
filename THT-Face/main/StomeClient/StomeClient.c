@@ -137,11 +137,8 @@ bool stompSend(char * buff, char* topic){
         tempFrame[strlen(tempFrame)] = '\0';  // Null-terminate the chunk
 
 
-        char sendingFrame[strlen(tempFrame)+37+strlen(topic)];
+        char sendingFrame[strlen(tempFrame)+47+strlen(topic)];
         memset(sendingFrame,0,sizeof(sendingFrame));
-
-        // snprintf(sendingFrame, sizeof(sendingFrame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, tempFrame);
-
 
         strcat(sendingFrame, "[\"SEND\\ndestination:");
         strcat(sendingFrame, topic);
@@ -190,99 +187,224 @@ return true;
 }
 
 
-bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic) {
+// bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic) {
 
-    char tempFrame[(IMAGE_CHANK_SIZE * 2) + 1]; // +1 for null-terminator
-    memset(tempFrame,0,sizeof(tempFrame));
-    uint16_t currentIndex=0;
-    ESP_LOGW(TAGSTOMP, "Sending len:%d total chank :%d \n",buffLen, (int)ceil((buffLen*2)/IMAGE_CHANK_SIZE)+1);
+//     char tempFrame[(IMAGE_CHANK_SIZE * 2) + 1]; // +1 for null-terminator
+//     memset(tempFrame,0,sizeof(tempFrame));
+//     uint16_t currentIndex=0;
+//     ESP_LOGW(TAGSTOMP, "Sending len:%d total chank :%d \n",buffLen, (int)ceil((buffLen*2)/IMAGE_CHANK_SIZE)+1);
 
-    // sent image info
+//     // sent image info
+//     char imageInfo[30];
+//     snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d",buffLen, w, h, name, id);
+//     if(!stompSend(imageInfo,topic))return false;// sent image info 
+//     vTaskDelay(50);
+
+
+//     do{
+
+//         memset(tempFrame,0,sizeof(tempFrame));
+//         if(buffLen<=IMAGE_CHANK_SIZE){
+
+//             if(currentIndex){
+//                 for (int i = 0; i < buffLen; i++) {
+//                     sprintf(&tempFrame[i*2], "%02x", buff[(currentIndex-1) + i]);
+//                 }
+//             }else{
+//                 for (int i = 0; i < buffLen; i++) {
+//                     sprintf(&tempFrame[i*2], "%02x", buff[currentIndex + i]);
+//                 }
+//             }
+
+//             buffLen= buffLen - buffLen;
+//             ESP_LOGW(TAGSTOMP, "Sending last Chank\n");
+
+//         }else{
+
+//             if(currentIndex){
+//                 for (int i = 0; i < IMAGE_CHANK_SIZE; i++) {
+//                     sprintf(&tempFrame[i*2], "%02x", buff[(currentIndex-1) + i]);
+//                 }
+//             }else{
+//                 for (int i = 0; i < IMAGE_CHANK_SIZE; i++) {
+//                     sprintf(&tempFrame[i*2], "%02x", buff[currentIndex + i]);
+//                 }
+//             }
+
+//         }
+//         tempFrame[sizeof(tempFrame)] = '\0';  // Null-terminate the chunk
+
+
+//         char sentframe[sizeof(tempFrame)+47+strlen(topic)];
+//         memset(sentframe,0,sizeof(sentframe));
+
+//         strcat(sentframe, "[\"SEND\\ndestination:");
+//         strcat(sentframe, topic);
+//         strcat(sentframe, "\\n\\n");
+//         strcat(sentframe, tempFrame);
+//         strcat(sentframe, "\\n\\n\\u0000\"]");
+
+//         printf("tempframe len: %d sentframe len: %d",strlen(tempFrame),strlen(sentframe));
+
+//         if(networkStatus != STOMP_CONNECTED){
+//             ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
+//             networkStatus=WSS_CONNECTED;
+//             return false;//
+//         }
+//         if(esp_websocket_client_send_text(client, sentframe, strlen(sentframe), portMAX_DELAY)!=ESP_OK){
+
+//             currentIndex+= IMAGE_CHANK_SIZE;
+//             if(buffLen>0)buffLen= buffLen - IMAGE_CHANK_SIZE; // check bufflen 0 or not then calculate 
+//             // ESP_LOGI(TAGSTOMP, "Sent len :%d  remain: %d\n", currentIndex,buffLen);
+//             vTaskDelay(50);
+
+//         }else {
+//             networkStatus=WSS_CONNECTED;
+
+//             ESP_LOGI(TAGSTOMP, "Sending STOMP FAIL");
+//             return false;
+
+//         }
+
+//     }while(buffLen!=0);
+
+
+// return true;
+
+// }
+// bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name, uint16_t id, char* topic) {
+//     char tempFrame[(IMAGE_CHANK_SIZE * 2) + 1]; // Buffer to hold the hex string
+//     uint16_t currentIndex = 0;
+//     int totalChunks = (int)ceil((buffLen * 2) / (float)IMAGE_CHANK_SIZE) + 1;
+
+//     ESP_LOGW(TAGSTOMP, "Sending len: %d, total chunks: %d\n", buffLen, totalChunks);
+
+//     // Send image info
+//     char imageInfo[30];
+//     snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d", buffLen, w, h, name, id);
+//     if (!stompSend(imageInfo, topic)) return false; // Send image info 
+//     vTaskDelay(50);
+
+//     while (buffLen > 0) {
+//         memset(tempFrame, 0, sizeof(tempFrame));
+
+//         uint16_t chunkSize = (buffLen < IMAGE_CHANK_SIZE) ? buffLen : IMAGE_CHANK_SIZE;
+
+//         // Convert the current chunk of the buffer to a hex string
+//         for (int i = 0; i < chunkSize; i++) {
+//             sprintf(&tempFrame[i * 2], "%02x", buff[currentIndex + i]);
+//         }
+
+//         // Update the current index and remaining buffer length
+//         currentIndex += chunkSize;
+//         buffLen -= chunkSize;
+
+//         // Prepare the STOMP frame to send
+//         char sentFrame[sizeof(tempFrame) + 47 + strlen(topic)];
+        
+//         snprintf(sentFrame, sizeof(sentFrame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, tempFrame);
+
+//         printf("tempFrame len: %d, sentFrame len: %d\n", strlen(tempFrame), strlen(sentFrame));
+
+//         if (networkStatus != STOMP_CONNECTED) {
+//             ESP_LOGE(TAGSTOMP, "Stomp disconnected\n");
+//             networkStatus = WSS_CONNECTED;
+//             return false;
+//         }
+
+//         if (esp_websocket_client_send_text(client, sentFrame, strlen(sentFrame), portMAX_DELAY) != 0) {
+//             ESP_LOGI(TAGSTOMP, "STOMP send failed. Retrying...\n");
+//             vTaskDelay(50);
+//             continue; // Retry sending
+//         } else {
+//             networkStatus = WSS_CONNECTED;
+//         }
+
+//         vTaskDelay(50);
+//     }
+
+//     return true;
+// }
+
+bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name, uint16_t id, char* topic) {
+
+    // Calculate the required size for hex string
+    size_t hexStringLen = buffLen * 2 + 1; // 2 characters per byte + null terminator
+    char* hexString = (char*)malloc(hexStringLen);
+    if (hexString == NULL) {
+        ESP_LOGE(TAGSTOMP, "Memory allocation for hexString failed");
+        return false;
+    }
+
+    // Convert the entire buffer to a hex string
+    for (int i = 0; i < buffLen; i++) {
+        sprintf(&hexString[i * 2], "%02x", buff[i]);
+    }
+
+    // Null-terminate the hex string
+    hexString[hexStringLen - 1] = '\0';
+
+    ESP_LOGW(TAGSTOMP, "Total hex string length: %d, Chunks to send: %d\n", strlen(hexString), (int)ceil((double)strlen(hexString) / IMAGE_CHANK_SIZE));
+
+    // Send image info
     char imageInfo[30];
-    snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d",buffLen, w, h, name, id);
-    if(!stompSend(imageInfo,topic))return false;// sent image info 
+    snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d", buffLen, w, h, name, id);
+    if (!stompSend(imageInfo, topic)) {
+        free(hexString);
+        return false;
+    }
     vTaskDelay(50);
 
+    // Send the hex string in chunks
+    uint16_t currentIndex = 0;
 
-    do{
+    while (currentIndex < strlen(hexString)) {
 
-        // uint16_t chunkLen = (buffLen <= IMAGE_CHANK_SIZE) ? buffLen : IMAGE_CHANK_SIZE;
-        memset(tempFrame,0,sizeof(tempFrame));
-        if(buffLen<=IMAGE_CHANK_SIZE){
-            // currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],buffLen) : memcpy(&tempFrame,&buff[currentIndex],buffLen);
-        if(currentIndex){
-            for (int i = 0; i < buffLen-1; i++) {
-                sprintf(&tempFrame[i*2], "%02x", buff[(currentIndex-1) + i]);
-            }
-        }else{
-            for (int i = 0; i < buffLen-1; i++) {
-                sprintf(&tempFrame[i*2], "%02x", buff[currentIndex + i]);
-            }
-        }
-            buffLen= buffLen - buffLen;
-            ESP_LOGW(TAGSTOMP, "Sending last Chank\n");
+        char chunk[IMAGE_CHANK_SIZE + 1]; // Buffer for each chunk
+        memset(chunk, 0, sizeof(chunk));
 
-        }else{
-            // currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame)-1) : memcpy(&tempFrame,&buff[currentIndex],sizeof(tempFrame)-1);
-        if(currentIndex){
-            for (int i = 0; i < IMAGE_CHANK_SIZE-1; i++) {
-                sprintf(&tempFrame[i*2], "%02x", buff[(currentIndex-1) + i]);
-            }
-        }else{
-            for (int i = 0; i < IMAGE_CHANK_SIZE-1; i++) {
-                sprintf(&tempFrame[i*2], "%02x", buff[currentIndex + i]);
-            }
+        // Calculate remaining length and copy chunk
+        size_t chunkLen = strlen(hexString) - currentIndex;
+        if (chunkLen > IMAGE_CHANK_SIZE) {
+            chunkLen = IMAGE_CHANK_SIZE;
         }
 
+        strncpy(chunk, &hexString[currentIndex], chunkLen);
 
-        }
-        tempFrame[sizeof(tempFrame)] = '\0';  // Null-terminate the chunk
+        // Prepare the STOMP frame to send
+        char sentFrame[sizeof(chunk) + 47 + strlen(topic)];
 
+        strcat(sentFrame, "[\"SEND\\ndestination:");
+        strcat(sentFrame, topic);
+        strcat(sentFrame, "\\n\\n");
+        strcat(sentFrame, chunk);
+        strcat(sentFrame, "\\n\\n\\u0000\"]");
 
-        char sentframe[sizeof(tempFrame)+37+strlen(topic)];
-        memset(sentframe,0,sizeof(sentframe));
+        printf("Chunk len: %d, SentFrame len: %d\n", strlen(chunk), strlen(sentFrame));
 
-        // ESP_LOGI(TAGSTOMP, "Sending  tempFrame len :%d dynamic pack len %d\n", strlen(tempFrame) ,sizeof(connect_frame));
-
-        // snprintf(sentframe, sizeof(sentframe), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", topic, tempFrame);
-
-        // ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", sentframe);
-
-            strcat(sentframe, "[\"SEND\\ndestination:");
-            strcat(sentframe, topic);
-            strcat(sentframe, "\\n\\n");
-            strcat(sentframe, tempFrame);
-            strcat(sentframe, "\\n\\n\\u0000\"]");
-
-
-        if(networkStatus != STOMP_CONNECTED){
-            ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
-            networkStatus=WSS_CONNECTED;
-            return false;//
-        }
-        if(esp_websocket_client_send_text(client, sentframe, strlen(sentframe), portMAX_DELAY)!=ESP_OK){
-
-            currentIndex+= IMAGE_CHANK_SIZE;
-            if(buffLen>0)buffLen= buffLen - IMAGE_CHANK_SIZE; // check bufflen 0 or not then calculate 
-            ESP_LOGI(TAGSTOMP, "Sent len :%d  remain: %d\n", currentIndex,buffLen);
-
-
-        }else {
-            networkStatus=WSS_CONNECTED;
-
-            ESP_LOGI(TAGSTOMP, "Sending STOMP FAIL");
+        if (networkStatus != STOMP_CONNECTED) {
+            ESP_LOGE(TAGSTOMP, "Stomp disconnected\n");
+            networkStatus = WSS_CONNECTED;
+            free(hexString);
             return false;
-
         }
 
-    }while(buffLen!=0);
+        if (esp_websocket_client_send_text(client, sentFrame, strlen(sentFrame), portMAX_DELAY) !=ESP_OK) {
+
+            currentIndex += chunkLen;
+            vTaskDelay(50);
+        }else {
+
+            ESP_LOGI(TAGSTOMP, "STOMP send failed. Retrying...\n");
+            continue; // Retry sending
+        }
 
 
-return true;
+    }
 
+    free(hexString);
+    return true;
 }
-
-
 
 
 
@@ -319,17 +441,20 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
             }
 
             else if(data->data_ptr[0]=='h'){
-                ESP_LOGI(TAG, "Ping");
                 //---------------------------------------------------------------
+                if( networkStatus==STOMP_CONNECTED){
+                    ESP_LOGI(TAG, "Ping");
+                    time_library_time_t current_time;
+                    uint8_t clockType = get_time(&current_time, 1);
+                    char tempFrame[27] ;
+                    snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",current_time.year,current_time.month,current_time.day,current_time.hour,current_time.minute,current_time.second,
+                    day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
 
-                time_library_time_t current_time;
-                uint8_t clockType = get_time(&current_time, 1);
-                char tempFrame[27] ;
-                snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",current_time.year,current_time.month,current_time.day,current_time.hour,current_time.minute,current_time.second,
-                day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
+                    if(!stompSend(tempFrame, PUBLISH_TOPIC)){
+                        // ESP_LOGI(TAGSTOMP, "sending error");
 
-                if(!stompSend(tempFrame, PUBLISH_TOPIC)){
-                ESP_LOGI(TAGSTOMP, "sending error");
+                    }
+
                 }
                 //--------------------------------------------------------------
             }else if(data->data_ptr[0]=='c'){

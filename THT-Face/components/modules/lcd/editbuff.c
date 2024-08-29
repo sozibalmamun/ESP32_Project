@@ -85,12 +85,18 @@ void editDisplayBuff(camera_fb_t **buff){
             if(networkStatus==STOMP_CONNECTED){
                 
                 display_faces( *buff);
-              
-                printf("\nChank done: %d ",percentage);
 
-                char tempFrame[30] ;
-                snprintf(tempFrame, sizeof(tempFrame), "%d",percentage);
-                WriteString(1,150,200,tempFrame,*buff);
+                if(percentage>0){
+                
+                    printf("\nChank done: %d ",percentage);
+                    char tempFrame[30] ;
+                    snprintf(tempFrame, sizeof(tempFrame), "%d",percentage);
+                    WriteString(1,150,170,tempFrame,*buff);
+
+                }             
+                
+         
+              
             }
 
             iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcon,WHITE,*buff);
@@ -141,7 +147,7 @@ void scaleAndDisplayImageInFrame(uint8_t *src_image, uint8_t src_width, uint8_t 
     int8_t frame_height = 101; // Fixed frame height
 
 
-    drawFilledRoundedRectangle(pos_x-15,pos_y-5, src_width+32 , src_height+50, 3, 5,  0xc618,dst_buff);
+    drawFilledRoundedRectangle(pos_x-15,pos_y-5, frame_width+32 , frame_height+50, 3, 5,  0xc618,dst_buff);
 
     // Calculate scaling factors
     float scale_x = (float)src_width / frame_width;

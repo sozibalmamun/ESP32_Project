@@ -10,7 +10,7 @@
 extern qrcode_t qrInfo;
 extern bool ble_is_connected;
 extern uint8_t networkStatus;
-extern uint8_t percentage;
+extern int8_t percentage;
 
 
 

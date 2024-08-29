@@ -422,11 +422,11 @@ bool process_and_send_faces(const char* topic) {
 
                 // Delete the file if sent successfully
 
-                // if (remove(file_name) == 0) {
-                //     ESP_LOGI("process_and_send_faces", "File sent and deleted: %s", file_name);
-                // } else {
-                //     ESP_LOGE("process_and_send_faces", "Failed to delete file: %s", file_name);
-                // }
+                if (remove(file_name) == 0) {
+                    ESP_LOGI("process_and_send_faces", "File sent and deleted: %s", file_name);
+                } else {
+                    ESP_LOGE("process_and_send_faces", "Failed to delete file: %s", file_name);
+                }
 
             } else {
                 ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_name);
@@ -514,6 +514,7 @@ bool display_faces(camera_fb_t *buff) {
     uint16_t image_length=0;
 
 
+
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_REG) {  // Only process regular files
             char file_name[64]; // Increased buffer size to accommodate longer paths
@@ -581,13 +582,13 @@ bool display_faces(camera_fb_t *buff) {
             uint8_t imageXPoss = (320/2)-(image_width/2);
             scaleAndDisplayImageInFrame(image_data,  image_width, image_height, buff, imageXPoss, 39);
 
+
             // Free allocated memory for image data
             heap_caps_free(image_data);
 
 
         }
     }
-
     closedir(dir);
     return true; // Return true to indicate successful processing
 }

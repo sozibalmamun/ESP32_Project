@@ -5,7 +5,7 @@
 #define     TAG             "WSS"
 #define     TAGSTOMP        "STOMP_CLIENT"
 
-uint8_t percentage=0;
+int8_t percentage=0;
 
 
 
@@ -201,11 +201,14 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
 
             currentIndex += chunkLen;
             chankNo++;// no of chank 
-            percentage = ((chankNo*IMAGE_CHANK_SIZE) / totalChank) * 100;
-            ESP_LOGI(TAGSTOMP, "STOMP send percentage: %d\n",percentage);
+
+            float percentage_float = (chankNo /(float)totalChank) * 100;
+            percentage = (int)percentage_float;
+
+            // printf("total chank  %d send %d percentage: %d\n",totalChank,  chankNo,percentage);
 
             if(percentage>=100)percentage=0;
-            vTaskDelay(30);
+            vTaskDelay(20);
         }
 
 

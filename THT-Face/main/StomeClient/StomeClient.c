@@ -5,7 +5,7 @@
 #define     TAG             "WSS"
 #define     TAGSTOMP        "STOMP_CLIENT"
 
-uint16_t chankNo;
+uint8_t percentage=0;
 
 
 
@@ -92,10 +92,8 @@ bool stompSend(char * buff, char* topic){
 
         if(networkStatus != STOMP_CONNECTED){
             ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
-            networkStatus=WSS_CONNECTED;
-            vTaskDelay(100);
-
-            // return false;//
+            if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
+            vTaskDelay(100);  
             continue; // Retry sending
 
         }
@@ -103,8 +101,9 @@ bool stompSend(char * buff, char* topic){
         if(esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY)==ESP_OK){
 
             ESP_LOGI(TAGSTOMP, "Sending STOMP FAIL");
-            networkStatus=WSS_CONNECTED;
-            vTaskDelay(100);
+            if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
+            vTaskDelay(100); 
+
             continue; // Retry sending
 
         }else {
@@ -157,7 +156,7 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
 
     // Send the hex string in chunks
     uint16_t currentIndex = 0;
-    chankNo=0;
+    uint16_t chankNo=0;
     while (currentIndex < strlen(hexString)) {
         char chunk[IMAGE_CHANK_SIZE + 1]; // Buffer for each chunk
         memset(chunk, 0, sizeof(chunk));
@@ -176,34 +175,41 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
 
         snprintf(sentFrame, sizeof(sentFrame), "[\"SEND\\ndestination:%s\\n\\n%d %d %s\\n\\n\\u0000\"]", topic, id ,chankNo+1,chunk);
 
-        printf("Chunk No: %d\n", chankNo+1);// chank no 
+        // printf("Chunk No: %d\n", chankNo+1);// chank no 
 
 
         if (networkStatus != STOMP_CONNECTED) {
             ESP_LOGE(TAGSTOMP, "Stomp disconnected\n");
-            networkStatus = WSS_CONNECTED;
+            vTaskDelay(30);
+            if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
             vTaskDelay(100);
             // free(hexString);
             continue; // Retry sending
         }
 
         if (esp_websocket_client_send_text(client, sentFrame, strlen(sentFrame), portMAX_DELAY) == 0) {
-
-            networkStatus = WSS_CONNECTED;
+            vTaskDelay(30);
             ESP_LOGI(TAGSTOMP, "STOMP send failed. Retrying...\n");
+            if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
             vTaskDelay(100);
+
+
+
             continue; // Retry sending
 
         }else{
 
             currentIndex += chunkLen;
             chankNo++;// no of chank 
+            percentage = ((chankNo*IMAGE_CHANK_SIZE) / totalChank) * 100;
+            ESP_LOGI(TAGSTOMP, "STOMP send percentage: %d\n",percentage);
+
+            if(percentage>=100)percentage=0;
             vTaskDelay(30);
         }
 
 
     }
-    chankNo=0;
     heap_caps_free(hexString);
     return true;
 }

@@ -1,17 +1,15 @@
 
+#include "stdint.h"
+#include "math.h"
 #include "editbuff.h"
 #include "logo&Icon.h"
 #include "esp_wifi.h"
 #include "esp_log.h"
-#include "stdint.h"
+
 
 
 volatile uint8_t sleepEnable=0;
 volatile TickType_t sleepTimeOut=0; 
-extern bool ble_is_connected;
-extern uint8_t networkStatus;
-
-extern uint16_t chankNo;
 
 
 void editDisplayBuff(camera_fb_t **buff){
@@ -81,22 +79,18 @@ void editDisplayBuff(camera_fb_t **buff){
             createQrcode(tempFrame , *buff);
             writeSn(*buff, generate_unique_id());
         
-
-
         }else 
         {
 
-            // drawImage(50, 50, 75,  69,  &rgb565Data,*buff);
             if(networkStatus==STOMP_CONNECTED){
                 
-                uint16_t len = display_faces( *buff);
-                printf("\nChank no %d image len %d",chankNo ,len);
-
-                len =(((chankNo*IMAGE_CHANK_SIZE)/len)*100);
+                display_faces( *buff);
+              
+                printf("\nChank done: %d ",percentage);
 
                 char tempFrame[30] ;
-                snprintf(tempFrame, sizeof(tempFrame), "%d",len);
-                WriteString(1,10,100,tempFrame,*buff);
+                snprintf(tempFrame, sizeof(tempFrame), "%d",percentage);
+                WriteString(1,150,200,tempFrame,*buff);
             }
 
             iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcon,WHITE,*buff);
@@ -141,40 +135,222 @@ void iconPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,char* l
 
 
 
+// Function to scale an image to fit within a fixed-size frame buffer and display at a specific position
+void scaleAndDisplayImageInFrame(uint8_t *src_image, uint8_t src_width, uint8_t src_height, camera_fb_t *dst_buff, uint8_t pos_x, uint8_t pos_y) {
+    int8_t frame_width = 90;   // Fixed frame width
+    int8_t frame_height = 101; // Fixed frame height
 
 
+    drawFilledRoundedRectangle(pos_x-15,pos_y-5, src_width+32 , src_height+50, 3, 5,  0xc618,dst_buff);
 
-void drawImage(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t height, uint8_t *image, camera_fb_t *buff) {
-   
-    // Ensure the image fits within the buffer dimensions
-    if (x_offset + width > buff->width || y_offset + height > buff->height) {
-        // Out of bounds, do nothing
-        return;
-    }
-    // printf("\n image drw data:\n");
+    // Calculate scaling factors
+    float scale_x = (float)src_width / frame_width;
+    float scale_y = (float)src_height / frame_height;
 
-    for (int y = 1; y < height; y++) {
-        for (int x = 1; x < width; x++) {
-            // Calculate the index in the image data array
-            int image_index = (y * width + x) * 2; // 2 bytes per pixel for RGB565
+    // Loop over each pixel in the scaled image
+    for (int y = 1; y < frame_height; y++) {
+        for (int x = 1; x < frame_width; x++) {
+            // Calculate the corresponding pixel in the source image
+            int src_x = (int)(x * scale_x);
+            int src_y = (int)(y * scale_y);
 
-            // Calculate the index in the framebuffer
-            int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel for RGB565
+            // Ensure the source coordinates are within bounds
+            if (src_x >= src_width) src_x = src_width - 1;
+            if (src_y >= src_height) src_y = src_height - 1;
 
-            // Copy the image pixel to the framebuffer
-            buff->buf[buff_index] = image[image_index]; // High byte of RGB565
-            buff->buf[buff_index + 1] = image[image_index + 1]; // Low byte of RGB565
+            // Calculate the source buffer index
+            int src_index = (src_y * src_width + src_x) * 2; // 2 bytes per pixel for RGB565
 
+            // Calculate the destination buffer index with the specified position offset
+            uint8_t dst_x = pos_x + x;
+            uint8_t dst_y = pos_y + y;
+
+            // Ensure the destination coordinates are within bounds
+            if (dst_x >= dst_buff->width || dst_y >= dst_buff->height) {
+                continue; // Skip if out of bounds
+            }
+
+            int dst_index = (dst_y * dst_buff->width + dst_x) * 2; // 2 bytes per pixel for RGB565
+
+            // Copy the pixel data from the source image to the destination buffer
+            dst_buff->buf[dst_index] = src_image[src_index];     // High byte of RGB565
+            dst_buff->buf[dst_index + 1] = src_image[src_index + 1]; // Low byte of RGB565
         }
     }
-    // printf("\n");
+
+    drawRoundedRectangleBorder(pos_x-1, pos_y-1, frame_width+2,frame_height+2, 3, 8, 0xc618,dst_buff);
 
 }
 
 
 
+// Helper function to set a pixel in the framebuffer
+void setPixel(camera_fb_t *buff, int x, int y, uint16_t color) {
+    if (x >= 0 && x < buff->width && y >= 0 && y < buff->height) {
+        int index = (y * buff->width + x) * 2; // 2 bytes per pixel for RGB565
+        buff->buf[index] = color >> 8; // High byte of RGB565
+        buff->buf[index + 1] = color & 0xFF; // Low byte of RGB565
+    }
+}
+
+// // Function to draw a rounded rectangle border
+void drawRoundedRectangleBorder(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t height, uint8_t thickness, uint8_t corner_radius, uint16_t color, camera_fb_t *buff) {
+
+    // Ensure the rectangle fits within the buffer dimensions
+    if (x_offset + width > buff->width || y_offset + height > buff->height) {
+        // Out of bounds, do nothing
+        return;
+    }
+
+    // Draw the border
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2;
+
+            // Draw the top and bottom borders within the thickness range
+            if ((y < thickness || y >= height - thickness) && (x >= corner_radius && x < width - corner_radius)) {
+                buff->buf[buff_index] = color >> 8;
+                buff->buf[buff_index + 1] = color & 0xFF;
+            }
+
+            // Draw the left and right borders within the thickness range
+            if ((x < thickness || x >= width - thickness) && (y >= corner_radius && y < height - corner_radius)) {
+                buff->buf[buff_index] = color >> 8;
+                buff->buf[buff_index + 1] = color & 0xFF;
+            }
+        }
+    }
+
+    // Draw the rounded corners for the border
+    for (int i = 0; i < thickness; i++) {
+        for (int angle = 0; angle < 90; angle++) {
+            int x = corner_radius - (int)(corner_radius * cos(angle * M_PI / 180.0));
+            int y = corner_radius - (int)(corner_radius * sin(angle * M_PI / 180.0));
+
+            for(int8_t i =-1; i<thickness-1;i++){
+
+                // Top-left corner
+                int tl_index = ((y+i + y_offset) * buff->width + (x+i + x_offset)) * 2;
+                buff->buf[tl_index] = color >> 8;
+                buff->buf[tl_index + 1] = color & 0xFF;
+
+                // Top-right corner
+                int tr_index = ((y+i + y_offset) * buff->width + (width - x - 1 + x_offset-i)) * 2;
+                buff->buf[tr_index] = color >> 8;
+                buff->buf[tr_index + 1] = color & 0xFF;
+
+                // Bottom-left corner
+                int bl_index = ((height - y - 1 + y_offset-i) * buff->width + (x + x_offset+i)) * 2;
+                buff->buf[bl_index] = color >> 8;
+                buff->buf[bl_index + 1] = color & 0xFF;
+
+                // Bottom-right corner
+                int br_index = ((height - y - 1 + y_offset-i) * buff->width + (width - x - 1 + x_offset-i)) * 2;
+                buff->buf[br_index] = color >> 8;
+                buff->buf[br_index + 1] = color & 0xFF;
+            }
+
+        }
+    }
+}
 
 
+void drawFilledRoundedRectangle(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t height, uint8_t thickness, uint8_t radius, uint16_t color, camera_fb_t *buff) {
+    // Ensure the rectangle fits within the buffer dimensions
+    if (x_offset + width > buff->width || y_offset + height > buff->height) {
+        // Out of bounds, do nothing
+        return;
+    }
+
+    // Draw filled interior and border
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            // Calculate the current position within the buffer
+            int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2;
+
+            // Condition to draw the interior
+            if ((x >= radius && x < width - radius) || (y >= radius && y < height - radius)) {
+                buff->buf[buff_index] = color >> 8;     // High byte of RGB565
+                buff->buf[buff_index + 1] = color & 0xFF; // Low byte of RGB565
+            }
+
+            // Draw top-left rounded corner
+            if ((x < radius && y < radius) && ((x - radius) * (x - radius) + (y - radius) * (y - radius) < radius * radius)) {
+                buff->buf[buff_index] = color >> 8;
+                buff->buf[buff_index + 1] = color & 0xFF;
+            }
+
+            // Draw top-right rounded corner
+            if ((x >= width - radius && y < radius) && ((x - (width - radius - 1)) * (x - (width - radius - 1)) + (y - radius) * (y - radius) < radius * radius)) {
+                buff->buf[buff_index] = color >> 8;
+                buff->buf[buff_index + 1] = color & 0xFF;
+            }
+
+            // Draw bottom-left rounded corner
+            if ((x < radius && y >= height - radius) && ((x - radius) * (x - radius) + (y - (height - radius - 1)) * (y - (height - radius - 1)) < radius * radius)) {
+                buff->buf[buff_index] = color >> 8;
+                buff->buf[buff_index + 1] = color & 0xFF;
+            }
+
+            // Draw bottom-right rounded corner
+            if ((x >= width - radius && y >= height - radius) && ((x - (width - radius - 1)) * (x - (width - radius - 1)) + (y - (height - radius - 1)) * (y - (height - radius - 1)) < radius * radius)) {
+                buff->buf[buff_index] = color >> 8;
+                buff->buf[buff_index + 1] = color & 0xFF;
+            }
+        }
+    }
+
+    // Draw the border
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2;
+
+            // Draw the top and bottom borders within the thickness range
+            if ((y < thickness || y >= height - thickness) && (x >= radius && x < width - radius)) {
+                buff->buf[buff_index] = color >> 8;
+                buff->buf[buff_index + 1] = color & 0xFF;
+            }
+
+            // Draw the left and right borders within the thickness range
+            if ((x < thickness || x >= width - thickness) && (y >= radius && y < height - radius)) {
+                buff->buf[buff_index] = color >> 8;
+                buff->buf[buff_index + 1] = color & 0xFF;
+            }
+        }
+    }
+
+    // Draw the rounded corners for the border
+    for (int i = 0; i < thickness; i++) {
+        for (int angle = 0; angle < 90; angle++) {
+            int x = radius - (int)(radius * cos(angle * M_PI / 180.0));
+            int y = radius - (int)(radius * sin(angle * M_PI / 180.0));
+
+            for(int8_t i =0; i<thickness;i++){
+
+            // Top-left corner
+            int tl_index = ((y+i + y_offset) * buff->width + (x+i + x_offset)) * 2;
+            buff->buf[tl_index] = color >> 8;
+            buff->buf[tl_index + 1] = color & 0xFF;
+
+            // Top-right corner
+            int tr_index = ((y+i + y_offset) * buff->width + (width - x - 1 + x_offset-i)) * 2;
+            buff->buf[tr_index] = color >> 8;
+            buff->buf[tr_index + 1] = color & 0xFF;
+
+            // Bottom-left corner
+            int bl_index = ((height - y - 1 + y_offset-i) * buff->width + (x + x_offset+i)) * 2;
+            buff->buf[bl_index] = color >> 8;
+            buff->buf[bl_index + 1] = color & 0xFF;
+
+            // Bottom-right corner
+            int br_index = ((height - y - 1 + y_offset-i) * buff->width + (width - x - 1 + x_offset-i)) * 2;
+            buff->buf[br_index] = color >> 8;
+            buff->buf[br_index + 1] = color & 0xFF;
+            }
+
+        }
+    }
+}
 
 
 
@@ -506,3 +682,78 @@ void wrighSingle7segment(uint16_t x_offset, uint8_t y_offset, char c, camera_fb_
 }
 
 
+
+
+
+
+
+// void drawImage(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t height, uint8_t *image, camera_fb_t *buff) {
+   
+//     // Ensure the image fits within the buffer dimensions
+//     if (x_offset + width > buff->width || y_offset + height > buff->height) {
+//         // Out of bounds, do nothing
+//         return;
+//     }
+//     // printf("\n image drw data:\n");
+
+//     for (int y = 1; y < height; y++) {
+//         for (int x = 1; x < width; x++) {
+//             // Calculate the index in the image data array
+//             int image_index = (y * width + x) * 2; // 2 bytes per pixel for RGB565
+
+//             // Calculate the index in the framebuffer
+//             int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel for RGB565
+
+//             // Copy the image pixel to the framebuffer
+//             buff->buf[buff_index] = image[image_index]; // High byte of RGB565
+//             buff->buf[buff_index + 1] = image[image_index + 1]; // Low byte of RGB565
+
+//         }
+//     }
+
+//     // printf("\n");
+
+// }
+
+
+
+// // Function to draw a rectangle border on an image buffer
+// void drawRectangleBorder(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t height, uint8_t thickness, uint16_t color, camera_fb_t *buff) {
+//     // Ensure the rectangle fits within the buffer dimensions
+//     if (x_offset + width > buff->width || y_offset + height > buff->height) {
+//         // Out of bounds, do nothing
+//         return;
+//     }
+
+//     // Draw the top and bottom borders
+//     for (int y = 0; y < thickness; y++) {
+//         for (int x = 0; x < width; x++) {
+//             int top_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel for RGB565
+//             int bottom_index = ((y + y_offset + height - thickness) * buff->width + (x + x_offset)) * 2;
+
+//             // Draw top border
+//             buff->buf[top_index] = color >> 8; // High byte of RGB565
+//             buff->buf[top_index + 1] = color & 0xFF; // Low byte of RGB565
+
+//             // Draw bottom border
+//             buff->buf[bottom_index] = color >> 8;
+//             buff->buf[bottom_index + 1] = color & 0xFF;
+//         }
+//     }
+
+//     // Draw the left and right borders
+//     for (int x = 0; x < thickness; x++) {
+//         for (int y = 0; y < height; y++) {
+//             int left_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel for RGB565
+//             int right_index = ((y + y_offset) * buff->width + (x + x_offset + width - thickness)) * 2;
+
+//             // Draw left border
+//             buff->buf[left_index] = color >> 8;
+//             buff->buf[left_index + 1] = color & 0xFF;
+
+//             // Draw right border
+//             buff->buf[right_index] = color >> 8;
+//             buff->buf[right_index + 1] = color & 0xFF;
+//         }
+//     }
+// }

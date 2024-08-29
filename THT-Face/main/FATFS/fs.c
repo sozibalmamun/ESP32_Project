@@ -503,7 +503,7 @@ bool process_and_send_faces(const char* topic) {
 // }
 
 ///----------------rnd
-uint16_t display_faces(camera_fb_t *buff) {
+bool display_faces(camera_fb_t *buff) {
     DIR *dir;
     struct dirent *entry;
 
@@ -567,27 +567,27 @@ uint16_t display_faces(camera_fb_t *buff) {
 
             // Display image using drawImage function
 
-            for (int y = 0; y < 240; y++)
-            {
-                for (int x = 0; x < 320; x++)
-                {
-                    int index = (y * buff->width + x) * 2; // Assuming 2 bytes per pixel
+            // for (int y = 0; y < 240; y++)
+            // {
+            //     for (int x = 0; x < 320; x++)
+            //     {
+            //         int index = (y * buff->width + x) * 2; // Assuming 2 bytes per pixel
 
-                    buff->buf[index] = 0x42;
-                    buff->buf[index + 1] = 0x08;
-                }
-            }
+            //         buff->buf[index] = 0x42;
+            //         buff->buf[index + 1] = 0x08;
+            //     }
+            // }
 
             uint8_t imageXPoss = (320/2)-(image_width/2);
-            drawImage(imageXPoss, 40, image_width, image_height, image_data, buff);
-
-
+            scaleAndDisplayImageInFrame(image_data,  image_width, image_height, buff, imageXPoss, 39);
 
             // Free allocated memory for image data
             heap_caps_free(image_data);
+
+
         }
     }
 
     closedir(dir);
-    return image_length; // Return true to indicate successful processing
+    return true; // Return true to indicate successful processing
 }

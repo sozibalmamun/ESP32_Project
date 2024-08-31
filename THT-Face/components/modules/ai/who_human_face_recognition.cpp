@@ -230,16 +230,7 @@ static void task_process_handler(void *arg)
                         ESP_LOGW("DELETE", "ID: %d",personId );
                     }
                     
-                }else if(_gEvent==DETECT){
-
-                    if (detect_results.size() == 1){
-                        is_detected = true;
-                        if(_gEvent!=ENROLING)_gEvent=RECOGNIZE;// enroling is the 1st priority
-                                
-                    }
-
-                }
-                else if(_gEvent==ENROLING){
+                }else if(_gEvent==ENROLING){
 
                     if (detect_results.size() == 1){
 
@@ -264,6 +255,18 @@ static void task_process_handler(void *arg)
 
                     }
 
+                }else if(_gEvent==DETECT){
+
+                    if (detect_results.size() == 1){
+
+                        is_detected = true;
+
+                        if(_gEvent!=ENROLING){
+                            _gEvent=RECOGNIZE;// enroling is the 1st priority
+
+                        }
+                                
+                    }
 
                 }
                 

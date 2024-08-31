@@ -14,7 +14,8 @@ typedef enum {
 } key_name_t;
 
 static QueueHandle_t xQueueEventO = NULL;
-key_state_t key_state ;
+key_state_t key_state ;    
+
 static recognizer_state_t recognizer_state;
 
 extern volatile uint8_t sleepEnable;

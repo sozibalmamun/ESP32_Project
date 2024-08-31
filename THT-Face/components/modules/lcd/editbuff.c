@@ -82,21 +82,24 @@ void editDisplayBuff(camera_fb_t **buff){
         }else 
         {
 
-            if(networkStatus==STOMP_CONNECTED){
+                       
+            if(networkStatus==STOMP_CONNECTED && key_state== KEY_IDLE ){
                 
-                display_faces( *buff);
+                display_faces( *buff);//face display at the uploading time
 
                 if(percentage>0){
                 
-                    printf("\nChank done: %d ",percentage);
-                    char tempFrame[30] ;
-                    snprintf(tempFrame, sizeof(tempFrame), "%d",percentage);
-                    WriteString(1,150,170,tempFrame,*buff);
+                    char tempFrame[13] ;
+                    snprintf(tempFrame, sizeof(tempFrame), "%d%s",percentage,"%");
+                    WriteString(0,150,145,tempFrame,*buff);
+                    memset(tempFrame,0,sizeof(tempFrame));
+                    snprintf(tempFrame, sizeof(tempFrame), "%s%s","Uploading",  percentage%10<=3?".":percentage%10<=6?".." : percentage%10<=9? "...":" " );
+                    WriteString(0,140,160,"Face",*buff);
+
+                    WriteString(0,130,175,tempFrame,*buff);
 
                 }             
                 
-         
-              
             }
 
             iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcon,WHITE,*buff);
@@ -147,7 +150,7 @@ void scaleAndDisplayImageInFrame(uint8_t *src_image, uint8_t src_width, uint8_t 
     int8_t frame_height = 101; // Fixed frame height
 
 
-    drawFilledRoundedRectangle(pos_x-15,pos_y-5, frame_width+32 , frame_height+50, 3, 5,  0xc618,dst_buff);
+    drawFilledRoundedRectangle(pos_x-16,pos_y-5, frame_width+32 , frame_height+55, 3, 5,  0xc618,dst_buff);// round big ractrangle fill frame
 
     // Calculate scaling factors
     float scale_x = (float)src_width / frame_width;
@@ -184,20 +187,22 @@ void scaleAndDisplayImageInFrame(uint8_t *src_image, uint8_t src_width, uint8_t 
         }
     }
 
-    drawRoundedRectangleBorder(pos_x-1, pos_y-1, frame_width+2,frame_height+2, 3, 8, 0xc618,dst_buff);
+    drawRoundedRectangleBorder(pos_x-1, pos_y-1, frame_width+2,frame_height+2, 3, 8, 0xc618,dst_buff); // image round frame
+    drawRoundedRectangleBorder(pos_x+2, pos_y+2, frame_width-3,frame_height-3, 1, 8, 0x07e3,dst_buff); //image round reame
+
 
 }
 
 
 
 // Helper function to set a pixel in the framebuffer
-void setPixel(camera_fb_t *buff, int x, int y, uint16_t color) {
-    if (x >= 0 && x < buff->width && y >= 0 && y < buff->height) {
-        int index = (y * buff->width + x) * 2; // 2 bytes per pixel for RGB565
-        buff->buf[index] = color >> 8; // High byte of RGB565
-        buff->buf[index + 1] = color & 0xFF; // Low byte of RGB565
-    }
-}
+// void setPixel(camera_fb_t *buff, int x, int y, uint16_t color) {
+//     if (x >= 0 && x < buff->width && y >= 0 && y < buff->height) {
+//         int index = (y * buff->width + x) * 2; // 2 bytes per pixel for RGB565
+//         buff->buf[index] = color >> 8; // High byte of RGB565
+//         buff->buf[index + 1] = color & 0xFF; // Low byte of RGB565
+//     }
+// }
 
 // // Function to draw a rounded rectangle border
 void drawRoundedRectangleBorder(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t height, uint8_t thickness, uint8_t corner_radius, uint16_t color, camera_fb_t *buff) {
@@ -392,15 +397,21 @@ void WriteString(uint8_t letterSize, uint16_t x_offset, uint8_t y_offset, const 
 
         wrightChar(letterSize,x_offset, y_offset, *str, buff);
 
-        if(letterSize==1){
+        if(letterSize==0){
 
-            letterWidth = table0len[(uint8_t)*str];
+            letterWidth = table_0_len[(uint8_t)*str];
+            x_offset += (letterWidth+1); // Move to the next character position
+            // printf("\npixle len %d for %c",letterWidth ,*str);
+
+        }else if(letterSize==1){
+
+            letterWidth = table_1_len[(uint8_t)*str];
             x_offset += (letterWidth+1); // Move to the next character position
             // printf("\npixle len %d for %c",letterWidth ,*str);
 
         }else if(letterSize==2){
 
-            letterWidth = table1len[(uint8_t)*str];
+            letterWidth = table_2_len[(uint8_t)*str];
             x_offset += (letterWidth+1); // Move to the next character position
             // printf("\npixle len %d for %c",letterWidth ,*str);
 
@@ -416,15 +427,21 @@ void wrightChar(uint8_t letterSize, uint16_t x_offset, uint8_t y_offset, char c,
     // Get the bitmap data for the character
     const uint16_t *char_data=NULL;
     uint8_t letterWidth = 0;
-    if(letterSize==1){
 
-        char_data = font_table0[(uint8_t)c];
-        letterWidth = table0len[(uint8_t)c];
+    if(letterSize==0){
+        
+        char_data = font_table_0[(uint8_t)c];
+        letterWidth = table_0_len[(uint8_t)c];
+        
+    } else if(letterSize==1){
+
+        char_data = font_table_1[(uint8_t)c];
+        letterWidth = table_1_len[(uint8_t)c];
 
     }else if(letterSize==2){
 
-        char_data = font_table1[(uint8_t)c];
-        letterWidth = table1len[(uint8_t)c];
+        char_data = font_table_2[(uint8_t)c];
+        letterWidth = table_2_len[(uint8_t)c];
 
     }
 
@@ -442,8 +459,8 @@ void wrightChar(uint8_t letterSize, uint16_t x_offset, uint8_t y_offset, char c,
             // Get the pixel value from the character data
             if (char_data[y] & (1 << (16-x))) {
                 // Draw white (pixel set)
-                buff->buf[buff_index] = 0xFF;
-                buff->buf[buff_index + 1] = 0xFF;
+                buff->buf[buff_index] = letterSize==0 ?0x00: 0xFF;
+                buff->buf[buff_index + 1] = letterSize==0 ?0x00: 0xFF;
             }
         }
     }
@@ -514,10 +531,13 @@ uint16_t pixleLen(uint8_t letSize, char *str){
 
     uint16_t len=0;
         while (*str) {
-            if(letSize==1){
-            len += table0len[(uint8_t)*str];
+
+            if(letSize==0){
+                len += table_0_len[(uint8_t)*str];
+            }else if(letSize==1){
+                len += table_1_len[(uint8_t)*str];
             }else if(letSize==2){
-            len += table1len[(uint8_t)*str];
+                len += table_2_len[(uint8_t)*str];
             }
             str++;
         }

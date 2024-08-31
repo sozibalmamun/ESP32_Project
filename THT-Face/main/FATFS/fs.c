@@ -422,11 +422,11 @@ bool process_and_send_faces(const char* topic) {
 
                 // Delete the file if sent successfully
 
-                if (remove(file_name) == 0) {
-                    ESP_LOGI("process_and_send_faces", "File sent and deleted: %s", file_name);
-                } else {
-                    ESP_LOGE("process_and_send_faces", "Failed to delete file: %s", file_name);
-                }
+                // if (remove(file_name) == 0) {
+                //     ESP_LOGI("process_and_send_faces", "File sent and deleted: %s", file_name);
+                // } else {
+                //     ESP_LOGE("process_and_send_faces", "Failed to delete file: %s", file_name);
+                // }
 
             } else {
                 ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_name);

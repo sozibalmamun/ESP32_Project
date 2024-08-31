@@ -180,7 +180,7 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
 
         if (networkStatus != STOMP_CONNECTED) {
             ESP_LOGE(TAGSTOMP, "Stomp disconnected\n");
-            vTaskDelay(30);
+            vTaskDelay(50);
             if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
             vTaskDelay(100);
             // free(hexString);
@@ -188,7 +188,7 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
         }
 
         if (esp_websocket_client_send_text(client, sentFrame, strlen(sentFrame), portMAX_DELAY) == 0) {
-            vTaskDelay(30);
+            vTaskDelay(50);
             ESP_LOGI(TAGSTOMP, "STOMP send failed. Retrying...\n");
             if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
             vTaskDelay(100);
@@ -208,7 +208,7 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
             // printf("total chank  %d send %d percentage: %d\n",totalChank,  chankNo,percentage);
 
             if(percentage>=100)percentage=0;
-            vTaskDelay(20);
+            // vTaskDelay(5);
         }
 
 

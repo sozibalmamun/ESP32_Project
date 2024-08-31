@@ -5,12 +5,16 @@
 #include "stdbool.h"
 #include "handleQrCode.h"
 #include "timeLib.h"
+#include "who_button.h"
 
 
 extern qrcode_t qrInfo;
 extern bool ble_is_connected;
 extern uint8_t networkStatus;
 extern int8_t percentage;
+extern key_state_t key_state;
+extern uint8_t CPUBgflag;
+ 
 
 
 

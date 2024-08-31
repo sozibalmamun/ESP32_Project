@@ -90,13 +90,13 @@ void editDisplayBuff(camera_fb_t **buff){
                 if(percentage>0){
                 
                     char tempFrame[13] ;
+                    
                     snprintf(tempFrame, sizeof(tempFrame), "%d%s",percentage,"%");
-                    WriteString(0,150,145,tempFrame,*buff);
+                    WriteString(0, 160- (pixleLen(0,&tempFrame)/2) ,151,tempFrame,*buff);
                     memset(tempFrame,0,sizeof(tempFrame));
                     snprintf(tempFrame, sizeof(tempFrame), "%s%s","Uploading",  percentage%10<=3?".":percentage%10<=6?".." : percentage%10<=9? "...":" " );
-                    WriteString(0,140,160,"Face",*buff);
-
-                    WriteString(0,130,175,tempFrame,*buff);
+                    
+                    WriteString(0,160- (pixleLen(0,&tempFrame)/2),170,tempFrame,*buff);
 
                 }             
                 
@@ -150,7 +150,7 @@ void scaleAndDisplayImageInFrame(uint8_t *src_image, uint8_t src_width, uint8_t 
     int8_t frame_height = 101; // Fixed frame height
 
 
-    drawFilledRoundedRectangle(pos_x-16,pos_y-5, frame_width+32 , frame_height+55, 3, 5,  0xc618,dst_buff);// round big ractrangle fill frame
+    drawFilledRoundedRectangle(pos_x-16,pos_y-5, frame_width+33 , frame_height+56, 3, 5,  0xc618,dst_buff);// round big ractrangle fill frame
 
     // Calculate scaling factors
     float scale_x = (float)src_width / frame_width;
@@ -187,8 +187,8 @@ void scaleAndDisplayImageInFrame(uint8_t *src_image, uint8_t src_width, uint8_t 
         }
     }
 
-    drawRoundedRectangleBorder(pos_x-1, pos_y-1, frame_width+2,frame_height+2, 3, 8, 0xc618,dst_buff); // image round frame
-    drawRoundedRectangleBorder(pos_x+2, pos_y+2, frame_width-3,frame_height-3, 1, 8, 0x07e3,dst_buff); //image round reame
+    drawRoundedRectangleBorder(pos_x-1, pos_y-1, frame_width+3,frame_height+3, 3, 8, 0xc618,dst_buff); // image round frame
+    drawRoundedRectangleBorder(pos_x+2, pos_y+2, frame_width-3,frame_height-3, 1, 8, 0x07e3,dst_buff); //image round reame green
 
 
 }

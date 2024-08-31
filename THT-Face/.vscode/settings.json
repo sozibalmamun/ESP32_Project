@@ -72,7 +72,8 @@
         "clouddatahandle.h": "c",
         "fs.h": "c",
         "math.h": "c",
-        "datahandler.h": "c"
+        "datahandler.h": "c",
+        "who_camera.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM5",

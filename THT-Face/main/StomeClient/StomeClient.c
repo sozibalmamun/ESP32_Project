@@ -186,7 +186,6 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
             // free(hexString);
             continue; // Retry sending
         }
-
         if (esp_websocket_client_send_text(client, sentFrame, strlen(sentFrame), portMAX_DELAY) == 0) {
             vTaskDelay(50);
             ESP_LOGI(TAGSTOMP, "STOMP send failed. Retrying...\n");
@@ -198,19 +197,15 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
             continue; // Retry sending
 
         }else{
-
+            vTaskDelay(2);
             currentIndex += chunkLen;
             chankNo++;// no of chank 
-
             float percentage_float = (chankNo /(float)totalChank) * 100;
             percentage = (int)percentage_float;
-
+            
             // printf("total chank  %d send %d percentage: %d\n",totalChank,  chankNo,percentage);
-
             if(percentage>=100)percentage=0;
-            // vTaskDelay(5);
         }
-
 
     }
     heap_caps_free(hexString);

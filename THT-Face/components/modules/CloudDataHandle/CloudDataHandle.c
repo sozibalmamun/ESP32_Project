@@ -88,7 +88,7 @@ static void attendanceHandlerTask(void *arg)
             stomp_client_connect(); 
 
         }
-		ESP_LOGI("HEAP", "Free heap: %d bytes", heap_caps_get_free_size(MALLOC_CAP_8BIT));
+		ESP_LOGI("HEAP", "Free heap: %d kb", heap_caps_get_free_size(MALLOC_CAP_8BIT)/1024);
         vTaskDelay(xDelay);
 
         // Delay to allow periodic checking

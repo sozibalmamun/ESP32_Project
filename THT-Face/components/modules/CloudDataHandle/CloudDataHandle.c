@@ -66,7 +66,7 @@ static void cloudeHandlerTask(void *arg)
     }
 }
 
-static void attendanceHandlerTask(void *arg)
+static void fileProcessingTask(void *arg)
 {
     const TickType_t xDelay = pdMS_TO_TICKS(500); // Run every 1 seconds
 
@@ -78,8 +78,9 @@ static void attendanceHandlerTask(void *arg)
             if(CPUBgflag==0){
 
             if(CmdEvent!=IDLE_EVENT)eventFeedback();
+            
             process_attendance_files();
-            process_and_send_faces(PUBLISH_TOPIC);
+            // process_and_send_faces(PUBLISH_TOPIC);
 
             }
                 // Print heap status
@@ -101,10 +102,12 @@ static void attendanceHandlerTask(void *arg)
 
 
 
+
 void cloudHandel(const QueueHandle_t input )
 {
 
-    xTaskCreatePinnedToCore(attendanceHandlerTask, "AttendanceTask", 4 * 1024, NULL,1, NULL, 0);
+
+    xTaskCreatePinnedToCore(fileProcessingTask, "AttendanceTask", 4 * 1024, NULL,1, NULL, 0);
     xQueueCloudI = input;
     xTaskCreatePinnedToCore(cloudeHandlerTask, TAG, 4 * 1024, NULL, 5, NULL, 0);
 

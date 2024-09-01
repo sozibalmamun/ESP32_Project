@@ -53,7 +53,9 @@ void delete_all_directories(const char* path);
 
 extern void save_face_data(uint32_t person_id, const char* name, uint32_t image_width, uint32_t image_length, const uint8_t* image_data);
 extern void read_face_data(uint32_t person_id);
-extern void delete_face_data(uint32_t person_id);
+
+void delete_file(char* filename);
+
 extern void write_log_attendance(uint16_t person_id,  uint8_t* timestamp);
 extern void print_memory_status(void);
 extern void process_attendance_files(void);
@@ -65,8 +67,7 @@ extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,cha
 extern bool display_faces( camera_fb_t *buff);
 extern void scaleAndDisplayImageInFrame(uint8_t *src_image, uint8_t src_width, uint8_t src_height, camera_fb_t *dst_buff, uint8_t pos_x, uint8_t pos_y);
 
-
-extern bool stompSend(char * buff, char* topic);
+extern bool logSend(char *buff, char *fsFileName ,char *topic);
 extern uint64_t generate_unique_id(void);
 
 

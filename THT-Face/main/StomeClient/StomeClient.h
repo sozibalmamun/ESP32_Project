@@ -80,6 +80,8 @@ extern uint8_t networkStatus;
 extern const char* day_names[];
 
 
+void initStompSender();
+
 extern void stomp_client_connect(void);
 void stomp_client_subscribe(char* topic);
 // bool stompSend(char * buff, char* topic);
@@ -87,12 +89,14 @@ void stomeAck(const char * message);
 void stomp_client_handle_message( const char *message);
 void stomp_client_int( stompInfo_cfg_t stompSetup );
 void stompAppStart(void);
+bool stompSend(char * buff, char* topic);
 
 extern void dataHandele(const char *rx_buffer);
-extern bool stompSend(char * buff, char* topic);
+bool logSend(char *buff, char*fsFileName,char* topic);
 
 char *base64_encode(const unsigned char *data, size_t input_length, size_t *output_length);
 extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic);
+extern void delete_file(char* filename);
 
 
 #ifdef __cplusplus

@@ -334,7 +334,7 @@ static void task_process_handler(void *arg)
                             CPUBgflag=1;
                             // ESP_LOGI("RECOGNIZE", "Similarity: %f, Match Name: %s", recognize_result.similarity, recognize_result.name.c_str());
 
-                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_10000_MS)StopMultipleAttaneId=0;
+                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_50_MS)StopMultipleAttaneId=0;
 
                             if(StopMultipleAttaneId!=recognize_result.id){
 

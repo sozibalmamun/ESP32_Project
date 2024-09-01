@@ -363,7 +363,7 @@ const DATA_FLASH uint16_t _1[]={
     0b0011000000000000,
     0b0101000000000000,
     0b1001000000000000,
-	0b1001000000000000,
+	0b0001000000000000,
     0b0001000000000000,
     0b0001000000000000,
     0b0111110000000000,
@@ -559,7 +559,6 @@ const DATA_FLASH uint16_t c_0[]={
 	0b0000000000000000,
 
 };
-//uploading
 const DATA_FLASH uint16_t d_0[]={
 
     0b0000000000000000,
@@ -712,7 +711,6 @@ const DATA_FLASH uint16_t p_0[]={
 
 };
 
-//Up
 const DATA_FLASH uint16_t F_0[] = {
     
 	0b0000000000000000,
@@ -729,7 +727,6 @@ const DATA_FLASH uint16_t F_0[] = {
     0b0000000000000000
 
 };
-//Uploading
 const DATA_FLASH uint16_t U_0[]={
     
 	0b0000000000000000,

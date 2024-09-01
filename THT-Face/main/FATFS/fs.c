@@ -249,15 +249,13 @@ void read_face_data(uint32_t person_id) {
 }
 
 
-void delete_face_data(uint32_t person_id) {
-    char file_name[64];
-    snprintf(file_name, sizeof(file_name), "/fatfs/faces/person_%d.dat", person_id);
-
-    int res = remove(file_name);
+void delete_file(char* filename) {
+    
+    int res = remove(filename);
     if (res == 0) {
-        ESP_LOGI("delete_face_data", "Deleted face data for Person ID %d", person_id);
+        ESP_LOGW("rm file", "Deleted file %s", filename);
     } else {
-        ESP_LOGE("delete_face_data", "Failed to delete face data for Person ID %d", person_id);
+        ESP_LOGE("rm file", "Failed to Deleted file %s", filename);
     }
 }
 
@@ -270,7 +268,6 @@ void write_log_attendance(uint16_t person_id, uint8_t* timestamp) {
 
     ESP_LOGI("log_attendance", "Encoded log file name: %s", log_file);
 
-
     FILE* f = fopen(log_file, "a");
     if (f == NULL) {
         ESP_LOGE("log_attendance", "Failed to open log file for writing");
@@ -281,6 +278,8 @@ void write_log_attendance(uint16_t person_id, uint8_t* timestamp) {
     fclose(f);
     ESP_LOGI("attendance", "Attendance ID: %d at: %s", person_id, log_file);
 }
+
+
 
 void process_attendance_files() {
 
@@ -301,17 +300,18 @@ void process_attendance_files() {
             strcat(file_path, "/");
             strcat(file_path, entry->d_name);
             
-            // ESP_LOGI("log", "Procesing...%s", file_path);
+            ESP_LOGI("log", "Procesing...%s", file_path);
 
             // Send the file via STOMP
             if (sendFilePath(file_path)) {
                 // If successful, delete the file
-                if (remove(file_path) == 0) {
-                    ESP_LOGI("log", "deleted file: %s", file_path);
-                    break;  // Stop after sending and deleting one file
-                } else {
-                    // ESP_LOGE("log", "Failed to delete file: %s", file_path);
-                }
+                // if (remove(file_path) == 0) {
+                //     ESP_LOGI("log", "deleted file: %s", file_path);
+                //     break;  // Stop after sending and deleting one file
+                // } else {
+                //     // ESP_LOGE("log", "Failed to delete file: %s", file_path);
+                // }
+                break;
             } else {
                 // ESP_LOGE("log", "Failed to send file via STOMP: %s", file_path);
             }
@@ -321,41 +321,85 @@ void process_attendance_files() {
 }
 
 
-bool sendFilePath(const char *file_path) {
+// bool sendFilePath(const char *file_path) {
 
-    // Open the file
-    FILE *file = fopen(file_path, "r");
+//     // Open the file
+//     FILE *file = fopen(file_path, "r");
+//     if (file == NULL) {
+//         ESP_LOGE("STOMP", "Failed to open file: %s", file_path);
+//         return false;
+//     }
+
+//     // Read the file content (this is a placeholder; adapt as needed)
+//     char buffer[1024];
+//     while (fgets(buffer, sizeof(buffer), file) != NULL) {
+
+//         // Here you would send the content via STOMP
+//         time_library_time_t current_time;
+//         get_time(&current_time, 0);
+//         char tempFrame[strlen(buffer)+30];
+//         snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",
+//         (current_time.year-2000), current_time.month, current_time.day,
+//         current_time.hour, current_time.minute, current_time.second, // device time
+//         buffer); // log time + id
+
+//         ESP_LOGW(TAG, "buff log %s", tempFrame);
+
+//         if (!stompSend(tempFrame,PUBLISH_TOPIC)) {
+//             //  ESP_LOGE(TAG, "Error sending log");
+//             return false;
+//         }
+
+//     }
+//     fclose(file);
+//     // Simulate successful send
+//     // ESP_LOGI("STOMP", "File sent successfully: %s", file_path);
+//     return true;
+// }
+
+
+bool sendFilePath(const char *filePath) {
+    // Open file and read content here
+    // Example: Read file into buffer
+    FILE *file = fopen(filePath, "r");
     if (file == NULL) {
-        ESP_LOGE("STOMP", "Failed to open file: %s", file_path);
+        ESP_LOGE("log", "Failed to open file: %s", filePath);
         return false;
     }
 
-    // Read the file content (this is a placeholder; adapt as needed)
-    char buffer[1024];
-    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+    // Read file content into buffer
+    fseek(file, 0, SEEK_END);
+    long fileSize = ftell(file);
+    fseek(file, 0, SEEK_SET);
 
-        // Here you would send the content via STOMP
-        time_library_time_t current_time;
-        get_time(&current_time, 0);
-        char tempFrame[strlen(buffer)+30];
-        snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",
-        (current_time.year-2000), current_time.month, current_time.day,
-        current_time.hour, current_time.minute, current_time.second, // device time
-        buffer); // log time + id
-
-        ESP_LOGW(TAG, "buff log %s", tempFrame);
-
-        if (!stompSend(tempFrame,PUBLISH_TOPIC)) {
-            //  ESP_LOGE(TAG, "Error sending log");
-            return false;
-        }
-
+    char *fileContent = (char *)heap_caps_malloc(fileSize + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    if (fileContent == NULL) {
+        ESP_LOGE("log", "Failed to allocate memory for file content");
+        fclose(file);
+        return false;
     }
+
+    fread(fileContent, 1, fileSize, file);
     fclose(file);
-    // Simulate successful send
-    // ESP_LOGI("STOMP", "File sent successfully: %s", file_path);
-    return true;
+    fileContent[fileSize] = '\0';  // Null-terminate the string
+
+    // Send using stompSend
+    // ESP_LOGW("log", " sent to stomp open file: %s", filePath);
+
+    bool result = logSend(fileContent, filePath , PUBLISH_TOPIC);
+
+    // Free allocated buffer
+    heap_caps_free(fileContent);
+
+    return result;
 }
+
+
+
+
+
+
+
 
 
 

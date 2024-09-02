@@ -59,7 +59,7 @@ void delete_file(char* filename);
 extern void write_log_attendance(uint16_t person_id,  uint8_t* timestamp);
 extern void print_memory_status(void);
 extern void process_attendance_files(void);
-bool sendFilePath(const char *file_path);
+bool sendFilePath( char *file_path);
 
 extern bool process_and_send_faces(const char* topic);
 extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic);

@@ -18,7 +18,9 @@ typedef struct {
 } StompMessage;
 QueueHandle_t stompQueue;
 
-#define MAX_QUEUE_SIZE 10
+TaskHandle_t stompSenderTaskHandler = NULL; // Handle for the stompSenderTask
+
+#define MAX_QUEUE_SIZE 3
 
 
 // uint
@@ -60,7 +62,10 @@ void stomp_client_subscribe(char* topic) {
         
         networkStatus=STOMP_CONNECTED;
         ESP_LOGI(TAGSTOMP, " STOMP Subscribed");
+
         initStompSender();
+
+
     }
 
 }
@@ -325,6 +330,14 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
         networkStatus=WIFI_CONNECTED;
 
+        if (stompSenderTaskHandler != NULL) {
+
+        vTaskDelete(stompSenderTaskHandler);   // Delete the task
+        stompSenderTaskHandler = NULL;         // Clear the handle to avoid dangling references
+        ESP_LOGI("TAGSTOMP", "stompSenderTask deleted successfully");
+
+        }
+
 
         break;
     case WEBSOCKET_EVENT_DATA:
@@ -461,15 +474,15 @@ void stomp_client_int( stompInfo_cfg_t stompSetup ) {
 
 static void stompSenderTask(void *pvParameters) {
     StompMessage msg;
-    char sendingFrame[CHUNK_SIZE + 47 + 64]; // Adjust size based on topic and chunk size
 
     while (true) {
         // Wait for a message from the queue
         if (xQueueReceive(stompQueue, &msg, portMAX_DELAY) == pdTRUE) {
             // Construct the sending frame
+            char sendingFrame[CHUNK_SIZE + 47 + strlen(msg.topic)]; // Adjust size based on topic and chunk size
+
             snprintf(sendingFrame, sizeof(sendingFrame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", msg.topic, msg.data);
 
-            ESP_LOGW(TAGSTOMP, " msg.topic: %s msg.data: %s\n", msg.topic, msg.data);
 
             // Ensure network status is connected
             if (networkStatus != STOMP_CONNECTED) {
@@ -491,13 +504,14 @@ static void stompSenderTask(void *pvParameters) {
             } else {
                 ESP_LOGI(TAGSTOMP, "STOMP message sent successfully");
                 if (msg.fileName != NULL) {
-                    ESP_LOGI(TAGSTOMP, "Deleting file: %s", msg.fileName);
+                    ESP_LOGW(TAGSTOMP, "Deleting file: %s", msg.fileName);
                     delete_file(msg.fileName); // Delete the file after sending
                 }
             }
 
             // Free the allocated memory for the message data
-            heap_caps_free(msg.data);             
+            heap_caps_free(msg.data);  
+            heap_caps_free(msg.fileName);  
         }
     }
 }
@@ -516,33 +530,41 @@ bool logSend(char *buff, char *fsFileName, char *topic) {
             ESP_LOGE(TAGSTOMP, "Failed to allocate memory for message chunk");
             return false;
         }
+        char *fileName = (char *)heap_caps_malloc(30, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+        if (fileName == NULL) {
+            ESP_LOGE(TAGSTOMP, "Failed to allocate memory for message fileName");
+            return false;
+        }
 
         // Copy data into the chunk
         memset(chunk, 0, CHUNK_SIZE + 1);
         uint16_t chunkSize = (buffLen < CHUNK_SIZE) ? buffLen : CHUNK_SIZE;
         memcpy(chunk, &buff[currentIndex], chunkSize);
 
+        memset(fileName, 0, 30);
+        memcpy(fileName, fsFileName, strlen(fsFileName));
+
         // Prepare the message structure
         StompMessage msg = {
             .data = chunk,
             .topic = topic,
-            .fileName = NULL,
+            .fileName = buffLen <= CHUNK_SIZE ? fileName : NULL,
         };
 
+ 
+
         // Check if this is the last chunk
-        if (chunkSize < CHUNK_SIZE) {
+        // if (buffLen <= CHUNK_SIZE) {
 
-            memset(chunk, 0, CHUNK_SIZE + 1);
-            memcpy(chunk, fsFileName, strlen(fsFileName));
+        //     ESP_LOGE(TAGSTOMP, "Last chunk with file name");
 
-            msg.fileName = chunk;
-            ESP_LOGI(TAGSTOMP, "Last chunk with file name: %s", msg.fileName);
-        }
+        // }
 
         // Send the message to the queue
         if (xQueueSend(stompQueue, &msg, portMAX_DELAY) != pdTRUE) {
             ESP_LOGE(TAGSTOMP, "Failed to queue message for sending");
-            heap_caps_free(chunk); // Free allocated memory on failure     
+            heap_caps_free(chunk); // Free allocated memory on failure   
+            heap_caps_free(fileName);
             continue;
         } else {
             currentIndex += chunkSize;
@@ -570,6 +592,6 @@ void initStompSender() {
     }
 
     // Create the sender task
-    xTaskCreatePinnedToCore(stompSenderTask, "StompSenderTask", 6*1024, NULL, 3,NULL, 1);
+    xTaskCreatePinnedToCore(stompSenderTask, "StompSenderTask", 6*1024, NULL, 5,&stompSenderTaskHandler, 1);
 
 }

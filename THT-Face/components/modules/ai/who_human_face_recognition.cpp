@@ -327,6 +327,7 @@ static void task_process_handler(void *arg)
                         break;
                     }
                     case RECOGNIZE:{
+
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
                         // print_detection_result(detect_results);
                         if (recognize_result.id > 0){
@@ -334,7 +335,7 @@ static void task_process_handler(void *arg)
                             CPUBgflag=1;
                             // ESP_LOGI("RECOGNIZE", "Similarity: %f, Match Name: %s", recognize_result.similarity, recognize_result.name.c_str());
 
-                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_50_MS)StopMultipleAttaneId=0;
+                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_2000_MS)StopMultipleAttaneId=0;
 
                             if(StopMultipleAttaneId!=recognize_result.id){
 

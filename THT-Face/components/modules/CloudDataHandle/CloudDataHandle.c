@@ -9,9 +9,10 @@ uint8_t CPUBgflag;
 extern  volatile uint8_t CmdEvent;
 
 static QueueHandle_t xQueueCloudI = NULL;
+TaskHandle_t detectionFaceProcesingTaskHandler = NULL; // Handle for the stompSenderTask
 
 
-static void cloudeHandlerTask(void *arg)
+static void detectionFaceProcesing(void *arg)
 {
 	const TickType_t xDelay = pdMS_TO_TICKS(500); // Run every 1 seconds
 
@@ -25,40 +26,18 @@ static void cloudeHandlerTask(void *arg)
             if (image != NULL)
             {
                 // Log the image details
-                ESP_LOGI(TAG, "Received image len: %d w: %d h: %d Name: %s id: %d", image->len, image->width, image->height, image->Name,image->id);
-
-                // for(int i=0 ; i<256;i++){
-
-                //     printf("%x",image->buf[i] );
-
-                // }
-
+                // ESP_LOGI(TAG, "Received image len: %d w: %d h: %d Name: %s id: %d", image->len, image->width, image->height, image->Name,image->id);
 
                 ESP_LOGE(TAG, "\ntest image storing.... ");
-
                 save_face_data(image->id, image->Name, image->width, image->height, image->buf);
                 // save_face_data(image->id, image->Name, 75, 69, &imageData);
-
-
                 ESP_LOGE(TAG, "\ntest image saved ");
-
-                // // Send the image data to the cloud
-                // if(!imagesent(image->buf,image->len,image->height,image->width,image->Name ,image->id,"/app/cloud")){
-
-                //     ESP_LOGE(TAG, "Fail Sending image data.");
-
-                // }
-                //     ESP_LOGE(TAG, "\ntest image data ");
                 vTaskDelay(100);
-
                 // Free the image buffer if it was dynamically allocated
                 heap_caps_free(image->buf);
                 image->buf = NULL;
                 CPUBgflag=0;
-            }
-            else
-            {
-                ESP_LOGE(TAG, "Received NULL image data.");
+                
             }
         }
 		vTaskDelay(xDelay);
@@ -66,34 +45,23 @@ static void cloudeHandlerTask(void *arg)
     }
 }
 
-static void fileProcessingTask(void *arg)
-{
-    const TickType_t xDelay = pdMS_TO_TICKS(500); // Run every 1 seconds
+ void fileProcessingTask(void){
 
-    while (true)
-    {
-        // Process attendance files
-        if(networkStatus==STOMP_CONNECTED){
+    // Process attendance files
+    if(networkStatus==STOMP_CONNECTED){
 
-            if(CPUBgflag==0){
-
-            if(CmdEvent!=IDLE_EVENT)eventFeedback();
-            
-            process_attendance_files();
-            // process_and_send_faces(PUBLISH_TOPIC);
-
-            }
-                // Print heap status
-        }else if(networkStatus<STOMP_CONNECTED && networkStatus>WIFI_CONNECTED){
-
-            stomp_client_connect(); 
-
+        if(CPUBgflag==0){
+        if(CmdEvent!=IDLE_EVENT)eventFeedback();
+        process_attendance_files();
+        // process_and_send_faces(PUBLISH_TOPIC);
         }
-		ESP_LOGI("HEAP", "Free heap: %d kb", heap_caps_get_free_size(MALLOC_CAP_8BIT)/1024);
-        vTaskDelay(xDelay);
-
-        // Delay to allow periodic checking
+    }else if(networkStatus<STOMP_CONNECTED && networkStatus>WIFI_CONNECTED){
+        stomp_client_connect(); 
     }
+    // Print heap status
+
+    ESP_LOGI("HEAP", "Free heap: %d kb", heap_caps_get_free_size(MALLOC_CAP_8BIT)/1024);
+
 }
 
 
@@ -106,12 +74,8 @@ static void fileProcessingTask(void *arg)
 void cloudHandel(const QueueHandle_t input )
 {
 
-
-    xTaskCreatePinnedToCore(fileProcessingTask, "AttendanceTask", 4 * 1024, NULL,1, NULL, 0);
     xQueueCloudI = input;
-    xTaskCreatePinnedToCore(cloudeHandlerTask, TAG, 4 * 1024, NULL, 5, NULL, 0);
-
-
+    xTaskCreatePinnedToCore(detectionFaceProcesing, TAG, 4 * 1024, NULL, 5, &detectionFaceProcesingTaskHandler, 0);
 
 }
 

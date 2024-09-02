@@ -261,23 +261,54 @@ void delete_file(char* filename) {
 
 
 
+// void write_log_attendance(uint16_t person_id, uint8_t* timestamp) {
+
+//     char log_file[31];// file like: /fatfs/log/2412121716.log
+//     snprintf(log_file, sizeof(log_file), "%s/%d%d%d%d%d.log",ATTENDANCE_DIR, timestamp[0],timestamp[1],timestamp[2],timestamp[3],timestamp[4]);
+
+//     ESP_LOGI("log_attendance", "Encoded log file name: %s", log_file);
+
+//     FILE* f = fopen(log_file, "a");
+//     if (f == NULL) {
+//         ESP_LOGE("log_attendance", "Failed to open log file for writing");
+//         return;
+//     }
+//     // Write attendance log: person ID and timestamp
+//     fprintf(f, "%d %d %d %d %d %d %d ", timestamp[0],timestamp[1],timestamp[2],timestamp[3],timestamp[4],timestamp[5],person_id);
+//     fclose(f);
+//     ESP_LOGI("attendance", "Attendance ID: %d at: %s", person_id, log_file);
+// }
+
 void write_log_attendance(uint16_t person_id, uint8_t* timestamp) {
 
-    char log_file[31];// file like: /fatfs/log/2412121716.log
-    snprintf(log_file, sizeof(log_file), "%s/%d%d%d%d%d.log",ATTENDANCE_DIR, timestamp[0],timestamp[1],timestamp[2],timestamp[3],timestamp[4]);
+    // Construct the log file name using the original format
+    char log_file[31]; // File name like: /fatfs/log/2412121716.log
+    snprintf(log_file, sizeof(log_file), "%s/%d%d%d%d%d.log", 
+             ATTENDANCE_DIR, timestamp[0], timestamp[1], timestamp[2], 
+             timestamp[3], timestamp[4]);
 
     ESP_LOGI("log_attendance", "Encoded log file name: %s", log_file);
 
+    // Open the log file in append mode
     FILE* f = fopen(log_file, "a");
     if (f == NULL) {
         ESP_LOGE("log_attendance", "Failed to open log file for writing");
         return;
     }
-    // Write attendance log: person ID and timestamp
-    fprintf(f, "%d %d %d %d %d %d %d ", timestamp[0],timestamp[1],timestamp[2],timestamp[3],timestamp[4],timestamp[5],person_id);
+
+    // Write attendance log: formatted timestamp values and person ID with leading zeros if needed
+    fprintf(f, "%02d %02d %02d %02d %02d %02d %04d ",
+            timestamp[0], timestamp[1], timestamp[2], 
+            timestamp[3], timestamp[4], timestamp[5], person_id);
+
     fclose(f);
     ESP_LOGI("attendance", "Attendance ID: %d at: %s", person_id, log_file);
 }
+
+
+
+
+
 
 
 
@@ -321,79 +352,69 @@ void process_attendance_files() {
 }
 
 
-// bool sendFilePath(const char *file_path) {
+bool sendFilePath( char *file_path) {
 
-//     // Open the file
-//     FILE *file = fopen(file_path, "r");
+    // Open the file
+    FILE *file = fopen(file_path, "r");
+    if (file == NULL) {
+        ESP_LOGE("STOMP", "Failed to open file: %s", file_path);
+        return false;
+    }
+
+    // Read the file content (this is a placeholder; adapt as needed)
+    char buffer[1012];
+    memset(buffer,0,sizeof(buffer));
+    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+
+        ESP_LOGW(TAG, "\nbuff log:  %s\n", buffer);
+
+
+        if (!logSend(buffer, file_path , PUBLISH_TOPIC)) {
+            //  ESP_LOGE(TAG, "Error sending log");
+            return false;
+        }
+
+    }
+    fclose(file);
+    // Simulate successful send
+    // ESP_LOGI("STOMP", "File sent successfully: %s", file_path);
+    return true;
+}
+
+
+
+// bool sendFilePath(const char *filePath) {
+//     // Open file and read content here
+//     // Example: Read file into buffer
+//     FILE *file = fopen(filePath, "r");
 //     if (file == NULL) {
-//         ESP_LOGE("STOMP", "Failed to open file: %s", file_path);
+//         ESP_LOGE("log", "Failed to open file: %s", filePath);
 //         return false;
 //     }
 
-//     // Read the file content (this is a placeholder; adapt as needed)
-//     char buffer[1024];
-//     while (fgets(buffer, sizeof(buffer), file) != NULL) {
+//     // Read file content into buffer
+//     fseek(file, 0, SEEK_END);
+//     long fileSize = ftell(file);
+//     fseek(file, 0, SEEK_SET);
 
-//         // Here you would send the content via STOMP
-//         time_library_time_t current_time;
-//         get_time(&current_time, 0);
-//         char tempFrame[strlen(buffer)+30];
-//         snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",
-//         (current_time.year-2000), current_time.month, current_time.day,
-//         current_time.hour, current_time.minute, current_time.second, // device time
-//         buffer); // log time + id
-
-//         ESP_LOGW(TAG, "buff log %s", tempFrame);
-
-//         if (!stompSend(tempFrame,PUBLISH_TOPIC)) {
-//             //  ESP_LOGE(TAG, "Error sending log");
-//             return false;
-//         }
-
+//     char *fileContent = (char *)heap_caps_malloc(fileSize + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+//     if (fileContent == NULL) {
+//         ESP_LOGE("log", "Failed to allocate memory for file content");
+//         fclose(file);
+//         return false;
 //     }
+
+//     fread(fileContent, 1, fileSize, file);
 //     fclose(file);
-//     // Simulate successful send
-//     // ESP_LOGI("STOMP", "File sent successfully: %s", file_path);
-//     return true;
+//     fileContent[fileSize] = '\0';  // Null-terminate the string
+
+//     bool result = logSend(fileContent, filePath , PUBLISH_TOPIC);
+
+//     // Free allocated buffer
+//     heap_caps_free(fileContent);
+
+//     return result;
 // }
-
-
-bool sendFilePath(const char *filePath) {
-    // Open file and read content here
-    // Example: Read file into buffer
-    FILE *file = fopen(filePath, "r");
-    if (file == NULL) {
-        ESP_LOGE("log", "Failed to open file: %s", filePath);
-        return false;
-    }
-
-    // Read file content into buffer
-    fseek(file, 0, SEEK_END);
-    long fileSize = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    char *fileContent = (char *)heap_caps_malloc(fileSize + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-    if (fileContent == NULL) {
-        ESP_LOGE("log", "Failed to allocate memory for file content");
-        fclose(file);
-        return false;
-    }
-
-    fread(fileContent, 1, fileSize, file);
-    fclose(file);
-    fileContent[fileSize] = '\0';  // Null-terminate the string
-
-    // Send using stompSend
-    // ESP_LOGW("log", " sent to stomp open file: %s", filePath);
-
-    bool result = logSend(fileContent, filePath , PUBLISH_TOPIC);
-
-    // Free allocated buffer
-    heap_caps_free(fileContent);
-
-    return result;
-}
-
 
 
 

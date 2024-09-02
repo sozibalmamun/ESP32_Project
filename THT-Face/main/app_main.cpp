@@ -108,22 +108,7 @@ void app_main()
     while(true){
 
 
-
-
-
-        // if(true){
-
-        //     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
-        //     // Send the pointers to the queue
-        //     register_lcd(xQueueAIFrame, NULL, true);
-
-        // }else{
-
-        //     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);
-        //     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame, false);
-        //     register_lcd(xQueueLCDFrame, NULL, true);
-
-        // }
+        fileProcessingTask();
 
         // sleepTimeOut = xTaskGetTickCount();
         if(xTaskGetTickCount()-sleepTimeOut>6000 && xTaskGetTickCount()-sleepTimeOut< 6100){
@@ -131,13 +116,8 @@ void app_main()
             // sleepEnable=true;
             // printf("\nsleepEnable");
 
-            // write_log_attendance( 9999,  "sozib");
-            // read_attendance_log("sozib");
-            // delete_attendance_log("sozib");
         }
-
-    // process_attendance_files()
-
+        vTaskDelay(500);
 
     }
 

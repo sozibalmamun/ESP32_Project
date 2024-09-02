@@ -53,7 +53,7 @@ static void detectionFaceProcesing(void *arg)
         if(CPUBgflag==0){
         if(CmdEvent!=IDLE_EVENT)eventFeedback();
         process_attendance_files();
-        // process_and_send_faces(PUBLISH_TOPIC);
+        process_and_send_faces(PUBLISH_TOPIC);
         }
     }else if(networkStatus<STOMP_CONNECTED && networkStatus>WIFI_CONNECTED){
         stomp_client_connect(); 

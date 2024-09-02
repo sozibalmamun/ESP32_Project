@@ -479,9 +479,9 @@ bool process_and_send_faces(const char* topic) {
             fclose(f);
 
             // Send the image data using imagesent function
-            bool sent = imagesent(image_data, image_length, image_hight,image_width, name, person_id, topic);
+            // bool sent = imagesent(image_data, image_length, image_hight,image_width, name, person_id, topic);
+            bool sent = imagesent(image_data, image_length, image_hight, image_width, name,  person_id, topic, file_name);
 
-            //  bool sent = stompSend((char*)image_data,  topic);
 
             if (sent) {
 

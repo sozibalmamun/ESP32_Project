@@ -93,9 +93,11 @@ bool stompSend(char * buff, char* topic);
 
 extern void dataHandele(const char *rx_buffer);
 bool logSend(char *buff, char* fsFileName,char* topic);
+bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name, uint16_t id, char* topic, char *fsFileName);
+
 
 char *base64_encode(const unsigned char *data, size_t input_length, size_t *output_length);
-extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic);
+// extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic);
 extern void delete_file(char* filename);
 
 

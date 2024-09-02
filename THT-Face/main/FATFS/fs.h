@@ -62,12 +62,14 @@ extern void process_attendance_files(void);
 bool sendFilePath( char *file_path);
 
 extern bool process_and_send_faces(const char* topic);
-extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic);
+// extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic);
 
 extern bool display_faces( camera_fb_t *buff);
 extern void scaleAndDisplayImageInFrame(uint8_t *src_image, uint8_t src_width, uint8_t src_height, camera_fb_t *dst_buff, uint8_t pos_x, uint8_t pos_y);
 
 extern bool logSend(char *buff, char *fsFileName ,char *topic);
+extern bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name, uint16_t id, char* topic, char *fsFileName);
+
 extern uint64_t generate_unique_id(void);
 
 

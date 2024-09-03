@@ -20,6 +20,7 @@
 
 #include "CloudDataHandle.h"
 
+
 //--------fatfs-------------------
 #include "FATFS/fs.h"
 //-------------------------------
@@ -73,9 +74,9 @@ void app_main()
     register_event(xQueueEventLogic);//core 0
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false); //core 1+1
 
-    cloudHandel(xQueueCloud);// core 0
+    // cloudHandel(xQueueCloud);// core 0
 
-    register_lcd(xQueueLCDFrame, NULL, true);// core 0
+    register_lcd(xQueueLCDFrame, NULL, true);// core 1
     vTaskDelay(pdMS_TO_TICKS(10));
 
 
@@ -117,6 +118,8 @@ void app_main()
             // printf("\nsleepEnable");
 
         }
+
+
         vTaskDelay(500);
 
     }

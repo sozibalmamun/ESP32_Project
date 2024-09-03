@@ -312,7 +312,7 @@ void write_log_attendance(uint16_t person_id, uint8_t* timestamp) {
 
 
 
-void process_attendance_files() {
+bool process_attendance_files() {
 
 
     DIR *dir;
@@ -321,7 +321,7 @@ void process_attendance_files() {
 
     if ((dir = opendir(ATTENDANCE_DIR)) == NULL) {
         // ESP_LOGE("Attendance", "Failed to open directory: %s", ATTENDANCE_DIR);
-        return;
+        return 1;
     }
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_REG) {  // Only process regular files
@@ -332,9 +332,10 @@ void process_attendance_files() {
             strcat(file_path, entry->d_name);
             
             ESP_LOGI("log", "Procesing...%s", file_path);
-
+            sendFilePath(file_path);
+            break;
             // Send the file via STOMP
-            if (sendFilePath(file_path)) {
+            // if (sendFilePath(file_path)) {
                 // If successful, delete the file
                 // if (remove(file_path) == 0) {
                 //     ESP_LOGI("log", "deleted file: %s", file_path);
@@ -342,13 +343,19 @@ void process_attendance_files() {
                 // } else {
                 //     // ESP_LOGE("log", "Failed to delete file: %s", file_path);
                 // }
-                break;
-            } else {
-                // ESP_LOGE("log", "Failed to send file via STOMP: %s", file_path);
-            }
+                // break;
+            // } else {
+            //     // ESP_LOGE("log", "Failed to send file via STOMP: %s", file_path);
+            // }
         }
+
+
     }
+
     closedir(dir);
+    return 1;
+
+
 }
 
 
@@ -366,13 +373,14 @@ bool sendFilePath( char *file_path) {
     memset(buffer,0,sizeof(buffer));
     while (fgets(buffer, sizeof(buffer), file) != NULL) {
 
-        ESP_LOGW(TAG, "\nbuff log:  %s\n", buffer);
+        // ESP_LOGW(TAG, "\nbuff log:  %s\n", buffer);
 
+        logSend(buffer, file_path , PUBLISH_TOPIC);
 
-        if (!logSend(buffer, file_path , PUBLISH_TOPIC)) {
-            //  ESP_LOGE(TAG, "Error sending log");
-            return false;
-        }
+        // if (!logSend(buffer, file_path , PUBLISH_TOPIC)) {
+        //     //  ESP_LOGE(TAG, "Error sending log");
+        //     return false;
+        // }
 
     }
     fclose(file);
@@ -433,7 +441,7 @@ bool process_and_send_faces(const char* topic) {
 
     if ((dir = opendir(FACE_DIRECTORY)) == NULL) {
         // ESP_LOGE("Attendance", "Failed to open directory: %s", ATTENDANCE_DIR);
-        return;
+        return 1;
     }
 
     while ((entry = readdir(dir)) != NULL) {
@@ -450,7 +458,7 @@ bool process_and_send_faces(const char* topic) {
             FILE* f = fopen(file_name, "rb");
             if (f == NULL) {
                 ESP_LOGE("search_and_send_face_data", "Failed to open file for reading: %s", file_name);
-                continue;
+                return 0;
             }
 
             uint32_t person_id;
@@ -473,17 +481,18 @@ bool process_and_send_faces(const char* topic) {
             if (image_data == NULL) {
                 ESP_LOGE("search_and_send_face_data", "Failed to allocate memory for image data");
                 fclose(f);
-                continue;
+                return 0;
             }
             fread(image_data, image_length, 1, f);
             fclose(f);
 
             // Send the image data using imagesent function
             // bool sent = imagesent(image_data, image_length, image_hight,image_width, name, person_id, topic);
-            bool sent = imagesent(image_data, image_length, image_hight, image_width, name,  person_id, topic, file_name);
+            // bool sent = imagesent(image_data, image_length, image_hight, image_width, name,  person_id, topic, file_name);
 
+            imagesent(image_data, image_length, image_hight, image_width, name,  person_id, topic, file_name);
 
-            if (sent) {
+            // if (sent) {
 
                 // Delete the file if sent successfully
 
@@ -493,16 +502,67 @@ bool process_and_send_faces(const char* topic) {
                 //     ESP_LOGE("process_and_send_faces", "Failed to delete file: %s", file_name);
                 // }
 
-            } else {
-                ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_name);
-            }
+            // } else {
+            //     ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_name);
+            // }
 
             heap_caps_free(image_data);
         }
     }
-
     closedir(dir);
+    return 1;
 }
+
+
+bool pendingData() {
+    DIR *dir;
+    struct dirent *entry;
+    bool dataAvailable = false;
+
+    // Check files in ATTENDANCE_DIR
+    if ((dir = opendir(ATTENDANCE_DIR)) == NULL) {
+        // ESP_LOGE("Attendance", "Failed to open directory: %s", ATTENDANCE_DIR);
+        return false;
+    }
+
+    // Iterate through all entries in ATTENDANCE_DIR
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_REG) {  // Only process regular files
+            // ESP_LOGI("Attendance", "File available: %s", entry->d_name);
+            dataAvailable = true;
+        }
+    }
+    closedir(dir);
+
+    if (!dataAvailable) {
+        // ESP_LOGI("Attendance", "No data available in %s", ATTENDANCE_DIR);
+    }else return true;
+
+    // Check files in FACE_DIRECTORY
+    if ((dir = opendir(FACE_DIRECTORY)) == NULL) {
+        // ESP_LOGE("Face", "Failed to open directory: %s", FACE_DIRECTORY);
+        return false;
+    }
+
+    // Reset dataAvailable for face data check
+    dataAvailable = false;
+
+    // Iterate through all entries in FACE_DIRECTORY
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_REG) {  // Only process regular files
+            // ESP_LOGI("Face", "File available: %s", entry->d_name);
+            dataAvailable = true;
+        }
+    }
+    closedir(dir);
+
+    if (!dataAvailable) {
+        // ESP_LOGI("Face", "No data available in %s", FACE_DIRECTORY);
+    }else return true;
+
+    return dataAvailable;
+}
+
 
 
 

@@ -8,7 +8,7 @@
 
 extern volatile uint8_t sleepEnable;
 extern TickType_t sleepTimeOut; 
-esp_websocket_client_handle_t client;
+extern esp_websocket_client_handle_t client;
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,7 +37,7 @@ void bluFiStart(void);
 void blufiAddStart(void);
 extern uint64_t generate_unique_id(void);
 extern void stompAppStart(void);
-
+extern void resetWifi(void);
 
 #ifdef __cplusplus
 }

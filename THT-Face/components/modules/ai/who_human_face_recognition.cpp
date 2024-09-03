@@ -53,9 +53,10 @@ static QueueHandle_t xQueueFrameI = NULL;
 static QueueHandle_t xQueueEvent = NULL;
 static QueueHandle_t xQueueFrameO = NULL;
 static QueueHandle_t xQueueResult = NULL;
-
+//------------------------------------------------------------------------------------
 static QueueHandle_t xQueueCloud = NULL;
-
+extern TaskHandle_t detectionFaceProcesingTaskHandler; // Handle for the stompSenderTask
+//---------------------------------------------------------------------------------------
 
 
 
@@ -312,6 +313,18 @@ static void task_process_handler(void *arg)
 
                         cropFrame->id= recognizer->get_enrolled_ids().back().id;
                         cropFrame->Name= personName;
+                        
+
+                        if(detectionFaceProcesingTaskHandler==NULL){
+
+                            xQueueCloud = xQueueCreate(3, sizeof(int *));
+                            cloudHandel(xQueueCloud);// core 0
+
+                        }
+
+
+
+
 
 
                         if (xQueueCloud) {
@@ -582,9 +595,9 @@ void register_human_face_recognition(const QueueHandle_t frame_i,
     gReturnFB = camera_fb_return;
     xMutex = xSemaphoreCreateMutex();
 
-    xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
+    xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 8, NULL, 1);
         // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
 
     if (xQueueEvent)
-        xTaskCreatePinnedToCore(task_event_handler, TAG, 4 * 1024, NULL, 3, NULL, 1);
+        xTaskCreatePinnedToCore(task_event_handler, TAG, 1 * 1024, NULL,5, NULL, 1);
 }

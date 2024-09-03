@@ -21,8 +21,8 @@ typedef struct {
 } StompMessage;
 
 QueueHandle_t stompQueue;
+extern TaskHandle_t stompSenderTaskHandler; // Handle for the stompSenderTask
 
-TaskHandle_t stompSenderTaskHandler = NULL; // Handle for the stompSenderTask
 
 #define MAX_QUEUE_SIZE 3
 
@@ -38,13 +38,17 @@ TaskHandle_t stompSenderTaskHandler = NULL; // Handle for the stompSenderTask
 int8_t percentage=0;
 
 
-static bool is_wifi_connected() {
+static void is_wifi_connected() {
     wifi_ap_record_t ap_info;
     if (esp_wifi_sta_get_ap_info(&ap_info) == ESP_OK) {
-        return true;
+        // return true;
     }
     ESP_LOGI(TAG, "WiFi disconnected");
-    return false;
+    ESP_ERROR_CHECK(esp_wifi_disconnect());
+    vTaskDelay(100);
+    ESP_ERROR_CHECK(esp_wifi_connect());
+    ESP_LOGI(TAG, "reset WiFi ");
+
 }
 
 void stomp_client_connect() {
@@ -67,7 +71,7 @@ void stomp_client_subscribe(char* topic) {
         networkStatus=STOMP_CONNECTED;
         ESP_LOGI(TAGSTOMP, " STOMP Subscribed");
 
-        initStompSender();
+        // initStompSender();
 
 
     }
@@ -95,69 +99,111 @@ void stomeAck(const char * message){
 
 
 
+
+
+
 bool stompSend(char * buff, char* topic){
 
-    char tempFrame[CHUNK_SIZE+1]; 
-    memset(tempFrame,0,sizeof(tempFrame));
 
-    uint16_t currentIndex=0;
-    uint16_t buffLen =strlen(buff);
+    char sendingFrame[strlen(buff)+47+strlen(topic)];
+    memset(sendingFrame,0,sizeof(sendingFrame));
 
-    do{
-        memset(tempFrame,0,sizeof(tempFrame));
-        if(buffLen<=CHUNK_SIZE){
-            currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],buffLen) : memcpy(&tempFrame,&buff[currentIndex],buffLen);
-            buffLen= buffLen - buffLen;
-            // ESP_LOGI(TAGSTOMP, "Sending last Chank\n");
-
-        }else{
-
-            currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame)-1) : memcpy(&tempFrame,&buff[currentIndex],sizeof(tempFrame)-1);
-
-        }
-        tempFrame[strlen(tempFrame)] = '\0';  // Null-terminate the chunk
+    strcat(sendingFrame, "[\"SEND\\ndestination:");
+    strcat(sendingFrame, topic);
+    strcat(sendingFrame, "\\n\\n");
+    strcat(sendingFrame, buff);
+    strcat(sendingFrame, "\\n\\n\\u0000\"]");
 
 
-        char sendingFrame[strlen(tempFrame)+47+strlen(topic)];
-        memset(sendingFrame,0,sizeof(sendingFrame));
+    // ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", sendingFrame);
 
-        strcat(sendingFrame, "[\"SEND\\ndestination:");
-        strcat(sendingFrame, topic);
-        strcat(sendingFrame, "\\n\\n");
-        strcat(sendingFrame, tempFrame);
-        strcat(sendingFrame, "\\n\\n\\u0000\"]");
+    if(networkStatus != STOMP_CONNECTED){
+        ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
+        if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
+        vTaskDelay(100);  
 
+    }
+    if(esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY)==ESP_OK){
 
-        // ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", sendingFrame);
+        ESP_LOGI(TAGSTOMP, "Sending STOMP FAIL");
+        if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
+        vTaskDelay(100); 
 
-        if(networkStatus != STOMP_CONNECTED){
-            ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
-            if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
-            vTaskDelay(100);  
-            continue; // Retry sending
-
-        }
-
-        if(esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY)==ESP_OK){
-
-            ESP_LOGI(TAGSTOMP, "Sending STOMP FAIL");
-            if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
-            vTaskDelay(100); 
-
-            continue; // Retry sending
-
-        }else {
-            // ESP_LOGI(TAGSTOMP, "Sending STOMP   sent len :%d  remain   %d\n", currentIndex,buffLen);
-            currentIndex+= CHUNK_SIZE;
-            if(buffLen>0)buffLen= buffLen - CHUNK_SIZE; // check bufflen 0 or not then calculate 
-            vTaskDelay(30);
-        }
-
-    }while(buffLen!=0);
+    }
 
 return true;
 }
 
+
+
+
+
+
+
+//-----------------------------this function works well------------------------------------------------------------------------------------------------
+// bool stompSend(char * buff, char* topic){
+
+//     char tempFrame[CHUNK_SIZE+1]; 
+//     memset(tempFrame,0,sizeof(tempFrame));
+
+//     uint16_t currentIndex=0;
+//     uint16_t buffLen =strlen(buff);
+
+//     do{
+//         memset(tempFrame,0,sizeof(tempFrame));
+//         if(buffLen<=CHUNK_SIZE){
+//             currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],buffLen) : memcpy(&tempFrame,&buff[currentIndex],buffLen);
+//             buffLen= buffLen - buffLen;
+//             // ESP_LOGI(TAGSTOMP, "Sending last Chank\n");
+
+//         }else{
+
+//             currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame)-1) : memcpy(&tempFrame,&buff[currentIndex],sizeof(tempFrame)-1);
+
+//         }
+//         tempFrame[strlen(tempFrame)] = '\0';  // Null-terminate the chunk
+
+
+//         char sendingFrame[strlen(tempFrame)+47+strlen(topic)];
+//         memset(sendingFrame,0,sizeof(sendingFrame));
+
+//         strcat(sendingFrame, "[\"SEND\\ndestination:");
+//         strcat(sendingFrame, topic);
+//         strcat(sendingFrame, "\\n\\n");
+//         strcat(sendingFrame, tempFrame);
+//         strcat(sendingFrame, "\\n\\n\\u0000\"]");
+
+
+//         // ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", sendingFrame);
+
+//         if(networkStatus != STOMP_CONNECTED){
+//             ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
+//             if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
+//             vTaskDelay(100);  
+//             continue; // Retry sending
+
+//         }
+
+//         if(esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY)==ESP_OK){
+
+//             ESP_LOGI(TAGSTOMP, "Sending STOMP FAIL");
+//             if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
+//             vTaskDelay(100); 
+
+//             continue; // Retry sending
+
+//         }else {
+//             // ESP_LOGI(TAGSTOMP, "Sending STOMP   sent len :%d  remain   %d\n", currentIndex,buffLen);
+//             currentIndex+= CHUNK_SIZE;
+//             if(buffLen>0)buffLen= buffLen - CHUNK_SIZE; // check bufflen 0 or not then calculate 
+//             vTaskDelay(30);
+//         }
+
+//     }while(buffLen!=0);
+
+// return true;
+// }
+//---------------------------------------------------------------------------------------------------------------------------------------------
 
 
 //---------------------------------this image sent works fine--------------------------------------------------------------------------------------
@@ -267,9 +313,8 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
         break;
     case WEBSOCKET_EVENT_DISCONNECTED:
-        ESP_LOGI(TAG, "WEBSOCKET_EVENT_DISCONNECTED");
 
-        networkStatus=WIFI_CONNECTED;
+        
 
         if (stompSenderTaskHandler != NULL) {
 
@@ -279,6 +324,8 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
         }
 
+        ESP_LOGI(TAG, "WEBSOCKET_EVENT_DISCONNECTED");
+        is_wifi_connected();
 
         break;
     case WEBSOCKET_EVENT_DATA:
@@ -301,6 +348,10 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
             else if(data->data_ptr[0]=='h'){
                 //---------------------------------------------------------------
                 if( networkStatus==STOMP_CONNECTED){
+
+
+                    resetWifiTimeout=xTaskGetTickCount();
+
                     ESP_LOGI(TAG, "Ping");
                     time_library_time_t current_time;
                     uint8_t clockType = get_time(&current_time, 1);
@@ -326,7 +377,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         }
         break;
     case WEBSOCKET_EVENT_ERROR:
-        ESP_LOGI(TAG, "WEBSOCKET_EVENT_ERROR");
+        // ESP_LOGI(TAG, "WEBSOCKET_EVENT_ERROR");
         break;
     }
 }
@@ -394,8 +445,8 @@ void stomp_client_int( stompInfo_cfg_t stompSetup ) {
     websocket_cfg.use_global_ca_store = true;// ok 
     websocket_cfg.skip_cert_common_name_check = true;
     websocket_cfg.disable_auto_reconnect = false;
-    // websocket_cfg.task_stack = 8192;  // Increased stack size
-    websocket_cfg.task_prio = 5;      // Set an appropriate task priority
+    websocket_cfg.task_stack = 4*1024;  // Increased stack size
+    websocket_cfg.task_prio = 10;      // Set an appropriate task priority
 
 
     // ESP_LOGI(TAG, "Constructed WebSocket URL: %s", websocket_cfg.uri);
@@ -410,6 +461,24 @@ void stomp_client_int( stompInfo_cfg_t stompSetup ) {
     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
     esp_websocket_client_start(client);
 }
+
+
+void resetWSS(void){
+
+
+    if (client != NULL) {
+    esp_websocket_client_stop(client);
+    esp_websocket_client_destroy(client);
+    client = NULL;
+    }
+
+    vTaskDelay(500);
+    stompAppStart();
+
+}
+
+
+
 
 //---------------------------rtoss rnd-------------- this file work fine for log sent-------------------------------
 
@@ -463,8 +532,60 @@ void stomp_client_int( stompInfo_cfg_t stompSetup ) {
 // }
 //----------------------------------------------------------------------------------------------------------------------
 
+//------------------------backup function
 
+// static void stompSenderTask(void *pvParameters) {
+//     StompMessage msg;
 
+//     while (true) {
+//         // Wait for a message from the queue
+//         if (xQueueReceive(stompQueue, &msg, portMAX_DELAY) == pdTRUE) {
+//             // Construct the sending frame
+//             size_t frameSize = 47 + strlen(msg.topic) + (msg.image ? 10 + IMAGE_CHANK_SIZE : CHUNK_SIZE); // Adjust size based on the message type
+//             char sendingFrame[frameSize]; // Allocate the frame size based on the message type
+            
+//             if (!msg.image) {
+//                 // For log format
+//                 snprintf(sendingFrame, sizeof(sendingFrame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", msg.topic, msg.data);
+//             } else {
+//                 // For image
+//                 snprintf(sendingFrame, sizeof(sendingFrame), "[\"SEND\\ndestination:%s\\n\\n%d %d %s\\n\\n\\u0000\"]", msg.topic, msg.id, msg.chunkNo, msg.data);
+//             }
+
+//             // Ensure network status is connected
+//             if (networkStatus != STOMP_CONNECTED) {
+//                 ESP_LOGE(TAGSTOMP, "Stomp disconnected, cannot send message\n");
+//                 if (networkStatus > WIFI_CONNECTED) {
+//                     networkStatus = WSS_CONNECTED;
+//                 }
+//                 vTaskDelay(pdMS_TO_TICKS(100)); // Delay before retrying
+//                 continue;
+//             }
+
+//             // Send the message using WebSocket
+//             if (esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY) == 0) {
+//                 ESP_LOGI(TAGSTOMP, "Sending STOMP message failed");
+//                 if (networkStatus > WIFI_CONNECTED) {
+//                     networkStatus = WSS_CONNECTED;
+//                 }
+//                 vTaskDelay(pdMS_TO_TICKS(100)); // Delay before retrying
+//             } else {
+//                 ESP_LOGI(TAGSTOMP, "STOMP message sent successfully");
+//                 if (msg.fileName != NULL) {
+//                     ESP_LOGW(TAGSTOMP, "Deleting file: %s", msg.fileName);
+//                     // delete_file(msg.fileName); // Delete the file after sending
+//                 }
+//             }
+
+//             // Free the allocated memory for the message data
+//             heap_caps_free(msg.data);  
+//             if (msg.fileName != NULL) {
+//                 heap_caps_free(msg.fileName);  
+//             }
+//         }
+//     }
+// }
+//---------------------------------------end backup function
 static void stompSenderTask(void *pvParameters) {
     StompMessage msg;
 
@@ -472,29 +593,35 @@ static void stompSenderTask(void *pvParameters) {
         // Wait for a message from the queue
         if (xQueueReceive(stompQueue, &msg, portMAX_DELAY) == pdTRUE) {
             // Construct the sending frame
-            size_t frameSize = IMAGE_CHANK_SIZE + 47 + strlen(msg.topic) + (msg.image ? 10 : 0); // Adjust size based on the message type
-            char sendingFrame[frameSize]; // Allocate the frame size based on the message type
             
+            size_t frameSize = 47 + strlen(msg.topic) + (msg.image ? 10 + IMAGE_CHANK_SIZE : CHUNK_SIZE); // Adjust size based on the message type
+            char sendingFrame[frameSize]; // Allocate the frame size based on the message type
+
             if (!msg.image) {
-                // For log format
-                snprintf(sendingFrame, sizeof(sendingFrame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", msg.topic, msg.data);
+                snprintf(sendingFrame, sizeof(sendingFrame), "[\"SEND\\ndestination:%s\\n\\n%s\\n\\n\\u0000\"]", msg.topic, msg.data); // for log format
             } else {
-                // For image
-                snprintf(sendingFrame, sizeof(sendingFrame), "[\"SEND\\ndestination:%s\\n\\n%d %d %s\\n\\n\\u0000\"]", msg.topic, msg.id, msg.chunkNo, msg.data);
+                snprintf(sendingFrame, sizeof(sendingFrame), "[\"SEND\\ndestination:%s\\n\\n%d %d %s\\n\\n\\u0000\"]", msg.topic, msg.id, msg.chunkNo, msg.data); // for image
             }
 
-            // Ensure network status is connected
-            if (networkStatus != STOMP_CONNECTED) {
+
+            if(!esp_websocket_client_is_connected(client)){
                 ESP_LOGE(TAGSTOMP, "Stomp disconnected, cannot send message\n");
                 if (networkStatus > WIFI_CONNECTED) {
                     networkStatus = WSS_CONNECTED;
                 }
                 vTaskDelay(pdMS_TO_TICKS(100)); // Delay before retrying
-                continue;
+                return false;
             }
 
+            // // Ensure network status is connected
+            // if (networkStatus != STOMP_CONNECTED) {
+
+            //     continue;
+            // }
+
             // Send the message using WebSocket
-            if (esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY) == 0) {
+            int8_t send_result = esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY);
+            if (send_result == 0) {
                 ESP_LOGI(TAGSTOMP, "Sending STOMP message failed");
                 if (networkStatus > WIFI_CONNECTED) {
                     networkStatus = WSS_CONNECTED;
@@ -502,20 +629,29 @@ static void stompSenderTask(void *pvParameters) {
                 vTaskDelay(pdMS_TO_TICKS(100)); // Delay before retrying
             } else {
                 ESP_LOGI(TAGSTOMP, "STOMP message sent successfully");
+
                 if (msg.fileName != NULL) {
+                    // Optionally handle file deletion here
                     ESP_LOGW(TAGSTOMP, "Deleting file: %s", msg.fileName);
-                    delete_file(msg.fileName); // Delete the file after sending
+                    // delete_file(msg.fileName); // Delete the file after sending
                 }
             }
 
             // Free the allocated memory for the message data
-            heap_caps_free(msg.data);  
+            if (msg.data != NULL) {
+                heap_caps_free(msg.data);  
+                msg.data = NULL;  // Prevent double free
+            }
+            
             if (msg.fileName != NULL) {
-                heap_caps_free(msg.fileName);  
+                heap_caps_free(msg.fileName);
+                msg.fileName = NULL;  // Prevent double free
             }
         }
     }
 }
+
+
 
 bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name, uint16_t id, char* topic, char *fsFileName) {
     // Calculate the required size for hex string
@@ -540,28 +676,11 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
     char imageInfo[35];
     snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d %d", buffLen, w, h, name, id,totalChunks);
 
-
-
-        // StompMessage msg = {
-        //     .data = imageInfo,
-        //     .topic = topic,
-        //     .fileName = buffLen <= CHUNK_SIZE ? fileName : NULL,
-        //     .image = false,
-        // };
-
-
-
     if (!stompSend(imageInfo, topic)) {
         heap_caps_free(hexString);
         return false;
     }
     vTaskDelay(50);
-
-
-
-
-
-
 
 
     // Send the hex string in chunks
@@ -600,7 +719,7 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
             msg.fileName = strdup(fsFileName); // Duplicate filename to store in message struct
         }
 
-        ESP_LOGE(TAGSTOMP, "file info chunk no: %d id: %d topic: %s", msg.chunkNo, msg.id, msg.topic);
+        ESP_LOGW(TAGSTOMP, "file info chunk no: %d id: %d topic: %s", msg.chunkNo, msg.id, msg.topic);
 
         // Send the chunk to the queue
         if (xQueueSend(stompQueue, &msg, portMAX_DELAY) != pdTRUE) {
@@ -609,7 +728,14 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
         } else {
             currentIndex += chunkLen;
             chunkNo++; // Increment chunk number
-            ESP_LOGI(TAGSTOMP, "Queued message for sending");
+
+
+            float percentage_float = (chunkNo /(float)totalChunks) * 100;
+            percentage = (int)percentage_float;
+
+            // printf("total chank  %d send %d percentage: %d\n",totalChank,  chankNo,percentage);
+            if(percentage>=100)percentage=0;
+            // ESP_LOGI(TAGSTOMP, "Queued message for sending");
         }
     }
 
@@ -654,15 +780,6 @@ bool logSend(char *buff, char *fsFileName, char *topic) {
             .image = false,
         };
 
- 
-
-        // Check if this is the last chunk
-        // if (buffLen <= CHUNK_SIZE) {
-
-        //     ESP_LOGE(TAGSTOMP, "Last chunk with file name");
-
-        // }
-
         // Send the message to the queue
         if (xQueueSend(stompQueue, &msg, portMAX_DELAY) != pdTRUE) {
             ESP_LOGE(TAGSTOMP, "Failed to queue message for sending");
@@ -672,7 +789,7 @@ bool logSend(char *buff, char *fsFileName, char *topic) {
         } else {
             currentIndex += chunkSize;
             buffLen -= chunkSize;
-            ESP_LOGI(TAGSTOMP, "Queued message for sending");
+            // ESP_LOGI(TAGSTOMP, "Queued message for sending");
         }
     }
 
@@ -693,8 +810,7 @@ void initStompSender() {
         ESP_LOGW(TAGSTOMP, "create stomp message queue");
 
     }
-
     // Create the sender task
-    xTaskCreatePinnedToCore(stompSenderTask, "StompSenderTask", 6*1024, NULL, 5,&stompSenderTaskHandler, 1);
+    xTaskCreatePinnedToCore(stompSenderTask, "StompSenderTask", 6*1024, NULL, 10,&stompSenderTaskHandler, 0);
 
 }

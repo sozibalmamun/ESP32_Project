@@ -76,11 +76,12 @@ const char echo_org_ssl_ca_cert[]  = \
 
 
 extern uint8_t networkStatus;
+extern volatile TickType_t resetWifiTimeout;
 
 extern const char* day_names[];
 
 
-void initStompSender();
+extern void initStompSender();
 
 extern void stomp_client_connect(void);
 void stomp_client_subscribe(char* topic);
@@ -89,6 +90,7 @@ void stomeAck(const char * message);
 void stomp_client_handle_message( const char *message);
 void stomp_client_int( stompInfo_cfg_t stompSetup );
 void stompAppStart(void);
+extern void resetWSS(void);
 bool stompSend(char * buff, char* topic);
 
 extern void dataHandele(const char *rx_buffer);

@@ -60,7 +60,7 @@ const int CONNECTED_BIT = BIT0;
 static uint8_t example_wifi_retry = 0;
 
 /* store the station info for send back to phone */
-uint8_t networkStatus=0;
+volatile uint8_t networkStatus=0;
 static bool gl_sta_got_ip = false;
 bool ble_is_connected = false;
 static uint8_t gl_sta_bssid[6];
@@ -179,6 +179,15 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
     }
     return;
 }
+
+void resetWifi(void){
+
+    // ESP_ERROR_CHECK(esp_wifi_disconnect());
+    // vTaskDelay(100);
+    // ESP_ERROR_CHECK(esp_wifi_connect());
+}
+
+
 
 static void initialise_wifi(void)
 {

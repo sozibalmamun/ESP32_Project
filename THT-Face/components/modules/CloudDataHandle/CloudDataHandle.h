@@ -24,7 +24,6 @@ extern "C"
 extern uint8_t networkStatus;
 
 
-
 typedef struct {
     uint8_t *buf;             /*!< Pointer to the copied pixel data */
     size_t len;               /*!< Length of the buffer in bytes */
@@ -37,8 +36,11 @@ typedef struct {
 // bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic);
 void stomp_client_connect(void);
 bool stompSend(char * buff, char* topic);
+void initStompSender();
+void resetWSS(void);
+void resetWifi(void);
 void cloudHandel(const QueueHandle_t input );
- void fileProcessingTask(void);
+void fileProcessingTask(void);
 
 //---------------fs system-------------------------------------------------------------------------------------------------------
 void save_face_data(uint32_t person_id, const char* name, uint32_t image_width, uint32_t image_length, const uint8_t* image_data);
@@ -48,7 +50,9 @@ void write_log_attendance(uint16_t person_id,  uint8_t* timestamp);
 bool process_and_send_faces(const char* topic);
 void print_memory_status(void);
 void format_fatfs(void);
-void process_attendance_files(void);
+bool process_attendance_files();
+bool pendingData();
+
 //----------------event feedback--------------------------------------------------
 void eventFeedback(void);
 

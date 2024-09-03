@@ -69,7 +69,7 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
     if (ESP_OK != ret)
     {
         return ret;
-        ESP_LOGE(TAG, "screen find failed");
+        // ESP_LOGE(TAG, "screen find failed");
     }
 
     scr_controller_config_t lcd_cfg = {
@@ -91,11 +91,11 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
     if (ESP_OK != ret)
     {
         return ESP_FAIL;
-        ESP_LOGE(TAG, "screen initialize failed");
+        // ESP_LOGE(TAG, "screen initialize failed");
     }
 
     g_lcd.get_info(&g_lcd_info);
-    ESP_LOGI(TAG, "Screen name:%s | width:%d | height:%d", g_lcd_info.name, g_lcd_info.width, g_lcd_info.height);
+    // ESP_LOGI(TAG, "Screen name:%s | width:%d | height:%d", g_lcd_info.name, g_lcd_info.width, g_lcd_info.height);
 
     app_lcd_set_color(0x000000);
     //vTaskDelay(pdMS_TO_TICKS(200));
@@ -105,8 +105,8 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
     xQueueFrameI = frame_i;
     xQueueFrameO = frame_o;
     gReturnFB = return_fb;
-    xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 4, NULL, 0);
-        // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
+    xTaskCreatePinnedToCore(task_process_handler, TAG, 3 * 1024, NULL, 10, NULL, 1);
+        // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);// old 
 
 
     return ESP_OK;

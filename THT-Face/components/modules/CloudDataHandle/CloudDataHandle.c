@@ -15,7 +15,7 @@ TaskHandle_t cloudeTaskHandler = NULL;
 
 static void cloudeHandlerTask(void *arg)
 {
-	const TickType_t xDelay = pdMS_TO_TICKS(500); // Run every 1 seconds
+	// const TickType_t xDelay = pdMS_TO_TICKS(500); // Run every 1 seconds
 
     while (true)
     {
@@ -58,22 +58,26 @@ static void cloudeHandlerTask(void *arg)
                 image->buf = NULL;
                 CPUBgflag=0;
             }
-            else
-            {
-                ESP_LOGE(TAG, "Received NULL image data.");
-            }
+
+            // else
+            // {
+            //     ESP_LOGE(TAG, "Received NULL image data.");
+            // }
 
 
-            if (detectionFaceProcesingTaskHandler != NULL) {
-                vTaskDelete(detectionFaceProcesingTaskHandler);   // Delete the task
-                detectionFaceProcesingTaskHandler = NULL;         // Clear the handle to avoid dangling references
-                ESP_LOGW("TAGSTOMP", "detectionFaceProcesingTaskHandler deleted");
-            }
+                ESP_LOGW(TAG, "cloudeHandlerTask is being deleted");
 
+                // Delete the task
+                vTaskDelete(NULL);  // NULL means this task deletes itself
 
+            // if (detectionFaceProcesingTaskHandler != NULL) {
+            //     vTaskDelete(detectionFaceProcesingTaskHandler);   // Delete the task
+            //     detectionFaceProcesingTaskHandler = NULL;         // Clear the handle to avoid dangling references
+            //     ESP_LOGW("TAGSTOMP", "detectionFaceProcesingTaskHandler deleted");
+            // }
 
         }
-		vTaskDelay(xDelay);
+		// vTaskDelay(xDelay);
 
     }
 }
@@ -88,14 +92,12 @@ static void attendanceHandlerTask(void *arg)
         if(networkStatus==STOMP_CONNECTED){
 
             if(CPUBgflag==0){
-
-            if(CmdEvent!=IDLE_EVENT)eventFeedback();
-            process_attendance_files();
+            CPUBgflag=1;
             process_and_send_faces(PUBLISH_TOPIC);
-
+            process_attendance_files();
+            CPUBgflag=0;
             }
         }
-		ESP_LOGI("HEAP", "Free heap: %d kb", heap_caps_get_free_size(MALLOC_CAP_8BIT)/1024);
         vTaskDelay(xDelay);
 
         // Delay to allow periodic checking
@@ -109,9 +111,10 @@ void reconnect(){
 
         if(networkStatus==STOMP_CONNECTED){
 
-            vTaskDelay(1000 / portTICK_PERIOD_MS); // Delay before retry
 
             if(CPUBgflag==0){
+
+                if(CmdEvent!=IDLE_EVENT)eventFeedback();
 
                 if(!pendingData()){
 
@@ -123,6 +126,7 @@ void reconnect(){
                     }
 
                 }else {
+                    vTaskDelay(1000 / portTICK_PERIOD_MS); // 
 
                     printf("\npending data");
                     if (cloudeTaskHandler == NULL) cloudHandel();
@@ -132,15 +136,37 @@ void reconnect(){
             }
         }else if(networkStatus<STOMP_CONNECTED && networkStatus>WIFI_CONNECTED){
 
+
+
+
         stomp_client_connect(); 
+        }else if(networkStatus==WIFI_DISS){
+
+            if (cloudeTaskHandler != NULL) {
+            vTaskDelete(cloudeTaskHandler);   // Delete the task
+            cloudeTaskHandler = NULL;         // Clear the handle to avoid dangling references
+            ESP_LOGW("TAGSTOMP", "detectionFaceProcesing deleted");
+            }
+
+            if (detectionFaceProcesingTaskHandler != NULL) {
+                vTaskDelete(detectionFaceProcesingTaskHandler);   // Delete the task
+                detectionFaceProcesingTaskHandler = NULL;         // Clear the handle to avoid dangling references
+                ESP_LOGW("TAGSTOMP", "detectionFaceProcesingTaskHandler deleted");
+            }
+
         }
+        vTaskDelay(1000 / portTICK_PERIOD_MS); // Delay before retry
+        ESP_LOGI("HEAP", "Free heap: %d kb", heap_caps_get_free_size(MALLOC_CAP_8BIT)/1024);
+
 }
 
 
 void cloudHandel()
 {
 
-    xTaskCreatePinnedToCore(attendanceHandlerTask, "AttendanceTask", 4 * 1024, NULL,5, &cloudeTaskHandler, 0);
+    ESP_LOGI("cloudHandel", "AttendanceTask creat");
+
+    xTaskCreatePinnedToCore(attendanceHandlerTask, "AttendanceTask", 4 * 1024, NULL,15, &cloudeTaskHandler, 0);
 
 }
 
@@ -148,7 +174,7 @@ void cloudHandel()
 
 void facedataHandle(const QueueHandle_t input )
 {
-    ESP_LOGI("cloudHandel", "detectionFaceProcesing creat");
+    ESP_LOGW("cloudHandel", "detectionFaceProcesing creat");
     xQueueCloudI = input;
     xTaskCreatePinnedToCore(cloudeHandlerTask, TAG, 4 * 1024, NULL, 5, detectionFaceProcesingTaskHandler, 0);
 

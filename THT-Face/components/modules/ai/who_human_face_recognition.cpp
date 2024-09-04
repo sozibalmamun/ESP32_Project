@@ -346,7 +346,7 @@ static void task_process_handler(void *arg)
                             CPUBgflag=1;
                             // ESP_LOGI("RECOGNIZE", "Similarity: %f, Match Name: %s", recognize_result.similarity, recognize_result.name.c_str());
 
-                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_10000_MS)StopMultipleAttaneId=0;
+                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_300_MS)StopMultipleAttaneId=0;
 
                             if(StopMultipleAttaneId!=recognize_result.id){
 
@@ -597,5 +597,5 @@ void register_human_face_recognition(const QueueHandle_t frame_i,
         // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
 
     if (xQueueEvent)
-        xTaskCreatePinnedToCore(task_event_handler, TAG, 4 * 1024, NULL, 3, NULL, 1);
+        xTaskCreatePinnedToCore(task_event_handler, TAG, 1 * 1024, NULL,5, NULL, 1);
 }

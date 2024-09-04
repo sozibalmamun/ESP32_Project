@@ -40,7 +40,7 @@
 #define TIMEOUT_6000_MS       600
 #define TIMEOUT_7000_MS       700
 #define TIMEOUT_9000_MS       900
-#define TIMEOUT_10000_MS      1000
+#define TIMEOUT_10000_MS     1000
 #define TIMEOUT_12000_MS      1200
 #define TIMEOUT_20000_MS      2000
 #define TIMEOUT_15_S          1500
@@ -57,15 +57,18 @@ static const char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqr
 #define     PUBLISH_TOPIC         "/app/cloud"
 #define     SUBCRIBE_TOPIC        "/topic/cloud"
 //-------------------------------------------------------------------
+
 //-----------network status code-------------------------------------
 #define     WIFI_DISS           0x00
 #define     WIFI_CONNECTED      0x01
 #define     WSS_CONNECTED       0x02
 #define     STOMP_CONNECTED     0x03
 //-------------------------------------------------------------------
+
 //-------------------------------------------------------------
 #define     IMAGE_CHANK_SIZE      500 //512//760//256 //128
 #define     CHANK_SIZE            1012 //512//760//256 //128
+#define     MAXTRY                30
 
 
 

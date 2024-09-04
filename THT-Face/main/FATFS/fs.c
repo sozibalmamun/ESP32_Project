@@ -321,41 +321,83 @@ void process_attendance_files() {
 }
 
 
-bool sendFilePath(const char *file_path) {
+// bool sendFilePath(const char *file_path) {
 
-    // Open the file
-    FILE *file = fopen(file_path, "r");
+//     // Open the file
+//     FILE *file = fopen(file_path, "r");
+//     if (file == NULL) {
+//         ESP_LOGE("STOMP", "Failed to open file: %s", file_path);
+//         return false;
+//     }
+
+//     // Read the file content (this is a placeholder; adapt as needed)
+//     char buffer[1012];
+//     while (fgets(buffer, sizeof(buffer), file) != NULL) {
+
+//         // Here you would send the content via STOMP
+//         // time_library_time_t current_time;
+//         // get_time(&current_time, 0);
+//         // char tempFrame[strlen(buffer)+30];
+//         // snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",
+//         // (current_time.year-2000), current_time.month, current_time.day,
+//         // current_time.hour, current_time.minute, current_time.second, // device time
+//         // buffer); // log time + id
+
+//         ESP_LOGW(TAG, "buff log %s", buffer);
+
+//         if (!stompSend(buffer,PUBLISH_TOPIC)) {
+//             //  ESP_LOGE(TAG, "Error sending log");
+//             return false;
+//         }
+//         break;
+//     }
+//     fclose(file);
+//     // Simulate successful send
+//     // ESP_LOGI("STOMP", "File sent successfully: %s", file_path);
+//     return true;
+// }
+
+bool sendFilePath(const char *filePath) {
+    // Open file and read content here
+    // Example: Read file into buffer
+    FILE *file = fopen(filePath, "r");
     if (file == NULL) {
-        ESP_LOGE("STOMP", "Failed to open file: %s", file_path);
+        ESP_LOGE("log", "Failed to open file: %s", filePath);
         return false;
     }
 
-    // Read the file content (this is a placeholder; adapt as needed)
-    char buffer[1012];
-    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+    // Read file content into buffer
+    fseek(file, 0, SEEK_END);
+    long fileSize = ftell(file);
+    fseek(file, 0, SEEK_SET);
 
-        // Here you would send the content via STOMP
-        // time_library_time_t current_time;
-        // get_time(&current_time, 0);
-        // char tempFrame[strlen(buffer)+30];
-        // snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",
-        // (current_time.year-2000), current_time.month, current_time.day,
-        // current_time.hour, current_time.minute, current_time.second, // device time
-        // buffer); // log time + id
-
-        ESP_LOGW(TAG, "buff log %s", buffer);
-
-        if (!stompSend(buffer,PUBLISH_TOPIC)) {
-            //  ESP_LOGE(TAG, "Error sending log");
-            return false;
-        }
-
+    char *fileContent = (char *)heap_caps_malloc(fileSize + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    if (fileContent == NULL) {
+        ESP_LOGE("log", "Failed to allocate memory for file content");
+        fclose(file);
+        return false;
     }
+
+    fread(fileContent, 1, fileSize, file);
     fclose(file);
-    // Simulate successful send
-    // ESP_LOGI("STOMP", "File sent successfully: %s", file_path);
+    fileContent[fileSize] = '\0';  // Null-terminate the string
+
+    ESP_LOGW(TAG, "buff log %s", fileContent);
+
+    if (!stompSend(fileContent,PUBLISH_TOPIC)) {
+        //  ESP_LOGE(TAG, "Error sending log");
+        return false;
+    }
+
+    // Free allocated buffer
+    heap_caps_free(fileContent);
+
     return true;
 }
+
+
+
+
 
 
 
@@ -384,7 +426,7 @@ bool process_and_send_faces(const char* topic) {
 
             FILE* f = fopen(file_name, "rb");
             if (f == NULL) {
-                ESP_LOGE("search_and_send_face_data", "Failed to open file for reading: %s", file_name);
+                // ESP_LOGE("search_and_send_face_data", "Failed to open file for reading: %s", file_name);
                 continue;
             }
 
@@ -406,7 +448,7 @@ bool process_and_send_faces(const char* topic) {
 
             uint8_t* image_data = (uint8_t *)heap_caps_malloc(image_length, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);//malloc(image_length);//(uint8_t *)heap_caps_malloc((*dst)->len, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
             if (image_data == NULL) {
-                ESP_LOGE("search_and_send_face_data", "Failed to allocate memory for image data");
+                // ESP_LOGE("search_and_send_face_data", "Failed to allocate memory for image data");
                 fclose(f);
                 continue;
             }
@@ -414,9 +456,9 @@ bool process_and_send_faces(const char* topic) {
             fclose(f);
 
             // Send the image data using imagesent function
-            bool sent = imagesent(image_data, image_length, image_hight,image_width, name, person_id, topic);
+            // bool sent = imagesent(image_data, image_length, image_hight,image_width, name, person_id, topic);
 
-            if (sent) {
+            if (imagesent(image_data, image_length, image_hight,image_width, name, person_id, topic)) {
 
                 // Delete the file if sent successfully
 
@@ -427,7 +469,7 @@ bool process_and_send_faces(const char* topic) {
                 }
 
             } else {
-                ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_name);
+                // ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_name);
             }
 
             heap_caps_free(image_data);

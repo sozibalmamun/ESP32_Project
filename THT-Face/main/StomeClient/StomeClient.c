@@ -6,7 +6,7 @@
 #define     TAGSTOMP        "STOMP_CLIENT"
 
 int8_t percentage=0;
-
+int8_t maxTry=0;
 
 
 
@@ -61,6 +61,9 @@ bool stompSend(char *buff, char* topic) {
     uint16_t currentIndex = 0;
     uint16_t buffLen = strlen(buff);
 
+    // ESP_LOGW(TAGSTOMP, "Total stomp length: %d\n", strlen(buff));
+
+
     // Continue sending chunks while there is data left
     while (buffLen > 0) {
         memset(tempFrame, 0, sizeof(tempFrame));
@@ -95,7 +98,14 @@ bool stompSend(char *buff, char* topic) {
             ESP_LOGE(TAGSTOMP, "Stomp disconnected, retrying...");
             if (networkStatus > WIFI_CONNECTED) networkStatus = WSS_CONNECTED;
             heap_caps_free(sendingFrame);
+            sendingFrame=NULL;
             vTaskDelay(1000 / portTICK_PERIOD_MS); // Delay before retry
+            maxTry++;
+            if(maxTry>MAXTRY){
+                maxTry=0;
+                return false;
+
+            }
             continue; // Retry sending
         }
 
@@ -104,7 +114,13 @@ bool stompSend(char *buff, char* topic) {
             ESP_LOGE(TAGSTOMP, "Sending STOMP failed, retrying...");
             if (networkStatus > WIFI_CONNECTED) networkStatus = WSS_CONNECTED;
             heap_caps_free(sendingFrame);
+            sendingFrame=NULL;
             vTaskDelay(1000 / portTICK_PERIOD_MS); // Delay before retry
+            maxTry++;
+            if(maxTry>MAXTRY){
+                maxTry=0;
+                return false;
+            }
             continue; // Retry sending
         }
 
@@ -113,6 +129,7 @@ bool stompSend(char *buff, char* topic) {
         buffLen -= chunkLen;
 
         heap_caps_free(sendingFrame); // Free allocated memory for sendingFrame
+        sendingFrame=NULL;
         // vTaskDelay(30 / portTICK_PERIOD_MS); // Delay to avoid flooding
     }
 
@@ -148,9 +165,10 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
     snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d %d", buffLen, w, h, name, id, totalChunks);
     if (!stompSend(imageInfo, topic)) {
         heap_caps_free(hexString);
+        hexString=NULL;
         return false;
     }
-    vTaskDelay(50 / portTICK_PERIOD_MS);
+    vTaskDelay(50);
 
     uint16_t currentIndex = 0;
     uint16_t chunkNo = 0;
@@ -159,18 +177,37 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
         size_t chunkLen = MIN(IMAGE_CHANK_SIZE, strlen(hexString) - currentIndex);
         char* chunk = (char*)heap_caps_malloc(chunkLen + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
         if (chunk == NULL) {
-            ESP_LOGE(TAGSTOMP, "Memory allocation for chunk failed");
+            // ESP_LOGE(TAGSTOMP, "Memory allocation for chunk failed");
             heap_caps_free(hexString);
+            hexString=NULL;
             return false;
         }
         strncpy(chunk, &hexString[currentIndex], chunkLen);
         chunk[chunkLen] = '\0';
 
-        if (!stompSend(chunk, topic)) {
+    // Corrected length calculation for sentFrame
+        size_t sentFrameLen = chunkLen + 55; // Additional padding for format specifiers
+        char* sentFrame = (char*)heap_caps_malloc(sentFrameLen + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+        if (sentFrame == NULL) {
+            // ESP_LOGE(TAGSTOMP, "Memory allocation for sentFrame failed");
             heap_caps_free(chunk);
-            continue; // Retry sending
-        }
+            heap_caps_free(hexString);
+            hexString=NULL;  chunk=NULL;
 
+
+            return false;
+        }
+        memset(sentFrame, 0, sentFrameLen + 1);
+        snprintf(sentFrame, sentFrameLen, "%d %d %s", id, chunkNo + 1, chunk);
+        printf("Chunk No: %d\n", chunkNo+1);// chank no 
+
+        vTaskDelay(10);
+        if (!stompSend(sentFrame, topic)) {
+            heap_caps_free(chunk);
+            heap_caps_free(hexString); // Free hex string memory
+            hexString=NULL;  chunk=NULL;
+            return false; //
+        }
         currentIndex += chunkLen;
         chunkNo++;
         float percentage_float = ((float)chunkNo / totalChunks) * 100;
@@ -178,8 +215,11 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
         if (percentage >= 100) percentage = 0;
 
         heap_caps_free(chunk); // Free chunk memory
+        chunk=NULL;
+
     }
     heap_caps_free(hexString); // Free hex string memory
+    hexString=NULL;  
     return true;
 }
 
@@ -480,7 +520,7 @@ void stomp_client_int( stompInfo_cfg_t stompSetup ) {
     websocket_cfg.use_global_ca_store = true;// ok 
     websocket_cfg.skip_cert_common_name_check = true;
     websocket_cfg.disable_auto_reconnect = false;
-    websocket_cfg.task_stack = 1024*6;  // Increased stack size
+    websocket_cfg.task_stack = 1024*7;  // Increased stack size
     websocket_cfg.task_prio =10;      // Set an appropriate task priority
 
 

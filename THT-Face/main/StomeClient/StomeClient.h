@@ -76,6 +76,7 @@ const char echo_org_ssl_ca_cert[]  = \
 
 
 extern uint8_t networkStatus;
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 extern const char* day_names[];
 

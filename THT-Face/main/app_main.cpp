@@ -73,7 +73,7 @@ void app_main()
     register_event(xQueueEventLogic);//core 0
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false); //core 1+1
 
-    cloudHandel(xQueueCloud);// core 0
+    // cloudHandel();// core 0
 
     register_lcd(xQueueLCDFrame, NULL, true);// core 0
     vTaskDelay(pdMS_TO_TICKS(10));
@@ -108,7 +108,7 @@ void app_main()
     while(true){
 
 
-
+        reconnect();
 
 
         // if(true){

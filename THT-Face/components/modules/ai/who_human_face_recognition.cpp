@@ -54,9 +54,11 @@ static QueueHandle_t xQueueEvent = NULL;
 static QueueHandle_t xQueueFrameO = NULL;
 static QueueHandle_t xQueueResult = NULL;
 
+
+//------------------------------------------------------------------------------------
 static QueueHandle_t xQueueCloud = NULL;
-
-
+extern TaskHandle_t detectionFaceProcesingTaskHandler; // Handle for the stompSenderTask
+//---------------------------------------------------------------------------------------
 
 
 static recognizer_state_t gEvent = DETECT;
@@ -312,6 +314,16 @@ static void task_process_handler(void *arg)
 
                         cropFrame->id= recognizer->get_enrolled_ids().back().id;
                         cropFrame->Name= personName;
+
+
+                        if(detectionFaceProcesingTaskHandler==NULL){
+
+                            xQueueCloud = xQueueCreate(3, sizeof(int *));
+                            facedataHandle(xQueueCloud);// core 0
+
+                        }
+
+
 
 
                         if (xQueueCloud) {

@@ -64,7 +64,7 @@ extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,cha
 
 extern bool display_faces( camera_fb_t *buff);
 extern void scaleAndDisplayImageInFrame(uint8_t *src_image, uint8_t src_width, uint8_t src_height, camera_fb_t *dst_buff, uint8_t pos_x, uint8_t pos_y);
-
+extern bool pendingData();
 
 extern bool stompSend(char * buff, char* topic);
 extern uint64_t generate_unique_id(void);

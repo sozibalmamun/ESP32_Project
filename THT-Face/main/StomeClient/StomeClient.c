@@ -54,32 +54,34 @@ void stomeAck(const char * message){
 
 
 
-bool stompSend(char * buff, char* topic){
+bool stompSend(char *buff, char* topic) {
+    char tempFrame[CHANK_SIZE + 1];
+    memset(tempFrame, 0, sizeof(tempFrame));
 
-    char tempFrame[CHANK_SIZE+1]; 
-    memset(tempFrame,0,sizeof(tempFrame));
+    uint16_t currentIndex = 0;
+    uint16_t buffLen = strlen(buff);
 
-    uint16_t currentIndex=0;
-    uint16_t buffLen =strlen(buff);
-    // ESP_LOGW(TAGSTOMP, "Sending  total len: %d chank: %d\n", buffLen, (int)ceil(buffLen/CHANK_SIZE)>1?(int)ceil(buffLen/CHANK_SIZE):1);
+    // Continue sending chunks while there is data left
+    while (buffLen > 0) {
+        memset(tempFrame, 0, sizeof(tempFrame));
 
-    do{
-        memset(tempFrame,0,sizeof(tempFrame));
-        if(buffLen<=CHANK_SIZE){
-            currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],buffLen) : memcpy(&tempFrame,&buff[currentIndex],buffLen);
-            buffLen= buffLen - buffLen;
-            // ESP_LOGI(TAGSTOMP, "Sending last Chank\n");
+        // Determine the length of the chunk to be sent
+        size_t chunkLen = MIN(CHANK_SIZE, buffLen);
 
-        }else{
+        // Copy the chunk to tempFrame
+        memcpy(tempFrame, &buff[currentIndex], chunkLen);
 
-            currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame)-1) : memcpy(&tempFrame,&buff[currentIndex],sizeof(tempFrame)-1);
+        // Null-terminate the chunk
+        tempFrame[chunkLen] = '\0';
 
+        // Prepare the STOMP frame
+        size_t sendingFrameLen = strlen(tempFrame) + 47 + strlen(topic);
+        char* sendingFrame = (char*)heap_caps_malloc(sendingFrameLen + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+        if (sendingFrame == NULL) {
+            ESP_LOGE(TAGSTOMP, "Memory allocation for sendingFrame failed");
+            return false;
         }
-        tempFrame[strlen(tempFrame)] = '\0';  // Null-terminate the chunk
-
-
-        char sendingFrame[strlen(tempFrame)+47+strlen(topic)];
-        memset(sendingFrame,0,sizeof(sendingFrame));
+        memset(sendingFrame, 0, sendingFrameLen + 1);
 
         strcat(sendingFrame, "[\"SEND\\ndestination:");
         strcat(sendingFrame, topic);
@@ -88,130 +90,264 @@ bool stompSend(char * buff, char* topic){
         strcat(sendingFrame, "\\n\\n\\u0000\"]");
 
 
-        // ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", sendingFrame);
-
-        if(networkStatus != STOMP_CONNECTED){
-            ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
-            if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
-            vTaskDelay(100);  
+        // Check network status
+        if (networkStatus != STOMP_CONNECTED) {
+            ESP_LOGE(TAGSTOMP, "Stomp disconnected, retrying...");
+            if (networkStatus > WIFI_CONNECTED) networkStatus = WSS_CONNECTED;
+            heap_caps_free(sendingFrame);
+            vTaskDelay(1000 / portTICK_PERIOD_MS); // Delay before retry
             continue; // Retry sending
-
         }
 
-        if(esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY)==ESP_OK){
-
-            ESP_LOGI(TAGSTOMP, "Sending STOMP FAIL");
-            if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
-            vTaskDelay(100); 
-
+        // Send the STOMP frame
+        if (esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY) == 0) {
+            ESP_LOGE(TAGSTOMP, "Sending STOMP failed, retrying...");
+            if (networkStatus > WIFI_CONNECTED) networkStatus = WSS_CONNECTED;
+            heap_caps_free(sendingFrame);
+            vTaskDelay(1000 / portTICK_PERIOD_MS); // Delay before retry
             continue; // Retry sending
-
-        }else {
-            // ESP_LOGI(TAGSTOMP, "Sending STOMP   sent len :%d  remain   %d\n", currentIndex,buffLen);
-            currentIndex+= CHANK_SIZE;
-            if(buffLen>0)buffLen= buffLen - CHANK_SIZE; // check bufflen 0 or not then calculate 
-            vTaskDelay(30);
         }
 
-    }while(buffLen!=0);
+        // Update indices and lengths
+        currentIndex += chunkLen;
+        buffLen -= chunkLen;
 
+        heap_caps_free(sendingFrame); // Free allocated memory for sendingFrame
+        // vTaskDelay(30 / portTICK_PERIOD_MS); // Delay to avoid flooding
+    }
 
-return true;
-
+    return true;
 }
+
+
+
+
+
+
 
 bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name, uint16_t id, char* topic) {
     // Calculate the required size for hex string
-    size_t tempLen = buffLen * 2 + 1; // 2 characters per byte + null terminator
-    char* hexString =  (char *)heap_caps_malloc(tempLen, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    size_t tempLen = buffLen * 2 + 1;
+    char* hexString = (char*)heap_caps_malloc(tempLen, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     if (hexString == NULL) {
         ESP_LOGE(TAGSTOMP, "Memory allocation for hexString failed");
         return false;
     }
 
-    // Convert the entire buffer to a hex string
+    // Convert buffer to hex string
     for (uint16_t i = 0; i < buffLen; i++) {
         sprintf(&hexString[i * 2], "%02x", buff[i]);
     }
-
-    // Null-terminate the hex string
     hexString[tempLen - 1] = '\0';
 
-    uint16_t totalChank= (int)ceil((double)strlen(hexString) / IMAGE_CHANK_SIZE);
-
-
-    ESP_LOGW(TAGSTOMP, "Total hex string length: %d, Chunks to send: %d\n", strlen(hexString), totalChank);
-
-
-
+    uint16_t totalChunks = (uint16_t)ceil((double)strlen(hexString) / IMAGE_CHANK_SIZE);
+    ESP_LOGW(TAGSTOMP, "Total hex string length: %d, Chunks to send: %d\n", strlen(hexString), totalChunks);
 
     // Send image info
     char imageInfo[35];
-    snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d %d", buffLen, w, h, name, id,totalChank);
+    snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d %d", buffLen, w, h, name, id, totalChunks);
     if (!stompSend(imageInfo, topic)) {
         heap_caps_free(hexString);
         return false;
     }
-    vTaskDelay(50);
+    vTaskDelay(50 / portTICK_PERIOD_MS);
 
-    // Send the hex string in chunks
     uint16_t currentIndex = 0;
-    uint16_t chankNo=0;
+    uint16_t chunkNo = 0;
+
     while (currentIndex < strlen(hexString)) {
-        char chunk[IMAGE_CHANK_SIZE + 1]; // Buffer for each chunk
-        memset(chunk, 0, sizeof(chunk));
-
-        // Calculate remaining length and copy chunk
-        size_t chunkLen = strlen(hexString) - currentIndex;
-        if (chunkLen > IMAGE_CHANK_SIZE) {
-            chunkLen = IMAGE_CHANK_SIZE;
+        size_t chunkLen = MIN(IMAGE_CHANK_SIZE, strlen(hexString) - currentIndex);
+        char* chunk = (char*)heap_caps_malloc(chunkLen + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+        if (chunk == NULL) {
+            ESP_LOGE(TAGSTOMP, "Memory allocation for chunk failed");
+            heap_caps_free(hexString);
+            return false;
         }
-
         strncpy(chunk, &hexString[currentIndex], chunkLen);
+        chunk[chunkLen] = '\0';
 
-        // Prepare the STOMP frame to send
-        char sentFrame[sizeof(chunk) + 55 + strlen(topic)];
-        memset(sentFrame, 0, sizeof(sentFrame));
-
-        snprintf(sentFrame, sizeof(sentFrame), "[\"SEND\\ndestination:%s\\n\\n%d %d %s\\n\\n\\u0000\"]", topic, id ,chankNo+1,chunk);
-
-        // printf("Chunk No: %d\n", chankNo+1);// chank no 
-
-
-        if (networkStatus != STOMP_CONNECTED) {
-            ESP_LOGE(TAGSTOMP, "Stomp disconnected\n");
-            vTaskDelay(50);
-            if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
-            vTaskDelay(100);
-            // free(hexString);
+        if (!stompSend(chunk, topic)) {
+            heap_caps_free(chunk);
             continue; // Retry sending
         }
-        if (esp_websocket_client_send_text(client, sentFrame, strlen(sentFrame), portMAX_DELAY) == 0) {
-            vTaskDelay(50);
-            ESP_LOGI(TAGSTOMP, "STOMP send failed. Retrying...\n");
-            if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
-            vTaskDelay(100);
 
+        currentIndex += chunkLen;
+        chunkNo++;
+        float percentage_float = ((float)chunkNo / totalChunks) * 100;
+        percentage = (int)percentage_float;
+        if (percentage >= 100) percentage = 0;
 
-
-            continue; // Retry sending
-
-        }else{
-            vTaskDelay(2);
-            currentIndex += chunkLen;
-            chankNo++;// no of chank 
-            float percentage_float = (chankNo /(float)totalChank) * 100;
-            percentage = (int)percentage_float;
-            
-            // printf("total chank  %d send %d percentage: %d\n",totalChank,  chankNo,percentage);
-            if(percentage>=100)percentage=0;
-        }
-
+        heap_caps_free(chunk); // Free chunk memory
     }
-    heap_caps_free(hexString);
+    heap_caps_free(hexString); // Free hex string memory
     return true;
 }
 
+
+
+//--------------------backup
+
+// bool stompSend(char * buff, char* topic){
+
+//     char tempFrame[CHANK_SIZE+1]; 
+//     memset(tempFrame,0,sizeof(tempFrame));
+
+//     uint16_t currentIndex=0;
+//     uint16_t buffLen =strlen(buff);
+//     // ESP_LOGW(TAGSTOMP, "Sending  total len: %d chank: %d\n", buffLen, (int)ceil(buffLen/CHANK_SIZE)>1?(int)ceil(buffLen/CHANK_SIZE):1);
+
+//     do{
+//         memset(tempFrame,0,sizeof(tempFrame));
+//         if(buffLen<=CHANK_SIZE){
+//             currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],buffLen) : memcpy(&tempFrame,&buff[currentIndex],buffLen);
+//             buffLen= buffLen - buffLen;
+//             ESP_LOGI(TAGSTOMP, "Sending last Chank\n");
+
+//         }else{
+
+//             currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame)-1) : memcpy(&tempFrame,&buff[currentIndex],sizeof(tempFrame)-1);
+
+//         }
+//         tempFrame[strlen(tempFrame)] = '\0';  // Null-terminate the chunk
+
+
+//         char sendingFrame[strlen(tempFrame)+47+strlen(topic)];
+//         memset(sendingFrame,0,sizeof(sendingFrame));
+
+//         strcat(sendingFrame, "[\"SEND\\ndestination:");
+//         strcat(sendingFrame, topic);
+//         strcat(sendingFrame, "\\n\\n");
+//         strcat(sendingFrame, tempFrame);
+//         strcat(sendingFrame, "\\n\\n\\u0000\"]");
+
+
+//         // ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", sendingFrame);
+
+//         if(networkStatus != STOMP_CONNECTED){
+//             ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
+//             if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
+//             vTaskDelay(1000 / portTICK_PERIOD_MS);
+//             continue; // Retry sending
+
+//         }
+
+//         if(esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY)==ESP_OK){
+
+//             ESP_LOGI(TAGSTOMP, "Sending STOMP FAIL");
+//             if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
+//             vTaskDelay(1000 / portTICK_PERIOD_MS);
+//             continue; // Retry sending
+
+//         }else {
+//             // ESP_LOGI(TAGSTOMP, "Sending STOMP   sent len :%d  remain   %d\n", currentIndex,buffLen);
+//             currentIndex+= CHANK_SIZE;
+//             if(buffLen>0)buffLen= buffLen - CHANK_SIZE; // check bufflen 0 or not then calculate 
+//             // vTaskDelay(30);
+//         }
+
+//     }while(buffLen!=0);
+
+
+// return true;
+
+// }
+
+
+
+
+// bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name, uint16_t id, char* topic) {
+//     // Calculate the required size for hex string
+//     size_t tempLen = buffLen * 2 + 1; // 2 characters per byte + null terminator
+//     char* hexString =  (char *)heap_caps_malloc(tempLen, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+//     if (hexString == NULL) {
+//         ESP_LOGE(TAGSTOMP, "Memory allocation for hexString failed");
+//         return false;
+//     }
+
+//     // Convert the entire buffer to a hex string
+//     for (uint16_t i = 0; i < buffLen; i++) {
+//         sprintf(&hexString[i * 2], "%02x", buff[i]);
+//     }
+
+//     // Null-terminate the hex string
+//     hexString[tempLen - 1] = '\0';
+
+//     uint16_t totalChank= (int)ceil((double)strlen(hexString) / IMAGE_CHANK_SIZE);
+
+
+//     ESP_LOGW(TAGSTOMP, "Total hex string length: %d, Chunks to send: %d\n", strlen(hexString), totalChank);
+
+
+
+
+//     // Send image info
+//     char imageInfo[35];
+//     snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d %d", buffLen, w, h, name, id,totalChank);
+//     if (!stompSend(imageInfo, topic)) {
+//         heap_caps_free(hexString);
+//         return false;
+//     }
+//     vTaskDelay(50);
+
+//     // Send the hex string in chunks
+//     uint16_t currentIndex = 0;
+//     uint16_t chankNo=0;
+//     while (currentIndex < strlen(hexString)) {
+//         char chunk[IMAGE_CHANK_SIZE + 1]; // Buffer for each chunk
+//         memset(chunk, 0, sizeof(chunk));
+
+//         // Calculate remaining length and copy chunk
+//         size_t chunkLen = strlen(hexString) - currentIndex;
+//         if (chunkLen > IMAGE_CHANK_SIZE) {
+//             chunkLen = IMAGE_CHANK_SIZE;
+//         }
+
+//         strncpy(chunk, &hexString[currentIndex], chunkLen);
+
+//         // Prepare the STOMP frame to send
+//         char sentFrame[sizeof(chunk) + 55 + strlen(topic)];
+//         memset(sentFrame, 0, sizeof(sentFrame));
+
+//         snprintf(sentFrame, sizeof(sentFrame), "[\"SEND\\ndestination:%s\\n\\n%d %d %s\\n\\n\\u0000\"]", topic, id ,chankNo+1,chunk);
+
+//         // printf("Chunk No: %d\n", chankNo+1);// chank no 
+
+
+//         if (networkStatus != STOMP_CONNECTED) {
+//             ESP_LOGE(TAGSTOMP, "Stomp disconnected\n");
+//             vTaskDelay(50);
+//             if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
+//             vTaskDelay(100);
+//             // free(hexString);
+//             continue; // Retry sending
+//         }
+//         if (esp_websocket_client_send_text(client, sentFrame, strlen(sentFrame), portMAX_DELAY) == 0) {
+//             vTaskDelay(50);
+//             ESP_LOGI(TAGSTOMP, "STOMP send failed. Retrying...\n");
+//             if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
+//             vTaskDelay(100);
+
+
+
+//             continue; // Retry sending
+
+//         }else{
+//             vTaskDelay(2);
+//             currentIndex += chunkLen;
+//             chankNo++;// no of chank 
+//             float percentage_float = (chankNo /(float)totalChank) * 100;
+//             percentage = (int)percentage_float;
+            
+//             // printf("total chank  %d send %d percentage: %d\n",totalChank,  chankNo,percentage);
+//             if(percentage>=100)percentage=0;
+//         }
+
+//     }
+//     heap_caps_free(hexString);
+//     return true;
+// }
+
+//--------------------backup end
 
 
 
@@ -344,8 +480,8 @@ void stomp_client_int( stompInfo_cfg_t stompSetup ) {
     websocket_cfg.use_global_ca_store = true;// ok 
     websocket_cfg.skip_cert_common_name_check = true;
     websocket_cfg.disable_auto_reconnect = false;
-    // websocket_cfg.task_stack = 8192;  // Increased stack size
-    websocket_cfg.task_prio = 5;      // Set an appropriate task priority
+    websocket_cfg.task_stack = 1024*6;  // Increased stack size
+    websocket_cfg.task_prio =10;      // Set an appropriate task priority
 
 
     // ESP_LOGI(TAG, "Constructed WebSocket URL: %s", websocket_cfg.uri);

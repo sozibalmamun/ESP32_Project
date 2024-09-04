@@ -277,7 +277,7 @@ void write_log_attendance(uint16_t person_id, uint8_t* timestamp) {
         return;
     }
     // Write attendance log: person ID and timestamp
-    fprintf(f, "%d %d %d %d %d %d %d ", timestamp[0],timestamp[1],timestamp[2],timestamp[3],timestamp[4],timestamp[5],person_id);
+    fprintf(f, "%02d %02d %02d %02d %02d %02d %04d ", timestamp[0],timestamp[1],timestamp[2],timestamp[3],timestamp[4],timestamp[5],person_id);
     fclose(f);
     ESP_LOGI("attendance", "Attendance ID: %d at: %s", person_id, log_file);
 }
@@ -331,21 +331,21 @@ bool sendFilePath(const char *file_path) {
     }
 
     // Read the file content (this is a placeholder; adapt as needed)
-    char buffer[1024];
+    char buffer[1012];
     while (fgets(buffer, sizeof(buffer), file) != NULL) {
 
         // Here you would send the content via STOMP
-        time_library_time_t current_time;
-        get_time(&current_time, 0);
-        char tempFrame[strlen(buffer)+30];
-        snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",
-        (current_time.year-2000), current_time.month, current_time.day,
-        current_time.hour, current_time.minute, current_time.second, // device time
-        buffer); // log time + id
+        // time_library_time_t current_time;
+        // get_time(&current_time, 0);
+        // char tempFrame[strlen(buffer)+30];
+        // snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",
+        // (current_time.year-2000), current_time.month, current_time.day,
+        // current_time.hour, current_time.minute, current_time.second, // device time
+        // buffer); // log time + id
 
-        ESP_LOGW(TAG, "buff log %s", tempFrame);
+        ESP_LOGW(TAG, "buff log %s", buffer);
 
-        if (!stompSend(tempFrame,PUBLISH_TOPIC)) {
+        if (!stompSend(buffer,PUBLISH_TOPIC)) {
             //  ESP_LOGE(TAG, "Error sending log");
             return false;
         }
@@ -416,17 +416,15 @@ bool process_and_send_faces(const char* topic) {
             // Send the image data using imagesent function
             bool sent = imagesent(image_data, image_length, image_hight,image_width, name, person_id, topic);
 
-            //  bool sent = stompSend((char*)image_data,  topic);
-
             if (sent) {
 
                 // Delete the file if sent successfully
 
-                // if (remove(file_name) == 0) {
-                //     ESP_LOGI("process_and_send_faces", "File sent and deleted: %s", file_name);
-                // } else {
-                //     ESP_LOGE("process_and_send_faces", "Failed to delete file: %s", file_name);
-                // }
+                if (remove(file_name) == 0) {
+                    ESP_LOGI("process_and_send_faces", "File sent and deleted: %s", file_name);
+                } else {
+                    ESP_LOGE("process_and_send_faces", "Failed to delete file: %s", file_name);
+                }
 
             } else {
                 ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_name);
@@ -591,4 +589,54 @@ bool display_faces(camera_fb_t *buff) {
     }
     closedir(dir);
     return true; // Return true to indicate successful processing
+}
+
+
+bool pendingData() {
+    DIR *dir;
+    struct dirent *entry;
+    bool dataAvailable = false;
+
+    // Check files in ATTENDANCE_DIR
+    if ((dir = opendir(ATTENDANCE_DIR)) == NULL) {
+        // ESP_LOGE("Attendance", "Failed to open directory: %s", ATTENDANCE_DIR);
+        return false;
+    }
+
+    // Iterate through all entries in ATTENDANCE_DIR
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_REG) {  // Only process regular files
+            // ESP_LOGI("Attendance", "File available: %s", entry->d_name);
+            dataAvailable = true;
+        }
+    }
+    closedir(dir);
+
+    if (!dataAvailable) {
+        // ESP_LOGI("Attendance", "No data available in %s", ATTENDANCE_DIR);
+    }else return true;
+
+    // Check files in FACE_DIRECTORY
+    if ((dir = opendir(FACE_DIRECTORY)) == NULL) {
+        // ESP_LOGE("Face", "Failed to open directory: %s", FACE_DIRECTORY);
+        return false;
+    }
+
+    // Reset dataAvailable for face data check
+    dataAvailable = false;
+
+    // Iterate through all entries in FACE_DIRECTORY
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_REG) {  // Only process regular files
+            // ESP_LOGI("Face", "File available: %s", entry->d_name);
+            dataAvailable = true;
+        }
+    }
+    closedir(dir);
+
+    if (!dataAvailable) {
+        // ESP_LOGI("Face", "No data available in %s", FACE_DIRECTORY);
+    }else return true;
+
+    return dataAvailable;
 }

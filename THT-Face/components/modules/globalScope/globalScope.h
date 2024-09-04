@@ -64,8 +64,8 @@ static const char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqr
 #define     STOMP_CONNECTED     0x03
 //-------------------------------------------------------------------
 //-------------------------------------------------------------
-#define     IMAGE_CHANK_SIZE      150 //512//760//256 //128
-#define     CHANK_SIZE            200 //512//760//256 //128
+#define     IMAGE_CHANK_SIZE      500 //512//760//256 //128
+#define     CHANK_SIZE            1012 //512//760//256 //128
 
 
 

@@ -3,7 +3,7 @@
 #include "esp_log.h"
 #include "esp_system.h"
 
-static const char *TAG = "who_camera";
+static const char *TAG = "camera_task";
 static QueueHandle_t xQueueFrameO = NULL;
 
 static void task_process_handler(void *arg)
@@ -21,7 +21,7 @@ void register_camera(const pixformat_t pixel_fromat,
                      const uint8_t fb_count,
                      const QueueHandle_t frame_o)
 {
-    ESP_LOGI(TAG, "Camera module is %s", CAMERA_MODULE_NAME);
+    // ESP_LOGI(TAG, "Camera module is %s", CAMERA_MODULE_NAME);
 
 #if CONFIG_CAMERA_MODULE_ESP_EYE || CONFIG_CAMERA_MODULE_ESP32_CAM_BOARD
     /* IO13, IO14 is designed for JTAG by default,
@@ -69,7 +69,7 @@ void register_camera(const pixformat_t pixel_fromat,
     esp_err_t err = esp_camera_init(&config);
     if (err != ESP_OK)
     {
-        ESP_LOGE(TAG, "Camera init failed with error 0x%x", err);
+        // ESP_LOGE(TAG, "Camera init failed with error 0x%x", err);
         return;
     }
 
@@ -87,5 +87,5 @@ void register_camera(const pixformat_t pixel_fromat,
     }
 
     xQueueFrameO = frame_o;
-    xTaskCreatePinnedToCore(task_process_handler, TAG, 2 * 1024, NULL, 5, NULL, 1);
+    xTaskCreatePinnedToCore(task_process_handler, TAG, 3 * 1024, NULL, 5, NULL, 1);//2*1024
 }

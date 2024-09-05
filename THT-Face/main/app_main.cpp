@@ -53,7 +53,7 @@ void app_main()
 
     esp_err_t ret;
 
-    ESP_LOGI(TAG, "Starting app_main");
+    // ESP_LOGI(TAG, "Starting app_main");
 
     xQueueAIFrame = xQueueCreate(2, sizeof(camera_fb_t *));
     xQueueLCDFrame = xQueueCreate(2, sizeof(camera_fb_t *));
@@ -65,13 +65,13 @@ void app_main()
 
 
     if (xQueueAIFrame == NULL || xQueueLCDFrame == NULL ||/* xQueueKeyState == NULL ||*/ xQueueEventLogic == NULL) {
-        ESP_LOGE(TAG, "Failed to create queues");
+        // ESP_LOGE(TAG, "Failed to create queues");
         esp_restart();
     }
     
     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);//core 1    
-    register_event(xQueueEventLogic);//core 0
-    register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false); //core 1+1
+    register_event(xQueueEventLogic);//core 1
+    register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false); //core 0+1
 
     // cloudHandel();// core 0
 

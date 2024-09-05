@@ -32,7 +32,7 @@ static uint16_t StopMultipleAttaneId=0;
 using namespace std;
 using namespace dl;
 
-static const char *TAG = "human_face_recognition";
+static const char *TAG = "recognition_task";
 
 volatile uint8_t CmdEvent =0;
 char personName[20];
@@ -42,8 +42,8 @@ volatile uint16_t personId;
 //---------------time flag--------------------
 extern volatile uint8_t sleepEnable;
 extern TickType_t sleepTimeOut; 
-TickType_t TimeOut;
-TickType_t erolTimeOut;
+TickType_t TimeOut,faceDetectTimeOut;
+TickType_t enrolTimeOut;
 
 //---------------------------------------
 
@@ -83,11 +83,47 @@ typedef enum
 #define FRAME_DELAY_NUM 16
 
 
+/*
+    for (int y = 0; y < 240; y++)
+    {
+        for (int x = 0; x < 320; x++)
+        {
+            int index = (y * buff->width + x) * 2; // Assuming 2 bytes per pixel
+            buff->buf[index] = 0;
+            buff->buf[index + 1] = 0;
+        }
+    }
+
+*/
+
+
+
+
+
+
 static void rgb_print(camera_fb_t *fb, uint32_t color, const char *str)
 {
     // fb_gfx_print(fb, (fb->width - (strlen(str) * 14)) / 2, 10, color, str);// old
+    // fb_gfx_fillRect(fb, (fb->width - ((strlen(str) * 14)) / 2) -4 , 200-2, (strlen(str) * 14)+8, 20, color );
 
-        fb_gfx_print(fb, (fb->width - (strlen(str) * 14)) / 2, 200, color, str);// edited
+
+    // int text_width = strlen(str) * 14; // Assuming each character is about 14 pixels wide
+    // int text_height = 20;              // Assuming the text height is about 20 pixels
+    // int rect_width = text_width + 6;  // Adding padding around the text
+    // int rect_height = text_height + 4;
+
+    // // Calculate the rectangle's position to center the text in the framebuffer
+    // int rect_x = (fb->width - rect_width) / 2;
+    // int rect_y = 200 - 2; // Adjust the Y offset for the rectangle
+
+    // // Set the rectangle with the chosen background color
+    // fillRect(fb, rect_x, rect_y, rect_width, rect_height, color);
+
+    // fillRoundedRect(fb, 50, 50, 100, 150, 20, 0x07E0);  // Draws a green rounded rectangle
+
+    fillRoundedRect(fb, (fb->width - (strlen(str) * 14)) / 2 -4, 200-1, (strlen(str) * 14)+8 , 25, 3, color);  // Draws a filled rounded rectangle
+
+    fb_gfx_print(fb, (fb->width - (strlen(str) * 14)) / 2, 200, 0xffff, str);// edited
 
 }
 
@@ -247,7 +283,7 @@ static void task_process_handler(void *arg)
                     }else {
 
                         TimeOut= xTaskGetTickCount();
-                        if (xTaskGetTickCount()-erolTimeOut> TIMEOUT_15_S ){
+                        if (xTaskGetTickCount()-enrolTimeOut> TIMEOUT_15_S ){
                             CmdEvent = ENROLMENT_TIMEOUT;
                             key_state= KEY_IDLE;
                             vTaskDelay(10);
@@ -259,16 +295,22 @@ static void task_process_handler(void *arg)
 
                 }else if(_gEvent==DETECT){
 
+
                     if (detect_results.size() == 1){
 
-                        is_detected = true;
+                        if(xTaskGetTickCount()>faceDetectTimeOut+TIMEOUT_150_MS){ 
+                              
+                            faceDetectTimeOut= xTaskGetTickCount();
+                            is_detected = true;
 
-                        if(_gEvent!=ENROLING){
-                            _gEvent=RECOGNIZE;// enroling is the 1st priority
+                            if(_gEvent!=ENROLING){
+                                _gEvent=RECOGNIZE;// enroling is the 1st priority
+
+                            }
 
                         }
                                 
-                    }
+                    }else{ faceDetectTimeOut= xTaskGetTickCount(); }
 
                 }
                 
@@ -330,7 +372,7 @@ static void task_process_handler(void *arg)
                             // printf("Sending cropFrame to xQueueCloud...\n");
                             xQueueSend(xQueueCloud, &cropFrame, portMAX_DELAY);
                         } else {
-                            printf("xQueueCloud is NULL, cannot send cropFrame.\n");
+                            // printf("xQueueCloud is NULL, cannot send cropFrame.\n");
                         }
 
                         //---------------------------------------------------------------------------------
@@ -346,7 +388,7 @@ static void task_process_handler(void *arg)
                             CPUBgflag=1;
                             // ESP_LOGI("RECOGNIZE", "Similarity: %f, Match Name: %s", recognize_result.similarity, recognize_result.name.c_str());
 
-                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_300_MS)StopMultipleAttaneId=0;
+                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_5000_MS)StopMultipleAttaneId=0;
 
                             if(StopMultipleAttaneId!=recognize_result.id){
 
@@ -380,14 +422,14 @@ static void task_process_handler(void *arg)
                         if(recognizer->delete_id(personId,true)== -1 ){// invalide id if "-1"// custom id delete logic
 
                             personId=0;// deafalt for test
-                            ESP_LOGE("DELETE", "Invalided ID: %d", personId);
+                            // ESP_LOGE("DELETE", "Invalided ID: %d", personId);
                             CmdEvent=ID_INVALID; // delete done 
 
                         }else{
 
                             personId=0;// deafalt for test
                             CmdEvent=DELETED;// delete done
-                            ESP_LOGE("DELETE", "IDs left %d", personId);
+                            // ESP_LOGE("DELETE", "IDs left %d", personId);
 
                         }
                         // ESP_LOGE("DELETE", "% d IDs left", recognizer->get_enrolled_id_num());
@@ -409,7 +451,7 @@ static void task_process_handler(void *arg)
                         // rgb_printf(frame, RGB565_MASK_RED, "%d IDs left", recognizer->get_enrolled_id_num());   #define ID_INVALID      0X06
                         if(CmdEvent==DELETED){
 
-                            rgb_printf(frame, RGB565_MASK_RED, "Deleted Id: %d", personId);
+                            // rgb_printf(frame, RGB565_MASK_RED, "Deleted Id: %d", personId);
 
                         }else //rgb_printf(frame, RGB565_MASK_RED, "%d IDs invalided", personId);
 
@@ -418,7 +460,7 @@ static void task_process_handler(void *arg)
                     case SHOW_STATE_RECOGNIZE:
                         if (recognize_result.id > 0){
                             // rgb_printf(frame, RGB565_MASK_GREEN, "ID %d", recognize_result.id);
-                            rgb_printf(frame, RGB565_MASK_GREEN, "Welcome %s",recognize_result.name.c_str());// debug due to display name
+                            rgb_printf(frame, RGB565_MASK_GREEN, "%s",recognize_result.name.c_str());// debug due to display name
                         }else{
                             rgb_print(frame, RGB565_MASK_RED, "Unregister");
                             ESP_LOGI(TAG,"Not Recognize");
@@ -441,7 +483,7 @@ static void task_process_handler(void *arg)
                     }
                     case INVALID:
 
-                        erolTimeOut= xTaskGetTickCount();// incrise 15000ms enrolment time
+                        enrolTimeOut= xTaskGetTickCount();// incrise 15000ms enrolment time
                         rgb_printf(frame, RGB565_MASK_RED, "Aline Face");// at invalid face
                         key_state= KEY_SHORT_PRESS;// back to enroling
 
@@ -454,10 +496,12 @@ static void task_process_handler(void *arg)
                     {
                         frame_count = 0;
                         frame_show_state = SHOW_STATE_IDLE;
-                    }else if( frame_show_state==SHOW_STATE_RECOGNIZE){
-                        frame_count = 0;
-                        frame_show_state = SHOW_STATE_IDLE;
+                    }
+                    else if( frame_show_state==SHOW_STATE_RECOGNIZE){
+                        if(frame_count>2)
+                            frame_count = 0;
 
+                        frame_show_state = SHOW_STATE_IDLE;
                     }
                 }
 
@@ -593,7 +637,7 @@ void register_human_face_recognition(const QueueHandle_t frame_i,
     gReturnFB = camera_fb_return;
     xMutex = xSemaphoreCreateMutex();
 
-    xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
+    xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 0);
         // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
 
     if (xQueueEvent)

@@ -21,7 +21,7 @@ extern char personName[20];
 extern volatile uint16_t personId;
 
 extern key_state_t key_state;
-extern TickType_t erolTimeOut;
+extern TickType_t enrolTimeOut;
 
 
 void process_command(const char* buffer) {
@@ -60,7 +60,7 @@ void process_command(const char* buffer) {
 
                 CmdEvent = ENROLING_EVENT;
 
-                erolTimeOut = xTaskGetTickCount();
+                enrolTimeOut = xTaskGetTickCount();
                 printf("CRC check passed.\n");
                 printf("  - Name: %s\n", personName);
                 // memset(tcpBuffer, 0, strlen(tcpBuffer));

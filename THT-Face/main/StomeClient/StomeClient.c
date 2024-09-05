@@ -8,13 +8,11 @@
 int8_t percentage=0;
 int8_t maxTry=0;
 
-
-
 void stomp_client_connect() {
 
     char connect_frame[100] = "[\"CONNECT\\naccept-version:1.1\\nhost:grozziieget.zjweiting.com\\n\\n\\u0000\"]";
-    if(!esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY))
-    ESP_LOGI(TAGSTOMP, "Fail Connect pac");
+    if(!esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY));
+    // ESP_LOGI(TAGSTOMP, "Fail Connect pac");
 
 }
 
@@ -32,25 +30,26 @@ void stomp_client_subscribe(char* topic) {
     }
 
 }
-void stomeAck(const char * message){
-    char output[20] ;
-    const char *jsonStart = strstr(message, "message-id:");
-    if (jsonStart) {
-        jsonStart += strlen("message-id:"); // Move past the starting point
-        // Locate the end of the message within the JSON payload
-        const char *jsonEnd = strstr(jsonStart, "-");
-        if (jsonEnd) {
-            // Copy the message content into the output buffer
-            size_t length = jsonEnd - jsonStart;
-            strncpy(output, jsonStart, length);
-            output[length] = '\0'; // Null-terminate the output string
-        }
-    }
-    char connect_frame[100] ;
-    snprintf(connect_frame, sizeof(connect_frame), "[\"ACK\\nsubscription:1\\nmessage-id:%s\\ntransaction:tx1\\n\\n\\u0000\"]",output);
-    ESP_LOGI(TAGSTOMP, "STOMP ACKING %s\n", connect_frame);
-    esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY);
-}
+
+// void stomeAck(const char * message){
+//     char output[20] ;
+//     const char *jsonStart = strstr(message, "message-id:");
+//     if (jsonStart) {
+//         jsonStart += strlen("message-id:"); // Move past the starting point
+//         // Locate the end of the message within the JSON payload
+//         const char *jsonEnd = strstr(jsonStart, "-");
+//         if (jsonEnd) {
+//             // Copy the message content into the output buffer
+//             size_t length = jsonEnd - jsonStart;
+//             strncpy(output, jsonStart, length);
+//             output[length] = '\0'; // Null-terminate the output string
+//         }
+//     }
+//     char connect_frame[100] ;
+//     snprintf(connect_frame, sizeof(connect_frame), "[\"ACK\\nsubscription:1\\nmessage-id:%s\\ntransaction:tx1\\n\\n\\u0000\"]",output);
+//     // ESP_LOGI(TAGSTOMP, "STOMP ACKING %s\n", connect_frame);
+//     esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY);
+// }
 
 
 
@@ -81,7 +80,7 @@ bool stompSend(char *buff, char* topic) {
         size_t sendingFrameLen = strlen(tempFrame) + 47 + strlen(topic);
         char* sendingFrame = (char*)heap_caps_malloc(sendingFrameLen + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
         if (sendingFrame == NULL) {
-            ESP_LOGE(TAGSTOMP, "Memory allocation for sendingFrame failed");
+            // ESP_LOGE(TAGSTOMP, "Memory allocation for sendingFrame failed");
             return false;
         }
         memset(sendingFrame, 0, sendingFrameLen + 1);
@@ -111,7 +110,7 @@ bool stompSend(char *buff, char* topic) {
 
         // Send the STOMP frame
         if (esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY) == 0) {
-            ESP_LOGE(TAGSTOMP, "Sending STOMP failed, retrying...");
+            // ESP_LOGE(TAGSTOMP, "Sending STOMP failed, retrying...");
             if (networkStatus > WIFI_CONNECTED) networkStatus = WSS_CONNECTED;
             heap_caps_free(sendingFrame);
             sendingFrame=NULL;
@@ -138,16 +137,12 @@ bool stompSend(char *buff, char* topic) {
 
 
 
-
-
-
-
 bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name, uint16_t id, char* topic) {
     // Calculate the required size for hex string
     size_t tempLen = buffLen * 2 + 1;
     char* hexString = (char*)heap_caps_malloc(tempLen, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     if (hexString == NULL) {
-        ESP_LOGE(TAGSTOMP, "Memory allocation for hexString failed");
+        // ESP_LOGE(TAGSTOMP, "Memory allocation for hexString failed");
         return false;
     }
 
@@ -158,7 +153,7 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
     hexString[tempLen - 1] = '\0';
 
     uint16_t totalChunks = (uint16_t)ceil((double)strlen(hexString) / IMAGE_CHANK_SIZE);
-    ESP_LOGW(TAGSTOMP, "Total hex string length: %d, Chunks to send: %d\n", strlen(hexString), totalChunks);
+    // ESP_LOGW(TAGSTOMP, "Total hex string length: %d, Chunks to send: %d\n", strlen(hexString), totalChunks);
 
     // Send image info
     char imageInfo[35];
@@ -520,7 +515,7 @@ void stomp_client_int( stompInfo_cfg_t stompSetup ) {
     websocket_cfg.use_global_ca_store = true;// ok 
     websocket_cfg.skip_cert_common_name_check = true;
     websocket_cfg.disable_auto_reconnect = false;
-    websocket_cfg.task_stack = 1024*7;  // Increased stack size
+    websocket_cfg.task_stack = 1024*4;  // Increased stack size
     websocket_cfg.task_prio =10;      // Set an appropriate task priority
 
 

@@ -51,7 +51,6 @@
 #define TIMEOUT_5_MIN         30000
 //-------------------------------------------------------------------
 
-static const char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 //-------------------topic-------------------------------------------
 
 #define     PUBLISH_TOPIC         "/app/cloud"

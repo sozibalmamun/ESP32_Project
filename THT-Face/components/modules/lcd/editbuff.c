@@ -273,6 +273,7 @@ void drawFilledRoundedRectangle(uint16_t x_offset, uint8_t y_offset, uint8_t wid
         return;
     }
 
+
     // Draw filled interior and border
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {

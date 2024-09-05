@@ -17,6 +17,8 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "fb_gfx.h"
+#include <math.h>  
+
 
 typedef struct
 {                            // Data stored PER GLYPH
@@ -37,6 +39,8 @@ typedef struct
 
 #include "FreeMonoBold12pt7b.h" //14x24
 #define gfxFont ((GFXfont *)(&FreeMonoBold12pt7b))
+
+
 
 void fb_gfx_fillRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color)
 {
@@ -86,6 +90,169 @@ void fb_gfx_fillRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h
         data += line_step;
     }
 }
+
+
+
+// void fillRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color)
+// {
+//     int bytes_per_pixel = 2; // RGB565 uses 2 bytes per pixel
+
+//     // Ensure that the rectangle doesn't go out of bounds of the framebuffer
+//     if ((x + w > fb->width) || (y + h > fb->height) || x < 0 || y < 0) {
+//         return; // Do nothing if the rectangle is out of bounds
+//     }
+//     uint8_t *data = fb->buf;
+
+//     // Loop through the height and width of the rectangle
+//     for (int i = 0; i < h; i++) {
+//         for (int j = 0; j < w; j++) {
+//             int pixel_index = ((y + i) * fb->width + (x + j)) * bytes_per_pixel;
+
+//             // Set the pixel color (RGB565, so we need 2 bytes per pixel)
+//             data[pixel_index] = (color >> 8) & 0xFF;      // High byte of RGB565
+//             data[pixel_index + 1] = color & 0xFF;         // Low byte of RGB565
+//         }
+//     }
+// }
+
+// // Helper function to set a pixel in the framebuffer
+// static void setPixel(camera_fb_t *fb, int px, int py, uint32_t color, int bytes_per_pixel)
+// {
+//     if (px >= 0 && px < fb->width && py >= 0 && py < fb->height) {
+//         uint8_t *data = fb->buf;
+//         int pixel_index = (py * fb->width + px) * bytes_per_pixel;
+//         data[pixel_index] = (color >> 8) & 0xFF;  // High byte of RGB565
+//         data[pixel_index + 1] = color & 0xFF;     // Low byte of RGB565
+//     }
+// }
+
+// // Function to draw a filled rounded rectangle
+// void fillRoundedRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h, int32_t radius, uint32_t color)
+// {
+//     int bytes_per_pixel = 2;  // RGB565 uses 2 bytes per pixel
+
+//     // Ensure that the rectangle doesn't go out of bounds of the framebuffer
+//     if (x < 0 || y < 0 || x >= fb->width || y >= fb->height) {
+//         return;  // Do nothing if starting position is out of bounds
+//     }
+
+//     // Clamp width and height to ensure they fit within the frame buffer
+//     if (x + w > fb->width) {
+//         w = fb->width - x;
+//     }
+//     if (y + h > fb->height) {
+//         h = fb->height - y;
+//     }
+
+//     // Limit the radius to avoid exceeding the rectangle size
+//     if (radius * 2 > w) {
+//         radius = w / 2;
+//     }
+//     if (radius * 2 > h) {
+//         radius = h / 2;
+//     }
+
+//     uint8_t *data = fb->buf;
+
+//     // Draw the inner rectangle (without rounded corners)
+//     for (int i = y + radius; i < y + h - radius; i++) {
+//         for (int j = x; j < x + w; j++) {
+//             setPixel(fb, j, i, color, bytes_per_pixel);
+//         }
+//     }
+
+//     // Draw the vertical sides (left and right excluding the corners)
+//     for (int i = y; i < y + radius; i++) {
+//         for (int j = x + radius; j < x + w - radius; j++) {
+//             setPixel(fb, j, i, color, bytes_per_pixel);
+//         }
+//     }
+//     for (int i = y + h - radius; i < y + h; i++) {
+//         for (int j = x + radius; j < x + w - radius; j++) {
+//             setPixel(fb, j, i, color, bytes_per_pixel);
+//         }
+//     }
+
+//     // Draw rounded corners (quarter circles in each corner)
+//     for (int i = 0; i < radius; i++) {
+//         for (int j = 0; j < radius; j++) {
+//             // Top-left corner
+//             if (i * i + j * j <= radius * radius) {
+//                 setPixel(fb, x + radius - i, y + radius - j, color, bytes_per_pixel);
+//             }
+//             // Top-right corner
+//             if (i * i + j * j <= radius * radius) {
+//                 setPixel(fb, x + w - radius + i, y + radius - j, color, bytes_per_pixel);
+//             }
+//             // Bottom-left corner
+//             if (i * i + j * j <= radius * radius) {
+//                 setPixel(fb, x + radius - i, y + h - radius + j, color, bytes_per_pixel);
+//             }
+//             // Bottom-right corner
+//             if (i * i + j * j <= radius * radius) {
+//                 setPixel(fb, x + w - radius + i, y + h - radius + j, color, bytes_per_pixel);
+//             }
+//         }
+//     }
+// }
+
+void fillRoundedRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h, int32_t radius, uint32_t color)
+{
+    // Ensure that the rectangle doesn't go out of bounds of the framebuffer
+    if (x < 0 || y < 0 || x >= fb->width || y >= fb->height) {
+        return;  // Do nothing if starting position is out of bounds
+    }
+
+    // Clamp width and height to ensure they fit within the frame buffer
+    if (x + w > fb->width) {
+        w = fb->width - x;
+    }
+    if (y + h > fb->height) {
+        h = fb->height - y;
+    }
+
+    // Limit the radius to avoid exceeding the rectangle size
+    if (radius * 2 > w) {
+        radius = w / 2;
+    }
+    if (radius * 2 > h) {
+        radius = h / 2;
+    }
+
+    // 1. Draw the straight lines in the middle (excluding the rounded corners)
+    for (int i = y + radius; i < y + h - radius; i++) {
+        fb_gfx_drawFastHLine(fb, x, i, w, color);  // Horizontal line for each row
+    }
+
+    // 2. Draw the top and bottom horizontal parts (straight sides excluding corners)
+    for (int i = 0; i < radius; i++) {
+        fb_gfx_drawFastHLine(fb, x + radius, y + i, w - 2 * radius, color);  // Top side
+        fb_gfx_drawFastHLine(fb, x + radius, y + h - i - 1, w - 2 * radius, color);  // Bottom side
+    }
+
+    // 3. Draw the rounded corners using circle math
+    for (int i = 0; i < radius; i++) {
+        int y_offset = radius - i;
+        int x_offset = (int)sqrt(radius * radius - y_offset * y_offset);  // Circle equation: x^2 + y^2 = r^2
+
+        // Top-left corner
+        fb_gfx_drawFastHLine(fb, x + radius - x_offset, y + i, x_offset, color);
+
+        // Top-right corner
+        fb_gfx_drawFastHLine(fb, x + w - radius, y + i, x_offset, color);
+
+        // Bottom-left corner
+        fb_gfx_drawFastHLine(fb, x + radius - x_offset, y + h - i - 1, x_offset, color);
+
+        // Bottom-right corner
+        fb_gfx_drawFastHLine(fb, x + w - radius, y + h - i - 1, x_offset, color);
+    }
+}
+
+
+
+
+
 
 void fb_gfx_drawFastHLine(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, uint32_t color)
 {

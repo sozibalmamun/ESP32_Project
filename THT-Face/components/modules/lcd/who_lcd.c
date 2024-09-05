@@ -95,7 +95,7 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
     }
 
     g_lcd.get_info(&g_lcd_info);
-    ESP_LOGI(TAG, "Screen name:%s | width:%d | height:%d", g_lcd_info.name, g_lcd_info.width, g_lcd_info.height);
+    // ESP_LOGI(TAG, "Screen name:%s | width:%d | height:%d", g_lcd_info.name, g_lcd_info.width, g_lcd_info.height);
 
     app_lcd_set_color(0x000000);
     //vTaskDelay(pdMS_TO_TICKS(200));
@@ -105,7 +105,7 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
     xQueueFrameI = frame_i;
     xQueueFrameO = frame_o;
     gReturnFB = return_fb;
-    xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 6, NULL, 1);
+    xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
         // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
 
 

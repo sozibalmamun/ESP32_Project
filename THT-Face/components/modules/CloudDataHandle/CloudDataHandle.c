@@ -68,6 +68,7 @@ static void cloudeHandlerTask(void *arg)
                 ESP_LOGW(TAG, "cloudeHandlerTask is being deleted");
 
                 // Delete the task
+                detectionFaceProcesingTaskHandler = NULL;         // Clear the handle to avoid dangling references
                 vTaskDelete(NULL);  // NULL means this task deletes itself
 
             // if (detectionFaceProcesingTaskHandler != NULL) {
@@ -122,7 +123,7 @@ void reconnect(){
                     if (cloudeTaskHandler != NULL) {
                     vTaskDelete(cloudeTaskHandler);   // Delete the task
                     cloudeTaskHandler = NULL;         // Clear the handle to avoid dangling references
-                    ESP_LOGW("TAGSTOMP", "detectionFaceProcesing deleted");
+                    // ESP_LOGW("TAGSTOMP", "detectionFaceProcesing deleted");
                     }
 
                 }else {
@@ -160,23 +161,21 @@ void reconnect(){
 
 }
 
-
 void cloudHandel()
 {
 
     ESP_LOGI("cloudHandel", "AttendanceTask creat");
 
-    xTaskCreatePinnedToCore(attendanceHandlerTask, "AttendanceTask", 4 * 1024, NULL,15, &cloudeTaskHandler, 0);
+    xTaskCreatePinnedToCore(attendanceHandlerTask, "AttendanceTask", 4 * 1024, NULL,15, &cloudeTaskHandler, 1);
 
 }
 
 
-
 void facedataHandle(const QueueHandle_t input )
 {
-    ESP_LOGW("cloudHandel", "detectionFaceProcesing creat");
+    ESP_LOGW("cloudHandel", "detection FaceProcesing creat");
     xQueueCloudI = input;
-    xTaskCreatePinnedToCore(cloudeHandlerTask, TAG, 4 * 1024, NULL, 5, detectionFaceProcesingTaskHandler, 0);
+    xTaskCreatePinnedToCore(cloudeHandlerTask, TAG, 4 * 1024, NULL, 5, detectionFaceProcesingTaskHandler, 1);
 
 
 }

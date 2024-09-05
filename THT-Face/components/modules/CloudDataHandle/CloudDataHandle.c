@@ -94,7 +94,7 @@ static void attendanceHandlerTask(void *arg)
 
             if(CPUBgflag==0){
             CPUBgflag=1;
-            process_and_send_faces(PUBLISH_TOPIC);
+            // process_and_send_faces(PUBLISH_TOPIC);
             process_attendance_files();
             CPUBgflag=0;
             }
@@ -123,13 +123,13 @@ void reconnect(){
                     if (cloudeTaskHandler != NULL) {
                     vTaskDelete(cloudeTaskHandler);   // Delete the task
                     cloudeTaskHandler = NULL;         // Clear the handle to avoid dangling references
-                    // ESP_LOGW("TAGSTOMP", "detectionFaceProcesing deleted");
+                    ESP_LOGW("TAGSTOMP", "AttendanceTask deleted");
                     }
 
                 }else {
                     vTaskDelay(1000 / portTICK_PERIOD_MS); // 
 
-                    printf("\npending data");
+                    // printf("\npending data");
                     if (cloudeTaskHandler == NULL) cloudHandel();
 
                 } 
@@ -146,7 +146,7 @@ void reconnect(){
             if (cloudeTaskHandler != NULL) {
             vTaskDelete(cloudeTaskHandler);   // Delete the task
             cloudeTaskHandler = NULL;         // Clear the handle to avoid dangling references
-            ESP_LOGW("TAGSTOMP", "detectionFaceProcesing deleted");
+            ESP_LOGW("TAGSTOMP", "AttendanceTask deleted");
             }
 
             if (detectionFaceProcesingTaskHandler != NULL) {
@@ -154,7 +154,6 @@ void reconnect(){
                 detectionFaceProcesingTaskHandler = NULL;         // Clear the handle to avoid dangling references
                 ESP_LOGW("TAGSTOMP", "detectionFaceProcesingTaskHandler deleted");
             }
-
         }
         vTaskDelay(1000 / portTICK_PERIOD_MS); // Delay before retry
         ESP_LOGI("HEAP", "Free heap: %d kb", heap_caps_get_free_size(MALLOC_CAP_8BIT)/1024);

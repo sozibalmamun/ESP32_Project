@@ -8,7 +8,8 @@ typedef enum
     KEY_IDLE,
     KEY_SHORT_PRESS ,
     KEY_LONG_PRESS,
-    KEY_DOUBLE_CLICK
+    KEY_DOUBLE_CLICK,
+    KEY_SYNC,
 } key_state_t;
 
 extern  volatile uint8_t CmdEvent;

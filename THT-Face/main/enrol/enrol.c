@@ -116,6 +116,10 @@ void process_command(const char* buffer) {
                 return;
             }else CmdEvent = ID_DATA_ERROR;
         }
+    }else if(strncmp(buffer, "cmdsync", strlen("cmdsync")) == 0){
+
+        key_state=KEY_SYNC;
+
     }
 }
 

@@ -58,6 +58,8 @@ static QueueHandle_t xQueueResult = NULL;
 //------------------------------------------------------------------------------------
 static QueueHandle_t xQueueCloud = NULL;
 extern TaskHandle_t detectionFaceProcesingTaskHandler; // Handle for the stompSenderTask
+// extern bool readFace(imageData_t *person);
+
 //---------------------------------------------------------------------------------------
 
 
@@ -78,35 +80,14 @@ typedef enum
 } show_state_t;
 
 #define RGB565_MASK_RED 0xF800
-#define RGB565_MASK_GREEN 0x07E0
-#define RGB565_MASK_BLUE 0x001F
+#define RGB565_MASK_GREEN 0x14ff
+#define RGB565_MASK_BLUE 0x437e
 #define FRAME_DELAY_NUM 16
-
-
-/*
-    for (int y = 0; y < 240; y++)
-    {
-        for (int x = 0; x < 320; x++)
-        {
-            int index = (y * buff->width + x) * 2; // Assuming 2 bytes per pixel
-            buff->buf[index] = 0;
-            buff->buf[index + 1] = 0;
-        }
-    }
-
-*/
-
-
-
-
 
 
 static void rgb_print(camera_fb_t *fb, uint32_t color, const char *str)
 {
-    // fb_gfx_print(fb, (fb->width - (strlen(str) * 14)) / 2, 10, color, str);// old
-    // fb_gfx_fillRect(fb, (fb->width - ((strlen(str) * 14)) / 2) -4 , 200-2, (strlen(str) * 14)+8, 20, color );
-
-
+   
     // int text_width = strlen(str) * 14; // Assuming each character is about 14 pixels wide
     // int text_height = 20;              // Assuming the text height is about 20 pixels
     // int rect_width = text_width + 6;  // Adding padding around the text
@@ -121,7 +102,7 @@ static void rgb_print(camera_fb_t *fb, uint32_t color, const char *str)
 
     // fillRoundedRect(fb, 50, 50, 100, 150, 20, 0x07E0);  // Draws a green rounded rectangle
 
-    fillRoundedRect(fb, (fb->width - (strlen(str) * 14)) / 2 -4, 200-1, (strlen(str) * 14)+8 , 25, 3, color);  // Draws a filled rounded rectangle
+    fillRoundedRect(fb, (fb->width - (strlen(str) * 14)) / 2 -5, 200-2, (strlen(str) * 14)+10 , 26, 3, color);  // Draws a filled rounded rectangle
 
     fb_gfx_print(fb, (fb->width - (strlen(str) * 14)) / 2, 200, 0xffff, str);// edited
 
@@ -223,6 +204,8 @@ static void task_process_handler(void *arg)
 {
 
     camera_fb_t *frame = NULL;
+    imageData_t *cropFrame = NULL;
+
 
 
     HumanFaceDetectMSR01 detector(0.3F, 0.3F, 10, 0.3F);
@@ -289,7 +272,7 @@ static void task_process_handler(void *arg)
                             vTaskDelay(10);
 
                         } 
-                        rgb_printf(frame, RGB565_MASK_GREEN, "Start Enroling");// debug due to display name
+                        rgb_printf(frame, RGB565_MASK_BLUE, "Start Enroling");// debug due to display name
 
                     }
 
@@ -311,6 +294,12 @@ static void task_process_handler(void *arg)
                         }
                                 
                     }else{ faceDetectTimeOut= xTaskGetTickCount(); }
+
+                }else if(_gEvent==SYNCING){
+
+                    is_detected = true;
+                    _gEvent=SYNCING;// enroling is the 1st priority
+                    key_state= KEY_IDLE;
 
                 }
                 
@@ -334,7 +323,6 @@ static void task_process_handler(void *arg)
 
 
                         //----------------------------working with image--------------------------
-                        imageData_t *cropFrame = NULL;
 
                         print_detection_result(detect_candidates);
                         draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
@@ -436,6 +424,32 @@ static void task_process_handler(void *arg)
 
                         frame_show_state = SHOW_STATE_DELETE;
                         break;
+
+                    case SYNCING: {
+                        if (!readFace(cropFrame)) {
+                            ESP_LOGE("sync", "Failed to read face data");
+                            break;  // Handle error (e.g., by skipping or retrying)
+                        }
+
+                        ESP_LOGE("sync", "In syncing");
+
+                        std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)cropFrame->buf, {(int)cropFrame->height, (int)cropFrame->width, 3});
+                        std::list<dl::detect::result_t> &detect_results = detector2.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_candidates);
+
+                        recognize_result = recognizer->recognize((uint16_t *)cropFrame->buf, {(int)cropFrame->height, (int)cropFrame->width, 3}, detect_results.front().keypoint);
+                        print_detection_result(detect_results);
+
+                        // Free allocated memory for cropFrame after processing
+                        heap_caps_free(cropFrame->buf);
+                        heap_caps_free(cropFrame->Name);
+
+                        if (recognize_result.id > 0) {
+                            frame_show_state = SHOW_DUPLICATE;
+                            break;
+                        }
+
+                        break;
+                    }
 
                     default:
                         break;
@@ -637,7 +651,7 @@ void register_human_face_recognition(const QueueHandle_t frame_i,
     gReturnFB = camera_fb_return;
     xMutex = xSemaphoreCreateMutex();
 
-    xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 0);
+    xTaskCreatePinnedToCore(task_process_handler, TAG, 8 * 1024, NULL, 5, NULL, 0);
         // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
 
     if (xQueueEvent)

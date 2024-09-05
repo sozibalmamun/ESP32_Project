@@ -462,11 +462,11 @@ bool process_and_send_faces(const char* topic) {
 
                 // Delete the file if sent successfully
 
-                if (remove(file_name) == 0) {
-                    ESP_LOGI("process_and_send_faces", "File sent and deleted: %s", file_name);
-                } else {
-                    ESP_LOGE("process_and_send_faces", "Failed to delete file: %s", file_name);
-                }
+                // if (remove(file_name) == 0) {
+                //     ESP_LOGI("process_and_send_faces", "File sent and deleted: %s", file_name);
+                // } else {
+                //     ESP_LOGE("process_and_send_faces", "Failed to delete file: %s", file_name);
+                // }
 
             } else {
                 // ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_name);
@@ -478,6 +478,99 @@ bool process_and_send_faces(const char* topic) {
 
     closedir(dir);
 }
+
+
+
+///---------------- for sync
+
+
+bool readFace(imageData_t *person) {
+    DIR *dir;
+    struct dirent *entry;
+
+    if ((dir = opendir(FACE_DIRECTORY)) == NULL) {
+        ESP_LOGE("display_faces", "Failed to open directory: %s", FACE_DIRECTORY);
+        return false;
+    }
+
+    uint16_t image_length = 0;
+
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_REG) {
+            char file_name[64];
+            memset(file_name, 0, sizeof(file_name));
+            strcat(file_name, FACE_DIRECTORY);
+            strcat(file_name, "/");
+            strcat(file_name, entry->d_name);
+
+            FILE* f = fopen(file_name, "rb");
+            if (f == NULL) {
+                ESP_LOGE("display_faces", "Failed to open file for reading: %s", file_name);
+                continue;
+            }
+
+            uint32_t person_id;
+            uint8_t name_len;
+            char name[64];
+            uint32_t image_width;
+            uint32_t image_height;
+
+            // Read metadata
+            fread(&person_id, sizeof(person_id), 1, f);
+            fread(&name_len, sizeof(name_len), 1, f);
+            fread(name, name_len, 1, f);
+            name[name_len] = '\0';
+
+            fread(&image_width, sizeof(image_width), 1, f);
+            fread(&image_height, sizeof(image_height), 1, f);
+
+            image_length = image_width * image_height * 2;
+
+            // Allocate memory for image data
+            uint8_t* image_data = (uint8_t *)heap_caps_malloc(image_length, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+            if (image_data == NULL) {
+                ESP_LOGE("display_faces", "Failed to allocate memory for image data, requesting %d bytes", image_length);
+                fclose(f);
+                continue;
+            }
+
+            fread(image_data, image_length, 1, f);
+            fclose(f);
+
+            ESP_LOGE("sync", "FATFS read done, image size: %d bytes", image_length);
+
+            // Allocate memory for person name
+            person->Name = (char *)heap_caps_malloc(name_len + 1, MALLOC_CAP_8BIT);
+            if (person->Name == NULL) {
+                ESP_LOGE("display_faces", "Failed to allocate memory for person name");
+                heap_caps_free(image_data);
+                continue;
+            }
+
+                ESP_LOGE("display_faces", "allocate memory for person name");
+
+            strcpy(person->Name, name);
+
+            // Assign the other values
+            person->buf = image_data;
+            person->width = image_width;
+            person->height = image_height;
+            person->id = person_id;
+            person->len = image_length;  // Storing image length for reference
+
+            ESP_LOGE("sync", "FATFS read assigned");
+
+        }
+        break;
+    }
+
+    closedir(dir);
+    return true;
+}
+
+
+
+
 
 
 
@@ -600,24 +693,6 @@ bool display_faces(camera_fb_t *buff) {
             // Read image data
             fread(image_data, image_length, 1, f);
             fclose(f);
-
-
-            // char *tempFrame;
-            // sprintf(&tempFrame[i*2], "%02x", buff[(currentIndex-1) + i]);
-
-
-            // Display image using drawImage function
-
-            // for (int y = 0; y < 240; y++)
-            // {
-            //     for (int x = 0; x < 320; x++)
-            //     {
-            //         int index = (y * buff->width + x) * 2; // Assuming 2 bytes per pixel
-
-            //         buff->buf[index] = 0x42;
-            //         buff->buf[index + 1] = 0x08;
-            //     }
-            // }
 
             uint8_t imageXPoss = (320/2)-(image_width/2);
             scaleAndDisplayImageInFrame(image_data,  image_width, image_height, buff, imageXPoss, 39);

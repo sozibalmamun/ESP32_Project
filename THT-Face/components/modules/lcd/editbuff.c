@@ -85,20 +85,20 @@ void editDisplayBuff(camera_fb_t **buff){
                        
             if(networkStatus==STOMP_CONNECTED && key_state== KEY_IDLE ){
                 
-                display_faces( *buff);//face display at the uploading time
+                // display_faces( *buff);//face display at the uploading time
 
-                if(percentage>0){
+                // if(percentage>0){
                 
-                    char tempFrame[13] ;
+                //     char tempFrame[13] ;
                     
-                    snprintf(tempFrame, sizeof(tempFrame), "%d%s",percentage,"%");
-                    WriteString(0, 160- (pixleLen(0,&tempFrame)/2) ,151,tempFrame,*buff);
-                    memset(tempFrame,0,sizeof(tempFrame));
-                    snprintf(tempFrame, sizeof(tempFrame), "%s%s","Uploading",  percentage%10<=3?".":percentage%10<=6?".." : percentage%10<=9? "...":" " );
+                //     snprintf(tempFrame, sizeof(tempFrame), "%d%s",percentage,"%");
+                //     WriteString(0, 160- (pixleLen(0,&tempFrame)/2) ,151,tempFrame,*buff);
+                //     memset(tempFrame,0,sizeof(tempFrame));
+                //     snprintf(tempFrame, sizeof(tempFrame), "%s%s","Uploading",  percentage%10<=3?".":percentage%10<=6?".." : percentage%10<=9? "...":" " );
                     
-                    WriteString(0,160- (pixleLen(0,&tempFrame)/2),170,tempFrame,*buff);
+                //     WriteString(0,160- (pixleLen(0,&tempFrame)/2),170,tempFrame,*buff);
 
-                }             
+                // }             
                 
             }
 

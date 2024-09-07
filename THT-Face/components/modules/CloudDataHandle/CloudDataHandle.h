@@ -40,7 +40,7 @@ void reconnect();
 void facedataHandle(const QueueHandle_t input);
 bool pendingData();
 
-bool readFace(imageData_t *person);
+bool readFace(const camera_fb_t *src, imageData_t **person);
 
 
 //---------------fs system-------------------------------------------------------------------------------------------------------

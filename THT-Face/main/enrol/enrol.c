@@ -194,7 +194,38 @@ void eventFeedback(void){
         }
 
 
-        break;    
+        break; 
+
+
+    case  SYNC_DONE:{
+
+
+        char personIdStr[30]; // assuming 32-bit uint can be represented in 11 chars + null terminator
+
+        snprintf(personIdStr, sizeof(personIdStr), "ASD %s %u",personName,personId);
+        if (!stompSend(personIdStr,PUBLISH_TOPIC)) {
+            //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+        } else {
+            ESP_LOGI(TAG_ENROL, "id sent to client\n");
+            CmdEvent = IDLE_EVENT;
+        }
+        break; 
+
+    }
+    case  SYNC_DUPLICATE:
+
+        // nack for sync duplicate person
+        if (!stompSend("NSDP",PUBLISH_TOPIC)) {
+            //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+        } else {
+            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            CmdEvent = IDLE_EVENT;
+        }
+
+
+
+        break;  
+
     case ENROLMENT_TIMEOUT:
 
         // nack for time out

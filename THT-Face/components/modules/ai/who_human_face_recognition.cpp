@@ -75,6 +75,7 @@ typedef enum
     SHOW_STATE_DELETE,
     SHOW_STATE_RECOGNIZE,
     SHOW_STATE_ENROLL,
+    SHOW_STATE_SYNC,
     SHOW_DUPLICATE,
     INVALID
 } show_state_t;
@@ -204,8 +205,6 @@ static void task_process_handler(void *arg)
 {
 
     camera_fb_t *frame = NULL;
-    imageData_t *cropFrame = NULL;
-
 
 
     HumanFaceDetectMSR01 detector(0.3F, 0.3F, 10, 0.3F);
@@ -238,8 +237,29 @@ static void task_process_handler(void *arg)
             {
 
 
+
+
+
+
+
+
+                imageData_t *enrolFrame = NULL;
+
+                if(_gEvent==SYNCING){
+
+
+                    if (!readFace(frame, &enrolFrame)) {//frame
+                            // ESP_LOGE("sync", "Failed to read face data");
+                            break;  // Handle error (e.g., by skipping or retrying)
+                    }
+                    // ESP_LOGI("display_faces", "Person ID: %d, Name: %s, Image w: %d h: %d", enrolFrame->id, enrolFrame->Name, enrolFrame->width, enrolFrame->height);
+                }
+
+                
+
                 std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3});
                 std::list<dl::detect::result_t> &detect_results = detector2.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_candidates);
+
 
                 if(_gEvent==DELETE){// deleting person 
 
@@ -298,8 +318,19 @@ static void task_process_handler(void *arg)
                 }else if(_gEvent==SYNCING){
 
                     is_detected = true;
-                    _gEvent=SYNCING;// enroling is the 1st priority
-                    key_state= KEY_IDLE;
+
+                    if (detect_results.size() == 1){
+
+                        if(xTaskGetTickCount()>faceDetectTimeOut+TIMEOUT_150_MS){ 
+
+                            faceDetectTimeOut= xTaskGetTickCount();
+                            is_detected = true;
+                            _gEvent=SYNC;
+                            key_state= KEY_IDLE;
+                            ESP_LOGE("sync", "In syncing");
+                        }
+
+                    }
 
                 }
                 
@@ -312,7 +343,8 @@ static void task_process_handler(void *arg)
                         // vTaskDelay(10);
                         // duplicate 
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
-                        //print_detection_result(detect_results);
+
+                        // print_detection_result(detect_results);
                         if (recognize_result.id > 0){
                         //rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");// debug due to display name
                         CmdEvent=DUPLICATE;// 3 FOR DUPLICATE
@@ -324,13 +356,15 @@ static void task_process_handler(void *arg)
 
                         //----------------------------working with image--------------------------
 
+                        // imageData_t *cropFrame = NULL;
+
                         print_detection_result(detect_candidates);
                         draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
-                        if(!copy_rectangle(frame,&cropFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]))
+                        if(!copy_rectangle(frame,&enrolFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]))
                         {
                             CPUBgflag=0;
                             frame_show_state = INVALID;
-                            heap_caps_free(cropFrame);
+                            heap_caps_free(enrolFrame);
                             break;
                         }
                         //--------------------------------------------------------------------------
@@ -340,10 +374,10 @@ static void task_process_handler(void *arg)
                         // ESP_LOGW("ENROLL", "ID %d is enrolled", recognizer->get_enrolled_ids().back().id);
 
                         //-------------------------pass value to struc via task----------------------------
-                       // printf("\nCopy Image Info  L:%3d w:%3d h:%3d", cropFrame->len, cropFrame->width, cropFrame->height);
+                       // printf("\nCopy Image Info  L:%3d w:%3d h:%3d", enrolFrame->len, enrolFrame->width, enrolFrame->height);
 
-                        cropFrame->id= recognizer->get_enrolled_ids().back().id;
-                        cropFrame->Name= personName;
+                        enrolFrame->id= recognizer->get_enrolled_ids().back().id;
+                        enrolFrame->Name= personName;
 
 
                         if(detectionFaceProcesingTaskHandler==NULL){
@@ -354,13 +388,11 @@ static void task_process_handler(void *arg)
                         }
 
 
-
-
                         if (xQueueCloud) {
-                            // printf("Sending cropFrame to xQueueCloud...\n");
-                            xQueueSend(xQueueCloud, &cropFrame, portMAX_DELAY);
+                            // printf("Sending enrolFrame to xQueueCloud...\n");
+                            xQueueSend(xQueueCloud, &enrolFrame, portMAX_DELAY);
                         } else {
-                            // printf("xQueueCloud is NULL, cannot send cropFrame.\n");
+                            // printf("xQueueCloud is NULL, cannot send enrolFrame.\n");
                         }
 
                         //---------------------------------------------------------------------------------
@@ -369,7 +401,9 @@ static void task_process_handler(void *arg)
                         break;
                     }
                     case RECOGNIZE:{
+
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
+                        // recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, {(int)1,(int)2,(int)3,(int)4,(int)5,(int)6,(int)7,(int)8,(int)9,(int)10}  );
                         // print_detection_result(detect_results);
                         if (recognize_result.id > 0){
 
@@ -411,7 +445,9 @@ static void task_process_handler(void *arg)
 
                             personId=0;// deafalt for test
                             // ESP_LOGE("DELETE", "Invalided ID: %d", personId);
-                            CmdEvent=ID_INVALID; // delete done 
+                            CmdEvent = ID_INVALID; // delete done 
+
+                            break;
 
                         }else{
 
@@ -425,28 +461,33 @@ static void task_process_handler(void *arg)
                         frame_show_state = SHOW_STATE_DELETE;
                         break;
 
-                    case SYNCING: {
-                        if (!readFace(cropFrame)) {
-                            ESP_LOGE("sync", "Failed to read face data");
-                            break;  // Handle error (e.g., by skipping or retrying)
+                    case SYNC: {
+
+                        
+                        ESP_LOGE("sync", "end syncing");
+
+                        recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
+
+                        if (recognize_result.id > 0){
+                        CmdEvent=SYNC_DUPLICATE;// 3 FOR DUPLICATE
+                        frame_show_state = SHOW_DUPLICATE;
+                        break;
                         }
 
-                        ESP_LOGE("sync", "In syncing");
+                        recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, enrolFrame->Name, true);// due to add name
 
-                        std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)cropFrame->buf, {(int)cropFrame->height, (int)cropFrame->width, 3});
-                        std::list<dl::detect::result_t> &detect_results = detector2.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_candidates);
-
-                        recognize_result = recognizer->recognize((uint16_t *)cropFrame->buf, {(int)cropFrame->height, (int)cropFrame->width, 3}, detect_results.front().keypoint);
-                        print_detection_result(detect_results);
-
-                        // Free allocated memory for cropFrame after processing
-                        heap_caps_free(cropFrame->buf);
-                        heap_caps_free(cropFrame->Name);
-
-                        if (recognize_result.id > 0) {
-                            frame_show_state = SHOW_DUPLICATE;
-                            break;
+                        if (enrolFrame != NULL) {
+                            if (enrolFrame->buf != NULL) {
+                                heap_caps_free(enrolFrame->buf);  // Free the image data buffer
+                            }
+                            if (enrolFrame->Name != NULL) {
+                                free(enrolFrame->Name);  // Free the dynamically allocated name string
+                            }
+                            free(enrolFrame);  // Finally, free the structure itself
+                            enrolFrame = NULL; // Set the pointer to NULL to avoid dangling references
                         }
+
+                        frame_show_state = SHOW_STATE_SYNC;
 
                         break;
                     }
@@ -462,12 +503,8 @@ static void task_process_handler(void *arg)
                     switch (frame_show_state)
                     {
                     case SHOW_STATE_DELETE:
-                        // rgb_printf(frame, RGB565_MASK_RED, "%d IDs left", recognizer->get_enrolled_id_num());   #define ID_INVALID      0X06
-                        if(CmdEvent==DELETED){
 
-                            // rgb_printf(frame, RGB565_MASK_RED, "Deleted Id: %d", personId);
-
-                        }else //rgb_printf(frame, RGB565_MASK_RED, "%d IDs invalided", personId);
+                            rgb_printf(frame, RGB565_MASK_RED, "Deleted Id: %d", personId);
 
                         break;
 
@@ -484,7 +521,7 @@ static void task_process_handler(void *arg)
                     case SHOW_STATE_ENROLL:{
                         CmdEvent=ENROLED;// 2 means enrol done
 
-                        rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id); 
+                        rgb_printf(frame, RGB565_MASK_BLUE, "Enroll ID: %d", recognizer->get_enrolled_ids().back().id); 
                         personId=recognizer->get_enrolled_ids().back().id;
                         // rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id);
                         break;
@@ -493,8 +530,20 @@ static void task_process_handler(void *arg)
                         rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");//   
                         // vTaskDelay(10);
 
+
                         break;
                     }
+                    case SHOW_STATE_SYNC:
+
+                        CmdEvent=SYNC_DONE;// 2 means enrol done
+
+                        rgb_printf(frame, RGB565_MASK_BLUE, "Sync ID: %d", recognizer->get_enrolled_ids().back().id); 
+                        personId=recognizer->get_enrolled_ids().back().id;
+                        // personName=enrolFrame->Name;
+                        strcpy(personName, enrolFrame->Name);
+
+
+                        break;
                     case INVALID:
 
                         enrolTimeOut= xTaskGetTickCount();// incrise 15000ms enrolment time

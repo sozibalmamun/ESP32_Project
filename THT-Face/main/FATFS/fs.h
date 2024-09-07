@@ -35,6 +35,9 @@ static wl_handle_t s_wl_handle = WL_INVALID_HANDLE;
 
 #define  FACE_DIRECTORY "/fatfs/faces"
 #define  ATTENDANCE_DIR  "/fatfs/log"
+#define  SYNC_DIR  "/fatfs/sync"
+
+
 
 
 // Define the path where the partition is mounted
@@ -57,7 +60,7 @@ void delete_all_directories(const char* path);
 extern void save_face_data(uint32_t person_id, const char* name, uint32_t image_width, uint32_t image_length, const uint8_t* image_data);
 extern void read_face_data(uint32_t person_id);
 
-extern bool readFace(imageData_t *person);
+extern bool readFace(const camera_fb_t *src, imageData_t **person);
 
 extern void delete_face_data(uint32_t person_id);
 extern void write_log_attendance(uint16_t person_id,  uint8_t* timestamp);

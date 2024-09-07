@@ -73,7 +73,8 @@
         "fs.h": "c",
         "math.h": "c",
         "datahandler.h": "c",
-        "who_camera.h": "c"
+        "who_camera.h": "c",
+        "cinttypes": "cpp"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM5",

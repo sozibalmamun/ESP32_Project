@@ -21,6 +21,11 @@
 #define NAME_DATA_ERROR     0X08
 #define ENROLMENT_TIMEOUT   0x09
 
+#define SYNC_DUPLICATE   0x0A
+#define SYNC_DONE   0x0B
+
+
+
 
 //--------------------------------------------------------------------
 

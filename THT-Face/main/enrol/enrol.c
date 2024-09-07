@@ -18,7 +18,7 @@
 
 extern volatile uint8_t CmdEvent;
 extern char personName[20];
-extern volatile uint16_t personId;
+extern uint16_t personId;
 
 extern key_state_t key_state;
 extern TickType_t enrolTimeOut;

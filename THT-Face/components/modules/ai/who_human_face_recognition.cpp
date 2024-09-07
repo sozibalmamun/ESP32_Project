@@ -36,7 +36,7 @@ static const char *TAG = "recognition_task";
 
 volatile uint8_t CmdEvent =0;
 char personName[20];
-volatile uint16_t personId;
+uint16_t personId;
 
 
 //---------------time flag--------------------
@@ -76,8 +76,9 @@ typedef enum
     SHOW_STATE_RECOGNIZE,
     SHOW_STATE_ENROLL,
     SHOW_STATE_SYNC,
-    SHOW_DUPLICATE,
-    INVALID
+    SHOW_DUPLICATE_ENROLL,
+    SHOW_DUPLICATE_SYNC,
+    SHOW_ALINE
 } show_state_t;
 
 #define RGB565_MASK_RED 0xF800
@@ -250,8 +251,9 @@ static void task_process_handler(void *arg)
 
                     if (!readFace(frame, &enrolFrame)) {//frame
                             // ESP_LOGE("sync", "Failed to read face data");
-                            break;  // Handle error (e.g., by skipping or retrying)
+                        break;  // Handle error (e.g., by skipping or retrying)
                     }
+                    
                     // ESP_LOGI("display_faces", "Person ID: %d, Name: %s, Image w: %d h: %d", enrolFrame->id, enrolFrame->Name, enrolFrame->width, enrolFrame->height);
                 }
 
@@ -348,7 +350,7 @@ static void task_process_handler(void *arg)
                         if (recognize_result.id > 0){
                         //rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");// debug due to display name
                         CmdEvent=DUPLICATE;// 3 FOR DUPLICATE
-                        frame_show_state = SHOW_DUPLICATE;
+                        frame_show_state = SHOW_DUPLICATE_ENROLL;
                         break;
                         }
                         // duplicat end
@@ -363,7 +365,7 @@ static void task_process_handler(void *arg)
                         if(!copy_rectangle(frame,&enrolFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]))
                         {
                             CPUBgflag=0;
-                            frame_show_state = INVALID;
+                            frame_show_state = SHOW_ALINE;
                             heap_caps_free(enrolFrame);
                             break;
                         }
@@ -376,8 +378,8 @@ static void task_process_handler(void *arg)
                         //-------------------------pass value to struc via task----------------------------
                        // printf("\nCopy Image Info  L:%3d w:%3d h:%3d", enrolFrame->len, enrolFrame->width, enrolFrame->height);
 
-                        enrolFrame->id= recognizer->get_enrolled_ids().back().id;
-                        enrolFrame->Name= personName;
+                        enrolFrame->id = recognizer->get_enrolled_ids().back().id;
+                        enrolFrame->Name = personName;
 
 
                         if(detectionFaceProcesingTaskHandler==NULL){
@@ -441,6 +443,7 @@ static void task_process_handler(void *arg)
                     case DELETE:
                         // vTaskDelay(10);
                         // recognizer->delete_id(true);
+
                         if(recognizer->delete_id(personId,true)== -1 ){// invalide id if "-1"// custom id delete logic
 
                             personId=0;// deafalt for test
@@ -451,9 +454,20 @@ static void task_process_handler(void *arg)
 
                         }else{
 
+                            if (enrolFrame != NULL) {
+                                // Modify the ID
+                                enrolFrame->id = 1234;  // Example ID
+
+                                // Modify the Name
+                                free(enrolFrame->Name);  // Free the old name
+                                enrolFrame->Name = (char *)malloc(strlen("NewName") + 1);
+                                strcpy(enrolFrame->Name, "NewName");
+                            }
+
+
                             personId=0;// deafalt for test
                             CmdEvent=DELETED;// delete done
-                            // ESP_LOGE("DELETE", "IDs left %d", personId);
+                            ESP_LOGE("DELETE", "IDs left %d", personId);
 
                         }
                         // ESP_LOGE("DELETE", "% d IDs left", recognizer->get_enrolled_id_num());
@@ -462,15 +476,12 @@ static void task_process_handler(void *arg)
                         break;
 
                     case SYNC: {
-
-                        
-                        ESP_LOGE("sync", "end syncing");
-
+                        // ESP_LOGE("sync", "end syncing");
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
 
                         if (recognize_result.id > 0){
                         CmdEvent=SYNC_DUPLICATE;// 3 FOR DUPLICATE
-                        frame_show_state = SHOW_DUPLICATE;
+                        frame_show_state = SHOW_DUPLICATE_SYNC;
                         break;
                         }
 
@@ -504,7 +515,11 @@ static void task_process_handler(void *arg)
                     {
                     case SHOW_STATE_DELETE:
 
-                            rgb_printf(frame, RGB565_MASK_RED, "Deleted Id: %d", personId);
+                        ESP_LOGI(TAG,"Deleted");
+                        // rgb_printf(frame, RGB565_MASK_RED, "Deleted Id: %d", enrolFrame->id);
+
+
+
 
                         break;
 
@@ -526,31 +541,36 @@ static void task_process_handler(void *arg)
                         // rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id);
                         break;
                     }
-                    case SHOW_DUPLICATE:{
-                        rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");//   
-                        // vTaskDelay(10);
+                    case SHOW_DUPLICATE_ENROLL:{
 
-
+                        rgb_printf(frame, RGB565_MASK_RED, "Duplicate Enrol%s","!"); 
                         break;
                     }
+                    case SHOW_DUPLICATE_SYNC:
+
+                        rgb_printf(frame, RGB565_MASK_RED, "Duplicate Sync%s","!");
+
+                        break;
                     case SHOW_STATE_SYNC:
 
                         CmdEvent=SYNC_DONE;// 2 means enrol done
 
                         rgb_printf(frame, RGB565_MASK_BLUE, "Sync ID: %d", recognizer->get_enrolled_ids().back().id); 
                         personId=recognizer->get_enrolled_ids().back().id;
-                        // personName=enrolFrame->Name;
-                        strcpy(personName, enrolFrame->Name);
+
+                        // memset(personName,0,sizeof(personName));
+                        // memcpy(personName, enrolFrame->Name ,strlen(enrolFrame->Name));
 
 
                         break;
-                    case INVALID:
+                    case SHOW_ALINE:
 
                         enrolTimeOut= xTaskGetTickCount();// incrise 15000ms enrolment time
                         rgb_printf(frame, RGB565_MASK_RED, "Aline Face");// at invalid face
                         key_state= KEY_SHORT_PRESS;// back to enroling
 
                         break;
+
                     default:
                         break;
                     }

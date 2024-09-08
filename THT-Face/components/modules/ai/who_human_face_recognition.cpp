@@ -405,7 +405,6 @@ static void task_process_handler(void *arg)
                     case RECOGNIZE:{
 
                         recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
-                        // recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, {(int)1,(int)2,(int)3,(int)4,(int)5,(int)6,(int)7,(int)8,(int)9,(int)10}  );
                         // print_detection_result(detect_results);
                         if (recognize_result.id > 0){
 
@@ -454,20 +453,9 @@ static void task_process_handler(void *arg)
 
                         }else{
 
-                            if (enrolFrame != NULL) {
-                                // Modify the ID
-                                enrolFrame->id = 1234;  // Example ID
-
-                                // Modify the Name
-                                free(enrolFrame->Name);  // Free the old name
-                                enrolFrame->Name = (char *)malloc(strlen("NewName") + 1);
-                                strcpy(enrolFrame->Name, "NewName");
-                            }
-
-
                             personId=0;// deafalt for test
                             CmdEvent=DELETED;// delete done
-                            ESP_LOGE("DELETE", "IDs left %d", personId);
+                            ESP_LOGE("DELETE", "Person left %s", personName);
 
                         }
                         // ESP_LOGE("DELETE", "% d IDs left", recognizer->get_enrolled_id_num());
@@ -486,6 +474,10 @@ static void task_process_handler(void *arg)
                         }
 
                         recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, enrolFrame->Name, true);// due to add name
+
+                        memset(personName, 0, sizeof(personName));
+                        strncpy(personName, enrolFrame->Name, sizeof(personName) - 1);
+                        personName[sizeof(personName) - 1] = '\0';
 
                         if (enrolFrame != NULL) {
                             if (enrolFrame->buf != NULL) {
@@ -516,10 +508,7 @@ static void task_process_handler(void *arg)
                     case SHOW_STATE_DELETE:
 
                         ESP_LOGI(TAG,"Deleted");
-                        // rgb_printf(frame, RGB565_MASK_RED, "Deleted Id: %d", enrolFrame->id);
-
-
-
+                        rgb_printf(frame, RGB565_MASK_RED, "Deleted %s", personName);
 
                         break;
 
@@ -536,7 +525,7 @@ static void task_process_handler(void *arg)
                     case SHOW_STATE_ENROLL:{
                         CmdEvent=ENROLED;// 2 means enrol done
 
-                        rgb_printf(frame, RGB565_MASK_BLUE, "Enroll ID: %d", recognizer->get_enrolled_ids().back().id); 
+                        rgb_printf(frame, RGB565_MASK_BLUE, "Welcome %s", personName); 
                         personId=recognizer->get_enrolled_ids().back().id;
                         // rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id);
                         break;
@@ -555,11 +544,8 @@ static void task_process_handler(void *arg)
 
                         CmdEvent=SYNC_DONE;// 2 means enrol done
 
-                        rgb_printf(frame, RGB565_MASK_BLUE, "Sync ID: %d", recognizer->get_enrolled_ids().back().id); 
+                        rgb_printf(frame, RGB565_MASK_BLUE, "Welcome %s", personName); 
                         personId=recognizer->get_enrolled_ids().back().id;
-
-                        // memset(personName,0,sizeof(personName));
-                        // memcpy(personName, enrolFrame->Name ,strlen(enrolFrame->Name));
 
 
                         break;

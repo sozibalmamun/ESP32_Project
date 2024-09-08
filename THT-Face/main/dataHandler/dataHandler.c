@@ -75,13 +75,24 @@ extern void process_command(const char* buffer);
 // }
 
 uint16_t crc16(const char *buf, size_t len) {
-    uint16_t crc = 0xFFFF;
+    uint16_t crc = 0x0000; // Initialize with 0x0000
     for (size_t i = 0; i < len; i++) {
         uint8_t byte = buf[i];
-        crc = crc16_table[((crc >> 8) ^ byte) & 0xFF] ^ (crc << 8);
+        crc = (crc >> 8) ^ crc16_table[(crc & 0xFF) ^ byte];
     }
     return crc;
 }
+
+// uint16_t crc16(const char *buf, size_t len) {
+//     uint16_t crc = 0x0000; // Initialize with 0x0000
+//     for (size_t i = 0; i < len; i++) {
+//         uint8_t byte = buf[i];
+//         crc = crc16_table[((crc >> 8) ^ byte) & 0xFF] ^ (crc << 8);
+//     }
+//     return crc;
+// }
+
+
 
 
 

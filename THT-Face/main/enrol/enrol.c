@@ -38,6 +38,8 @@ void process_command(const char* buffer) {
             // Handle invalid format (no space)
             return;
         }
+
+        memset(personName, 0, sizeof(personName));
         strncpy(personName, name_start, space_pos - name_start);
         personName[space_pos - name_start] = '\0'; // Null terminate the name string
 
@@ -56,7 +58,7 @@ void process_command(const char* buffer) {
             uint16_t calculated_crc = crc16(personName, strlen(personName));
             printf("  - CRC16 CALCULATED: %x\n", calculated_crc);
 
-            // if (calculated_crc == rxCrc) {
+            if (calculated_crc == rxCrc) {
 
                 CmdEvent = ENROLING_EVENT;
 
@@ -69,53 +71,95 @@ void process_command(const char* buffer) {
 
                 return;
 
-            // } else {
-            //     printf("CRC check failed.\n");
-            //     memset(tcpBuffer, 0, strlen(tcpBuffer));
-            //     CmdEvent = NAME_DATA_ERROR;
-            //     return;
-            // }
+            } else {
+
+                printf("CRC check failed.\n");
+                // memset(tcpBuffer, 0, strlen(tcpBuffer));
+                CmdEvent = NAME_DATA_ERROR;
+                return;
+            }
         }
 
     }else if(strncmp(buffer, "cmddl", strlen("cmddl")) == 0){
 
-        // Extract the name (assuming space separates name and ID)
-        const char* name_start = buffer + strlen("cmddl") + 1;
-        const char* space_pos = strchr(name_start, ' ');
-        if (space_pos == NULL) {
-            // Handle invalid format (no space)
+  
+ // Extract the ID (assuming space separates ID and name)
 
+        const char* id_start = buffer + strlen("cmddl") + 1;
+        const char* space_pos1 = strchr(id_start, ' ');
+        if (space_pos1 == NULL) {
+            // Handle invalid format (no space)
             return;
         }
-        char id[5];
-        memset(id,0,sizeof(id)); 
 
-        strncpy(id, name_start, space_pos - name_start);
-        id[space_pos - name_start] = '\0'; // Null terminate the name string
+        char id[5];
+        memset(id, 0, sizeof(id));
+        strncpy(id, id_start, space_pos1 - id_start);
+        id[space_pos1 - id_start] = '\0'; // Null terminate the ID string
+
+        // Extract the name (assuming space separates name and CRC)
+
+        const char* name_start = space_pos1 + 1;
+        const char* space_pos2 = strchr(name_start, ' ');
+        if (space_pos2 == NULL) {
+            // Handle invalid format (no space)
+            return;
+        }
+
+        // char personName[20]; // assuming max name length is 20
+        memset(personName, 0, sizeof(personName));
+        // strncpy(personName, name_start, space_pos2 - name_start);
+        // personName[space_pos2 - name_start] = '\0'; // Null terminate the name string
+
 
         // Extract the 2-character CRC
-        char crc_str[5];
-        memset(crc_str,0,sizeof(crc_str)); 
-        strncpy(crc_str, space_pos + 1, 4);
-        crc_str[4] = '\0'; // Null terminate the name string
+
+        const char* crc_start = space_pos2 + 1;
+        char crc_str[5]; // 2 characters + null terminator
+        memset(crc_str, 0, sizeof(crc_str));
+        strncpy(crc_str, crc_start, 4);
+        crc_str[4] = '\0'; // Null terminate the CRC string
+
 
         // Check for end command string (case-sensitive)
         const char* end_cmd_pos = strstr(buffer, "cmdend");
         if (end_cmd_pos != NULL) {
-            // Data reception complete, print information
-            const uint16_t calculated_crc = crc16(id, strlen(id));
+
+
+            char id_and_name[25]; // assuming max length of ID + name is 25
+            memset(id_and_name, 0, sizeof(id_and_name));
+            strncpy(id_and_name, id, strlen(id));
+            strcat(id_and_name, " ");
+            strncpy(id_and_name + strlen(id_and_name), name_start, space_pos2 - name_start);
+
+            const uint16_t calculated_crc = crc16(id_and_name, strlen(id_and_name));
             const uint16_t rxCrc = hex_to_uint16(crc_str);
 
-            printf("  - CRC RCV: %x\n",rxCrc);
+
+            printf("  - CRC RCV: %x\n", rxCrc);
             printf("  - CRC16 CALCULATED: %x\n", calculated_crc);
 
             if (calculated_crc == rxCrc) {
 
-                key_state=KEY_DOUBLE_CLICK;
-                personId= chartoDeci(id);// for test delete person by there id
+                key_state = KEY_DOUBLE_CLICK;
+                strncpy(personName, name_start, space_pos2 - name_start);
+                personName[space_pos2 - name_start] = '\0'; // Null terminate the name string
+                personId = chartoDeci(id); // for test delete person by their ID
+
+                // printf("\nid: %d name: %s",personId,personName);
                 return;
-            }else CmdEvent = ID_DATA_ERROR;
+
+            } else {
+
+                CmdEvent = ID_DATA_ERROR;
+
+            }
+
         }
+
+
+
+
     }else if(strncmp(buffer, "cmdsync", strlen("cmdsync")) == 0){
 
         key_state=KEY_SYNC;

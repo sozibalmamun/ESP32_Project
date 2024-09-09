@@ -49,6 +49,11 @@ void event_generate(void *arg) {
                 recognizer_state = DELETE;
 
                 break;
+            case KEY_DUMP:
+
+                recognizer_state = DUMP;
+
+                break;
 
             default:
                 recognizer_state = DETECT;

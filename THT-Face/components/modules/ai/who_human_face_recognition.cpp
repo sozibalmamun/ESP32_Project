@@ -238,22 +238,16 @@ static void task_process_handler(void *arg)
             {
 
 
-
-
-
-
-
-
                 imageData_t *enrolFrame = NULL;
 
                 if(_gEvent==SYNCING){
 
 
                     if (!readFace(frame, &enrolFrame)) {//frame
-                            // ESP_LOGE("sync", "Failed to read face data");
-                        break;  // Handle error (e.g., by skipping or retrying)
+                        CmdEvent = SYNC_ERROR;
+                        key_state= KEY_IDLE;
+                        vTaskDelay(10);                        // ESP_LOGW("sync", "directory emty");
                     }
-                    
                     // ESP_LOGI("display_faces", "Person ID: %d, Name: %s, Image w: %d h: %d", enrolFrame->id, enrolFrame->Name, enrolFrame->width, enrolFrame->height);
                 }
 
@@ -321,6 +315,14 @@ static void task_process_handler(void *arg)
 
                     is_detected = true;
 
+
+                    if (xTaskGetTickCount()-enrolTimeOut> TIMEOUT_5000_MS ){
+                        CmdEvent = SYNC_ERROR;
+                        key_state= KEY_IDLE;
+                        vTaskDelay(10);
+
+                    } 
+
                     if (detect_results.size() == 1){
 
                         if(xTaskGetTickCount()>faceDetectTimeOut+TIMEOUT_150_MS){ 
@@ -332,7 +334,28 @@ static void task_process_handler(void *arg)
                             ESP_LOGE("sync", "In syncing");
                         }
 
+                    }else{
+
+                        if (enrolFrame != NULL) {
+                            if (enrolFrame->buf != NULL) {
+                                heap_caps_free(enrolFrame->buf);  // Free the image data buffer
+                            }
+                            if (enrolFrame->Name != NULL) {
+                                free(enrolFrame->Name);  // Free the dynamically allocated name string
+                            }
+                            free(enrolFrame);  // Finally, free the structure itself
+                            enrolFrame = NULL; // Set the pointer to NULL to avoid dangling references
+                        } 
                     }
+
+                }else if(_gEvent==DUMP){
+
+
+                    ESP_LOGW("Enrolled", "ID: %d",recognizer->get_enrolled_id_num());
+                            
+                            
+                            
+                    key_state= KEY_IDLE;
 
                 }
                 
@@ -377,6 +400,9 @@ static void task_process_handler(void *arg)
 
                         //-------------------------pass value to struc via task----------------------------
                        // printf("\nCopy Image Info  L:%3d w:%3d h:%3d", enrolFrame->len, enrolFrame->width, enrolFrame->height);
+                
+                        // recognizer->set_ids( 10, true);              
+
 
                         enrolFrame->id = recognizer->get_enrolled_ids().back().id;
                         enrolFrame->Name = personName;
@@ -393,6 +419,7 @@ static void task_process_handler(void *arg)
                         if (xQueueCloud) {
                             // printf("Sending enrolFrame to xQueueCloud...\n");
                             xQueueSend(xQueueCloud, &enrolFrame, portMAX_DELAY);
+
                         } else {
                             // printf("xQueueCloud is NULL, cannot send enrolFrame.\n");
                         }
@@ -543,7 +570,6 @@ static void task_process_handler(void *arg)
                     case SHOW_STATE_SYNC:
 
                         CmdEvent=SYNC_DONE;// 2 means enrol done
-
                         rgb_printf(frame, RGB565_MASK_BLUE, "Welcome %s", personName); 
                         personId=recognizer->get_enrolled_ids().back().id;
 
@@ -706,7 +732,7 @@ void register_human_face_recognition(const QueueHandle_t frame_i,
     gReturnFB = camera_fb_return;
     xMutex = xSemaphoreCreateMutex();
 
-    xTaskCreatePinnedToCore(task_process_handler, TAG, 8 * 1024, NULL, 5, NULL, 0);
+    xTaskCreatePinnedToCore(task_process_handler, TAG, 5 * 1024, NULL, 5, NULL, 0);
         // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
 
     if (xQueueEvent)

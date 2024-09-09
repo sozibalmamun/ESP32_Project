@@ -2,7 +2,7 @@
 #include "fs.h"
 
 static const char *TAG = "FAT";
-
+#define PARTITION_LABEL "storage"  // Replace "storage" with the actual partition label if it's different
 // Function to initialize and mount FAT filesystem
 esp_err_t init_fatfs(void) {
     esp_err_t ret;
@@ -36,10 +36,14 @@ void create_directories(void) {
             ESP_LOGE("FAT", "/log exists but is not a directory");
         }
     } else {
+
         // If the directory does not exist, try to create it
         int res = mkdir(BASE_PATH "/log", 0777);
         if (res != 0 && errno != EEXIST) {
+
             ESP_LOGE("FAT", "Failed to create directory: %s", BASE_PATH "/attendance");
+            // esp_restart();
+
         } else {
             ESP_LOGI("FAT", "Directory /attendance created");
         }
@@ -58,12 +62,14 @@ void create_directories(void) {
         int res = mkdir(BASE_PATH "/faces", 0777);
         if (res != 0 && errno != EEXIST) {
             ESP_LOGE("FAT", "Failed to create directory: %s", BASE_PATH "/faces");
+            // esp_restart();
+
         } else {
             ESP_LOGI("FAT", "Directory /faces created");
         }
     }
 
-    vTaskDelay(pdMS_TO_TICKS(30));
+    vTaskDelay(pdMS_TO_TICKS(50));
 
     if (stat(BASE_PATH "/sync", &st) == 0) {
         if (S_ISDIR(st.st_mode)) {
@@ -76,6 +82,8 @@ void create_directories(void) {
         int res = mkdir(BASE_PATH "/sync", 0777);
         if (res != 0 && errno != EEXIST) {
             ESP_LOGE("FAT", "Failed to create directory: %s", BASE_PATH "/sync");
+            // esp_restart();
+
         } else {
             ESP_LOGI("FAT", "Directory /sync created");
         }
@@ -87,19 +95,43 @@ void create_directories(void) {
 }
 
 void print_memory_status() {
+    // FATFS *fs;
+    // DWORD fre_clust, fre_sect, tot_sect;
+
+    // if (f_getfree("/storage", &fre_clust, &fs) == FR_OK) {
+    //     tot_sect = (fs->n_fatent - 2) * fs->csize * 512;
+    //     fre_sect = fre_clust * fs->csize * 512;
+
+    //     ESP_LOGI("FAT ", "Total Space: %" PRIu32 " bytes", (uint32_t)tot_sect);
+    //     ESP_LOGI("FAT ", "Free  Space: %" PRIu32 " bytes", (uint32_t)fre_sect);
+    //     ESP_LOGE("FAT ", "Used  Space: %" PRIu32 " bytes", (uint32_t)(tot_sect - fre_sect));
+
+    // } else {
+    //     ESP_LOGE("FAT", "Failed to get FATFS free space info");
+    // }
+
+
     FATFS *fs;
     DWORD fre_clust, fre_sect, tot_sect;
 
-    if (f_getfree("/storage", &fre_clust, &fs) == FR_OK) {
-        tot_sect = (fs->n_fatent - 2) * fs->csize * 512;
-        fre_sect = fre_clust * fs->csize * 512;
-
-        ESP_LOGI("FAT", "Total Space: %" PRIu32 " bytes", (uint32_t)tot_sect);
-        ESP_LOGI("FAT", "Free Space:  %" PRIu32 " bytes", (uint32_t)fre_sect);
-        ESP_LOGI("FAT", "Used Space:  %" PRIu32 " bytes", (uint32_t)(tot_sect - fre_sect));
-    } else {
-        ESP_LOGE("FAT", "Failed to get FATFS free space info");
+    // Get the FATFS file system object (fs)
+    if (f_getfree("0:", &fre_clust, &fs) != FR_OK) {
+        ESP_LOGE(TAG, "Failed to get FATFS free space information");
+        return;
     }
+
+    // Get total sectors and free sectors
+    tot_sect = (fs->n_fatent - 2) * fs->csize;
+    fre_sect = fre_clust * fs->csize;
+
+    // Calculate total space and free space (in bytes)
+    uint64_t total_space = tot_sect * fs->ssize;
+    uint64_t free_space = fre_sect * fs->ssize;
+
+    // Log the available and total space
+    ESP_LOGW(TAG, "Total space: %llu bytes", total_space);
+    ESP_LOGE(TAG, "free space : %llu bytes", free_space);
+
 }
 
 
@@ -137,13 +169,63 @@ void delete_all_directories(const char* path) {
 void format_fatfs() {
     ESP_LOGI("FAT", "Formatting FATFS partition...");
     // Erase the entire partition
-    esp_err_t ret = wl_erase_range(s_wl_handle, 0, WL_FLASH_SIZE);
-    if (ret != ESP_OK) {
-        ESP_LOGE("FAT", "Failed to erase FATFS partition: %s", esp_err_to_name(ret));
-    } else {
-        ESP_LOGI("FAT", "FATFS partition formatted successfully");
+    // esp_err_t ret = wl_erase_range(s_wl_handle, 0, WL_FLASH_SIZE);
+    // if (ret != ESP_OK) {
+    //     ESP_LOGE("FAT", "Failed to erase FATFS partition: %s", esp_err_to_name(ret));
+    // } else {
+    //     ESP_LOGI("FAT", "FATFS partition formatted successfully");
+
+    // }
+
+    // Start the format process
+    if (formatfatfs() == ESP_OK) {
+        ESP_LOGI(TAG, "Format complete, proceeding...");
+        vTaskDelay(100);
+
+        // Mount the filesystem after formatting
+    if (init_fatfs()== ESP_OK) {
+        // Create directories
+        print_memory_status();
+        create_directories();
     }
+
+    } else {
+        ESP_LOGE(TAG, "Format failed");
+    }
+
 }
+
+ esp_err_t formatfatfs() {
+      ESP_LOGI(TAG, "Formatting FATFS...");
+
+    // Unmount the filesystem
+    esp_err_t unmount_err = esp_vfs_fat_spiflash_unmount("/fatfs", NULL);
+    if (unmount_err != ESP_OK) {
+        ESP_LOGW(TAG, "Unmount failed, filesystem may not be mounted");
+    }
+
+    // Find the partition
+    const esp_partition_t* partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, PARTITION_LABEL);
+    if (partition == NULL) {
+        ESP_LOGE(TAG, "Failed to find partition with label: %s", PARTITION_LABEL);
+        return ESP_ERR_NOT_FOUND;
+    }
+
+    // Erase the partition (format)
+    ESP_LOGI(TAG, "Erasing partition: %s", partition->label);
+    esp_err_t erase_err = esp_partition_erase_range(partition, 0, partition->size);
+    if (erase_err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to erase partition: %s", partition->label);
+        return erase_err;
+    }
+
+    ESP_LOGI(TAG, "Partition erased successfully");
+
+    return ESP_OK;
+}
+
+
+
 
 
 
@@ -290,18 +372,18 @@ void write_log_attendance(uint16_t person_id, uint8_t* timestamp) {
     char log_file[31];// file like: /fatfs/log/2412121716.log
     snprintf(log_file, sizeof(log_file), "%s/%d%d%d%d%d.log",ATTENDANCE_DIR, timestamp[0],timestamp[1],timestamp[2],timestamp[3],timestamp[4]);
 
-    ESP_LOGI("log_attendance", "Encoded log file name: %s", log_file);
+    ESP_LOGI("log_attendance", "file name: %s", log_file);
 
 
     FILE* f = fopen(log_file, "a");
     if (f == NULL) {
-        ESP_LOGE("log_attendance", "Failed to open log file for writing");
+        // ESP_LOGE("log_attendance", "Failed to open log file for writing");
         return;
     }
     // Write attendance log: person ID and timestamp
     fprintf(f, "%02d %02d %02d %02d %02d %02d %04d ", timestamp[0],timestamp[1],timestamp[2],timestamp[3],timestamp[4],timestamp[5],person_id);
     fclose(f);
-    ESP_LOGI("attendance", "Attendance ID: %d at: %s", person_id, log_file);
+    // ESP_LOGI("attendance", "Attendance ID: %d at: %s", person_id, log_file);
 }
 
 void process_attendance_files() {
@@ -329,7 +411,7 @@ void process_attendance_files() {
             if (sendFilePath(file_path)) {
                 // If successful, delete the file
                 if (remove(file_path) == 0) {
-                    ESP_LOGI("log", "deleted file: %s", file_path);
+                    // ESP_LOGI("log", "deleted file: %s", file_path);
                     break;  // Stop after sending and deleting one file
                 } else {
                     // ESP_LOGE("log", "Failed to delete file: %s", file_path);
@@ -384,7 +466,7 @@ bool sendFilePath(const char *filePath) {
     // Example: Read file into buffer
     FILE *file = fopen(filePath, "r");
     if (file == NULL) {
-        ESP_LOGE("log", "Failed to open file: %s", filePath);
+        // ESP_LOGE("log", "Failed to open file: %s", filePath);
         return false;
     }
 
@@ -395,7 +477,7 @@ bool sendFilePath(const char *filePath) {
 
     char *fileContent = (char *)heap_caps_malloc(fileSize + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     if (fileContent == NULL) {
-        ESP_LOGE("log", "Failed to allocate memory for file content");
+        // ESP_LOGE("log", "Failed to allocate memory for file content");
         fclose(file);
         return false;
     }
@@ -406,25 +488,26 @@ bool sendFilePath(const char *filePath) {
 
     ESP_LOGW(TAG, "buff log %s", fileContent);
 
-    if (!stompSend(fileContent,PUBLISH_TOPIC)) {
-        //  ESP_LOGE(TAG, "Error sending log");
-        return false;
-    }
+    // if (!stompSend(fileContent,PUBLISH_TOPIC)) {
+    //     //  ESP_LOGE(TAG, "Error sending log");
+
+    //     heap_caps_free(fileContent);
+    //     return false;
+    // }
 
     // Free allocated buffer
-    heap_caps_free(fileContent);
+    if(fileContent!=NULL) {
+        heap_caps_free(fileContent);
+        fileContent=NULL;
+    }
+
 
     return true;
 }
 
 
 
-
-
-
-
 bool process_and_send_faces(const char* topic) {
-
 
 
     DIR *dir;
@@ -484,16 +567,14 @@ bool process_and_send_faces(const char* topic) {
 
                 // Delete the file if sent successfully
 
-                // if (remove(file_name) == 0) {
-                //     ESP_LOGI("process_and_send_faces", "File sent and deleted: %s", file_name);
-                // } else {
-                //     ESP_LOGE("process_and_send_faces", "Failed to delete file: %s", file_name);
-                // }
+                if (remove(file_name) == 0) {
+                    // ESP_LOGI("process_and_send_faces", "File sent and deleted: %s", file_name);
+                } else {
+                    // ESP_LOGE("process_and_send_faces", "Failed to delete file: %s", file_name);
+                }
 
-            } else {
-                // ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_name);
-            }
-
+            } else // ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_name);
+           
             heap_caps_free(image_data);
         }
     }
@@ -606,9 +687,13 @@ bool process_and_send_faces(const char* topic) {
     DIR *dir;
     struct dirent *entry;
 
+    bool syncAvailable = false;
+
+
+
     if ((dir = opendir(FACE_DIRECTORY)) == NULL) {
-        ESP_LOGE("display_faces", "Failed to open directory: %s", FACE_DIRECTORY);
-        return false;
+        // ESP_LOGE("display_faces", "Failed to open directory: %s", FACE_DIRECTORY);
+        return syncAvailable;
     }
 
     uint16_t image_length = 0;
@@ -623,7 +708,7 @@ bool process_and_send_faces(const char* topic) {
 
             FILE* f = fopen(file_name, "rb");
             if (f == NULL) {
-                ESP_LOGE("display_faces", "Failed to open file for reading: %s", file_name);
+                // ESP_LOGE("display_faces", "Failed to open file for reading: %s", file_name);
                 continue;
             }
 
@@ -647,7 +732,7 @@ bool process_and_send_faces(const char* topic) {
             // Allocate memory for image data
             uint8_t* image_data = (uint8_t *)heap_caps_malloc(image_length, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
             if (image_data == NULL) {
-                ESP_LOGE("display_faces", "Failed to allocate memory for image data, requesting %d bytes", image_length);
+                // ESP_LOGE("display_faces", "Failed to allocate memory for image data, requesting %d bytes", image_length);
                 fclose(f);
                 continue;
             }
@@ -658,7 +743,7 @@ bool process_and_send_faces(const char* topic) {
             // Allocate memory for person and populate the fields
             *person = (imageData_t *)malloc(sizeof(imageData_t));
             if (*person == NULL) {
-                ESP_LOGE("display_faces", "Failed to allocate memory for person structure");
+                // ESP_LOGE("display_faces", "Failed to allocate memory for person structure");
                 heap_caps_free(image_data);  // Free allocated memory for image data
                 continue;
             }
@@ -673,7 +758,7 @@ bool process_and_send_faces(const char* topic) {
             // Allocate memory for the name and copy it
             (*person)->Name = (char *)malloc(name_len + 1);  // +1 for the null terminator
             if ((*person)->Name == NULL) {
-                ESP_LOGE("display_faces", "Failed to allocate memory for person name");
+                // ESP_LOGE("display_faces", "Failed to allocate memory for person name");
                 heap_caps_free(image_data);
                 free(*person);
                 continue;
@@ -692,8 +777,8 @@ bool process_and_send_faces(const char* topic) {
             int8_t bytes_per_pixel = 2;  // Assuming RGB565 format, which uses 2 bytes per pixel
 
             // Loop through the height and width of the FATFS image
-            for (int i = 0; i < image_height; i++) {
-                for (int j = 0; j < image_width; j++) {
+            for (uint16_t i = 0; i < image_height; i++) {
+                for (uint16_t j = 0; j < image_width; j++) {
                     // Calculate the position in the camera buffer to insert the pixel
                     int camera_pixel_index = ((offset_y + i) * src->width + (offset_x + j)) * bytes_per_pixel;
                     // Calculate the position in the FATFS image buffer
@@ -704,14 +789,14 @@ bool process_and_send_faces(const char* topic) {
                     data[camera_pixel_index + 1] = fatfs_data[fatfs_pixel_index + 1]; // Low byte of RGB565
                 }
             }
-
+            syncAvailable = true;
             // ESP_LOGI("display_faces", "Person ID: %d, Name: %s, Image inserted at (%d, %d)", (*person)->id, (*person)->Name, offset_x, offset_y);
         }
         break;  // Read only the first valid file
     }
 
     closedir(dir);
-    return true;
+    return syncAvailable;
 }
 
 
@@ -785,7 +870,7 @@ bool display_faces(camera_fb_t *buff) {
     struct dirent *entry;
 
     if ((dir = opendir(FACE_DIRECTORY)) == NULL) {
-        ESP_LOGE("display_faces", "Failed to open directory: %s", FACE_DIRECTORY);
+        // ESP_LOGE("display_faces", "Failed to open directory: %s", FACE_DIRECTORY);
         return false; // Return false to indicate failure to open directory
     }
     uint16_t image_length=0;
@@ -804,7 +889,7 @@ bool display_faces(camera_fb_t *buff) {
 
             FILE* f = fopen(file_name, "rb");
             if (f == NULL) {
-                ESP_LOGE("display_faces", "Failed to open file for reading: %s", file_name);
+                // ESP_LOGE("display_faces", "Failed to open file for reading: %s", file_name);
                 continue; // Skip this file and continue with the next
             }
 
@@ -829,7 +914,7 @@ bool display_faces(camera_fb_t *buff) {
             // Allocate memory for image data
             uint8_t* image_data = (uint8_t *)heap_caps_malloc(image_length, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
             if (image_data == NULL) {
-                ESP_LOGE("display_faces", "Failed to allocate memory for image data");
+                // ESP_LOGE("display_faces", "Failed to allocate memory for image data");
                 fclose(f);
                 continue;
             }

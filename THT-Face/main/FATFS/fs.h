@@ -52,7 +52,9 @@ extern "C" {
 #endif
 
 esp_err_t init_fatfs(void);
-extern void format_fatfs(void);
+ esp_err_t formatfatfs();
+void format_fatfs(void);
+
 void create_directories();
 void delete_all_directories(const char* path);
 

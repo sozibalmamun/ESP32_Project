@@ -123,6 +123,10 @@ class FaceRecognizer
          */
         std::vector<face_info_t> get_enrolled_ids();
 
+
+
+
+
         /**
          * @brief Get the face embedding 
          * 
@@ -148,6 +152,7 @@ class FaceRecognizer
          * @param name              name of the face id.
          * @return  int             the face id index of the enrolled embedding.
          */
+
         int enroll_id(uint16_t *image_input, std::vector<int> shape, std::vector<int> &landmarks, std::string name="", bool update_flash = false);
         
         /**
@@ -210,6 +215,7 @@ class FaceRecognizer
          * @return int                  the face id index of the enrolled embedding.
          */
         int enroll_id(Tensor<float> &emb, std::string name="", bool update_flash = false);
+
 
         /**
          * @brief                    delete the last enrolled face id.

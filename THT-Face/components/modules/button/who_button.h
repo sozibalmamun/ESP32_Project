@@ -10,6 +10,7 @@ typedef enum
     KEY_LONG_PRESS,
     KEY_DOUBLE_CLICK,
     KEY_SYNC,
+    KEY_DUMP,
 } key_state_t;
 
 extern  volatile uint8_t CmdEvent;

@@ -23,6 +23,8 @@
 
 #define SYNC_DUPLICATE   0x0A
 #define SYNC_DONE   0x0B
+#define SYNC_ERROR   0x0C
+
 
 
 

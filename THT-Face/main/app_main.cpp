@@ -95,8 +95,10 @@ void app_main()
         // Create directories
         // format_fatfs();
         // delete_all_directories("/storage");
-        create_directories();
         print_memory_status();
+        create_directories();
+
+
 
     }
     //-------------------------

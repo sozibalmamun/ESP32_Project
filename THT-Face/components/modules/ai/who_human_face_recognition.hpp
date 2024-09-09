@@ -20,6 +20,7 @@ typedef enum
     DELETE,
     SYNCING,
     SYNC,
+    DUMP,
 
 } recognizer_state_t;
 

@@ -189,7 +189,6 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
             heap_caps_free(hexString);
             hexString=NULL;  chunk=NULL;
 
-
             return false;
         }
         memset(sentFrame, 0, sentFrameLen + 1);
@@ -197,12 +196,17 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
         printf("Chunk No: %d\n", chunkNo+1);// chank no 
 
         vTaskDelay(10);
+
         if (!stompSend(sentFrame, topic)) {
+
             heap_caps_free(chunk);
             heap_caps_free(hexString); // Free hex string memory
-            hexString=NULL;  chunk=NULL;
-            return false; //
+            heap_caps_free(sentFrame);
+            hexString=NULL; chunk=NULL; sentFrame=NULL;
+            return false;
+
         }
+
         currentIndex += chunkLen;
         chunkNo++;
         float percentage_float = ((float)chunkNo / totalChunks) * 100;
@@ -210,9 +214,11 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
         if (percentage >= 100) percentage = 0;
 
         heap_caps_free(chunk); // Free chunk memory
-        chunk=NULL;
+        heap_caps_free(sentFrame);
+        chunk=NULL;sentFrame=NULL;
 
     }
+
     heap_caps_free(hexString); // Free hex string memory
     hexString=NULL;  
     return true;

@@ -27,59 +27,29 @@ static void cloudeHandlerTask(void *arg)
             if (image != NULL)
             {
                 // Log the image details
-                ESP_LOGI(TAG, "Received image len: %d w: %d h: %d Name: %s id: %d", image->len, image->width, image->height, image->Name,image->id);
-
-                // for(int i=0 ; i<256;i++){
-
-                //     printf("%x",image->buf[i] );
-
-                // }
-
-
-                ESP_LOGE(TAG, "\ntest image storing.... ");
-
+                // ESP_LOGI(TAG, "Received image len: %d w: %d h: %d Name: %s id: %d", image->len, image->width, image->height, image->Name,image->id);
                 save_face_data(image->id, image->Name, image->width, image->height, image->buf);
-                // save_face_data(image->id, image->Name, 75, 69, &imageData);
-
-
-                ESP_LOGE(TAG, "\ntest image saved ");
-
-                // // Send the image data to the cloud
-                // if(!imagesent(image->buf,image->len,image->height,image->width,image->Name ,image->id,"/app/cloud")){
-
-                //     ESP_LOGE(TAG, "Fail Sending image data.");
-
-                // }
-                //     ESP_LOGE(TAG, "\ntest image data ");
+                ESP_LOGE(TAG, "image saved ");
                 vTaskDelay(100);
 
                 // Free the image buffer if it was dynamically allocated
                 heap_caps_free(image->buf);
+
                 image->buf = NULL;
                 CPUBgflag=0;
             }
+            // ESP_LOGW(TAG, "cloudeHandlerTask is being deleted");
+            // Delete the task
+            detectionFaceProcesingTaskHandler = NULL;         // Clear the handle to avoid dangling references
+            vTaskDelete(NULL);  // NULL means this task deletes itself
 
-            // else
-            // {
-            //     ESP_LOGE(TAG, "Received NULL image data.");
-            // }
-
-
-                ESP_LOGW(TAG, "cloudeHandlerTask is being deleted");
-
-                // Delete the task
-                detectionFaceProcesingTaskHandler = NULL;         // Clear the handle to avoid dangling references
-                vTaskDelete(NULL);  // NULL means this task deletes itself
-
-            // if (detectionFaceProcesingTaskHandler != NULL) {
-            //     vTaskDelete(detectionFaceProcesingTaskHandler);   // Delete the task
-            //     detectionFaceProcesingTaskHandler = NULL;         // Clear the handle to avoid dangling references
-            //     ESP_LOGW("TAGSTOMP", "detectionFaceProcesingTaskHandler deleted");
-            // }
+        // if (detectionFaceProcesingTaskHandler != NULL) {
+        //     vTaskDelete(detectionFaceProcesingTaskHandler);   // Delete the task
+        //     detectionFaceProcesingTaskHandler = NULL;         // Clear the handle to avoid dangling references
+        //     ESP_LOGW("TAGSTOMP", "detectionFaceProcesingTaskHandler deleted");
+        // }
 
         }
-		// vTaskDelay(xDelay);
-
     }
 }
 
@@ -89,22 +59,20 @@ static void attendanceHandlerTask(void *arg)
 
     while (true)
     {
+        
         // Process attendance files
         if(networkStatus==STOMP_CONNECTED){
 
             if(CPUBgflag==0){
             CPUBgflag=1;
-            // process_and_send_faces(PUBLISH_TOPIC);
+            process_and_send_faces(PUBLISH_TOPIC);
             process_attendance_files();
             CPUBgflag=0;
             }
         }
         vTaskDelay(xDelay);
-
-        // Delay to allow periodic checking
     }
 }
-
 
 
 void reconnect(){
@@ -123,13 +91,15 @@ void reconnect(){
                     if (cloudeTaskHandler != NULL) {
                     vTaskDelete(cloudeTaskHandler);   // Delete the task
                     cloudeTaskHandler = NULL;         // Clear the handle to avoid dangling references
-                    ESP_LOGW("TAGSTOMP", "AttendanceTask deleted");
+                    // ESP_LOGW("TAGSTOMP", "AttendanceTask deleted");
+
                     }
 
                 }else {
+
                     vTaskDelay(1000 / portTICK_PERIOD_MS); // 
 
-                    // printf("\npending data");
+                    printf("pending data\n");
                     if (cloudeTaskHandler == NULL) cloudHandel();
 
                 } 
@@ -143,27 +113,21 @@ void reconnect(){
         stomp_client_connect(); 
         }else if(networkStatus==WIFI_DISS){
 
-            if (cloudeTaskHandler != NULL) {
-            vTaskDelete(cloudeTaskHandler);   // Delete the task
-            cloudeTaskHandler = NULL;         // Clear the handle to avoid dangling references
-            ESP_LOGW("TAGSTOMP", "AttendanceTask deleted");
-            }
+            CPUBgflag=0;
 
-            if (detectionFaceProcesingTaskHandler != NULL) {
-                vTaskDelete(detectionFaceProcesingTaskHandler);   // Delete the task
-                detectionFaceProcesingTaskHandler = NULL;         // Clear the handle to avoid dangling references
-                ESP_LOGW("TAGSTOMP", "detectionFaceProcesingTaskHandler deleted");
-            }
         }
         vTaskDelay(1000 / portTICK_PERIOD_MS); // Delay before retry
-        ESP_LOGI("HEAP", "Free heap: %d kb", heap_caps_get_free_size(MALLOC_CAP_8BIT)/1024);
+        if(CPUBgflag==0)print_memory_status();
+        ESP_LOGW("HEAP", "Free      : %dkb\n\n", heap_caps_get_free_size(MALLOC_CAP_8BIT)/1024);
+
+
 
 }
 
 void cloudHandel()
 {
 
-    ESP_LOGI("cloudHandel", "AttendanceTask creat");
+    // ESP_LOGI("cloudHandel", "AttendanceTask creat");
 
     xTaskCreatePinnedToCore(attendanceHandlerTask, "AttendanceTask", 4 * 1024, NULL,15, &cloudeTaskHandler, 1);
 
@@ -172,7 +136,7 @@ void cloudHandel()
 
 void facedataHandle(const QueueHandle_t input )
 {
-    ESP_LOGW("cloudHandel", "detection FaceProcesing creat");
+    // ESP_LOGW("cloudHandel", "detection FaceProcesing creat");
     xQueueCloudI = input;
     xTaskCreatePinnedToCore(cloudeHandlerTask, TAG, 4 * 1024, NULL, 5, detectionFaceProcesingTaskHandler, 1);
 

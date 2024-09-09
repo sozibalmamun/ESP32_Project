@@ -19,6 +19,7 @@
 
 
 #define     PUBLISH_TOPIC       "/app/cloud"
+extern uint8_t CPUBgflag;
 
 extern const uint32_t crc16_table;
 extern char tcpBuffer; // Adjust MAX_TRANSACTION_SIZE as needed
@@ -47,6 +48,8 @@ extern uint16_t chartoDeci(char* data);
 
 extern void toArray(uint16_t slotL, uint8_t *data_buffer);
 
+extern void format_fatfs(void);
+extern void create_directories(void);
 
 #ifdef __cplusplus
 }

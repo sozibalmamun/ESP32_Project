@@ -28,33 +28,35 @@ void editDisplayBuff(camera_fb_t **buff){
 
         if(networkStatus==WIFI_DISS){
 
-            if(ble_is_connected)iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
+            if(ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
 
+            if( xTaskGetTickCount()-animationTime< 30){
 
-            if( xTaskGetTickCount()-animationTime< 50){
-
-            if(!ble_is_connected)iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
+            if(!ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
                 
-                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+12,WIFI_WIDTH,3,&wifiAnimation01,WHITE,*buff);
+                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+12,WIFI_WIDTH,WIFI_HEIGHT-12,&wifiIcn,WHITE,*buff);//wifi 1
 
-            }else if(xTaskGetTickCount()-animationTime> 50 && xTaskGetTickCount()-animationTime< 100){
+            }else if(xTaskGetTickCount()-animationTime> 30 && xTaskGetTickCount()-animationTime< 80){
 
-                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+8,WIFI_WIDTH,4,&wifiAnimation02,WHITE,*buff);
+                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+8,WIFI_WIDTH,WIFI_HEIGHT-8,&wifiIcn,WHITE,*buff);//wifi 2
 
-            }else if(xTaskGetTickCount()-animationTime> 100 && xTaskGetTickCount()-animationTime< 150){
+            }else if(xTaskGetTickCount()-animationTime> 80 && xTaskGetTickCount()-animationTime< 100){
 
-            if(!ble_is_connected)iconPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcon,WHITE,*buff);
+            if(!ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
 
-                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+5,WIFI_WIDTH,5,&wifiAnimation03,WHITE,*buff);
 
-            }else if(xTaskGetTickCount()-animationTime> 150 && xTaskGetTickCount()-animationTime< 200){
 
-                iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,6,&wifiAnimation04,WHITE,*buff);
+                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+5,WIFI_WIDTH,WIFI_HEIGHT-4,&wifiIcn,WHITE,*buff);//wifi 3 
+
+            }else if(xTaskGetTickCount()-animationTime> 100 && xTaskGetTickCount()-animationTime< 130){
+
+
+                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn,WHITE,*buff);//wifi 4
 
             }else if(xTaskGetTickCount()-animationTime> 250){
                 animationTime = xTaskGetTickCount();
             }
-            iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,7,7 ,&noWifiIcon,RED,*buff);
+            icnPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,7,7 ,&noWifiIcon,RED,*buff);
 
             for (uint8_t y = qrInfo.yOfset-3; y < qrInfo.yOfset-3 + qrInfo.erase_size; y++)
             {
@@ -92,22 +94,27 @@ void editDisplayBuff(camera_fb_t **buff){
                 //     char tempFrame[13] ;
                     
                 //     snprintf(tempFrame, sizeof(tempFrame), "%d%s",percentage,"%");
-                //     WriteString(0, 160- (pixleLen(0,&tempFrame)/2) ,151,tempFrame,*buff);
+                //     WriteString(0, 160- (pixleLen(0,&tempFrame)/2) ,151,tempFrame,0x0000,*buff);
                 //     memset(tempFrame,0,sizeof(tempFrame));
                 //     snprintf(tempFrame, sizeof(tempFrame), "%s%s","Uploading",  percentage%10<=3?".":percentage%10<=6?".." : percentage%10<=9? "...":" " );
                     
-                //     WriteString(0,160- (pixleLen(0,&tempFrame)/2),170,tempFrame,*buff);
+                //     WriteString(0,160- (pixleLen(0,&tempFrame)/2),170,tempFrame,0x0000,*buff);
 
                 // }             
                 
             }
 
-            iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcon,WHITE,*buff);
+            // iconPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcon,WHITE,*buff);
+
+            icnPrint(NETWORK_ICON_POSS_X, NETWORK_ICON_POSS_Y, WIFI_WIDTH, WIFI_HEIGHT,&wifiIcn,WHITE ,*buff);
+
+
+
             if(networkStatus==STOMP_CONNECTED){
 
-                iconPrint(NETWORK_ICON_POSS_X+14,NETWORK_ICON_POSS_Y+8,7,7 ,&connectedIcon,GREEN,*buff);
+                icnPrint(NETWORK_ICON_POSS_X+14,NETWORK_ICON_POSS_Y+8,7,7 ,&connectedIcon,GREEN,*buff);
             }else{
-                iconPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,2,7,&disconnectedIcon,RED,*buff);
+                icnPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+9,2,7,&disconnectedIcon,RED,*buff);
             }
             animationTime = xTaskGetTickCount();
 
@@ -140,6 +147,34 @@ void iconPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,char* l
         }
     }
 }
+
+
+void icnPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,uint16_t* logobuff,uint16_t color ,camera_fb_t *buff) {
+    // Ensure logo fits within the buffer dimensions
+    if (x_offset + w > buff->width || y_offset + h > buff->height) {
+        // printf("Logo position out of bounds\n");
+        
+        return;
+    }
+    for (int y = h; y >= 0; y--) {
+        for (int x = 0; x < w; x++) {
+            int logo_index = y * w + x;
+            int buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel
+
+            // Copy the logo pixel to the buffer
+
+            if ( (logobuff[y] & (1 << (15-x)))) {
+                // Draw white (pixel set)
+                buff->buf[buff_index] = color>>8 & 0xFF;
+                buff->buf[buff_index + 1] = color& 0xFF;
+            }
+        }
+    }
+
+}
+
+
+
 
 
 
@@ -371,9 +406,9 @@ void writeSn(camera_fb_t *buff ,uint64_t id){
     char tempFrame[19] ;
     snprintf(tempFrame, sizeof(tempFrame), "SN-%s%9llu",DEVICE_VERSION_ID, id);
 
-    uint16_t len = (buff->width-(pixleLen(1,&tempFrame )))-3;   //x start poss
+    uint16_t len = (buff->width-(pixleLen(0,&tempFrame )))-5;   //x start poss
 
-    WriteString(1,len, buff->height-(tablehight[1]+3),tempFrame,buff);
+    WriteString(0,len, buff->height-(tablehight[1]+3),tempFrame,0xffff,buff);
 }
 
 void writedateTime(camera_fb_t *buff ,time_library_time_t current_time,uint8_t clockType){
@@ -384,19 +419,19 @@ void writedateTime(camera_fb_t *buff ,time_library_time_t current_time,uint8_t c
     snprintf(tempFrame, sizeof(tempFrame), "%d-%d-%d   %d.%d %s",current_time.year,current_time.month,current_time.day, 
     current_time.hour, current_time.minute, clockType==1 ? "PM" : clockType==2?"AM" :" ");
     // printf("\nclock type %d",clockType);
-    WriteString(1,4,5,tempFrame,buff);
+    WriteString(1,4,5,tempFrame, 0xffff ,buff);
 
 }
 
 
 // Function to render a string onto the display buffer
-void WriteString(uint8_t letterSize, uint16_t x_offset, uint8_t y_offset, const char *str, camera_fb_t *buff) {
+void WriteString(uint8_t letterSize, uint16_t x_offset, uint8_t y_offset, const char *str,uint16_t color, camera_fb_t *buff){
     
     uint8_t letterWidth;
 
     while (*str) {
 
-        wrightChar(letterSize,x_offset, y_offset, *str, buff);
+        wrightChar(letterSize,x_offset, y_offset, *str, color, buff);
 
         if(letterSize==0){
 
@@ -422,7 +457,7 @@ void WriteString(uint8_t letterSize, uint16_t x_offset, uint8_t y_offset, const 
 }
 
 // Function to render a character onto the display buffer
-void wrightChar(uint8_t letterSize, uint16_t x_offset, uint8_t y_offset, char c, camera_fb_t *buff) {
+void wrightChar(uint8_t letterSize, uint16_t x_offset, uint8_t y_offset, char c,uint16_t color, camera_fb_t *buff) {
     
 
     // Get the bitmap data for the character
@@ -460,8 +495,8 @@ void wrightChar(uint8_t letterSize, uint16_t x_offset, uint8_t y_offset, char c,
             // Get the pixel value from the character data
             if (char_data[y] & (1 << (16-x))) {
                 // Draw white (pixel set)
-                buff->buf[buff_index] = letterSize==0 ?0x00: 0xFF;
-                buff->buf[buff_index + 1] = letterSize==0 ?0x00: 0xFF;
+                buff->buf[buff_index] = color>>8 & 0xFF;
+                buff->buf[buff_index + 1] = color& 0xFF;
             }
         }
     }
@@ -519,7 +554,7 @@ void sleepTimeDate(camera_fb_t *buff, time_library_time_t current_time){
     day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
 
     uint16_t len = 160- (pixleLen(2,&tempFrame)/2);//x start poss
-    WriteString(2,len, 130,tempFrame,buff);
+    WriteString(2,len, 130,tempFrame,0xffff,buff);
 
 /*
     WriteString(2,5, 0,"abcdefghijklmnopqrstuvwxyz",buff);

@@ -59,7 +59,7 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
         .spi_bus = spi_bus,
         .pin_num_cs = BOARD_LCD_CS,
         .pin_num_dc = BOARD_LCD_DC,
-        .clk_freq = 40 * 1000000,
+        .clk_freq = 60 * 1000000,//40
         .swap_data = 0,
     };
 

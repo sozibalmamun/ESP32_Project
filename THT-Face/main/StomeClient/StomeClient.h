@@ -92,6 +92,8 @@ void stompAppStart(void);
 extern void dataHandele(const char *rx_buffer);
 extern bool stompSend(char * buff, char* topic);
 
+ bool stompS(uint8_t *buff, size_t buffLen, char* topic);
+
 char *base64_encode(const unsigned char *data, size_t input_length, size_t *output_length);
 extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic);
 

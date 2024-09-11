@@ -278,7 +278,6 @@ static void task_process_handler(void *arg)
                             key_state= KEY_IDLE;
 
                         }
-      
                     }else {
 
                         TimeOut= xTaskGetTickCount();

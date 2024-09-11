@@ -58,10 +58,15 @@
 #define TIMEOUT_5_MIN         30000
 //-------------------------------------------------------------------
 
+
 //-------------------topic-------------------------------------------
 
-#define     PUBLISH_TOPIC         "/app/cloud"
-#define     SUBCRIBE_TOPIC        "/topic/cloud"
+// #define     PUBLISH_TOPIC         "/app/cloud"
+// #define     SUBCRIBE_TOPIC        "/topic/cloud"
+
+
+#define     PUBLISH_TOPIC         "/app/messages"
+#define     SUBCRIBE_TOPIC        "/topic/AA00242829068"
 //-------------------------------------------------------------------
 
 //-----------network status code-------------------------------------

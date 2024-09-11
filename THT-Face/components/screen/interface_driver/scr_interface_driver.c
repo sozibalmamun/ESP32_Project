@@ -292,6 +292,7 @@ static esp_err_t spi_lcd_driver_write(void *handle, const uint8_t *data, uint32_
         }
     }
     LCD_IFACE_CHECK(ESP_OK == ret, "Write data failed", ESP_FAIL);
+
     return ESP_OK;
 }
 

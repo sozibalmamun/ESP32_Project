@@ -488,12 +488,12 @@ bool sendFilePath(const char *filePath) {
 
     ESP_LOGW(TAG, "buff log %s", fileContent);
 
-    // if (!stompSend(fileContent,PUBLISH_TOPIC)) {
-    //     //  ESP_LOGE(TAG, "Error sending log");
+    if (!stompSend(fileContent,PUBLISH_TOPIC)) {
+        //  ESP_LOGE(TAG, "Error sending log");
 
-    //     heap_caps_free(fileContent);
-    //     return false;
-    // }
+        heap_caps_free(fileContent);
+        return false;
+    }
 
     // Free allocated buffer
     if(fileContent!=NULL) {

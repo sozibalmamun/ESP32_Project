@@ -18,7 +18,7 @@
 
 
 
-#define     PUBLISH_TOPIC       "/app/cloud"
+// #define     PUBLISH_TOPIC       "/app/cloud"
 extern uint8_t CPUBgflag;
 
 extern const uint32_t crc16_table;

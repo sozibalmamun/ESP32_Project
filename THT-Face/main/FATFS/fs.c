@@ -941,7 +941,6 @@ bool display_faces(camera_fb_t *buff) {
 bool pendingData() {
     DIR *dir;
     struct dirent *entry;
-    bool dataAvailable = false;
 
     // Check files in ATTENDANCE_DIR
     if ((dir = opendir(ATTENDANCE_DIR)) == NULL) {

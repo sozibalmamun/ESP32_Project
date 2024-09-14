@@ -14,7 +14,8 @@ extern uint8_t networkStatus;
 extern int8_t percentage;
 extern key_state_t key_state;
 extern uint8_t CPUBgflag;
- 
+extern bool dataAvailable;
+
 
 
 
@@ -31,7 +32,10 @@ void editDisplayBuff(camera_fb_t **buff);
 uint64_t generate_unique_id(void);
 
 bool display_faces( camera_fb_t *buff);
-// void drawImage(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t height, uint8_t *image, camera_fb_t *buff);
+void drawImage_u8(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t height, uint8_t *image, camera_fb_t *buff);
+void drawImage_u16(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t height, uint16_t *image, camera_fb_t *buff);
+
+
 void drawFilledRoundedRectangle(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t height, uint8_t thickness, uint8_t radius, uint16_t color, camera_fb_t *buff);
 void scaleAndDisplayImageInFrame(uint8_t *src_image, uint8_t src_width, uint8_t src_height, camera_fb_t *dst_buff, uint8_t pos_x, uint8_t pos_y);
 // void setPixel(camera_fb_t *buff, int x, int y, uint16_t color);

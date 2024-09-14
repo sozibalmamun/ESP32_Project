@@ -87,6 +87,7 @@ bool stompSend(char *buff, char* topic) {
             // ESP_LOGE(TAGSTOMP, "Memory allocation for sendingFrame failed");
             return false;
         }
+
         memset(sendingFrame, 0, sendingFrameLen + 1);
 
 
@@ -96,12 +97,11 @@ bool stompSend(char *buff, char* topic) {
 
         // strcat(sendingFrame, tempFrame);
 
-        sendingFrame[strlen(sendingFrame)] = 0x11;  // Directly inserting a binary character at the correct location
+        sendingFrame[strlen(sendingFrame)] = 0x15; // Directly inserting a binary character at the correct location
 
         strcat(sendingFrame, "\\n\\n\\u0000\"]");
 
         ESP_LOGW(TAGSTOMP, "sending pac: %s\n", sendingFrame);
-
 
         // Check network status
         if (networkStatus != STOMP_CONNECTED) {
@@ -114,7 +114,6 @@ bool stompSend(char *buff, char* topic) {
             if(maxTry>MAXTRY){
                 maxTry=0;
                 return false;
-
             }
             continue; // Retry sending
         }
@@ -203,7 +202,7 @@ bool stompSend(char *buff, char* topic) {
 //             return false;
 //         }
 //         memset(sentFrame, 0, sentFrameLen + 1);
-//         snprintf(sentFrame, sentFrameLen, "%d %d %s", id, chunkNo + 1, chunk);
+        // snprintf(sentFrame, sentFrameLen, "%d %d %s", id, chunkNo + 1, chunk);
 //         printf("Chunk No: %d\n", chunkNo+1);// chank no 
 
 //         vTaskDelay(10);

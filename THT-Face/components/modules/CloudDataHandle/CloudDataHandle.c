@@ -6,6 +6,8 @@
 
 static const char *TAG = "CLOUD";
 uint8_t CPUBgflag;
+bool dataAvailable = false;
+
 extern  volatile uint8_t CmdEvent;
 
 static QueueHandle_t xQueueCloudI = NULL;
@@ -71,6 +73,8 @@ static void attendanceHandlerTask(void *arg)
             }
         }
         vTaskDelay(xDelay);
+        // cloudeTaskHandler = NULL;   
+        // vTaskDelete(NULL);  // NULL means this task deletes itself
     }
 }
 
@@ -80,7 +84,6 @@ void reconnect(){
 
         if(networkStatus==STOMP_CONNECTED){
 
-
             if(CPUBgflag==0){
 
                 if(CmdEvent!=IDLE_EVENT)eventFeedback();
@@ -88,18 +91,20 @@ void reconnect(){
                 if(!pendingData()){
 
                     // printf("\nno pending data");
-                    if (cloudeTaskHandler != NULL) {
-                    vTaskDelete(cloudeTaskHandler);   // Delete the task
-                    cloudeTaskHandler = NULL;         // Clear the handle to avoid dangling references
+                    // if (cloudeTaskHandler != NULL) {
+                    // vTaskDelete(cloudeTaskHandler);   // Delete the task
+                    // cloudeTaskHandler = NULL;         // Clear the handle to avoid dangling references
                     // ESP_LOGW("TAGSTOMP", "AttendanceTask deleted");
 
-                    }
+                    // }
 
                 }else {
 
                     vTaskDelay(1000 / portTICK_PERIOD_MS); // 
 
                     printf("pending data\n");
+
+
                     if (cloudeTaskHandler == NULL) cloudHandel();
 
                 } 
@@ -107,10 +112,8 @@ void reconnect(){
             }
         }else if(networkStatus<STOMP_CONNECTED && networkStatus>WIFI_CONNECTED){
 
+            stomp_client_connect(); 
 
-
-
-        stomp_client_connect(); 
         }else if(networkStatus==WIFI_DISS){
 
             CPUBgflag=0;

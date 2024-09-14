@@ -27,12 +27,6 @@ void event_generate(void *arg) {
     while (1) {
 
 
-
-//     KEY_SHORT_PRESS = 1, recg 1
-//     KEY_LONG_PRESS,      enroll 2
-//     KEY_DOUBLE_CLICK,    delete 3
-
-
         switch (key_state) {
 
             case KEY_SHORT_PRESS:

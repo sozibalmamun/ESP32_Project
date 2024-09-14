@@ -86,7 +86,7 @@
 
 //-----------------WSS addr------------------------------------------------------------------
 #define     THT             "wss://grozziieget.zjweiting.com:3091/CloudSocket-Dev/websocket/"
-#define     HOST            "grozziieget.zjweiting.com"
+#define     HOST            "grozziieget.zjweiting.com" 
 #define     PORT            3091
 #define     PATH            "/CloudSocket-Dev/websocket/"
 //-------------------------------------------------------------------------------------------

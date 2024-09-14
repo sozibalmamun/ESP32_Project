@@ -21,6 +21,7 @@ typedef struct {
     uint8_t hour;
     uint8_t minute;
     uint8_t second;
+    // bool pm;
 } time_library_time_t;
 
 // Function to initialize the time library

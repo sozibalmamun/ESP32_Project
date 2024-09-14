@@ -90,6 +90,7 @@ void reconnect(){
 
                 if(!pendingData()){
 
+                    dataAvailable = false;
                     // printf("\nno pending data");
                     // if (cloudeTaskHandler != NULL) {
                     // vTaskDelete(cloudeTaskHandler);   // Delete the task
@@ -101,10 +102,7 @@ void reconnect(){
                 }else {
 
                     vTaskDelay(1000 / portTICK_PERIOD_MS); // 
-
                     printf("pending data\n");
-
-
                     if (cloudeTaskHandler == NULL) cloudHandel();
 
                 } 
@@ -114,9 +112,15 @@ void reconnect(){
 
             stomp_client_connect(); 
 
+
         }else if(networkStatus==WIFI_DISS){
 
             CPUBgflag=0;
+            if(pendingData())dataAvailable = true;
+
+
+
+
 
         }
         vTaskDelay(1000 / portTICK_PERIOD_MS); // Delay before retry

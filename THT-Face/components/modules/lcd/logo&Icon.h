@@ -3,9 +3,9 @@
 
 #include "globalScope.h"
 
-#define WIFI_WIDTH 16
+#define WIFI_WIDTH 13
 #define WIFI_HEIGHT 11
-#define BLE_W 11
+#define BLE_W 8
 #define BLE_H 11
 
 #define NETWORK_ICON_POSS_X 295

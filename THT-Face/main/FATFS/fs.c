@@ -398,6 +398,9 @@ void process_attendance_files() {
         return;
     }
     while ((entry = readdir(dir)) != NULL) {
+
+        dataAvailable = true;
+
         if (entry->d_type == DT_REG) {  // Only process regular files
             char file_path[30];
             memset(file_path,0,sizeof(file_path));
@@ -519,6 +522,9 @@ bool process_and_send_faces(const char* topic) {
     }
 
     while ((entry = readdir(dir)) != NULL) {
+
+        dataAvailable = true;
+
 
         if (entry->d_type == DT_REG) {  // Only process regular files
 
@@ -941,6 +947,7 @@ bool display_faces(camera_fb_t *buff) {
 bool pendingData() {
     DIR *dir;
     struct dirent *entry;
+    bool dAvailable = false;
 
     // Check files in ATTENDANCE_DIR
     if ((dir = opendir(ATTENDANCE_DIR)) == NULL) {
@@ -952,12 +959,12 @@ bool pendingData() {
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_REG) {  // Only process regular files
             // ESP_LOGI("Attendance", "File available: %s", entry->d_name);
-            dataAvailable = true;
+            dAvailable = true;
         }
     }
     closedir(dir);
 
-    if (!dataAvailable) {
+    if (!dAvailable) {
         // ESP_LOGI("Attendance", "No data available in %s", ATTENDANCE_DIR);
     }else return true;
 
@@ -968,20 +975,21 @@ bool pendingData() {
     }
 
     // Reset dataAvailable for face data check
-    dataAvailable = false;
+    dAvailable = false;
 
     // Iterate through all entries in FACE_DIRECTORY
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_REG) {  // Only process regular files
             // ESP_LOGI("Face", "File available: %s", entry->d_name);
-            dataAvailable = true;
+            dAvailable = true;
         }
     }
     closedir(dir);
 
-    if (!dataAvailable) {
+    if (!dAvailable) {
         // ESP_LOGI("Face", "No data available in %s", FACE_DIRECTORY);
     }else return true;
 
-    return dataAvailable;
+
+    return dAvailable;
 }

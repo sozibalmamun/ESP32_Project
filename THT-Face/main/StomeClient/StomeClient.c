@@ -95,9 +95,9 @@ bool stompSend(char *buff, char* topic) {
         strcat(sendingFrame, topic);
         strcat(sendingFrame, "\\n\\n");
 
-        // strcat(sendingFrame, tempFrame);
+        strcat(sendingFrame, tempFrame);
 
-        sendingFrame[strlen(sendingFrame)] = 0x15; // Directly inserting a binary character at the correct location
+        // sendingFrame[strlen(sendingFrame)] = 0x31; // Directly inserting a binary character at the correct location
 
         strcat(sendingFrame, "\\n\\n\\u0000\"]");
 

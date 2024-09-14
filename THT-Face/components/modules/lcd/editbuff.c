@@ -28,7 +28,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
         if(networkStatus==WIFI_DISS){
 
-            if(ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
+            if(ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-10,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
 
             if( xTaskGetTickCount()-animationTime< 20){
                 
@@ -36,7 +36,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
             }else if(xTaskGetTickCount()-animationTime>= 20 && xTaskGetTickCount()-animationTime<= 50){
                 
-                if(!ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-13,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
+                if(!ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-10,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
                 icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+8,WIFI_WIDTH,WIFI_HEIGHT-5,&wifiIcn,WHITE,*buff);//wifi 2
 
             }else if(xTaskGetTickCount()-animationTime>= 50 && xTaskGetTickCount()-animationTime<= 80){
@@ -47,7 +47,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
             }else if(xTaskGetTickCount()-animationTime>= 80 && xTaskGetTickCount()-animationTime<= 150){
 
-            if(!ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-13,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
+            if(!ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-10,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
 
                 icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn,WHITE,*buff);//wifi 4
                 icnPrint(NETWORK_ICON_POSS_X+13,NETWORK_ICON_POSS_Y+8,7,7 ,&noWifiIcon,RED,*buff);//+9//
@@ -107,7 +107,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
             icnPrint(NETWORK_ICON_POSS_X, NETWORK_ICON_POSS_Y, WIFI_WIDTH, WIFI_HEIGHT,&wifiIcn,WHITE ,*buff);
             
-            if(dataAvailable)icnPrint(NETWORK_ICON_POSS_X-26, NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,RED ,*buff);
+            if(dataAvailable)icnPrint(NETWORK_ICON_POSS_X-13, NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,RED ,*buff);
 
 
             if(networkStatus==STOMP_CONNECTED){

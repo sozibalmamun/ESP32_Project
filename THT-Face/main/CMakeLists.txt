@@ -8,9 +8,9 @@
  idf_component_register(SRCS 
                              "app_main.cpp" 
                              "event_logic.cpp" 
-                             "StomeClient/StomeClient.c" 
+                             "WssClient/WssClient.c" 
                              "dataHandler/dataHandler.c" 
-                             "enrol/enrol.c" 
+                             "cloudEvent/cloudEvent.c" 
 
                              "Conectivity/blufi_example_main.c"
                              "Conectivity/blufi_security.c"

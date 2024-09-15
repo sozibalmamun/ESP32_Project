@@ -300,8 +300,6 @@ bool stompS(uint8_t *buff, size_t buffLen) {
 
         // if (esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY) == 0) {  esp_websocket_client_send_bin
 
-
-
         if (esp_websocket_client_send_bin(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY) == 0) {  
 
 
@@ -610,12 +608,30 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
             }
 
-            ESP_LOGW(TAG, "Received=%.*s", data->data_len, (char *)data->data_ptr);
+            
+            if((char)data->data_ptr[0]=='T'){
+
+                printf("rcv Time:  %d %d %d %d %d %d %c%c%c",data->data_ptr[1],data->data_ptr[2],data->data_ptr[3],data->data_ptr[4],data->data_ptr[5],data->data_ptr[6] ,data->data_ptr[7] ,data->data_ptr[8],data->data_ptr[9]);
+                memset(data->data_ptr,0,data->data_len);
+
+            }else if( (char)data->data_ptr[0]=='L' ) {
+
+                ESP_LOGW(TAG, "Received log %.*s", data->data_len, (char *)data->data_ptr);
+                memset(data->data_ptr,0,data->data_len);
+
+            }else{
+
+
+                ESP_LOGW(TAG, "Received:  %.*s", data->data_len, (char *)data->data_ptr);
+                memset(data->data_ptr,0,data->data_len);
+
+
+            }
+            
 
         }
 
         // ESP_LOGI(TAG, "WEBSOCKET_free");
-        // memset(data->data_ptr,0,data->data_len);
 
 
 
@@ -740,13 +756,15 @@ void stomp_client_int( stompInfo_cfg_t stompSetup ) {
     char socket[100];
     snprintf(socket, sizeof(socket), "%s", stompSetup.uri);
 
+
     // int random1 = esp_random() % 999; // Generates a random number between 0 and 999
     // int random2 = esp_random() % 999999; // Generates a random number between 0 and 999999
     // snprintf(socket + strlen(socket), sizeof(socket) - strlen(socket), "%d/%d/websocket", random1, random2);
 
+
     websocket_cfg.uri = (const char*)socket;
-    websocket_cfg.cert_pem = echo_org_ssl_ca_cert;   
-    websocket_cfg.pingpong_timeout_sec=5;
+    websocket_cfg.cert_pem = echo_org_ssl_ca_cert;  
+    websocket_cfg.pingpong_timeout_sec=10;
 
 
     // char uinqeheaders[14];

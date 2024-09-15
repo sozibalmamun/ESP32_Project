@@ -79,6 +79,8 @@ extern void scaleAndDisplayImageInFrame(uint8_t *src_image, uint8_t src_width, u
 extern bool pendingData();
 
 extern bool stompSend(char * buff, char* topic);
+extern bool stompS(uint8_t *buff, size_t buffLen);
+
 extern uint64_t generate_unique_id(void);
 
 

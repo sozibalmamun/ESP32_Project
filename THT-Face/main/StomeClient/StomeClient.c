@@ -239,13 +239,14 @@ bool stompSend(char *buff, char* topic) {
 
 
 
-bool stompS(uint8_t *buff, size_t buffLen, char* topic) {
+bool stompS(uint8_t *buff, size_t buffLen) {
+
     uint8_t tempFrame[CHANK_SIZE + 1];
     memset(tempFrame, 0, sizeof(tempFrame));
 
     uint16_t currentIndex = 0;
 
-    ESP_LOGW(TAGSTOMP, "Total stompS length: %d data : %s\n", sizeof(buff),(char*)buff );
+    ESP_LOGW(TAGSTOMP, "Total stompS length: %d data : %s\n", buffLen,(char*)buff );
 
 
 
@@ -255,7 +256,7 @@ bool stompS(uint8_t *buff, size_t buffLen, char* topic) {
         size_t chunkLen = MIN(CHANK_SIZE, buffLen);
         memcpy(tempFrame, &buff[currentIndex], chunkLen);
 
-        size_t sendingFrameLen = chunkLen + 100 + strlen(topic);  // Adjust size based on chunk size
+        size_t sendingFrameLen = chunkLen + 100 ;  // Adjust size based on chunk size
         char* sendingFrame = (char*)heap_caps_malloc(sendingFrameLen + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
         if (sendingFrame == NULL) {
             return false;
@@ -263,30 +264,47 @@ bool stompS(uint8_t *buff, size_t buffLen, char* topic) {
         memset(sendingFrame, 0, sendingFrameLen + 1);
 
 
-        strcat(sendingFrame, "[\"SEND\\ndestination:");
-        strcat(sendingFrame, topic);
-        strcat(sendingFrame, "\\n\\n");
-        memcpy(&sendingFrame[strlen(sendingFrame)], tempFrame, chunkLen); // Copy binary chunk directly
-
-        // char temp =  0x05;
 
 
-        // memcpy(&sendingFrame[strlen(sendingFrame)], temp, 1); // Copy binary chunk directly
-        strcat(sendingFrame, "\\n\\n\\u0000\"]");
+        // char uinqeID[10];
+        // snprintf(uinqeID, sizeof(uinqeID), "%08llu", generate_unique_id());
+        // strcat(sendingFrame, DEVICE_VERSION_ID);
+        // strcat(sendingFrame, uinqeID);
+        // strcat(sendingFrame, " ");
 
-        if (networkStatus != STOMP_CONNECTED) {
-            if (networkStatus > WIFI_CONNECTED) networkStatus = WSS_CONNECTED;
-            heap_caps_free(sendingFrame);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-            maxTry++;
-            if (maxTry > MAXTRY) {
-                maxTry = 0;
-                return false;
-            }
-            continue;
-        }
 
-        if (esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY) == 0) {
+
+        // strcat(sendingFrame, topic);
+        // strcat(sendingFrame, "\\n\\n");
+        // memcpy(&sendingFrame[strlen(sendingFrame)], tempFrame, chunkLen); 
+        // strcat(sendingFrame, "\\n\\n\\u0000\"]");
+
+
+
+        memcpy(&sendingFrame[strlen(sendingFrame)], tempFrame, chunkLen); 
+
+        ESP_LOGW(TAGSTOMP, "stompS pac: %s\n", sendingFrame );
+
+
+        // if (networkStatus != STOMP_CONNECTED) {
+        //     if (networkStatus > WIFI_CONNECTED) networkStatus = WSS_CONNECTED;
+        //     heap_caps_free(sendingFrame);
+        //     vTaskDelay(1000 / portTICK_PERIOD_MS);
+        //     maxTry++;
+        //     if (maxTry > MAXTRY) {
+        //         maxTry = 0;
+        //         return false;
+        //     }
+        //     continue;
+        // }
+
+        // if (esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY) == 0) {  esp_websocket_client_send_bin
+
+
+
+        if (esp_websocket_client_send_bin(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY) == 0) {  
+
+
             if (networkStatus > WIFI_CONNECTED) networkStatus = WSS_CONNECTED;
             heap_caps_free(sendingFrame);
             vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -313,7 +331,7 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
     // Send image info
     char imageInfo[35];
     snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d %d", buffLen, w, h, name, id, totalChunks);
-    if (!stompS((uint8_t*)imageInfo, strlen(imageInfo), topic)) {
+    if (!stompS((uint8_t*)imageInfo, strlen(imageInfo))) {
         return false;
     }
     vTaskDelay(50);
@@ -343,7 +361,7 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
 
         // vTaskDelay(10);
 
-        if (!stompS((uint8_t*)sentFrame, strlen(sentFrame), topic)) {
+        if (!stompS((uint8_t*)sentFrame, strlen(sentFrame))) {
             heap_caps_free(chunk);
             heap_caps_free(sentFrame);
             return false;
@@ -542,12 +560,12 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     esp_websocket_event_data_t *data = (esp_websocket_event_data_t *)event_data;
     switch (event_id) {
     case WEBSOCKET_EVENT_CONNECTED:
-        // ESP_LOGI(TAG, "WEBSOCKET_EVENT_CONNECTED");
+        ESP_LOGI(TAG, "WSS_CONNECTED");
         networkStatus=WSS_CONNECTED;
 
         break;
     case WEBSOCKET_EVENT_DISCONNECTED:
-        ESP_LOGI(TAG, "WEBSOCKET_EVENT_DISCONNECTED");
+        ESP_LOGI(TAG, "WSS_DISCONNECTED");
 
         networkStatus=WIFI_CONNECTED;
 
@@ -556,72 +574,124 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     case WEBSOCKET_EVENT_DATA:
 
         if (data->op_code == 0x08 && data->data_len == 2) {
-            ESP_LOGE(TAG, "Received closed message with code=%d", 256*data->data_ptr[0] + data->data_ptr[1]);
 
-            vTaskDelay(100);
-            break;
+            ESP_LOGW(TAG, "Received closed message with code=%d", 256*data->data_ptr[0] + data->data_ptr[1]);
+                            // ESP_LOGI(TAG, "WEBSOCKET_free");
+        // memset(data->data_ptr,0,data->data_len);
 
         } else {
 
-            if(data->data_ptr[0]=='o')stomp_client_connect();   
 
-            else if(data->data_ptr[0]=='a'){
+            if (data->op_code == 0x0A) {
 
-                ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
-                stomp_client_handle_message(&data->data_ptr[3]);
+                ESP_LOGI(TAG, "Ping code: %d", data->op_code);
+
+
+                time_library_time_t current_time;
+                uint8_t clockType = get_time(&current_time, 1);
+
+                uint8_t time [11];
+                time[0]=(uint8_t)'T';
+                time[1]=current_time.year-2000;
+                time[2]=current_time.month;
+                time[3]=current_time.day;
+                
+                time[4]=current_time.hour;
+                time[5]=current_time.minute;
+                time[6]=current_time.second;
+
+                time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
+                time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
+                time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
+                time[10]='\0';
+
+                printf(" data len: %d time: %c %d %d %d %d %d %d %s\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,(char*)&time[7]);
+                stompS(time, sizeof(time));
 
             }
 
-            else if(data->data_ptr[0]=='h'){
-                //---------------------------------------------------------------
-                if( networkStatus==STOMP_CONNECTED){
-                    ESP_LOGI(TAG, "Ping");
-                    time_library_time_t current_time;
-                    uint8_t clockType = get_time(&current_time, 1);
-                    char tempFrame[27];
-                    snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",current_time.year,current_time.month,current_time.day,current_time.hour,current_time.minute,current_time.second,
-                    day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
+            ESP_LOGW(TAG, "Received=%.*s", data->data_len, (char *)data->data_ptr);
 
-                    // if(!stompSend(tempFrame, PUBLISH_TOPIC)){
-                    //     // ESP_LOGI(TAGSTOMP, "sending error");
-
-                    // }
-
-                    uint8_t time [11];
-                    time[0]=(uint8_t)'T';
-                    time[1]=current_time.year-2000;
-                    time[2]=current_time.month;
-                    time[3]=current_time.day;
-                    
-                    time[4]=current_time.hour;
-                    time[5]=current_time.minute;
-                    time[6]=current_time.second;
-
-                    time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
-                    time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
-                    time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
-                    time[10]='\0';
-
-                    printf(" data len: %d time: %c %d %d %d %d %d %d %s\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,(char*)&time[7]);
-                    // stompS(time, sizeof(time), PUBLISH_TOPIC);
-                    // stompSend("(char*)time", PUBLISH_TOPIC);
-                    // vTaskDelay(100);
-
-                    // stompSend(time[0], PUBLISH_TOPIC);
-                    // stompSend((char*)time, PUBLISH_TOPIC);
-                    // stompS(&time, sizeof(time), PUBLISH_TOPIC);
-
-                }
-                //--------------------------------------------------------------
-            }else if(data->data_ptr[0]=='c'){
-
-                // ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
-                networkStatus=WIFI_CONNECTED;
-                stompAppStart();
-            }
-            // ESP_LOGI(TAG, "WEBSOCKET_free");
-            memset(data->data_ptr,0,data->data_len);
         }
+
+        // ESP_LOGI(TAG, "WEBSOCKET_free");
+        // memset(data->data_ptr,0,data->data_len);
+
+
+
+
+
+        // ESP_LOGW(TAG, "Total payload length=%d, data_len=%d, current payload offset=%d\r\n", data->payload_len, data->data_len, data->payload_offset);
+
+
+
+        // if (data->op_code == 0x08 && data->data_len == 2) {
+        //     ESP_LOGE(TAG, "WSS Closed Code: %d", 256*data->data_ptr[0] + data->data_ptr[1]);
+
+        //     vTaskDelay(100);
+        //     break;
+
+        // } else {
+
+        //     if(data->data_ptr[0]=='o')stomp_client_connect();   
+
+        //     else if(data->data_ptr[0]=='a'){
+
+        //         ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
+        //         stomp_client_handle_message(&data->data_ptr[3]);
+
+        //     }
+
+        //     else if(data->data_ptr[0]=='h'){
+        //         //---------------------------------------------------------------
+        //         if( networkStatus==STOMP_CONNECTED){
+        //             ESP_LOGI(TAG, "Ping");
+        //             time_library_time_t current_time;
+        //             uint8_t clockType = get_time(&current_time, 1);
+        //             char tempFrame[27];
+        //             snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",current_time.year,current_time.month,current_time.day,current_time.hour,current_time.minute,current_time.second,
+        //             day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
+
+        //             // if(!stompSend(tempFrame, PUBLISH_TOPIC)){
+        //             //     // ESP_LOGI(TAGSTOMP, "sending error");
+
+        //             // }
+
+        //             uint8_t time [11];
+        //             time[0]=(uint8_t)'T';
+        //             time[1]=current_time.year-2000;
+        //             time[2]=current_time.month;
+        //             time[3]=current_time.day;
+                    
+        //             time[4]=current_time.hour;
+        //             time[5]=current_time.minute;
+        //             time[6]=current_time.second;
+
+        //             time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
+        //             time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
+        //             time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
+        //             time[10]='\0';
+
+        //             printf(" data len: %d time: %c %d %d %d %d %d %d %s\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,(char*)&time[7]);
+        //             // stompS(time, sizeof(time), PUBLISH_TOPIC);
+        //             // stompSend("(char*)time", PUBLISH_TOPIC);
+        //             // vTaskDelay(100);
+
+        //             // stompSend(time[0], PUBLISH_TOPIC);
+        //             // stompSend((char*)time, PUBLISH_TOPIC);
+        //             // stompS(&time, sizeof(time), PUBLISH_TOPIC);
+
+        //         }
+        //         //--------------------------------------------------------------
+        //     }else if(data->data_ptr[0]=='c'){
+
+        //         // ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
+        //         networkStatus=WIFI_CONNECTED;
+        //         stompAppStart();
+        //     }
+        //     // ESP_LOGI(TAG, "WEBSOCKET_free");
+        //     memset(data->data_ptr,0,data->data_len);
+        // }
         break;
     case WEBSOCKET_EVENT_ERROR:
         ESP_LOGI(TAG, "WEBSOCKET_EVENT_ERROR");
@@ -670,12 +740,21 @@ void stomp_client_int( stompInfo_cfg_t stompSetup ) {
     char socket[100];
     snprintf(socket, sizeof(socket), "%s", stompSetup.uri);
 
-    int random1 = esp_random() % 999; // Generates a random number between 0 and 999
-    int random2 = esp_random() % 999999; // Generates a random number between 0 and 999999
-    snprintf(socket + strlen(socket), sizeof(socket) - strlen(socket), "%d/%d/websocket", random1, random2);
+    // int random1 = esp_random() % 999; // Generates a random number between 0 and 999
+    // int random2 = esp_random() % 999999; // Generates a random number between 0 and 999999
+    // snprintf(socket + strlen(socket), sizeof(socket) - strlen(socket), "%d/%d/websocket", random1, random2);
 
     websocket_cfg.uri = (const char*)socket;
     websocket_cfg.cert_pem = echo_org_ssl_ca_cert;   
+    websocket_cfg.pingpong_timeout_sec=5;
+
+
+    // char uinqeheaders[14];
+    // snprintf(uinqeheaders, sizeof(uinqeheaders), "%s%08llu",DEVICE_VERSION_ID, generate_unique_id());
+    // printf("\nheadr:  %s",uinqeheaders);
+
+    // websocket_cfg.headers = (const char*)uinqeheaders;
+
     // memset(socket,0,strlen(socket));
 
     // snprintf(socket, sizeof(socket), "%s", stompSetup.path);

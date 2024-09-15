@@ -63,7 +63,8 @@ static void attendanceHandlerTask(void *arg)
     {
         
         // Process attendance files
-        if(networkStatus==STOMP_CONNECTED){
+        // if(networkStatus==STOMP_CONNECTED){//WSS_CONNECTED
+        if(networkStatus==WSS_CONNECTED){
 
             if(CPUBgflag==0){
             CPUBgflag=1;
@@ -73,7 +74,7 @@ static void attendanceHandlerTask(void *arg)
             }
         }
         vTaskDelay(xDelay);
-        // cloudeTaskHandler = NULL;   
+        // cloudeTaskHandler = NULL; 
         // vTaskDelete(NULL);  // NULL means this task deletes itself
     }
 }
@@ -82,7 +83,9 @@ static void attendanceHandlerTask(void *arg)
 void reconnect(){
 
 
-        if(networkStatus==STOMP_CONNECTED){
+        // if(networkStatus==STOMP_CONNECTED){
+        if(networkStatus==WSS_CONNECTED){
+
 
             if(CPUBgflag==0){
 
@@ -110,8 +113,7 @@ void reconnect(){
             }
         }else if(networkStatus<STOMP_CONNECTED && networkStatus>WIFI_CONNECTED){
 
-            stomp_client_connect(); 
-
+            // stomp_client_connect();
 
         }else if(networkStatus==WIFI_DISS){
 

@@ -491,7 +491,9 @@ bool sendFilePath(const char *filePath) {
 
     ESP_LOGW(TAG, "buff log %s", fileContent);
 
-    if (!stompSend(fileContent,PUBLISH_TOPIC)) {
+    // if (!stompSend(fileContent,PUBLISH_TOPIC)) {//                stompS(time, sizeof(time));
+    if (!stompS((uint8_t*)fileContent, strlen(fileContent))) {
+
         //  ESP_LOGE(TAG, "Error sending log");
 
         heap_caps_free(fileContent);

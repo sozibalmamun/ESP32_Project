@@ -147,6 +147,7 @@ const unsigned char N4 = 10;
 #define gexp(x) __LPM(&g0exp[x])
 
 #define QRBIT(x,y) ( ( qrframe[((x)>>3) + (y) * WDB] >> (7-((x) & 7 ))) & 1 )
+
 #define SETQRBIT(x,y) qrframe[((x)>>3) + (y) * WDB] |= 0x80 >> ((x) & 7)
 #define TOGQRBIT(x,y) qrframe[((x)>>3) + (y) * WDB] ^= 0x80 >> ((x) & 7)
 #define __LPM(x) *x

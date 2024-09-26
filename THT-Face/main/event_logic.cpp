@@ -60,6 +60,8 @@ void event_generate(void *arg) {
     }
 }
 
+
+
 void register_event(const QueueHandle_t event_o) {
     xQueueEventO = event_o;
     xTaskCreatePinnedToCore(event_generate, "event_task", 1024, NULL, 1, NULL, 1);

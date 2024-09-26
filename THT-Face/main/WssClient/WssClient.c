@@ -264,24 +264,37 @@ bool stompS(uint8_t *buff, size_t buffLen) {
         memset(sendingFrame, 0, sendingFrameLen + 1);
 
 
+//----------------------------------Stomp--Pac-------------------------------
+        // strcat(sendingFrame, "[\"SEND\\ndestination:");
+        // strcat(sendingFrame, topic);
+        // strcat(sendingFrame, "\\n\\n");
+        // strcat(sendingFrame, tempFrame);
+        // strcat(sendingFrame, "\\n\\n");
+        // memcpy(&sendingFrame[strlen(sendingFrame)], tempFrame, chunkLen); 
+        // strcat(sendingFrame, "\\n\\n\\u0000\"]");
+//---------------------------------------------------------------------------
 
-
-        // char uinqeID[10];
-        // snprintf(uinqeID, sizeof(uinqeID), "%08llu", generate_unique_id());
+        char uinqeID[10];
+        snprintf(uinqeID, sizeof(uinqeID), "%08llu", generate_unique_id());
         // strcat(sendingFrame, DEVICE_VERSION_ID);
         // strcat(sendingFrame, uinqeID);
         // strcat(sendingFrame, " ");
 
 
+//  DEVICE_TYPE:< device type >\nID:< unique id >\nDATA_TYPE:< B/h/s >\nDATA:< data >\n\n\u0000
 
-        // strcat(sendingFrame, topic);
-        // strcat(sendingFrame, "\\n\\n");
-        // memcpy(&sendingFrame[strlen(sendingFrame)], tempFrame, chunkLen); 
-        // strcat(sendingFrame, "\\n\\n\\u0000\"]");
+        strcat(sendingFrame, "DEVICE_TYPE:");
+        strcat(sendingFrame, "UFACE\\n");
+        strcat(sendingFrame, "ID:");
+        strcat(sendingFrame, DEVICE_VERSION_ID);
+        strcat(sendingFrame, uinqeID);
+        strcat(sendingFrame, "\\nDATA_TYPE:");
+        strcat(sendingFrame, "B");
+        strcat(sendingFrame, "\\nDATA:");
+        memcpy(&sendingFrame[strlen(sendingFrame)], tempFrame, chunkLen);
+        strcat(sendingFrame, "\\n\\n\\u0000");
 
 
-
-        memcpy(&sendingFrame[strlen(sendingFrame)], tempFrame, chunkLen); 
 
         ESP_LOGW(TAGSTOMP, "stompS pac: %s\n", sendingFrame );
 
@@ -300,7 +313,7 @@ bool stompS(uint8_t *buff, size_t buffLen) {
 
         // if (esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY) == 0) {  esp_websocket_client_send_bin
 
-        if (esp_websocket_client_send_bin(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY) == 0) {  
+        if (esp_websocket_client_send_bin(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY) == 0) { 
 
 
             if (networkStatus > WIFI_CONNECTED) networkStatus = WSS_CONNECTED;
@@ -622,9 +635,16 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
             }else{
 
 
-                ESP_LOGW(TAG, "Received:  %.*s", data->data_len, (char *)data->data_ptr);
-                memset(data->data_ptr,0,data->data_len);
+                // ESP_LOGW(TAG, "Received:  %.*s", data->data_len, (char *)data->data_ptr);
 
+                for(uint16_t i=0; i< data->data_len;i++){
+
+                    printf("%d ",data->data_ptr[i]);
+
+                }
+
+                process_data((char *)data->data_ptr, data->data_len);
+                memset(data->data_ptr,0,data->data_len);
 
             }
             
@@ -714,6 +734,45 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         break;
     }
 }
+
+void process_data(char* data, uint32_t len) {
+    
+    // Find the start of "DATA:"
+    char* d_start = strstr(data, "DATA:");
+    if (d_start) {
+        // Move the pointer to the actual data after "DATA:"
+        d_start += strlen("DATA:");
+
+        // Find the end marker ("\\n\\n\\u0000") or process till the end if no marker
+        char* end_pos = strstr(d_start, "\\n\\n\\u0000");
+
+        // If no end marker is found, set end_pos to the end of the buffer
+        if (end_pos == NULL) {
+            end_pos = data + len;
+        }
+
+        // Print the data between d_start and end_pos in decimal format
+        printf("\nExtracted Data (as decimal values): ");
+        for (char* p = d_start; p < end_pos; p++) {
+            printf("%d ", *p); // Print each byte as a decimal number
+        }
+
+        printf("\n");
+
+        // Clear the buffer after processing
+        memset(data, 0, len);
+    } else {
+        printf("No 'DATA:' found in the buffer\n");
+    }
+}
+
+
+
+
+
+
+
+
 void stomp_client_handle_message( const char *message) {
 
     // ESP_LOGI(TAGSTOMP, "Received STOMP message:\n%s", message);

@@ -94,7 +94,7 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
         ESP_LOGE(TAG, "screen initialize failed");
     }
 
-    g_lcd.get_info(&g_lcd_info);
+    // g_lcd.get_info(&g_lcd_info);
     // ESP_LOGI(TAG, "Screen name:%s | width:%d | height:%d", g_lcd_info.name, g_lcd_info.width, g_lcd_info.height);
 
     app_lcd_set_color(0x000000);

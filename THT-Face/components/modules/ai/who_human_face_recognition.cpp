@@ -39,6 +39,7 @@ char personName[20];
 uint16_t personId;
 
 
+
 //---------------time flag--------------------
 extern volatile uint8_t sleepEnable;
 extern TickType_t sleepTimeOut; 
@@ -104,7 +105,7 @@ static void rgb_print(camera_fb_t *fb, uint32_t color, const char *str)
 
     // fillRoundedRect(fb, 50, 50, 100, 150, 20, 0x07E0);  // Draws a green rounded rectangle
 
-    fillRoundedRect(fb, (fb->width - (strlen(str) * 14)) / 2 -5, 200-2, (strlen(str) * 14)+10 , 26, 3, color);  // Draws a filled rounded rectangle
+    fillRoundedRect(fb, (fb->width - (strlen(str) * 14)) / 2 -6, 200-3, (strlen(str) * 14)+12 , 28, 3, color);  // Draws a filled rounded rectangle
 
     fb_gfx_print(fb, (fb->width - (strlen(str) * 14)) / 2, 200, 0xffff, str);// edited
 
@@ -138,7 +139,8 @@ static int rgb_printf(camera_fb_t *fb, uint32_t color, const char *format, ...)
     }
     return len;
 }
-bool copy_rectangle(const camera_fb_t *src, imageData_t **dst, int x_start, int x_end, int y_start, int y_end) {
+
+bool copy_rectangle(const camera_fb_t *src, imageData_t **dst, int16_t x_start, int16_t x_end, int16_t y_start, int16_t y_end) {
     // Validate rectangle dimensions
     if (x_start >= x_end || y_start >= y_end) {
         printf("Invalid rectangle dimensions\n");
@@ -153,15 +155,11 @@ bool copy_rectangle(const camera_fb_t *src, imageData_t **dst, int x_start, int 
     }
 
     // Calculate rectangle dimensions
-    int rect_width = x_end - x_start;
-    int rect_height = y_end - y_start;
-    int bytes_per_pixel = 2; // Assuming RGB565 format
+    uint8_t rect_width = x_end - x_start;
+    uint8_t rect_height = y_end - y_start;
 
     (*dst)->width = rect_width;
     (*dst)->height = rect_height;
-
-    // (*dst)->width = rect_height;
-    // (*dst)->height =rect_width;
 
 
 
@@ -185,10 +183,10 @@ bool copy_rectangle(const camera_fb_t *src, imageData_t **dst, int x_start, int 
     }
 
     // Copy the rectangle area from the source to the destination
-    for (int y = y_start; y < y_end; y++) {
-        for (int x = x_start; x < x_end; x++) {
-            int src_index = (y * src->width + x) * bytes_per_pixel;
-            int dst_index = ((y - y_start) * rect_width + (x - x_start)) * bytes_per_pixel;
+    for (int16_t y = y_start; y < y_end; y++) {
+        for (int16_t x = x_start; x < x_end; x++) {
+            uint32_t src_index = (y * src->width + x) * bytes_per_pixel;
+            uint32_t dst_index = ((y - y_start) * rect_width + (x - x_start)) * bytes_per_pixel;
             
             // Perform the copy safely
             (*dst)->buf[dst_index] = src->buf[src_index];

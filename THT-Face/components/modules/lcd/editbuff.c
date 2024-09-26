@@ -85,7 +85,6 @@ void editDisplayBuff(camera_fb_t **buff){
         }else 
         {
 
-                       
             if(networkStatus==STOMP_CONNECTED && key_state== KEY_IDLE ){
                 
                 // display_faces( *buff);//face display at the uploading time
@@ -408,10 +407,10 @@ void writeSn(camera_fb_t *buff ,uint64_t id){
 
 void writedateTime(camera_fb_t *buff ,time_library_time_t current_time,uint8_t clockType){
 
-//2024-08-10 3.47 PM
+//2024-08-10 03.07 PM
 
     char tempFrame[30] ;
-    snprintf(tempFrame, sizeof(tempFrame), "%d-%d-%d   %d.%d %s",current_time.year,current_time.month,current_time.day, 
+    snprintf(tempFrame, sizeof(tempFrame), "%d-%02d-%02d   %02d.%02d %s",current_time.year,current_time.month,current_time.day, 
     current_time.hour, current_time.minute, clockType==1 ? "PM" : clockType==2?"AM" :" ");
     // printf("\nclock type %d",clockType);
     WriteString(1,4,5,tempFrame, 0xffff ,buff); 

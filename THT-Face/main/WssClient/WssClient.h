@@ -43,7 +43,7 @@ typedef struct {
 
 esp_websocket_client_handle_t client;
 
-const char echo_org_ssl_ca_cert[]  = \
+const DATA_FLASH char echo_org_ssl_ca_cert[]  = \
 "-----BEGIN CERTIFICATE-----\n" \
 "MIIFBzCCA++gAwIBAgIRALIM7VUuMaC/NDp1KHQ76aswDQYJKoZIhvcNAQELBQAw\n" \
 "ezELMAkGA1UEBhMCR0IxGzAZBgNVBAgMEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4G\n" \
@@ -86,10 +86,12 @@ extern void stomp_client_connect(void);
 void stomp_client_subscribe(char* topic);
 // bool stompSend(char * buff, char* topic);
 void stomeAck(const char * message);
+
 void stomp_client_handle_message( const char *message);
 void stomp_client_int( stompInfo_cfg_t stompSetup );
 void stompAppStart(void);
 
+void process_data(char* data, uint32_t len) ;
 extern void dataHandele(const char *rx_buffer);
 extern bool stompSend(char * buff, char* topic);
 

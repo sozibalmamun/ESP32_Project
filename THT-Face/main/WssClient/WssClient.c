@@ -178,6 +178,7 @@ bool stompSend(char *buff, char* topic) {
 //     uint16_t currentIndex = 0;
 //     uint16_t chunkNo = 0;
 
+
 //     while (currentIndex < strlen(hexString)) {
 //         size_t chunkLen = MIN(IMAGE_CHANK_SIZE, strlen(hexString) - currentIndex);
 //         char* chunk = (char*)heap_caps_malloc(chunkLen + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
@@ -365,8 +366,17 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
             return false;
         }
         memset(sentFrame, 0, sentFrameLen + 1);
-        snprintf(sentFrame, sentFrameLen, "%d %d ", id, chunkNo + 1);
-        memcpy(&sentFrame[strlen(sentFrame)], chunk, chunkLen);  // Copy binary chunk directly
+
+        // snprintf(sentFrame, sentFrameLen, "%d %d %s", id, chunkNo + 1, chunk); formet
+//--------------------binary
+        sentFrame=id;
+        memcpy(&sentFrame[strlen(sentFrame)], chunkNo + 1, 1);
+        memcpy(&sentFrame[strlen(sentFrame)], chunk , chunkLen);
+//--------------------
+
+
+        // snprintf(sentFrame, sentFrameLen, "%d %d ", id, chunkNo + 1);
+        // memcpy(&sentFrame[strlen(sentFrame)], chunk, chunkLen);  // Copy binary chunk directly
 
         printf("Chunk No: %d\n", chunkNo + 1);  // Chunk number logging
 

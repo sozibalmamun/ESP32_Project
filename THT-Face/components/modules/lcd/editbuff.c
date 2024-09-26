@@ -8,7 +8,7 @@
 
 
 
-volatile uint8_t sleepEnable=0;
+volatile bool sleepEnable=0;
 volatile TickType_t sleepTimeOut=0; 
 
 

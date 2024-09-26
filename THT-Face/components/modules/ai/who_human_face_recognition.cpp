@@ -41,7 +41,7 @@ uint16_t personId;
 
 
 //---------------time flag--------------------
-extern volatile uint8_t sleepEnable;
+extern volatile bool sleepEnable;
 extern TickType_t sleepTimeOut; 
 TickType_t TimeOut,faceDetectTimeOut;
 TickType_t enrolTimeOut;
@@ -205,7 +205,7 @@ static void task_process_handler(void *arg)
 
     camera_fb_t *frame = NULL;
     camera_fb_t *moveDetection = NULL;
-
+    bool motion =false;
 
 
     HumanFaceDetectMSR01 detector(0.3F, 0.3F, 10, 0.3F);
@@ -260,6 +260,9 @@ static void task_process_handler(void *arg)
                     std::list<dl::detect::result_t> &detect_results = detector2.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_candidates);
 
 //------------------------motion detection -----------------------------
+
+                if (detect_results.size() != 1){
+
                     uint32_t moving_point_number = dl::image::get_moving_point_number((uint16_t *)frame->buf, (uint16_t *)moveDetection->buf, frame->height, frame->width, 8, 15);
                     if (moving_point_number > 50)
                     {
@@ -267,8 +270,10 @@ static void task_process_handler(void *arg)
                         // ESP_LOGE(TAG, "Something moved!");
                         sleepTimeOut = xTaskGetTickCount();
                         sleepEnable=false;
+                        motion =true;
 
                     }
+                }
 // end---------------------------------------------------------------------
 
 
@@ -305,7 +310,7 @@ static void task_process_handler(void *arg)
 
                             } 
                             rgb_printf(frame, RGB565_MASK_BLUE, "Start Enroling");// debug due to display name
-                            sleepTimeOut = xTaskGetTickCount();
+                            sleepTimeOut = TimeOut;
                             sleepEnable=false;// sleep out when enroll event is genareted
 
                         }
@@ -315,19 +320,26 @@ static void task_process_handler(void *arg)
 
                         if (detect_results.size() == 1){
 
+
                             if(xTaskGetTickCount()>faceDetectTimeOut+TIMEOUT_150_MS){ 
                                 
-                                faceDetectTimeOut= xTaskGetTickCount();
+                                // faceDetectTimeOut= xTaskGetTickCount();
                                 is_detected = true;
 
                                 if(_gEvent!=ENROLING){
                                     _gEvent=RECOGNIZE;// enroling is the 1st priority
-                                    sleepTimeOut = xTaskGetTickCount();
-                                    sleepEnable=false;
+
+
+
 
                                 }
 
-                            }
+                            }else {
+
+                                sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
+                                sleepEnable=false;
+
+                            }                                  
                                     
                         }else{ faceDetectTimeOut= xTaskGetTickCount(); }
 
@@ -626,7 +638,18 @@ static void task_process_handler(void *arg)
                         draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_results);
                     }
 
-                }
+                }// motion end
+
+
+
+
+
+
+
+
+
+
+                
             }
 
             if (xQueueFrameO)
@@ -634,7 +657,7 @@ static void task_process_handler(void *arg)
 
                 xQueueSend(xQueueFrameO, &frame, portMAX_DELAY);
                 //------------------------motion detection -----------------------------
-                xQueueSend(xQueueFrameO, &moveDetection, portMAX_DELAY);
+                if(!is_detected)xQueueSend(xQueueFrameO, &moveDetection, portMAX_DELAY);
 
 
             }
@@ -642,14 +665,14 @@ static void task_process_handler(void *arg)
             {
                 esp_camera_fb_return(frame);
                 //------------------------motion detection -----------------------------
-                esp_camera_fb_return(moveDetection);
+                if(!is_detected)esp_camera_fb_return(moveDetection);
 
             }
             else
             {
                 free(frame);
                 //------------------------motion detection -----------------------------
-                free(moveDetection);
+                if(!is_detected)free(moveDetection);
 
             }
 
@@ -657,7 +680,13 @@ static void task_process_handler(void *arg)
             {
                 xQueueSend(xQueueResult, &recognize_result, portMAX_DELAY);
 
+
+            }else{
+
+                xQueueSend(xQueueResult, &motion, portMAX_DELAY);
+
             }
+
         }
     }
 }

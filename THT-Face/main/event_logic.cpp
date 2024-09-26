@@ -18,7 +18,7 @@ key_state_t key_state ;
 
 static recognizer_state_t recognizer_state;
 
-extern volatile uint8_t sleepEnable;
+extern volatile bool sleepEnable;
 extern volatile TickType_t sleepTimeOut; 
 // extern uint8_t volatile eventState;
 

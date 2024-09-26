@@ -68,8 +68,6 @@ void process_command(const char* buffer) {
                 // memset(tcpBuffer, 0, strlen(tcpBuffer));
 
                 key_state=KEY_SHORT_PRESS;
-                sleepTimeOut = xTaskGetTickCount();
-                sleepEnable=false;// sleep out when enroll event is genareted
 
                 return;
 

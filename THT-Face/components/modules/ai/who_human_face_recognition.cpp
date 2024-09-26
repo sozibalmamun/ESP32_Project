@@ -204,6 +204,8 @@ static void task_process_handler(void *arg)
 {
 
     camera_fb_t *frame = NULL;
+    camera_fb_t *moveDetection = NULL;
+
 
 
     HumanFaceDetectMSR01 detector(0.3F, 0.3F, 10, 0.3F);
@@ -232,377 +234,398 @@ static void task_process_handler(void *arg)
         {
             bool is_detected = false;
 
-            if (xQueueReceive(xQueueFrameI, &frame, portMAX_DELAY))
+            if (xQueueReceive(xQueueFrameI, &(frame), portMAX_DELAY))
             {
 
-
-                imageData_t *enrolFrame = NULL;
-
-                if(_gEvent==SYNCING){
+                if (xQueueReceive(xQueueFrameI, &(moveDetection), portMAX_DELAY))// motion detection 
+                {  
 
 
-                    if (!readFace(frame, &enrolFrame)) {//frame
-                        CmdEvent = SYNC_ERROR;
-                        key_state= KEY_IDLE;
-                        vTaskDelay(10);                        // ESP_LOGW("sync", "directory emty");
-                    }
-                    // ESP_LOGI("display_faces", "Person ID: %d, Name: %s, Image w: %d h: %d", enrolFrame->id, enrolFrame->Name, enrolFrame->width, enrolFrame->height);
-                }
+                    imageData_t *enrolFrame = NULL;
 
-                
-
-                std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3});
-                std::list<dl::detect::result_t> &detect_results = detector2.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_candidates);
+                    if(_gEvent==SYNCING){
 
 
-                if(_gEvent==DELETE){// deleting person 
-
-                    vTaskDelay(10);
-                    if(personId!=0){ 
-
-                        is_detected= true;
-                        key_state= KEY_IDLE;
-                        ESP_LOGW("DELETE", "ID: %d",personId );
-                    }
-                    
-                }else if(_gEvent==ENROLING){
-
-                    if (detect_results.size() == 1){
-
-                        if(xTaskGetTickCount()>TimeOut+TIMEOUT_3000_MS){
-
-                            is_detected = true;
-                            _gEvent=ENROLL;
+                        if (!readFace(frame, &enrolFrame)) {//frame
+                            CmdEvent = SYNC_ERROR;
                             key_state= KEY_IDLE;
+                            vTaskDelay(10);                        // ESP_LOGW("sync", "directory emty");
+                        }
+                        // ESP_LOGI("display_faces", "Person ID: %d, Name: %s, Image w: %d h: %d", enrolFrame->id, enrolFrame->Name, enrolFrame->width, enrolFrame->height);
+                    }
+
+                    
+
+                    std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3});
+                    std::list<dl::detect::result_t> &detect_results = detector2.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_candidates);
+
+//------------------------motion detection -----------------------------
+                    uint32_t moving_point_number = dl::image::get_moving_point_number((uint16_t *)frame->buf, (uint16_t *)moveDetection->buf, frame->height, frame->width, 8, 15);
+                    if (moving_point_number > 50)
+                    {
+
+                        // ESP_LOGE(TAG, "Something moved!");
+                        sleepTimeOut = xTaskGetTickCount();
+                        sleepEnable=false;
+
+                    }
+// end---------------------------------------------------------------------
+
+
+
+
+                    if(_gEvent==DELETE){// deleting person 
+
+                        vTaskDelay(10);
+                        if(personId!=0){ 
+
+                            is_detected= true;
+                            key_state= KEY_IDLE;
+                            ESP_LOGW("DELETE", "ID: %d",personId );
+                        }
+                        
+                    }else if(_gEvent==ENROLING){
+
+                        if (detect_results.size() == 1){
+
+                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_3000_MS){
+
+                                is_detected = true;
+                                _gEvent=ENROLL;
+                                key_state= KEY_IDLE;
+
+                            }
+                        }else {
+
+                            TimeOut= xTaskGetTickCount();
+                            if (xTaskGetTickCount()-enrolTimeOut> TIMEOUT_15_S ){
+                                CmdEvent = ENROLMENT_TIMEOUT;
+                                key_state= KEY_IDLE;
+                                vTaskDelay(10);
+
+                            } 
+                            rgb_printf(frame, RGB565_MASK_BLUE, "Start Enroling");// debug due to display name
+                            sleepTimeOut = xTaskGetTickCount();
+                            sleepEnable=false;// sleep out when enroll event is genareted
 
                         }
-                    }else {
 
-                        TimeOut= xTaskGetTickCount();
-                        if (xTaskGetTickCount()-enrolTimeOut> TIMEOUT_15_S ){
-                            CmdEvent = ENROLMENT_TIMEOUT;
+                    }else if(_gEvent==DETECT){
+
+
+                        if (detect_results.size() == 1){
+
+                            if(xTaskGetTickCount()>faceDetectTimeOut+TIMEOUT_150_MS){ 
+                                
+                                faceDetectTimeOut= xTaskGetTickCount();
+                                is_detected = true;
+
+                                if(_gEvent!=ENROLING){
+                                    _gEvent=RECOGNIZE;// enroling is the 1st priority
+                                    sleepTimeOut = xTaskGetTickCount();
+                                    sleepEnable=false;
+
+                                }
+
+                            }
+                                    
+                        }else{ faceDetectTimeOut= xTaskGetTickCount(); }
+
+                    }else if(_gEvent==SYNCING){
+
+                        is_detected = true;
+
+
+                        if (xTaskGetTickCount()-enrolTimeOut> TIMEOUT_5000_MS ){
+                            CmdEvent = SYNC_ERROR;
                             key_state= KEY_IDLE;
                             vTaskDelay(10);
 
                         } 
-                        rgb_printf(frame, RGB565_MASK_BLUE, "Start Enroling");// debug due to display name
 
-                    }
+                        if (detect_results.size() == 1){
 
-                }else if(_gEvent==DETECT){
+                            if(xTaskGetTickCount()>faceDetectTimeOut+TIMEOUT_150_MS){ 
 
-
-                    if (detect_results.size() == 1){
-
-                        if(xTaskGetTickCount()>faceDetectTimeOut+TIMEOUT_150_MS){ 
-                              
-                            faceDetectTimeOut= xTaskGetTickCount();
-                            is_detected = true;
-
-                            if(_gEvent!=ENROLING){
-                                _gEvent=RECOGNIZE;// enroling is the 1st priority
-
+                                faceDetectTimeOut= xTaskGetTickCount();
+                                is_detected = true;
+                                _gEvent=SYNC;
+                                key_state= KEY_IDLE;
+                                ESP_LOGE("sync", "In syncing");
                             }
 
+                        }else{
+
+                            if (enrolFrame != NULL) {
+                                if (enrolFrame->buf != NULL) {
+                                    heap_caps_free(enrolFrame->buf);  // Free the image data buffer
+                                }
+                                if (enrolFrame->Name != NULL) {
+                                    free(enrolFrame->Name);  // Free the dynamically allocated name string
+                                }
+                                free(enrolFrame);  // Finally, free the structure itself
+                                enrolFrame = NULL; // Set the pointer to NULL to avoid dangling references
+                            } 
                         }
+
+                    }else if(_gEvent==DUMP){
+
+
+                        ESP_LOGW("Enrolled", "ID: %d",recognizer->get_enrolled_id_num());
                                 
-                    }else{ faceDetectTimeOut= xTaskGetTickCount(); }
-
-                }else if(_gEvent==SYNCING){
-
-                    is_detected = true;
-
-
-                    if (xTaskGetTickCount()-enrolTimeOut> TIMEOUT_5000_MS ){
-                        CmdEvent = SYNC_ERROR;
+                                
+                                
                         key_state= KEY_IDLE;
-                        vTaskDelay(10);
 
-                    } 
-
-                    if (detect_results.size() == 1){
-
-                        if(xTaskGetTickCount()>faceDetectTimeOut+TIMEOUT_150_MS){ 
-
-                            faceDetectTimeOut= xTaskGetTickCount();
-                            is_detected = true;
-                            _gEvent=SYNC;
-                            key_state= KEY_IDLE;
-                            ESP_LOGE("sync", "In syncing");
-                        }
-
-                    }else{
-
-                        if (enrolFrame != NULL) {
-                            if (enrolFrame->buf != NULL) {
-                                heap_caps_free(enrolFrame->buf);  // Free the image data buffer
-                            }
-                            if (enrolFrame->Name != NULL) {
-                                free(enrolFrame->Name);  // Free the dynamically allocated name string
-                            }
-                            free(enrolFrame);  // Finally, free the structure itself
-                            enrolFrame = NULL; // Set the pointer to NULL to avoid dangling references
-                        } 
                     }
-
-                }else if(_gEvent==DUMP){
-
-
-                    ESP_LOGW("Enrolled", "ID: %d",recognizer->get_enrolled_id_num());
-                            
-                            
-                            
-                    key_state= KEY_IDLE;
-
-                }
-                
-                if (is_detected)
-                {
-                    switch (_gEvent)
+                    
+                    if (is_detected)
                     {
-                    case ENROLL:{
-                        CPUBgflag=1;
-                        // vTaskDelay(10);
-                        // duplicate 
-                        recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
-
-                        // print_detection_result(detect_results);
-                        if (recognize_result.id > 0){
-                        //rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");// debug due to display name
-                        CmdEvent=DUPLICATE;// 3 FOR DUPLICATE
-                        frame_show_state = SHOW_DUPLICATE_ENROLL;
-                        break;
-                        }
-                        // duplicat end
-
-
-                        //----------------------------working with image--------------------------
-
-                        // imageData_t *cropFrame = NULL;
-
-                        print_detection_result(detect_candidates);
-                        draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
-                        if(!copy_rectangle(frame,&enrolFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]))
+                        switch (_gEvent)
                         {
-                            CPUBgflag=0;
-                            frame_show_state = SHOW_ALINE;
-                            heap_caps_free(enrolFrame);
-                            break;
-                        }
-                        //--------------------------------------------------------------------------
-
-                        // recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
-                        recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, personName, true);// due to add name
-                        // ESP_LOGW("ENROLL", "ID %d is enrolled", recognizer->get_enrolled_ids().back().id);
-
-                        //-------------------------pass value to struc via task----------------------------
-                       // printf("\nCopy Image Info  L:%3d w:%3d h:%3d", enrolFrame->len, enrolFrame->width, enrolFrame->height);
-                
-                        // recognizer->set_ids( 10, true);              
-
-
-                        enrolFrame->id = recognizer->get_enrolled_ids().back().id;
-                        enrolFrame->Name = personName;
-
-
-                        if(detectionFaceProcesingTaskHandler==NULL){
-
-                            xQueueCloud = xQueueCreate(3, sizeof(int *));
-                            facedataHandle(xQueueCloud);// core 0
-
-                        }
-
-
-                        if (xQueueCloud) {
-                            // printf("Sending enrolFrame to xQueueCloud...\n");
-                            xQueueSend(xQueueCloud, &enrolFrame, portMAX_DELAY);
-
-                        } else {
-                            // printf("xQueueCloud is NULL, cannot send enrolFrame.\n");
-                        }
-
-                        //---------------------------------------------------------------------------------
-
-                        frame_show_state = SHOW_STATE_ENROLL;
-                        break;
-                    }
-                    case RECOGNIZE:{
-
-                        recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
-                        // print_detection_result(detect_results);
-                        if (recognize_result.id > 0){
-
+                        case ENROLL:{
                             CPUBgflag=1;
-                            // ESP_LOGI("RECOGNIZE", "Similarity: %f, Match Name: %s", recognize_result.similarity, recognize_result.name.c_str());
+                            // vTaskDelay(10);
+                            // duplicate 
+                            recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
 
-                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_5000_MS)StopMultipleAttaneId=0;
-
-                            if(StopMultipleAttaneId!=recognize_result.id){
-
-                                StopMultipleAttaneId=recognize_result.id;
-                                //--------------------------------here save the log file here----------------------------------
-                                time_library_time_t current_time;
-                                get_time(&current_time, 0);
-                                uint8_t tempTimeFrame[6];
-                                memset(tempTimeFrame,0,sizeof(tempTimeFrame));
-                                tempTimeFrame[0] = current_time.year-2000;
-                                tempTimeFrame[1] = current_time.month;
-                                tempTimeFrame[2] = current_time.day;
-                                tempTimeFrame[3] = current_time.hour;
-                                tempTimeFrame[4] = current_time.minute;
-                                tempTimeFrame[5] = current_time.second;
-                                write_log_attendance(recognize_result.id, tempTimeFrame);
-                                TimeOut=xTaskGetTickCount();
-
-                                //----------------------------------------------------------------------------------------------
+                            // print_detection_result(detect_results);
+                            if (recognize_result.id > 0){
+                            //rgb_printf(frame, RGB565_MASK_RED, "Duplicate Face%s","!");// debug due to display name
+                            CmdEvent=DUPLICATE;// 3 FOR DUPLICATE
+                            frame_show_state = SHOW_DUPLICATE_ENROLL;
+                            break;
                             }
-                            CPUBgflag=0;
+                            // duplicat end
 
+
+                            //----------------------------working with image--------------------------
+
+                            // imageData_t *cropFrame = NULL;
+
+                            print_detection_result(detect_candidates);
+                            draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
+                            if(!copy_rectangle(frame,&enrolFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]))
+                            {
+                                CPUBgflag=0;
+                                frame_show_state = SHOW_ALINE;
+                                heap_caps_free(enrolFrame);
+                                break;
+                            }
+                            //--------------------------------------------------------------------------
+
+                            // recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
+                            recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, personName, true);// due to add name
+                            // ESP_LOGW("ENROLL", "ID %d is enrolled", recognizer->get_enrolled_ids().back().id);
+
+                            //-------------------------pass value to struc via task----------------------------
+                        // printf("\nCopy Image Info  L:%3d w:%3d h:%3d", enrolFrame->len, enrolFrame->width, enrolFrame->height);
+                    
+                            // recognizer->set_ids( 10, true);              
+
+
+                            enrolFrame->id = recognizer->get_enrolled_ids().back().id;
+                            enrolFrame->Name = personName;
+
+
+                            if(detectionFaceProcesingTaskHandler==NULL){
+
+                                xQueueCloud = xQueueCreate(3, sizeof(int *));
+                                facedataHandle(xQueueCloud);// core 0
+
+                            }
+
+
+                            if (xQueueCloud) {
+                                // printf("Sending enrolFrame to xQueueCloud...\n");
+                                xQueueSend(xQueueCloud, &enrolFrame, portMAX_DELAY);
+
+                            } else {
+                                // printf("xQueueCloud is NULL, cannot send enrolFrame.\n");
+                            }
+
+                            //---------------------------------------------------------------------------------
+
+                            frame_show_state = SHOW_STATE_ENROLL;
+                            break;
                         }
-                        // ESP_LOGE("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
-                        frame_show_state = SHOW_STATE_RECOGNIZE;
-                        break;
+                        case RECOGNIZE:{
+
+                            recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
+                            // print_detection_result(detect_results);
+                            if (recognize_result.id > 0){
+
+                                CPUBgflag=1;
+                                // ESP_LOGI("RECOGNIZE", "Similarity: %f, Match Name: %s", recognize_result.similarity, recognize_result.name.c_str());
+
+                                if(xTaskGetTickCount()>TimeOut+TIMEOUT_5000_MS)StopMultipleAttaneId=0;
+
+                                if(StopMultipleAttaneId!=recognize_result.id){
+
+                                    StopMultipleAttaneId=recognize_result.id;
+                                    //--------------------------------here save the log file here----------------------------------
+                                    time_library_time_t current_time;
+                                    get_time(&current_time, 0);
+                                    uint8_t tempTimeFrame[6];
+                                    memset(tempTimeFrame,0,sizeof(tempTimeFrame));
+                                    tempTimeFrame[0] = current_time.year-2000;
+                                    tempTimeFrame[1] = current_time.month;
+                                    tempTimeFrame[2] = current_time.day;
+                                    tempTimeFrame[3] = current_time.hour;
+                                    tempTimeFrame[4] = current_time.minute;
+                                    tempTimeFrame[5] = current_time.second;
+                                    write_log_attendance(recognize_result.id, tempTimeFrame);
+                                    TimeOut=xTaskGetTickCount();
+
+                                    //----------------------------------------------------------------------------------------------
+                                }
+                                CPUBgflag=0;
+
+                            }
+                            // ESP_LOGE("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
+                            frame_show_state = SHOW_STATE_RECOGNIZE;
+                            break;
+                        }
+                        case DELETE:
+                            // vTaskDelay(10);
+                            // recognizer->delete_id(true);
+
+                            if(recognizer->delete_id(personId,true)== -1 ){// invalide id if "-1"// custom id delete logic
+
+                                personId=0;// deafalt for test
+                                // ESP_LOGE("DELETE", "Invalided ID: %d", personId);
+                                CmdEvent = ID_INVALID; // delete done 
+
+                                break;
+
+                            }else{
+
+                                personId=0;// deafalt for test
+                                CmdEvent=DELETED;// delete done
+                                ESP_LOGE("DELETE", "Person left %s", personName);
+
+                            }
+                            // ESP_LOGE("DELETE", "% d IDs left", recognizer->get_enrolled_id_num());
+
+                            frame_show_state = SHOW_STATE_DELETE;
+                            break;
+
+                        case SYNC: {
+                            // ESP_LOGE("sync", "end syncing");
+                            recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
+
+                            if (recognize_result.id > 0){
+                            CmdEvent=SYNC_DUPLICATE;// 3 FOR DUPLICATE
+                            frame_show_state = SHOW_DUPLICATE_SYNC;
+                            break;
+                            }
+
+                            recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, enrolFrame->Name, true);// due to add name
+
+                            memset(personName, 0, sizeof(personName));
+                            strncpy(personName, enrolFrame->Name, sizeof(personName) - 1);
+                            personName[sizeof(personName) - 1] = '\0';
+
+                            if (enrolFrame != NULL) {
+                                if (enrolFrame->buf != NULL) {
+                                    heap_caps_free(enrolFrame->buf);  // Free the image data buffer
+                                }
+                                if (enrolFrame->Name != NULL) {
+                                    free(enrolFrame->Name);  // Free the dynamically allocated name string
+                                }
+                                free(enrolFrame);  // Finally, free the structure itself
+                                enrolFrame = NULL; // Set the pointer to NULL to avoid dangling references
+                            }
+
+                            frame_show_state = SHOW_STATE_SYNC;
+
+                            break;
+                        }
+
+                        default:
+                            break;
+                        }
                     }
-                    case DELETE:
-                        // vTaskDelay(10);
-                        // recognizer->delete_id(true);
 
-                        if(recognizer->delete_id(personId,true)== -1 ){// invalide id if "-1"// custom id delete logic
+                    if (frame_show_state != SHOW_STATE_IDLE)
+                    {
+                        static int frame_count = 0;
+                        switch (frame_show_state)
+                        {
+                        case SHOW_STATE_DELETE:
 
-                            personId=0;// deafalt for test
-                            // ESP_LOGE("DELETE", "Invalided ID: %d", personId);
-                            CmdEvent = ID_INVALID; // delete done 
+                            ESP_LOGI(TAG,"Deleted");
+                            rgb_printf(frame, RGB565_MASK_RED, "Deleted %s", personName);
 
                             break;
 
-                        }else{
-
-                            personId=0;// deafalt for test
-                            CmdEvent=DELETED;// delete done
-                            ESP_LOGE("DELETE", "Person left %s", personName);
-
-                        }
-                        // ESP_LOGE("DELETE", "% d IDs left", recognizer->get_enrolled_id_num());
-
-                        frame_show_state = SHOW_STATE_DELETE;
-                        break;
-
-                    case SYNC: {
-                        // ESP_LOGE("sync", "end syncing");
-                        recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
-
-                        if (recognize_result.id > 0){
-                        CmdEvent=SYNC_DUPLICATE;// 3 FOR DUPLICATE
-                        frame_show_state = SHOW_DUPLICATE_SYNC;
-                        break;
-                        }
-
-                        recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, enrolFrame->Name, true);// due to add name
-
-                        memset(personName, 0, sizeof(personName));
-                        strncpy(personName, enrolFrame->Name, sizeof(personName) - 1);
-                        personName[sizeof(personName) - 1] = '\0';
-
-                        if (enrolFrame != NULL) {
-                            if (enrolFrame->buf != NULL) {
-                                heap_caps_free(enrolFrame->buf);  // Free the image data buffer
+                        case SHOW_STATE_RECOGNIZE:
+                            if (recognize_result.id > 0){
+                                // rgb_printf(frame, RGB565_MASK_GREEN, "ID %d", recognize_result.id);
+                                rgb_printf(frame, RGB565_MASK_GREEN, "%s",recognize_result.name.c_str());// debug due to display name
+                            }else{
+                                rgb_print(frame, RGB565_MASK_RED, "Unregister");
+                                ESP_LOGI(TAG,"Not Recognize");
                             }
-                            if (enrolFrame->Name != NULL) {
-                                free(enrolFrame->Name);  // Free the dynamically allocated name string
-                            }
-                            free(enrolFrame);  // Finally, free the structure itself
-                            enrolFrame = NULL; // Set the pointer to NULL to avoid dangling references
+                            break;
+
+                        case SHOW_STATE_ENROLL:{
+                            CmdEvent=ENROLED;// 2 means enrol done
+
+                            rgb_printf(frame, RGB565_MASK_BLUE, "Welcome %s", personName); 
+                            personId=recognizer->get_enrolled_ids().back().id;
+                            // rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id);
+                            break;
+                        }
+                        case SHOW_DUPLICATE_ENROLL:{
+
+                            rgb_printf(frame, RGB565_MASK_RED, "Duplicate Enrol%s","!"); 
+                            break;
+                        }
+                        case SHOW_DUPLICATE_SYNC:
+
+                            rgb_printf(frame, RGB565_MASK_RED, "Duplicate Sync%s","!");
+
+                            break;
+                        case SHOW_STATE_SYNC:
+
+                            CmdEvent=SYNC_DONE;// 2 means enrol done
+                            rgb_printf(frame, RGB565_MASK_BLUE, "Welcome %s", personName); 
+                            personId=recognizer->get_enrolled_ids().back().id;
+
+
+                            break;
+                        case SHOW_ALINE:
+
+                            enrolTimeOut= xTaskGetTickCount();// incrise 15000ms enrolment time
+                            rgb_printf(frame, RGB565_MASK_RED, "Aline Face");// at invalid face
+                            key_state= KEY_SHORT_PRESS;// back to enroling
+
+                            break;
+
+                        default:
+                            break;
                         }
 
-                        frame_show_state = SHOW_STATE_SYNC;
-
-                        break;
-                    }
-
-                    default:
-                        break;
-                    }
-                }
-
-                if (frame_show_state != SHOW_STATE_IDLE)
-                {
-                    static int frame_count = 0;
-                    switch (frame_show_state)
-                    {
-                    case SHOW_STATE_DELETE:
-
-                        ESP_LOGI(TAG,"Deleted");
-                        rgb_printf(frame, RGB565_MASK_RED, "Deleted %s", personName);
-
-                        break;
-
-                    case SHOW_STATE_RECOGNIZE:
-                        if (recognize_result.id > 0){
-                            // rgb_printf(frame, RGB565_MASK_GREEN, "ID %d", recognize_result.id);
-                            rgb_printf(frame, RGB565_MASK_GREEN, "%s",recognize_result.name.c_str());// debug due to display name
-                        }else{
-                            rgb_print(frame, RGB565_MASK_RED, "Unregister");
-                            ESP_LOGI(TAG,"Not Recognize");
-                        }
-                        break;
-
-                    case SHOW_STATE_ENROLL:{
-                        CmdEvent=ENROLED;// 2 means enrol done
-
-                        rgb_printf(frame, RGB565_MASK_BLUE, "Welcome %s", personName); 
-                        personId=recognizer->get_enrolled_ids().back().id;
-                        // rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id);
-                        break;
-                    }
-                    case SHOW_DUPLICATE_ENROLL:{
-
-                        rgb_printf(frame, RGB565_MASK_RED, "Duplicate Enrol%s","!"); 
-                        break;
-                    }
-                    case SHOW_DUPLICATE_SYNC:
-
-                        rgb_printf(frame, RGB565_MASK_RED, "Duplicate Sync%s","!");
-
-                        break;
-                    case SHOW_STATE_SYNC:
-
-                        CmdEvent=SYNC_DONE;// 2 means enrol done
-                        rgb_printf(frame, RGB565_MASK_BLUE, "Welcome %s", personName); 
-                        personId=recognizer->get_enrolled_ids().back().id;
-
-
-                        break;
-                    case SHOW_ALINE:
-
-                        enrolTimeOut= xTaskGetTickCount();// incrise 15000ms enrolment time
-                        rgb_printf(frame, RGB565_MASK_RED, "Aline Face");// at invalid face
-                        key_state= KEY_SHORT_PRESS;// back to enroling
-
-                        break;
-
-                    default:
-                        break;
-                    }
-
-                    if (++frame_count > FRAME_DELAY_NUM)
-                    {
-                        frame_count = 0;
-                        frame_show_state = SHOW_STATE_IDLE;
-                    }
-                    else if( frame_show_state==SHOW_STATE_RECOGNIZE){
-                        if(frame_count>2)
+                        if (++frame_count > FRAME_DELAY_NUM)
+                        {
                             frame_count = 0;
+                            frame_show_state = SHOW_STATE_IDLE;
+                        }
+                        else if( frame_show_state==SHOW_STATE_RECOGNIZE){
+                            if(frame_count>2)
+                                frame_count = 0;
 
-                        frame_show_state = SHOW_STATE_IDLE;
+                            frame_show_state = SHOW_STATE_IDLE;
+                        }
                     }
-                }
 
-                if (detect_results.size())
-                {
-#if !CONFIG_IDF_TARGET_ESP32S3
-                    // print_detection_result(detect_results);
-#endif
-                    draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_results);
+                    if (detect_results.size())
+                    {
+
+                        draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_results);
+                    }
+
                 }
             }
 
@@ -610,90 +633,35 @@ static void task_process_handler(void *arg)
             {
 
                 xQueueSend(xQueueFrameO, &frame, portMAX_DELAY);
+                //------------------------motion detection -----------------------------
+                xQueueSend(xQueueFrameO, &moveDetection, portMAX_DELAY);
+
+
             }
             else if (gReturnFB)
             {
                 esp_camera_fb_return(frame);
+                //------------------------motion detection -----------------------------
+                esp_camera_fb_return(moveDetection);
+
             }
             else
             {
                 free(frame);
+                //------------------------motion detection -----------------------------
+                free(moveDetection);
+
             }
 
             if (xQueueResult && is_detected)
             {
                 xQueueSend(xQueueResult, &recognize_result, portMAX_DELAY);
+
             }
         }
     }
 }
 
-
-// static void task_process_handler(void *arg)
-// {
-//     camera_fb_t *frame = NULL;
-
-//     HumanFaceDetectMSR01 detector(0.3F, 0.3F, 10, 0.3F);
-//     HumanFaceDetectMNP01 detector2(0.4F, 0.3F, 10);
-
-// #if CONFIG_MFN_V1
-// #if CONFIG_S8
-//     FaceRecognition112V1S8 *recognizer = new FaceRecognition112V1S8();
-// #elif CONFIG_S16
-//     FaceRecognition112V1S16 *recognizer = new FaceRecognition112V1S16();
-// #endif
-// #endif
-//     show_state_t frame_show_state = SHOW_STATE_IDLE;
-//     recognizer_state_t _gEvent;
-//     recognizer->set_partition(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "fr");
-//     int partition_result = recognizer->set_ids_from_flash();
-
-//     while (true)
-//     {
-//         xSemaphoreTake(xMutex, portMAX_DELAY);
-//         _gEvent = gEvent;
-//         gEvent = DETECT;
-//         xSemaphoreGive(xMutex);
-
-//         if (_gEvent)
-//         {
-//             bool is_detected = false;
-
-//             if (xQueueReceive(xQueueFrameI, &frame, portMAX_DELAY))
-//             {
-//                 std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3});
-//                 std::list<dl::detect::result_t> &detect_results = detector2.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_candidates);
-               
-               
-//                 print_detection_result(detect_candidates);
-//                 draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
-//                 // draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_results);
-//                 if (detect_candidates.size() == 1){
-//                     editImage(&frame);
-//                 }
-//             }
-
-//             if (xQueueFrameO)
-//             {
-
-//                 xQueueSend(xQueueFrameO, &frame, portMAX_DELAY);
-//             }
-//             else if (gReturnFB)
-//             {
-//                 esp_camera_fb_return(frame);
-//             }
-//             else
-//             {
-//                 free(frame);
-//             }
-
-//             if (xQueueResult && is_detected)
-//             {
-//                 xQueueSend(xQueueResult, &recognize_result, portMAX_DELAY);
-//             }
-//         }
-//     }
-// }
 
 
 

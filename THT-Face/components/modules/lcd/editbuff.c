@@ -85,11 +85,13 @@ void editDisplayBuff(camera_fb_t **buff){
         }else 
         {
 
-            if(networkStatus==STOMP_CONNECTED && key_state== KEY_IDLE ){
+            // if(networkStatus==STOMP_CONNECTED && key_state== KEY_IDLE ){
+                if(networkStatus==WSS_CONNECTED && key_state== KEY_IDLE ){
+
                 
                 // display_faces( *buff);//face display at the uploading time
 
-                // if(percentage>0){
+                // if(percentage>2){
                 
                 //     char tempFrame[13] ;
                     
@@ -108,9 +110,8 @@ void editDisplayBuff(camera_fb_t **buff){
             
             if(dataAvailable)icnPrint(NETWORK_ICON_POSS_X-13, NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,RED ,*buff);
 
-
-            if(networkStatus==STOMP_CONNECTED){
-
+            // if(networkStatus==STOMP_CONNECTED){//WSS_CONNECTED
+            if(networkStatus==WSS_CONNECTED){//WSS_CONNECTED
                 icnPrint(NETWORK_ICON_POSS_X+14,NETWORK_ICON_POSS_Y+5,7,7 ,&connectedIcon,GREEN,*buff);//+8
             }else{
                 icnPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+6,2,7,&disconnectedIcon,RED,*buff);//+9
@@ -543,7 +544,7 @@ void sleepTimeDate(camera_fb_t *buff, time_library_time_t current_time){
     }
 // date 2024-08-08 day
     char tempFrame[17] ;
-    snprintf(tempFrame, sizeof(tempFrame), "%d-%d-%d  %s",current_time.year,current_time.month,current_time.day,
+    snprintf(tempFrame, sizeof(tempFrame), "%d-%02d-%02d  %s",current_time.year,current_time.month,current_time.day,
     day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
 
     uint16_t len = 160- (pixleLen(2,&tempFrame)/2);//x start poss

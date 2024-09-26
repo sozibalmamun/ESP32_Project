@@ -34,18 +34,8 @@ static QueueHandle_t xQueueEventLogic = NULL;
 static QueueHandle_t xQueueCloud = NULL;
 
 
-
 #define GPIO_BOOT GPIO_NUM_0
 
-
-// void DisplayFreeMemory(char *str)
-// {
-// 	printf("--------------- heap free size PSRAM %s:%d,total size:%d\r\n", str,(int)heap_caps_get_free_size( MALLOC_CAP_SPIRAM ),
-// 	heap_caps_get_total_size(MALLOC_CAP_SPIRAM));
-// 	printf("--------------- heap free size in processor %s:%ld,total size:%d\r\n",str,(long)heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
-// 	heap_caps_get_total_size(MALLOC_CAP_INTERNAL));
-
-// }
 
 extern "C" 
 void app_main()
@@ -80,7 +70,7 @@ void app_main()
 
 
     // Initialize Conectivity----------------------------
-    // DisplayFreeMemory("MemDisplay");
+
     bluFiStart();
     //--------------------------------------------------
 
@@ -88,6 +78,7 @@ void app_main()
     time_library_time_t initial_time = {2024, 1, 1, 9, 3, 0};//     year, month, day, hour, minute, second;
     time_library_init(&initial_time);
     //--------------------------------------------------------------
+
     //-------------------------
     // Initialize and mount FATFS
 
@@ -111,14 +102,10 @@ void app_main()
 
 
         reconnect();
-
-
-
-        // sleepTimeOut = xTaskGetTickCount();
         if(xTaskGetTickCount()-sleepTimeOut>6000 && xTaskGetTickCount()-sleepTimeOut< 6100){
 
-            // sleepEnable=true;
-            // printf("\nsleepEnable");
+            sleepEnable=true;
+            printf("\nsleepEnable");
 
         }
 

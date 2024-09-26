@@ -394,12 +394,6 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
 
 
 
-
-
-
-
-
-
 //--------------------backup
 
 // bool stompSend(char * buff, char* topic){
@@ -633,7 +627,6 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
                 memset(data->data_ptr,0,data->data_len);
 
             }else{
-
 
                 // ESP_LOGW(TAG, "Received:  %.*s", data->data_len, (char *)data->data_ptr);
 

@@ -104,7 +104,7 @@ void app_main()
         reconnect();
         if(xTaskGetTickCount()-sleepTimeOut>6000 && xTaskGetTickCount()-sleepTimeOut< 6100){
 
-            sleepEnable=true;
+            sleepEnable=SLEEP;
             printf("\nsleepEnable");
 
         }

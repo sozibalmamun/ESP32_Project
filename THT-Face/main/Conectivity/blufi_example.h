@@ -6,7 +6,7 @@
 #include "esp_blufi_api.h"
 #include "esp_websocket_client.h"
 
-extern volatile bool sleepEnable;
+extern uint8_t sleepEnable;
 extern TickType_t sleepTimeOut; 
 esp_websocket_client_handle_t client;
 

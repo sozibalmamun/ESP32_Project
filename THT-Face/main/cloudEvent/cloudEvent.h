@@ -24,7 +24,8 @@ extern uint8_t CPUBgflag;
 
 extern const uint32_t crc16_table;
 extern char tcpBuffer; // Adjust MAX_TRANSACTION_SIZE as needed
-
+extern  uint8_t sleepEnable;
+extern TickType_t sleepTimeOut; 
 
 #ifdef __cplusplus
 extern "C" {

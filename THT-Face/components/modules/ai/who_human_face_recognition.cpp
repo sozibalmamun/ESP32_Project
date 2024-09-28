@@ -41,7 +41,7 @@ uint16_t personId;
 
 
 //---------------time flag--------------------
-extern volatile bool sleepEnable;
+extern  uint8_t sleepEnable;
 extern TickType_t sleepTimeOut; 
 TickType_t TimeOut,faceDetectTimeOut;
 TickType_t enrolTimeOut;
@@ -205,7 +205,6 @@ static void task_process_handler(void *arg)
 
     camera_fb_t *frame = NULL;
     camera_fb_t *moveDetection = NULL;
-    bool motion =false;
 
 
     HumanFaceDetectMSR01 detector(0.3F, 0.3F, 10, 0.3F);
@@ -237,9 +236,7 @@ static void task_process_handler(void *arg)
             if (xQueueReceive(xQueueFrameI, &(frame), portMAX_DELAY))
             {
 
-                if (xQueueReceive(xQueueFrameI, &(moveDetection), portMAX_DELAY))// motion detection 
-                {  
-
+                if(sleepEnable==WAKEUP){
 
                     imageData_t *enrolFrame = NULL;
 
@@ -259,22 +256,7 @@ static void task_process_handler(void *arg)
                     std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3});
                     std::list<dl::detect::result_t> &detect_results = detector2.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_candidates);
 
-//------------------------motion detection -----------------------------
 
-                if (detect_results.size() != 1){
-
-                    uint32_t moving_point_number = dl::image::get_moving_point_number((uint16_t *)frame->buf, (uint16_t *)moveDetection->buf, frame->height, frame->width, 8, 15);
-                    if (moving_point_number > 50)
-                    {
-
-                        // ESP_LOGE(TAG, "Something moved!");
-                        sleepTimeOut = xTaskGetTickCount();
-                        sleepEnable=false;
-                        motion =true;
-
-                    }
-                }
-// end---------------------------------------------------------------------
 
 
 
@@ -311,7 +293,7 @@ static void task_process_handler(void *arg)
                             } 
                             rgb_printf(frame, RGB565_MASK_BLUE, "Start Enroling");// debug due to display name
                             sleepTimeOut = TimeOut;
-                            sleepEnable=false;// sleep out when enroll event is genareted
+                            sleepEnable=WAKEUP;// sleep out when enroll event is genareted
 
                         }
 
@@ -337,7 +319,7 @@ static void task_process_handler(void *arg)
                             }else {
 
                                 sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
-                                sleepEnable=false;
+                                sleepEnable=WAKEUP;
 
                             }                                  
                                     
@@ -383,9 +365,7 @@ static void task_process_handler(void *arg)
                     }else if(_gEvent==DUMP){
 
 
-                        ESP_LOGW("Enrolled", "ID: %d",recognizer->get_enrolled_id_num());
-                                
-                                
+                        // ESP_LOGW("Enrolled", "ID: %d",recognizer->get_enrolled_id_num());
                                 
                         key_state= KEY_IDLE;
 
@@ -514,7 +494,7 @@ static void task_process_handler(void *arg)
 
                                 personId=0;// deafalt for test
                                 CmdEvent=DELETED;// delete done
-                                ESP_LOGE("DELETE", "Person left %s", personName);
+                                // ESP_LOGE("DELETE", "Person left %s", personName);
 
                             }
                             // ESP_LOGE("DELETE", "% d IDs left", recognizer->get_enrolled_id_num());
@@ -566,7 +546,7 @@ static void task_process_handler(void *arg)
                         {
                         case SHOW_STATE_DELETE:
 
-                            ESP_LOGI(TAG,"Deleted");
+                            // ESP_LOGI(TAG,"Deleted");
                             rgb_printf(frame, RGB565_MASK_RED, "Deleted %s", personName);
 
                             break;
@@ -577,7 +557,7 @@ static void task_process_handler(void *arg)
                                 rgb_printf(frame, RGB565_MASK_GREEN, "%s",recognize_result.name.c_str());// debug due to display name
                             }else{
                                 rgb_print(frame, RGB565_MASK_RED, "Unregister");
-                                ESP_LOGI(TAG,"Not Recognize");
+                                // ESP_LOGI(TAG,"Not Recognize");
                             }
                             break;
 
@@ -637,27 +617,44 @@ static void task_process_handler(void *arg)
 
                         draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_results);
                     }
+                }// wekup section normal oparetion 
+            }
+
+            bool motion = false;
+
+            if(sleepEnable==SLEEP){ 
+
+                if (xQueueReceive(xQueueFrameI, &(moveDetection), portMAX_DELAY))// motion detection 
+                {  
+
+                    //------------------------motion detection -----------------------------
+                    uint32_t moving_point_number = dl::image::get_moving_point_number((uint16_t *)frame->buf, (uint16_t *)moveDetection->buf, frame->height, frame->width, 8, 15);
+                    if (moving_point_number > 50)
+                    {
+
+                        ESP_LOGE(TAG, " Motion detected!");
+                        motion =true;
+
+                    }
+                    // end---------------------------------------------------------------------
 
                 }// motion end
 
-
-
-
-
-
-
-
-
-
-                
             }
-
+                
             if (xQueueFrameO)
             {
 
                 xQueueSend(xQueueFrameO, &frame, portMAX_DELAY);
                 //------------------------motion detection -----------------------------
-                if(!is_detected)xQueueSend(xQueueFrameO, &moveDetection, portMAX_DELAY);
+                if(sleepEnable==SLEEP){
+                    xQueueSend(xQueueFrameO, &moveDetection, portMAX_DELAY);
+                    // ESP_LOGI(TAG,"xQueueFrameO");
+                    if(motion){
+                        sleepTimeOut = xTaskGetTickCount();
+                        sleepEnable=WAKEUP;
+                    }
+                }
 
 
             }
@@ -665,14 +662,25 @@ static void task_process_handler(void *arg)
             {
                 esp_camera_fb_return(frame);
                 //------------------------motion detection -----------------------------
-                if(!is_detected)esp_camera_fb_return(moveDetection);
+                if(motion){
+
+                    ESP_LOGI(TAG,"esp_camera_fb_return");
+                    esp_camera_fb_return(moveDetection);
+
+
+                }
 
             }
             else
             {
                 free(frame);
                 //------------------------motion detection -----------------------------
-                if(!is_detected)free(moveDetection);
+                if(motion){
+
+                    ESP_LOGI(TAG,"free moveDetection");
+                    free(moveDetection);
+
+                }
 
             }
 
@@ -681,9 +689,16 @@ static void task_process_handler(void *arg)
                 xQueueSend(xQueueResult, &recognize_result, portMAX_DELAY);
 
 
-            }else{
+            }
+            if(xQueueResult){
 
-                xQueueSend(xQueueResult, &motion, portMAX_DELAY);
+                if(motion){
+
+                    ESP_LOGI(TAG,"xQueueResult");
+                    xQueueSend(xQueueResult, &motion, portMAX_DELAY);
+
+                }
+
 
             }
 

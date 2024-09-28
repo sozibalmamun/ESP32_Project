@@ -225,7 +225,7 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         esp_blufi_adv_stop();
         blufi_security_init();
         sleepTimeOut = xTaskGetTickCount();
-        sleepEnable=false;
+        sleepEnable=WAKEUP;
         break;
     case ESP_BLUFI_EVENT_BLE_DISCONNECT:
         // BLUFI_INFO("BLUFI ble disconnect\n");

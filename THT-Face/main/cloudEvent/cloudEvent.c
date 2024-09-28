@@ -63,10 +63,12 @@ void process_command(const char* buffer) {
                 CmdEvent = ENROLING_EVENT;
 
                 enrolTimeOut = xTaskGetTickCount();
+
                 // printf("CRC check passed.\n");
                 // printf("  - Name: %s\n", personName);
                 // memset(tcpBuffer, 0, strlen(tcpBuffer));
-
+                sleepTimeOut = xTaskGetTickCount();
+                sleepEnable=WAKEUP;
                 key_state=KEY_SHORT_PRESS;
 
                 return;

@@ -8,7 +8,7 @@
 
 
 
-volatile bool sleepEnable=0;
+uint8_t sleepEnable=WAKEUP;
 volatile TickType_t sleepTimeOut=0; 
 
 
@@ -19,7 +19,7 @@ void editDisplayBuff(camera_fb_t **buff){
     time_library_time_t current_time;
     uint8_t clockType = get_time(&current_time, 1);
 
-    if(sleepEnable==1){// sleep time display
+    if(sleepEnable==SLEEP){// sleep time display
 
         sleepTimeDate(*buff,current_time);
 

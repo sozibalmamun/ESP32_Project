@@ -10,14 +10,15 @@
 
 uint8_t sleepEnable=WAKEUP;
 volatile TickType_t sleepTimeOut=0; 
-
+bool dspTimeFormet=true;
 
 void editDisplayBuff(camera_fb_t **buff){
 
 
     // time read here
     time_library_time_t current_time;
-    uint8_t clockType = get_time(&current_time, 1);
+
+    uint8_t clockType = get_time(&current_time, dspTimeFormet);
 
     if(sleepEnable==SLEEP){// sleep time display
 
@@ -117,9 +118,7 @@ void editDisplayBuff(camera_fb_t **buff){
                 icnPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+6,2,7,&disconnectedIcon,RED,*buff);//+9
             }
             animationTime = xTaskGetTickCount();
-
         }
-
         writedateTime(*buff , current_time, clockType);
 
 

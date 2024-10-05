@@ -75,7 +75,7 @@ void app_main()
     //--------------------------------------------------
 
     //-----------time int here-------------------------------------
-    time_library_time_t initial_time = {2024, 1, 1, 9, 3, 0};//     year, month, day, hour, minute, second;
+    time_library_time_t initial_time = {2024, 1, 1, 22, 58, 0};//     year, month, day, hour, minute, second;
     time_library_init(&initial_time);
     //--------------------------------------------------------------
 

@@ -210,9 +210,25 @@ void process_command(const char* buffer) {
 
     }else if(strncmp(buffer, "time", strlen("time"))==0){
 
+
     // time_library_time_t initial_time = {2024, 12, 12, 17, 16, 15};//     year, month, day, hour, minute, second;
     // time_library_init(&initial_time);
 
+    }else if(strncmp(buffer, "hformet", strlen("hformet"))==0){
+
+
+        const char* formetStart = buffer + strlen("hformet") + 1;
+        const char* space_pos1 = strchr(formetStart, ' ');
+        if (space_pos1 == NULL) {
+            // Handle invalid format (no space)
+            return;
+        }
+        char H[2];
+        memset(H, 0, sizeof(H));
+        strncpy(H, formetStart, space_pos1 - formetStart);
+        H[space_pos1 - formetStart] = '\0';
+
+        dspTimeFormet =  H[0]==0x0C ? 1 : 0 ;// assign time formet 
     }
 }
 

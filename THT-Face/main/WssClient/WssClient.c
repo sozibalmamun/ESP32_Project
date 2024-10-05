@@ -578,6 +578,29 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         ESP_LOGI(TAG, "WSS_CONNECTED");
         networkStatus=WSS_CONNECTED;
 
+
+        time_library_time_t current_time;
+        get_time(&current_time, dspTimeFormet);
+
+        uint8_t time [12];
+        time[0]=(uint8_t)'T';
+        time[1]=current_time.year-2000;
+        time[2]=current_time.month;
+        time[3]=current_time.day;
+        
+        time[4]=current_time.hour;
+        time[5]=current_time.minute;
+        time[6]=current_time.second;
+
+        time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
+        time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
+        time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
+        time[10]= dspTimeFormet==true?0x0C:0x18;// sent time formet
+        time[11]='\0';
+
+        printf(" data len: %d ping: %c %d %d %d %d %d %d 12/24H: %d day: %s\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,time[10],(char*)&time[7]);
+        stompS(time, sizeof(time));
+
         break;
     case WEBSOCKET_EVENT_DISCONNECTED:
         ESP_LOGI(TAG, "WSS_DISCONNECTED");
@@ -603,9 +626,9 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
 
                 time_library_time_t current_time;
-                uint8_t clockType = get_time(&current_time, 1);
+                get_time(&current_time, dspTimeFormet);
 
-                uint8_t time [11];
+                uint8_t time [12];
                 time[0]=(uint8_t)'T';
                 time[1]=current_time.year-2000;
                 time[2]=current_time.month;
@@ -618,9 +641,10 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
                 time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
                 time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
                 time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
-                time[10]='\0';
+                time[10]= dspTimeFormet==true?0x0C:0x18;// sent time formet
+                time[11]='\0';
 
-                printf(" data len: %d time: %c %d %d %d %d %d %d %s\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,(char*)&time[7]);
+                printf(" data len: %d ping: %c %d %d %d %d %d %d 12/24H: %d day: %s\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,time[10],(char*)&time[7]);
                 stompS(time, sizeof(time));
 
             }

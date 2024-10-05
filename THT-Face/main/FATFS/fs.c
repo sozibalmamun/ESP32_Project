@@ -400,12 +400,18 @@ void write_log_attendance(uint16_t person_id, uint8_t* timestamp) {
         return;
     }
 
-    // Write timestamp (6 bytes) and person ID (2 bytes) as binary data
+    // Write timestamp (6 bytes) (1 byte) time formet and person ID (2 bytes) as binary data
     fwrite(timestamp, sizeof(uint8_t), 6, f);
-    uint8_t temp= person_id>>8;
+
+    uint8_t temp= dspTimeFormet==1?0x0C:0x18;
+    fwrite(&temp, sizeof(uint8_t), 1, f);// save time formet
+
+    temp= person_id>>8;
     fwrite(&temp, sizeof(uint8_t), 1, f);  // Write person ID once (high bytes)
     temp= person_id & 0x00ff;
     fwrite(&temp, sizeof(uint8_t), 1, f);  // Write person ID once (low bytes)
+
+
 
     fclose(f);
     ESP_LOGI("attendance", "Attendance ID: %d logged in file: %s", person_id, log_file);
@@ -491,6 +497,95 @@ void process_attendance_files() {
 //     return true;
 // }
 
+// binary log data process 
+
+// bool sendFilePath(const char *filePath) {
+//     // Open file and read content here
+//     // Example: Read file into buffer
+//  FILE *file = fopen(filePath, "rb");  // Open the file in binary mode
+//     if (file == NULL) {
+//         ESP_LOGE("log", "Failed to open file: %s", filePath);
+//         return false;
+//     }
+
+//     // Move to the end of the file to get its size
+//     fseek(file, 0, SEEK_END);
+//     long fileSize = ftell(file);
+//     fseek(file, 0, SEEK_SET);  // Move back to the beginning
+
+//     if (fileSize % 8 != 0) {  // Each log entry is 8 bytes
+//         ESP_LOGE("log", "Corrupted file: %s (fileSize not a multiple of 8)", filePath);
+//         fclose(file);
+//         return false;
+//     }
+
+//     // Allocate buffer to hold the entire file
+//     char *fileContent = (char *)heap_caps_malloc(fileSize, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+//     if (fileContent == NULL) {
+//         ESP_LOGE("log", "Failed to allocate memory for file content");
+//         fclose(file);
+//         return false;
+//     }
+
+//     // Read the entire file content into the buffer
+//     fread(fileContent, 1, fileSize, file);
+//     fclose(file);
+
+//     // Allocate buffer for the wss message
+//     // We'll start the message with 'L ' and add space after each 8-byte log entry
+//     size_t stompMessageSize = fileSize + (fileSize / 8) + 2;  // 8 bytes + space for each log entry, plus 'L '
+//     char *stompMessage = (char *)heap_caps_malloc(stompMessageSize, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+//     if (stompMessage == NULL) {
+//         ESP_LOGE("log", "Failed to allocate memory for STOMP message");
+//         heap_caps_free(fileContent);
+//         return false;
+//     }
+
+//     // Start the STOMP message with 'L '
+//     stompMessage[0] = 'L';
+//     size_t stompIdx = 1;
+
+//     // Loop through the file content and process each log entry (8 bytes)
+//     for (long i = 0; i < fileSize; i += 8) {
+
+//         stompMessage[stompIdx] = ' ';
+//         stompIdx++;
+
+//         // Copy the 8 bytes (6 bytes timestamp + 2 bytes person ID) from the log
+//         memcpy(&stompMessage[stompIdx], &fileContent[i], 8);
+//         stompIdx += 8;
+
+//         // Add a space after each log entry
+
+//     }
+
+//     // Null-terminate the STOMP message
+//     stompMessage[stompIdx] = '\0';
+
+//     ESP_LOGE("log", "WSS  message:");
+
+//     for(uint16_t i=0; i<stompIdx;i++){
+
+//         printf("%d ",stompMessage[i]);
+
+//     }
+
+//     // Send the STOMP message
+//     if (!stompS((uint8_t *)stompMessage, stompIdx)) {
+//         // ESP_LOGE("log", "Error sending log via STOMP");
+//         heap_caps_free(fileContent);
+//         heap_caps_free(stompMessage);
+//         return false;
+//     }
+
+//     ESP_LOGI("log", "Successfully sent log via STOMP");
+
+//     // Free allocated buffers
+//     heap_caps_free(fileContent);
+//     heap_caps_free(stompMessage);
+
+//     return true;
+// }
 
 bool sendFilePath(const char *filePath) {
     // Open file and read content here
@@ -506,8 +601,8 @@ bool sendFilePath(const char *filePath) {
     long fileSize = ftell(file);
     fseek(file, 0, SEEK_SET);  // Move back to the beginning
 
-    if (fileSize % 8 != 0) {  // Each log entry is 8 bytes
-        ESP_LOGE("log", "Corrupted file: %s (fileSize not a multiple of 8)", filePath);
+    if (fileSize % 9 != 0) {  // Each log entry is 8 bytes
+        ESP_LOGE("log", "Corrupted file: %s (fileSize not a multiple of 9)", filePath);
         fclose(file);
         return false;
     }
@@ -526,7 +621,7 @@ bool sendFilePath(const char *filePath) {
 
     // Allocate buffer for the wss message
     // We'll start the message with 'L ' and add space after each 8-byte log entry
-    size_t stompMessageSize = fileSize + (fileSize / 8) + 2;  // 8 bytes + space for each log entry, plus 'L '
+    size_t stompMessageSize = fileSize + (fileSize / 9) + 2;  // 8 bytes + space for each log entry, plus 'L '
     char *stompMessage = (char *)heap_caps_malloc(stompMessageSize, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     if (stompMessage == NULL) {
         ESP_LOGE("log", "Failed to allocate memory for STOMP message");
@@ -538,15 +633,15 @@ bool sendFilePath(const char *filePath) {
     stompMessage[0] = 'L';
     size_t stompIdx = 1;
 
-    // Loop through the file content and process each log entry (8 bytes)
-    for (long i = 0; i < fileSize; i += 8) {
+    // Loop through the file content and process each log entry (9 bytes)
+    for (long i = 0; i < fileSize; i += 9) {
 
         stompMessage[stompIdx] = ' ';
         stompIdx++;
 
-        // Copy the 8 bytes (6 bytes timestamp + 2 bytes person ID) from the log
+        // Copy the 9 bytes (6 bytes timestamp + 2 bytes person ID +1 byte time formet) from the log
         memcpy(&stompMessage[stompIdx], &fileContent[i], 8);
-        stompIdx += 8;
+        stompIdx += 9;
 
         // Add a space after each log entry
 

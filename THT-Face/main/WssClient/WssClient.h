@@ -79,7 +79,7 @@ extern uint8_t networkStatus;
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 extern const char* day_names[];
-
+extern bool dspTimeFormet;
 extern uint64_t generate_unique_id(void);
 
 extern void stomp_client_connect(void);

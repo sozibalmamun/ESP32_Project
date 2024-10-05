@@ -33,6 +33,7 @@
 
 static wl_handle_t s_wl_handle = WL_INVALID_HANDLE;
 extern bool dataAvailable;
+extern bool dspTimeFormet;
 
 #define  FACE_DIRECTORY "/fatfs/faces"
 #define  ATTENDANCE_DIR  "/fatfs/log"

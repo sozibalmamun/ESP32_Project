@@ -167,7 +167,7 @@ bool copy_rectangle(const camera_fb_t *src, imageData_t **dst, int16_t x_start, 
 
     // Validate the calculated size
     if ((*dst)->len <= 0 || (*dst)->len > src->len) {
-        printf("Invalid calculated len: %d\n", (*dst)->len);
+        // printf("Invalid calculated len: %d\n", (*dst)->len);
         // heap_caps_free(*dst);
         *dst = NULL;
         return false;
@@ -176,7 +176,7 @@ bool copy_rectangle(const camera_fb_t *src, imageData_t **dst, int16_t x_start, 
     // Allocate memory for the destination buffer
     (*dst)->buf = (uint8_t *)heap_caps_malloc((*dst)->len, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     if (!(*dst)->buf) {
-        printf("Memory allocation for cropFrame buffer failed\n");
+        // printf("Memory allocation for cropFrame buffer failed\n");
         heap_caps_free(*dst);
         *dst = NULL;
         return false;
@@ -196,8 +196,6 @@ bool copy_rectangle(const camera_fb_t *src, imageData_t **dst, int16_t x_start, 
 
     return true;
 }
-
-
 
 
 static void task_process_handler(void *arg)
@@ -242,24 +240,16 @@ static void task_process_handler(void *arg)
 
                     if(_gEvent==SYNCING){
 
-
                         if (!readFace(frame, &enrolFrame)) {//frame
                             CmdEvent = SYNC_ERROR;
                             key_state= KEY_IDLE;
-                            vTaskDelay(10);                        // ESP_LOGW("sync", "directory emty");
+                            vTaskDelay(10);                        
+                            // ESP_LOGW("sync", "directory emty");
                         }
                         // ESP_LOGI("display_faces", "Person ID: %d, Name: %s, Image w: %d h: %d", enrolFrame->id, enrolFrame->Name, enrolFrame->width, enrolFrame->height);
                     }
-
-                    
-
                     std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3});
                     std::list<dl::detect::result_t> &detect_results = detector2.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_candidates);
-
-
-
-
-
 
                     if(_gEvent==DELETE){// deleting person 
 
@@ -310,10 +300,6 @@ static void task_process_handler(void *arg)
 
                                 if(_gEvent!=ENROLING){
                                     _gEvent=RECOGNIZE;// enroling is the 1st priority
-
-
-
-
                                 }
 
                             }else {
@@ -617,7 +603,7 @@ static void task_process_handler(void *arg)
 
                         draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_results);
                     }
-                }// wekup section normal oparetion 
+                }// wake up section normal oparetion 
             }
 
             bool motion = false;
@@ -666,7 +652,6 @@ static void task_process_handler(void *arg)
 
                     ESP_LOGI(TAG,"esp_camera_fb_return");
                     esp_camera_fb_return(moveDetection);
-
 
                 }
 

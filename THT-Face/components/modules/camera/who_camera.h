@@ -192,9 +192,9 @@
 #define CAMERA_PIN_PCLK CONFIG_CAMERA_PIN_PCLK
 #endif
 
-#define XCLK_FREQ_HZ 15000000
+// #define XCLK_FREQ_HZ 15000000 // for2640
 
-// #define XCLK_FREQ_HZ 20000000
+#define XCLK_FREQ_HZ 30000000// for OV5640  24m
 
 
 #ifdef __cplusplus

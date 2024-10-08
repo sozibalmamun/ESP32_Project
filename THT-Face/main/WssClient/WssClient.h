@@ -92,10 +92,13 @@ void stomp_client_int( stompInfo_cfg_t stompSetup );
 void stompAppStart(void);
 
 void process_data(char* data, uint32_t len) ;
+
+extern void process_command(const char* buffer);
+
 extern void dataHandele(const char *rx_buffer);
 extern bool stompSend(char * buff, char* topic);
 
-bool stompS(uint8_t *buff, size_t buffLen);
+bool sendToWss(uint8_t *buff, size_t buffLen);
 
 char *base64_encode(const unsigned char *data, size_t input_length, size_t *output_length);
 extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic);

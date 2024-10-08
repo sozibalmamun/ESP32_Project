@@ -27,6 +27,10 @@ extern TickType_t enrolTimeOut;
 void process_command(const char* buffer) {
     
     // if(strlen(buffer)>10)resizeBuffer();
+
+    printf("process_command :%s\n", buffer);
+
+
   // Check if the buffer starts with "cmdEnrol" (case-sensitive)
     if (strncmp(buffer, "cmdenrol", strlen("cmdenrol")) == 0) {
        
@@ -186,7 +190,7 @@ void process_command(const char* buffer) {
     }else if(strncmp(buffer, "restart", strlen("restart")) == 0){
 
 
-        if (!stompSend("ADRESTART",PUBLISH_TOPIC)) {
+        if (!sendToWss((uint8_t*)"ADRESTART",PUBLISH_TOPIC)) {
             ESP_LOGE("ID DELETE", "Error sending ACK");
         } else {
             ESP_LOGI(TAG_ENROL, "back to idle mode\n");
@@ -199,7 +203,7 @@ void process_command(const char* buffer) {
         CPUBgflag=1;
         format_fatfs();
 
-        if (!stompSend("ACFATFS",PUBLISH_TOPIC)) {
+        if (!sendToWss((uint8_t*)"ACFATFS",PUBLISH_TOPIC)) {
             ESP_LOGE("ID DELETE", "Error sending ACK");
         } else {
             ESP_LOGI(TAG_ENROL, "back to idle mode\n");
@@ -214,10 +218,10 @@ void process_command(const char* buffer) {
     // time_library_time_t initial_time = {2024, 12, 12, 17, 16, 15};//     year, month, day, hour, minute, second;
     // time_library_init(&initial_time);
 
-    }else if(strncmp(buffer, "hformet", strlen("hformet"))==0){
+    }else if(strncmp(buffer,"htime", strlen("htime"))==0){
 
 
-        const char* formetStart = buffer + strlen("hformet") + 1;
+        const char* formetStart = buffer + strlen("htime") + 1;
         const char* space_pos1 = strchr(formetStart, ' ');
         if (space_pos1 == NULL) {
             // Handle invalid format (no space)
@@ -227,8 +231,12 @@ void process_command(const char* buffer) {
         memset(H, 0, sizeof(H));
         strncpy(H, formetStart, space_pos1 - formetStart);
         H[space_pos1 - formetStart] = '\0';
-
         dspTimeFormet =  H[0]==0x0C ? 1 : 0 ;// assign time formet 
+
+
+        ESP_LOGI(TAG_ENROL, "time formet %d", dspTimeFormet);
+
+
     }
 }
 
@@ -240,7 +248,9 @@ void eventFeedback(void){
     {
     case DELETED:
         // ack for delete id
-        if (!stompSend("ADI",PUBLISH_TOPIC)) {
+        // if (!stompSend("ADI",PUBLISH_TOPIC)) {
+        if (!sendToWss((uint8_t*)"ADI",4)) {
+
             ESP_LOGE("ID DELETE", "Error sending ACK");
         } else {
             ESP_LOGI(TAG_ENROL, "back to idle mode\n");
@@ -249,7 +259,8 @@ void eventFeedback(void){
         break;
     case ID_INVALID:
         // nack for delete invalide id
-        if (!stompSend("NDII",PUBLISH_TOPIC)) {
+        // if (!stompSend("NDII",PUBLISH_TOPIC)) {
+        if (!sendToWss((uint8_t*)"NDII",5)) {
             ESP_LOGE("ID DELETE", "Error sending NACK");
         } else {
             ESP_LOGI(TAG_ENROL, "back to idle mode\n");
@@ -259,7 +270,9 @@ void eventFeedback(void){
     case ID_DATA_ERROR:
 
         // nack for ID DATA ERROR
-        if (!stompSend("NIDE",PUBLISH_TOPIC)) {
+        // if (!stompSend("NIDE",PUBLISH_TOPIC)) {
+        if (!sendToWss((uint8_t*)"NIDE",5)) {
+
             ESP_LOGE("ID DELETE", "Error sending NACK");
         } else {
             ESP_LOGI(TAG_ENROL, "back to idle mode\n");
@@ -270,7 +283,8 @@ void eventFeedback(void){
     case NAME_DATA_ERROR:
 
         // nack for NAME DATA ERROR
-        if (!stompSend("NNDE",PUBLISH_TOPIC)) {
+        // if (!stompSend("NNDE",PUBLISH_TOPIC)) {
+        if (!sendToWss((uint8_t*)"NNDE",5)) {
             ESP_LOGE("ID DELETE", "Error sending NACK");
         } else {
             ESP_LOGI(TAG_ENROL, "back to idle mode\n");
@@ -283,7 +297,8 @@ void eventFeedback(void){
         char personIdStr[30]; // assuming 32-bit uint can be represented in 11 chars + null terminator
 
         snprintf(personIdStr, sizeof(personIdStr), "AED %s %u",personName,personId);
-        if (!stompSend(personIdStr,PUBLISH_TOPIC)) {
+        // if (!stompSend(personIdStr,PUBLISH_TOPIC)) {
+        if (!sendToWss((uint8_t*)personIdStr,strlen(personIdStr))) {
             //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
         } else {
             ESP_LOGI(TAG_ENROL, "id sent to client\n");
@@ -295,7 +310,8 @@ void eventFeedback(void){
     case DUPLICATE:
 
         // nack for duplicate person
-        if (!stompSend("NDP",PUBLISH_TOPIC)) {
+        // if (!stompSend("NDP",PUBLISH_TOPIC)) {
+        if (!sendToWss((uint8_t*)"NDP",4)) {
             //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
         } else {
             ESP_LOGI(TAG_ENROL, "back to idle mode\n");
@@ -312,7 +328,8 @@ void eventFeedback(void){
         char personIdStr[30]; // assuming 32-bit uint can be represented in 11 chars + null terminator
 
         snprintf(personIdStr, sizeof(personIdStr), "ASD %s %u",personName,personId);
-        if (!stompSend(personIdStr,PUBLISH_TOPIC)) {
+        // if (!stompSend(personIdStr,PUBLISH_TOPIC)) {
+        if (!sendToWss((uint8_t*)personIdStr,strlen(personIdStr))) {
             //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
         } else {
             ESP_LOGI(TAG_ENROL, "id sent to client\n");
@@ -326,7 +343,8 @@ void eventFeedback(void){
     case  SYNC_DUPLICATE:
 
         // nack for sync duplicate person
-        if (!stompSend("NSDP",PUBLISH_TOPIC)) {
+        // if (!stompSend("NSDP",PUBLISH_TOPIC)) {
+        if (!sendToWss((uint8_t*)"NSDP",5)) {
             //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
         } else {
             ESP_LOGI(TAG_ENROL, "back to idle mode\n");
@@ -339,7 +357,8 @@ void eventFeedback(void){
     case SYNC_ERROR:
 
         // nack for sync error
-        if (!stompSend("NSER",PUBLISH_TOPIC)) {
+        // if (!stompSend("NSER",PUBLISH_TOPIC)) {
+        if (!sendToWss((uint8_t*)"NSER",5)) {
             //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
         } else {
             ESP_LOGI(TAG_ENROL, "back to idle mode\n");
@@ -351,7 +370,9 @@ void eventFeedback(void){
     case ENROLMENT_TIMEOUT:
 
         // nack for time out
-        if (!stompSend("NETO",PUBLISH_TOPIC)) {
+        // if (!stompSend("NETO",PUBLISH_TOPIC)) {
+        if (!sendToWss((uint8_t*)"NETO",5)) {
+
             //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
         } else {
             ESP_LOGI(TAG_ENROL, "back to idle mode\n");

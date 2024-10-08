@@ -240,7 +240,7 @@ bool stompSend(char *buff, char* topic) {
 
 
 
-bool stompS(uint8_t *buff, size_t buffLen) {
+bool sendToWss(uint8_t *buff, size_t buffLen) {
 
     uint8_t tempFrame[CHANK_SIZE + 1];
     memset(tempFrame, 0, sizeof(tempFrame));
@@ -331,8 +331,10 @@ bool stompS(uint8_t *buff, size_t buffLen) {
         currentIndex += chunkLen;
         buffLen -= chunkLen;
 
+
         heap_caps_free(sendingFrame);
     }
+
 
     return true;
 }
@@ -343,7 +345,7 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
     // Send image info
     char imageInfo[35];
     snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d %d", buffLen, w, h, name, id, totalChunks);
-    if (!stompS((uint8_t*)imageInfo, strlen(imageInfo))) {
+    if (!sendToWss((uint8_t*)imageInfo, strlen(imageInfo))) {
         return false;
     }
     vTaskDelay(50);
@@ -382,7 +384,7 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
 
         // vTaskDelay(10);
 
-        if (!stompS((uint8_t*)sentFrame, strlen(sentFrame))) {
+        if (!sendToWss((uint8_t*)sentFrame, strlen(sentFrame))) {
             heap_caps_free(chunk);
             heap_caps_free(sentFrame);
             return false;
@@ -579,27 +581,29 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         networkStatus=WSS_CONNECTED;
 
 
-        time_library_time_t current_time;
-        get_time(&current_time, dspTimeFormet);
+        // time_library_time_t current_time;
+        // get_time(&current_time, dspTimeFormet);
 
-        uint8_t time [12];
-        time[0]=(uint8_t)'T';
-        time[1]=current_time.year-2000;
-        time[2]=current_time.month;
-        time[3]=current_time.day;
+        // uint8_t time [12];
+        // time[0]=(uint8_t)'T';
+        // time[1]=current_time.year-2000;
+        // time[2]=current_time.month;
+        // time[3]=current_time.day;
         
-        time[4]=current_time.hour;
-        time[5]=current_time.minute;
-        time[6]=current_time.second;
+        // time[4]=current_time.hour;
+        // time[5]=current_time.minute;
+        // time[6]=current_time.second;
 
-        time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
-        time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
-        time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
-        time[10]= dspTimeFormet==true?0x0C:0x18;// sent time formet
-        time[11]='\0';
+        // time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
+        // time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
+        // time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
+        // time[10]= dspTimeFormet==true?0x0C:0x18;// sent time formet
+        // time[11]='\0';
 
-        printf(" data len: %d ping: %c %d %d %d %d %d %d 12/24H: %d day: %s\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,time[10],(char*)&time[7]);
-        stompS(time, sizeof(time));
+        // printf(" data len: %d ping: %c %d %d %d %d %d %d 12/24H: %d day: %s\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,time[10],(char*)&time[7]);
+        // stompS(time, sizeof(time));
+
+
 
         break;
     case WEBSOCKET_EVENT_DISCONNECTED:
@@ -622,47 +626,47 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
             if (data->op_code == 0x0A) {
 
-                ESP_LOGI(TAG, "Ping code: %d", data->op_code);
+                // ESP_LOGI(TAG, "Ping code: %d", data->op_code);
 
 
-                time_library_time_t current_time;
-                get_time(&current_time, dspTimeFormet);
+                // time_library_time_t current_time;
+                // get_time(&current_time, dspTimeFormet);
 
-                uint8_t time [12];
-                time[0]=(uint8_t)'T';
-                time[1]=current_time.year-2000;
-                time[2]=current_time.month;
-                time[3]=current_time.day;
+                // uint8_t time [12];
+                // time[0]=(uint8_t)'T';
+                // time[1]=current_time.year-2000;
+                // time[2]=current_time.month;
+                // time[3]=current_time.day;
                 
-                time[4]=current_time.hour;
-                time[5]=current_time.minute;
-                time[6]=current_time.second;
+                // time[4]=current_time.hour;
+                // time[5]=current_time.minute;
+                // time[6]=current_time.second;
 
-                time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
-                time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
-                time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
-                time[10]= dspTimeFormet==true?0x0C:0x18;// sent time formet
-                time[11]='\0';
+                // time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
+                // time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
+                // time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
+                // time[10]= dspTimeFormet==true?0x0C:0x18;// sent time formet
+                // time[11]='\0';
 
-                printf(" data len: %d ping: %c %d %d %d %d %d %d 12/24H: %d day: %s\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,time[10],(char*)&time[7]);
-                stompS(time, sizeof(time));
+                // printf(" data len: %d ping: %c %d %d %d %d %d %d 12/24H: %d day: %s\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,time[10],(char*)&time[7]);
+                // stompS(time, sizeof(time));
 
             }
 
             
             if((char)data->data_ptr[0]=='T'){
 
-                printf("rcv Time:  %d %d %d %d %d %d %c%c%c",data->data_ptr[1],data->data_ptr[2],data->data_ptr[3],data->data_ptr[4],data->data_ptr[5],data->data_ptr[6] ,data->data_ptr[7] ,data->data_ptr[8],data->data_ptr[9]);
-                memset(data->data_ptr,0,data->data_len);
+                // printf("rcv Time:  %d %d %d %d %d %d %c%c%c",data->data_ptr[1],data->data_ptr[2],data->data_ptr[3],data->data_ptr[4],data->data_ptr[5],data->data_ptr[6] ,data->data_ptr[7] ,data->data_ptr[8],data->data_ptr[9]);
+                // memset(data->data_ptr,0,data->data_len);
 
             }else if( (char)data->data_ptr[0]=='L' ) {
 
-                ESP_LOGW(TAG, "Received log %.*s", data->data_len, (char *)data->data_ptr);
-                memset(data->data_ptr,0,data->data_len);
+                // ESP_LOGW(TAG, "Received log %.*s", data->data_len, (char *)data->data_ptr);
+                // memset(data->data_ptr,0,data->data_len);
 
             }else{
 
-                // ESP_LOGW(TAG, "Received:  %.*s", data->data_len, (char *)data->data_ptr);
+                ESP_LOGE(TAG, "Received:  %.*s", data->data_len, (char *)data->data_ptr);
 
                 for(uint16_t i=0; i< data->data_len;i++){
 
@@ -670,7 +674,8 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
                 }
 
-                process_data((char *)data->data_ptr, data->data_len);
+                // process_data((char *)data->data_ptr, data->data_len);
+                process_command((char *)data->data_ptr);
                 memset(data->data_ptr,0,data->data_len);
 
             }
@@ -762,36 +767,37 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     }
 }
 
-void process_data(char* data, uint32_t len) {
+
+// void process_data(char* data, uint32_t len) {
     
-    // Find the start of "DATA:"
-    char* d_start = strstr(data, "DATA:");
-    if (d_start) {
-        // Move the pointer to the actual data after "DATA:"
-        d_start += strlen("DATA:");
+//     // Find the start of "DATA:"
+//     char* d_start = strstr(data, "DATA:");
+//     if (d_start) {
+//         // Move the pointer to the actual data after "DATA:"
+//         d_start += strlen("DATA:");
 
-        // Find the end marker ("\\n\\n\\u0000") or process till the end if no marker
-        char* end_pos = strstr(d_start, "\\n\\n\\u0000");
+//         // Find the end marker ("\\n\\n\\u0000") or process till the end if no marker
+//         char* end_pos = strstr(d_start, "\\n\\n\\u0000");
 
-        // If no end marker is found, set end_pos to the end of the buffer
-        if (end_pos == NULL) {
-            end_pos = data + len;
-        }
+//         // If no end marker is found, set end_pos to the end of the buffer
+//         if (end_pos == NULL) {
+//             end_pos = data + len;
+//         }
 
-        // Print the data between d_start and end_pos in decimal format
-        printf("\nExtracted Data (as decimal values): ");
-        for (char* p = d_start; p < end_pos; p++) {
-            printf("%d ", *p); // Print each byte as a decimal number
-        }
+//         // Print the data between d_start and end_pos in decimal format
+//         printf("\nExtracted Data (as decimal values): ");
+//         for (char* p = d_start; p < end_pos; p++) {
+//             printf("%d ", *p); // Print each byte as a decimal number
+//         }
 
-        printf("\n");
+//         printf("\n");
 
-        // Clear the buffer after processing
-        memset(data, 0, len);
-    } else {
-        printf("No 'DATA:' found in the buffer\n");
-    }
-}
+//         // Clear the buffer after processing
+//         memset(data, 0, len);
+//     } else {
+//         printf("No 'DATA:' found in the buffer\n");
+//     }
+// }
 
 
 

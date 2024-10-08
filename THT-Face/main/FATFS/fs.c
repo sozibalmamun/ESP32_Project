@@ -447,7 +447,7 @@ void process_attendance_files() {
             if (sendFilePath(file_path)) {
                 // If successful, delete the file
                 if (remove(file_path) == 0) {
-                    // ESP_LOGI("log", "deleted file: %s", file_path);
+                    ESP_LOGI("log", "deleted file: %s", file_path);
                     break;  // Stop after sending and deleting one file
                 } else {
                     // ESP_LOGE("log", "Failed to delete file: %s", file_path);
@@ -619,6 +619,14 @@ bool sendFilePath(const char *filePath) {
     fread(fileContent, 1, fileSize, file);
     fclose(file);
 
+    // ESP_LOGW("log", "data after read");
+
+    // for(uint16_t i=0; i<fileSize;i++){
+
+    //     printf("%d ",fileContent[i]);
+
+    // }
+
     // Allocate buffer for the wss message
     // We'll start the message with 'L ' and add space after each 8-byte log entry
     size_t stompMessageSize = fileSize + (fileSize / 9) + 2;  // 8 bytes + space for each log entry, plus 'L '
@@ -636,12 +644,19 @@ bool sendFilePath(const char *filePath) {
     // Loop through the file content and process each log entry (9 bytes)
     for (long i = 0; i < fileSize; i += 9) {
 
-        stompMessage[stompIdx] = ' ';
-        stompIdx++;
+        // stompMessage[stompIdx] = ' ';
+        // stompIdx++;
 
         // Copy the 9 bytes (6 bytes timestamp + 2 bytes person ID +1 byte time formet) from the log
-        memcpy(&stompMessage[stompIdx], &fileContent[i], 8);
+        memcpy(&stompMessage[stompIdx], &fileContent[i], 9);
         stompIdx += 9;
+
+        if(stompIdx+9<=stompMessageSize){
+            stompMessage[stompIdx] = ' ';
+            stompIdx ++;  
+        }
+
+        ESP_LOGW("log", "stomp idx %d  stompMessageSize %d",stompIdx ,stompMessageSize);
 
         // Add a space after each log entry
 
@@ -650,8 +665,7 @@ bool sendFilePath(const char *filePath) {
     // Null-terminate the STOMP message
     stompMessage[stompIdx] = '\0';
 
-    ESP_LOGE("log", "WSS  message:");
-
+    ESP_LOGW("log", "data after encode data len %d ",stompIdx);
     for(uint16_t i=0; i<stompIdx;i++){
 
         printf("%d ",stompMessage[i]);
@@ -659,14 +673,13 @@ bool sendFilePath(const char *filePath) {
     }
 
     // Send the STOMP message
-    if (!stompS((uint8_t *)stompMessage, stompIdx)) {
-        // ESP_LOGE("log", "Error sending log via STOMP");
+    if (!sendToWss((uint8_t *)stompMessage, stompIdx)) {
+        // ESP_LOGE("log", "Error sending log via wss");
         heap_caps_free(fileContent);
         heap_caps_free(stompMessage);
         return false;
     }
 
-    ESP_LOGI("log", "Successfully sent log via STOMP");
 
     // Free allocated buffers
     heap_caps_free(fileContent);

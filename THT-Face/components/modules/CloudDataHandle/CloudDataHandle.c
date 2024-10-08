@@ -68,7 +68,7 @@ static void attendanceHandlerTask(void *arg)
 
             if(CPUBgflag==0){
             CPUBgflag=1;
-            process_and_send_faces(PUBLISH_TOPIC);
+            // process_and_send_faces(PUBLISH_TOPIC);
             process_attendance_files();
             CPUBgflag=0;
             }

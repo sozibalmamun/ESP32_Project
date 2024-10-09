@@ -40,6 +40,10 @@ esp_err_t lcd_st7789_init(const scr_controller_config_t *lcd_conf);
  */
 esp_err_t lcd_st7789_deinit(void);
 
+ esp_err_t lcd_st7789_cmd(uint8_t cmd);
+
+
+
 /**
  * @brief Set screen direction of rotation
  *

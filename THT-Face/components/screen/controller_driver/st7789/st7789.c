@@ -61,6 +61,19 @@ static scr_handle_t g_lcd_handle;
  */
 #include "interface_drv_def.h"
 
+
+
+
+
+
+esp_err_t lcd_st7789_cmd(uint8_t cmd){
+
+    LCD_WRITE_DATA(cmd);
+    return ESP_OK;
+
+}
+
+
 scr_driver_t lcd_st7789_default_driver = {
     .init = lcd_st7789_init,
     .deinit = lcd_st7789_deinit,

@@ -34,6 +34,9 @@ extern "C" {
 
 void process_command(const char* buffer);
 void enrolOngoing(void);
+bool process_and_send_faces(uint16_t id);
+
+
 extern void eventFeedback(void);
 
 extern uint16_t crc16(const char *buf, size_t len);

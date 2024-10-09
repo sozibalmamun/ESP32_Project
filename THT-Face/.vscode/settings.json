@@ -75,7 +75,8 @@
         "datahandler.h": "c",
         "who_camera.h": "c",
         "cinttypes": "cpp",
-        "cloudevent.h": "c"
+        "cloudevent.h": "c",
+        "st7789.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM5",

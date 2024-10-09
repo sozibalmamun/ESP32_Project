@@ -72,8 +72,8 @@ extern void print_memory_status(void);
 extern void process_attendance_files(void);
 bool sendFilePath(const char *file_path);
 
-extern bool process_and_send_faces(const char* topic);
-extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic);
+extern bool process_and_send_faces(uint16_t id);
+extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id);
 
 extern bool display_faces( camera_fb_t *buff);
 extern void scaleAndDisplayImageInFrame(uint8_t *src_image, uint8_t src_width, uint8_t src_height, camera_fb_t *dst_buff, uint8_t pos_x, uint8_t pos_y);

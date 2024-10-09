@@ -441,7 +441,7 @@ void process_attendance_files() {
             strcat(file_path, "/");
             strcat(file_path, entry->d_name);
             
-            // ESP_LOGI("log", "Procesing...%s", file_path);
+            ESP_LOGI("log", "Procesing...%s", file_path);
 
             // Send the file via STOMP
             if (sendFilePath(file_path)) {
@@ -690,82 +690,143 @@ bool sendFilePath(const char *filePath) {
 
 
 
-bool process_and_send_faces(const char* topic) {
+// bool process_and_send_faces(const char* topic) {
 
 
-    DIR *dir;
-    struct dirent *entry;
+//     DIR *dir;
+//     struct dirent *entry;
 
-    if ((dir = opendir(FACE_DIRECTORY)) == NULL) {
-        // ESP_LOGE("Attendance", "Failed to open directory: %s", ATTENDANCE_DIR);
-        return;
-    }
+//     if ((dir = opendir(FACE_DIRECTORY)) == NULL) {
+//         // ESP_LOGE("Attendance", "Failed to open directory: %s", ATTENDANCE_DIR);
+//         return;
+//     }
 
-    while ((entry = readdir(dir)) != NULL) {
+//     while ((entry = readdir(dir)) != NULL) {
 
-        dataAvailable = true;
+//         dataAvailable = true;
+
+//     char file_name[64];
+//     snprintf(file_name, sizeof(file_name), "/fatfs/faces/%d.dat", person_id);
 
 
-        if (entry->d_type == DT_REG) {  // Only process regular files
+//         if (entry->d_type == DT_REG) {  // Only process regular files
 
-            char file_name[30];
-            memset(file_name,0,sizeof(file_name));
-            strcat(file_name, FACE_DIRECTORY);
-            strcat(file_name, "/");
-            strcat(file_name, entry->d_name);
-            ESP_LOGW("search_and_send_face_data", "open file for reading: %s", file_name);
+//             char file_name[30];
+//             memset(file_name,0,sizeof(file_name));
+//             strcat(file_name, FACE_DIRECTORY);
+//             strcat(file_name, "/");
+//             strcat(file_name, entry->d_name);
+//             ESP_LOGW("search_and_send_face_data", "open file for reading: %s", file_name);
 
-            FILE* f = fopen(file_name, "rb");
-            if (f == NULL) {
-                // ESP_LOGE("search_and_send_face_data", "Failed to open file for reading: %s", file_name);
-                continue;
-            }
+//             FILE* f = fopen(file_name, "rb");
+//             if (f == NULL) {
+//                 // ESP_LOGE("search_and_send_face_data", "Failed to open file for reading: %s", file_name);
+//                 continue;
+//             }
 
-            uint32_t person_id;
-            uint8_t name_len;
-            char name[64];
-            uint32_t image_width;
-            uint32_t image_hight;
+//             uint32_t person_id;
+//             uint8_t name_len;
+//             char name[64];
+//             uint32_t image_width;
+//             uint32_t image_hight;
 
-            fread(&person_id, sizeof(person_id), 1, f);
-            fread(&name_len, sizeof(name_len), 1, f);
-            fread(name, name_len, 1, f);
-            name[name_len] = '\0'; // Null-terminate the name string
+//             fread(&person_id, sizeof(person_id), 1, f);
+//             fread(&name_len, sizeof(name_len), 1, f);
+//             fread(name, name_len, 1, f);
+//             name[name_len] = '\0'; // Null-terminate the name string
 
-            fread(&image_width, sizeof(image_width), 1, f);
-            fread(&image_hight, sizeof(image_hight), 1, f);
+//             fread(&image_width, sizeof(image_width), 1, f);
+//             fread(&image_hight, sizeof(image_hight), 1, f);
 
-            const uint16_t image_length = ((image_width*image_hight)*2);
+//             const uint16_t image_length = ((image_width*image_hight)*2);
 
-            uint8_t* image_data = (uint8_t *)heap_caps_malloc(image_length, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);//malloc(image_length);//(uint8_t *)heap_caps_malloc((*dst)->len, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-            if (image_data == NULL) {
-                // ESP_LOGE("search_and_send_face_data", "Failed to allocate memory for image data");
-                fclose(f);
-                continue;
-            }
-            fread(image_data, image_length, 1, f);
-            fclose(f);
+//             uint8_t* image_data = (uint8_t *)heap_caps_malloc(image_length, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);//malloc(image_length);//(uint8_t *)heap_caps_malloc((*dst)->len, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+//             if (image_data == NULL) {
+//                 // ESP_LOGE("search_and_send_face_data", "Failed to allocate memory for image data");
+//                 fclose(f);
+//                 continue;
+//             }
+//             fread(image_data, image_length, 1, f);
+//             fclose(f);
 
-            // Send the image data using imagesent function
-            // bool sent = imagesent(image_data, image_length, image_hight,image_width, name, person_id, topic);
+//             // Send the image data using imagesent function
+//             // bool sent = imagesent(image_data, image_length, image_hight,image_width, name, person_id, topic);
 
-            if (imagesent(image_data, image_length, image_hight,image_width, name, person_id, topic)) {
+//            // if (imagesent(image_data, image_length, image_hight,image_width, name, person_id, topic)) {
 
-                // Delete the file if sent successfully
+//                 // Delete the file if sent successfully
 
-                if (remove(file_name) == 0) {
-                    // ESP_LOGI("process_and_send_faces", "File sent and deleted: %s", file_name);
-                } else {
-                    // ESP_LOGE("process_and_send_faces", "Failed to delete file: %s", file_name);
-                }
+//                 // if (remove(file_name) == 0) {
+//                 //     // ESP_LOGI("process_and_send_faces", "File sent and deleted: %s", file_name);
+//                 // } else {
+//                 //     // ESP_LOGE("process_and_send_faces", "Failed to delete file: %s", file_name);
+//                 // }
 
-            } else // ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_name);
+//             //} else // ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_name);
            
-            heap_caps_free(image_data);
-        }
+//             heap_caps_free(image_data);
+//         }
+//     }
+
+//     closedir(dir);
+// }
+
+bool process_and_send_faces(uint16_t id) {
+    dataAvailable = true;
+
+    // Create the file name based on the provided ID
+    char file_name[30];
+    snprintf(file_name, sizeof(file_name), "%s/%d.dat", FACE_DIRECTORY, id);
+
+    ESP_LOGW("process_and_send_faces", "Open file for reading: %s", file_name);
+
+    // Open the file for reading
+    FILE* f = fopen(file_name, "rb");
+    if (f == NULL) {
+        ESP_LOGE("process_and_send_faces", "Failed to open file for reading: %s", file_name);
+        return false;  // Correct return type for bool
     }
 
-    closedir(dir);
+    // Read metadata
+    uint32_t person_id;
+    uint8_t name_len;
+    char name[64];
+    uint32_t image_width;
+    uint32_t image_height;
+
+    fread(&person_id, sizeof(person_id), 1, f);
+    fread(&name_len, sizeof(name_len), 1, f);
+    fread(name, name_len, 1, f);
+    name[name_len] = '\0';  // Null-terminate the name
+
+    fread(&image_width, sizeof(image_width), 1, f);
+    fread(&image_height, sizeof(image_height), 1, f);
+
+    // Calculate the image size and allocate memory
+    const uint16_t image_length = (image_width * image_height) * 2;
+    uint8_t* image_data = (uint8_t *)heap_caps_malloc(image_length, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    if (image_data == NULL) {
+        ESP_LOGE("process_and_send_faces", "Failed to allocate memory for image data");
+        fclose(f);
+        return false;
+    }
+
+    // Read the image data from the file
+    fread(image_data, image_length, 1, f);
+    fclose(f);  // Close the file after reading
+
+    // Send the image data using the `imagesent` function
+    if (!imagesent(image_data, image_length, image_height, image_width, name, person_id)) {
+        ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_name);
+        heap_caps_free(image_data);  // Free the memory in case of failure
+        return false;
+    }
+
+    // Free the allocated memory after successful send
+    heap_caps_free(image_data);
+
+    // Return true for success
+    return true;
 }
 
 

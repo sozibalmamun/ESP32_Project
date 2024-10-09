@@ -101,7 +101,7 @@ extern bool stompSend(char * buff, char* topic);
 bool sendToWss(uint8_t *buff, size_t buffLen);
 
 char *base64_encode(const unsigned char *data, size_t input_length, size_t *output_length);
-extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic);
+extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id);
 
 
 #ifdef __cplusplus

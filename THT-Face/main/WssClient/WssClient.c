@@ -8,316 +8,53 @@
 int8_t percentage=0;
 int8_t maxTry=0;
 
-void stomp_client_connect() {
-
-    char connect_frame[100] = "[\"CONNECT\\naccept-version:1.1\\nhost:grozziieget.zjweiting.com\\n\\n\\u0000\"]";
-    if(!esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY));
-    // ESP_LOGI(TAGSTOMP, "Fail Connect pac");
-
-}
 
 
-void stomp_client_subscribe(char* topic) {
-    
-    char connect_frame[100] ;
-    // snprintf(connect_frame, sizeof(connect_frame), "[\"SUBSCRIBE\\nid:sub-0\\ndestination:%s\\nack:client\\n\\n\\u0000\"]", topic);//done
-    snprintf(connect_frame, sizeof(connect_frame), "[\"SUBSCRIBE\\nid:sub-0\\ndestination:%s\\nack:auto\\n\\n\\u0000\"]", topic);
-
-    if(esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY)>0){
-        
-        networkStatus=STOMP_CONNECTED;
-        ESP_LOGI(TAGSTOMP, " STOMP Subscribed");
-    }
-
-}
-
-// void stomeAck(const char * message){
-//     char output[20] ;
-//     const char *jsonStart = strstr(message, "message-id:");
-//     if (jsonStart) {
-//         jsonStart += strlen("message-id:"); // Move past the starting point
-//         // Locate the end of the message within the JSON payload
-//         const char *jsonEnd = strstr(jsonStart, "-");
-//         if (jsonEnd) {
-//             // Copy the message content into the output buffer
-//             size_t length = jsonEnd - jsonStart;
-//             strncpy(output, jsonStart, length);
-//             output[length] = '\0'; // Null-terminate the output string
-//         }
-//     }
-//     char connect_frame[100] ;
-//     snprintf(connect_frame, sizeof(connect_frame), "[\"ACK\\nsubscription:1\\nmessage-id:%s\\ntransaction:tx1\\n\\n\\u0000\"]",output);
-//     // ESP_LOGI(TAGSTOMP, "STOMP ACKING %s\n", connect_frame);
-//     esp_websocket_client_send_text(client, connect_frame, strlen(connect_frame), portMAX_DELAY);
-// }
-
-
-
-
-
-//=========================================done side====================================================================
-
-bool stompSend(char *buff, char* topic) {
-    char tempFrame[CHANK_SIZE + 1];
-    memset(tempFrame, 0, sizeof(tempFrame));
-
-    uint16_t currentIndex = 0;
-    uint16_t buffLen = strlen(buff);
-
-    ESP_LOGW(TAGSTOMP, "Total stomp length: %d data : %s\n", strlen(buff),buff );
-
-
-    // Continue sending chunks while there is data left
-    while (buffLen > 0) {
-        memset(tempFrame, 0, sizeof(tempFrame));
-
-        // Determine the length of the chunk to be sent
-        size_t chunkLen = MIN(CHANK_SIZE, buffLen);
-
-        // Copy the chunk to tempFrame
-        memcpy(tempFrame, &buff[currentIndex], chunkLen);
-
-        // Null-terminate the chunk
-        tempFrame[chunkLen] = '\0';
-
-        // Prepare the STOMP frame
-        size_t sendingFrameLen = strlen(tempFrame) + 47 + strlen(topic);
-        char* sendingFrame = (char*)heap_caps_malloc(sendingFrameLen + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-        if (sendingFrame == NULL) {
-            // ESP_LOGE(TAGSTOMP, "Memory allocation for sendingFrame failed");
-            return false;
-        }
-
-        memset(sendingFrame, 0, sendingFrameLen + 1);
-
-
-        strcat(sendingFrame, "[\"SEND\\ndestination:");
-        strcat(sendingFrame, topic);
-        strcat(sendingFrame, "\\n\\n");
-
-        strcat(sendingFrame, tempFrame);
-
-        // sendingFrame[strlen(sendingFrame)] = 0x31; // Directly inserting a binary character at the correct location
-
-        strcat(sendingFrame, "\\n\\n\\u0000\"]");
-
-        ESP_LOGW(TAGSTOMP, "sending pac: %s\n", sendingFrame);
-
-        // Check network status
-        if (networkStatus != STOMP_CONNECTED) {
-            ESP_LOGE(TAGSTOMP, "Stomp disconnected, retrying...");
-            if (networkStatus > WIFI_CONNECTED) networkStatus = WSS_CONNECTED;
-            heap_caps_free(sendingFrame);
-            sendingFrame=NULL;
-            vTaskDelay(1000 / portTICK_PERIOD_MS); // Delay before retry
-            maxTry++;
-            if(maxTry>MAXTRY){
-                maxTry=0;
-                return false;
-            }
-            continue; // Retry sending
-        }
-
-        // Send the STOMP frame
-        if (esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY) == 0) {
-            // ESP_LOGE(TAGSTOMP, "Sending STOMP failed, retrying...");
-            if (networkStatus > WIFI_CONNECTED) networkStatus = WSS_CONNECTED;
-            heap_caps_free(sendingFrame);
-            sendingFrame=NULL;
-            vTaskDelay(1000 / portTICK_PERIOD_MS); // Delay before retry
-            maxTry++;
-            if(maxTry>MAXTRY){
-                maxTry=0;
-                return false;
-            }
-            continue; // Retry sending
-        }
-
-        // Update indices and lengths
-        currentIndex += chunkLen;
-        buffLen -= chunkLen;
-
-        heap_caps_free(sendingFrame); // Free allocated memory for sendingFrame
-        sendingFrame=NULL;
-        // vTaskDelay(30 / portTICK_PERIOD_MS); // Delay to avoid flooding
-    }
-
-    return true;
-}
-
-
-
-// bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name, uint16_t id, char* topic) {
-//     // Calculate the required size for hex string
-//     size_t tempLen = buffLen * 2 + 1;
-//     char* hexString = (char*)heap_caps_malloc(tempLen, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-//     if (hexString == NULL) {
-//         // ESP_LOGE(TAGSTOMP, "Memory allocation for hexString failed");
-//         return false;
-//     }
-
-//     // Convert buffer to hex string
-//     for (uint16_t i = 0; i < buffLen; i++) {
-//         sprintf(&hexString[i * 2], "%02x", buff[i]);
-//     }
-//     hexString[tempLen - 1] = '\0';
-
-//     uint16_t totalChunks = (uint16_t)ceil((double)strlen(hexString) / IMAGE_CHANK_SIZE);
-//     // ESP_LOGW(TAGSTOMP, "Total hex string length: %d, Chunks to send: %d\n", strlen(hexString), totalChunks);
-
-//     // Send image info
-//     char imageInfo[35];
-//     snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d %d", buffLen, w, h, name, id, totalChunks);
-//     if (!stompSend(imageInfo, topic)) {
-//         heap_caps_free(hexString);
-//         hexString=NULL;
-//         return false;
-//     }
-//     vTaskDelay(50);
-
-//     uint16_t currentIndex = 0;
-//     uint16_t chunkNo = 0;
-
-
-//     while (currentIndex < strlen(hexString)) {
-//         size_t chunkLen = MIN(IMAGE_CHANK_SIZE, strlen(hexString) - currentIndex);
-//         char* chunk = (char*)heap_caps_malloc(chunkLen + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-//         if (chunk == NULL) {
-//             // ESP_LOGE(TAGSTOMP, "Memory allocation for chunk failed");
-//             heap_caps_free(hexString);
-//             hexString=NULL;
-//             return false;
-//         }
-//         strncpy(chunk, &hexString[currentIndex], chunkLen);
-//         chunk[chunkLen] = '\0';
-
-//     // Corrected length calculation for sentFrame
-//         size_t sentFrameLen = chunkLen + 55; // Additional padding for format specifiers
-//         char* sentFrame = (char*)heap_caps_malloc(sentFrameLen + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-//         if (sentFrame == NULL) {
-//             // ESP_LOGE(TAGSTOMP, "Memory allocation for sentFrame failed");
-//             heap_caps_free(chunk);
-//             heap_caps_free(hexString);
-//             hexString=NULL;  chunk=NULL;
-
-//             return false;
-//         }
-//         memset(sentFrame, 0, sentFrameLen + 1);
-        // snprintf(sentFrame, sentFrameLen, "%d %d %s", id, chunkNo + 1, chunk);
-//         printf("Chunk No: %d\n", chunkNo+1);// chank no 
-
-//         vTaskDelay(10);
-
-//         if (!stompSend(sentFrame, topic)) {
-
-//             heap_caps_free(chunk);
-//             heap_caps_free(hexString); // Free hex string memory
-//             heap_caps_free(sentFrame);
-//             hexString=NULL; chunk=NULL; sentFrame=NULL;
-//             return false;
-
-//         }
-
-//         currentIndex += chunkLen;
-//         chunkNo++;
-//         float percentage_float = ((float)chunkNo / totalChunks) * 100;
-//         percentage = (int)percentage_float;
-//         if (percentage >= 100) percentage = 0;
-
-//         heap_caps_free(chunk); // Free chunk memory
-//         heap_caps_free(sentFrame);
-//         chunk=NULL;sentFrame=NULL;
-
-//     }
-
-//     heap_caps_free(hexString); // Free hex string memory
-//     hexString=NULL;  
-//     return true;
-// }
 
 //====================================done end
 
-
-
-
 bool sendToWss(uint8_t *buff, size_t buffLen) {
-
-    uint8_t tempFrame[CHANK_SIZE + 1];
-    memset(tempFrame, 0, sizeof(tempFrame));
-
+    uint8_t tempFrame[CHANK_SIZE];  // Buffer for each chunk
     uint16_t currentIndex = 0;
 
-    ESP_LOGW(TAGSTOMP, "Total stompS length: %d data : %s\n", buffLen,(char*)buff );
-
-
+    ESP_LOGW(TAGSTOMP, "Total stompS length: %d", buffLen);
 
     while (buffLen > 0) {
+        // Prepare the chunk data
         memset(tempFrame, 0, sizeof(tempFrame));
-
         size_t chunkLen = MIN(CHANK_SIZE, buffLen);
         memcpy(tempFrame, &buff[currentIndex], chunkLen);
 
-        size_t sendingFrameLen = chunkLen + 100 ;  // Adjust size based on chunk size
+        // Calculate the required size for the sending frame (adjust for extra headers)
+        size_t sendingFrameLen = chunkLen + 100;  // Adjust based on format
         char* sendingFrame = (char*)heap_caps_malloc(sendingFrameLen + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
         if (sendingFrame == NULL) {
-            return false;
+            return false;  // Memory allocation failure
         }
         memset(sendingFrame, 0, sendingFrameLen + 1);
 
+        // Generate unique ID
+        char uniqueID[10];
+        snprintf(uniqueID, sizeof(uniqueID), "%08llu", generate_unique_id());
 
-//----------------------------------Stomp--Pac-------------------------------
-        // strcat(sendingFrame, "[\"SEND\\ndestination:");
-        // strcat(sendingFrame, topic);
-        // strcat(sendingFrame, "\\n\\n");
-        // strcat(sendingFrame, tempFrame);
-        // strcat(sendingFrame, "\\n\\n");
-        // memcpy(&sendingFrame[strlen(sendingFrame)], tempFrame, chunkLen); 
-        // strcat(sendingFrame, "\\n\\n\\u0000\"]");
-//---------------------------------------------------------------------------
-
-        char uinqeID[10];
-        snprintf(uinqeID, sizeof(uinqeID), "%08llu", generate_unique_id());
-        // strcat(sendingFrame, DEVICE_VERSION_ID);
-        // strcat(sendingFrame, uinqeID);
-        // strcat(sendingFrame, " ");
-
-
-//  DEVICE_TYPE:< device type >\nID:< unique id >\nDATA_TYPE:< B/h/s >\nDATA:< data >\n\n\u0000
-
-        strcat(sendingFrame, "DEVICE_TYPE:");
-        strcat(sendingFrame, "UFACE\\n");
+        // Prepare the STOMP frame
+        strcat(sendingFrame, "DEVICE_TYPE:UFACE\\n");
         strcat(sendingFrame, "ID:");
         strcat(sendingFrame, DEVICE_VERSION_ID);
-        strcat(sendingFrame, uinqeID);
-        strcat(sendingFrame, "\\nDATA_TYPE:");
-        strcat(sendingFrame, "B");
-        strcat(sendingFrame, "\\nDATA:");
-        memcpy(&sendingFrame[strlen(sendingFrame)], tempFrame, chunkLen);
-        strcat(sendingFrame, "\\n\\n\\u0000");
+        strcat(sendingFrame, uniqueID);
+        strcat(sendingFrame, "\\nDATA_TYPE:B\\nDATA:");
 
+        // Add the binary chunk data to the sending frame using memcpy
+        size_t headerLen = strlen(sendingFrame);
+        memcpy(&sendingFrame[headerLen], tempFrame, chunkLen);
 
+        // Append frame terminator
+        strcat(sendingFrame + headerLen + chunkLen, "\\n\\n\\u0000");
 
-        ESP_LOGW(TAGSTOMP, "stompS pac: %s\n", sendingFrame );
+        ESP_LOGW(TAGSTOMP, "wss pac: %s", sendingFrame);
 
-
-        // if (networkStatus != STOMP_CONNECTED) {
-        //     if (networkStatus > WIFI_CONNECTED) networkStatus = WSS_CONNECTED;
-        //     heap_caps_free(sendingFrame);
-        //     vTaskDelay(1000 / portTICK_PERIOD_MS);
-        //     maxTry++;
-        //     if (maxTry > MAXTRY) {
-        //         maxTry = 0;
-        //         return false;
-        //     }
-        //     continue;
-        // }
-
-        // if (esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY) == 0) {  esp_websocket_client_send_bin
-
-        if (esp_websocket_client_send_bin(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY) == 0) { 
-
-
-            if (networkStatus > WIFI_CONNECTED) networkStatus = WSS_CONNECTED;
+        if (networkStatus != WSS_CONNECTED) {
+            if (networkStatus > WIFI_DISS) networkStatus = WIFI_CONNECTED;
             heap_caps_free(sendingFrame);
             vTaskDelay(1000 / portTICK_PERIOD_MS);
             maxTry++;
@@ -328,79 +65,107 @@ bool sendToWss(uint8_t *buff, size_t buffLen) {
             continue;
         }
 
+        // Send the prepared frame via WebSocket (replace with your WebSocket send function)
+        if (esp_websocket_client_send_bin(client, sendingFrame, headerLen + chunkLen + 6, portMAX_DELAY) == 0) {
+            ESP_LOGE(TAGSTOMP, "Failed to send frame. Retrying...");
+            heap_caps_free(sendingFrame);
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            continue;  // Retry if failed to send
+        }
+
+        // Update index and remaining length
         currentIndex += chunkLen;
         buffLen -= chunkLen;
 
-
+        // Free allocated memory
         heap_caps_free(sendingFrame);
     }
-
 
     return true;
 }
 
-bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name, uint16_t id, char* topic) {
-    uint16_t totalChunks = (uint16_t)ceil((double)buffLen / IMAGE_CHANK_SIZE);
+bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name, uint16_t id) {
+
+    uint16_t totalChunks = (buffLen + IMAGE_CHANK_SIZE - 1) / IMAGE_CHANK_SIZE;  // Total number of chunks
+
+    printf("totalChunks : %d image len:  %d\n",totalChunks,buffLen);
+
+    // Prepare image info
+    char imageInfo[35] = {0};
+    imageInfo[0] = (buffLen >> 8) & 0xFF;  // High byte of buffLen
+    imageInfo[1] = buffLen & 0xFF;         // Low byte of buffLen
+    imageInfo[2] = ' ';            // space
+
+    imageInfo[3] = h;                      // Image height
+    imageInfo[4] = ' ';            // space
+
+    imageInfo[5] = w;                      // Image width
+    imageInfo[6] = ' ';            // space
+
+    memcpy(&imageInfo[7], name, strlen(name));  // Copy the name
+    imageInfo[6 + strlen(name)] = ' ';            // space
+
+    imageInfo[7 + strlen(name)] = (id >> 8) & 0xFF;  // High byte of ID
+    imageInfo[8 + strlen(name)] = id & 0xFF;         // Low byte of ID
+    imageInfo[9] = ' ';            // space
+
+    imageInfo[10 + strlen(name)] = totalChunks & 0xFF;  // Total chunks
 
     // Send image info
-    char imageInfo[35];
-    snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d %d", buffLen, w, h, name, id, totalChunks);
-    if (!sendToWss((uint8_t*)imageInfo, strlen(imageInfo))) {
+    size_t imageInfoLen = 7 + strlen(name);  // Calculate the length of imageInfo
+    if (!sendToWss((uint8_t*)imageInfo, imageInfoLen)) {
+        // printf("Image info send failed\n");
         return false;
     }
-    vTaskDelay(50);
 
+    vTaskDelay(50);
+   
     uint16_t currentIndex = 0;
     uint16_t chunkNo = 0;
 
+    // Send the image chunks
     while (currentIndex < buffLen) {
-        size_t chunkLen = MIN(IMAGE_CHANK_SIZE, buffLen - currentIndex);
+        size_t chunkLen = (buffLen - currentIndex) > IMAGE_CHANK_SIZE ? IMAGE_CHANK_SIZE : (buffLen - currentIndex);
         uint8_t* chunk = (uint8_t*)heap_caps_malloc(chunkLen, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
         if (chunk == NULL) {
-            return false;
+            return false;  // Handle memory allocation failure
         }
-        memcpy(chunk, &buff[currentIndex], chunkLen);
+        memcpy(chunk, &buff[currentIndex], chunkLen);  // Copy chunk of image data
 
-        size_t sentFrameLen = chunkLen + 55; // Adjust for format specifiers
-        char* sentFrame = (char*)heap_caps_malloc(sentFrameLen + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+        // Prepare the frame to send: id + chunkNo + chunk data
+        size_t sentFrameLen = chunkLen + 6;  // 2 bytes for ID, 1 byte for chunkNo
+        uint8_t* sentFrame = (uint8_t*)heap_caps_malloc(sentFrameLen, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
         if (sentFrame == NULL) {
-            heap_caps_free(chunk);
+            heap_caps_free(chunk);  // Free the allocated chunk before returning
             return false;
         }
-        memset(sentFrame, 0, sentFrameLen + 1);
 
-        // snprintf(sentFrame, sentFrameLen, "%d %d %s", id, chunkNo + 1, chunk); formet
-//--------------------binary
-        sentFrame=id;
-        memcpy(&sentFrame[strlen(sentFrame)], chunkNo + 1, 1);
-        memcpy(&sentFrame[strlen(sentFrame)], chunk , chunkLen);
-//--------------------
+        // Pack the frame with ID, chunk number, and chunk data
+        sentFrame[0] = (id >> 8) & 0xFF;     // High byte of ID
+        sentFrame[1] = id & 0xFF;            // Low byte of ID
+        sentFrame[2] = ' ';            // space
+        sentFrame[3] = chunkNo + 1;          // Current chunk number
+        sentFrame[4] = ' ';            // space
 
+        memcpy(&sentFrame[5], chunk, chunkLen);  // Copy chunk data to the frame
 
-        // snprintf(sentFrame, sentFrameLen, "%d %d ", id, chunkNo + 1);
-        // memcpy(&sentFrame[strlen(sentFrame)], chunk, chunkLen);  // Copy binary chunk directly
+        printf("Chunk No: %d\n", chunkNo + 1);  // Log the chunk number
 
-        printf("Chunk No: %d\n", chunkNo + 1);  // Chunk number logging
-
-        // vTaskDelay(10);
-
-        if (!sendToWss((uint8_t*)sentFrame, strlen(sentFrame))) {
+        // Send the frame
+        if (!sendToWss(sentFrame, sentFrameLen)) {
             heap_caps_free(chunk);
             heap_caps_free(sentFrame);
             return false;
         }
 
+        // Update the current index and chunk number
         currentIndex += chunkLen;
         chunkNo++;
 
-        float percentage_float = ((float)chunkNo / totalChunks) * 100;
-        percentage = (int)percentage_float;
-        if (percentage >= 100) percentage = 0;
-
+        // Free allocated memory after sending
         heap_caps_free(chunk);
         heap_caps_free(sentFrame);
     }
-
     return true;
 }
 
@@ -654,155 +419,27 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
             }
 
             
-            if((char)data->data_ptr[0]=='T'){
+            ESP_LOGE(TAG, "Received: ");
 
-                // printf("rcv Time:  %d %d %d %d %d %d %c%c%c",data->data_ptr[1],data->data_ptr[2],data->data_ptr[3],data->data_ptr[4],data->data_ptr[5],data->data_ptr[6] ,data->data_ptr[7] ,data->data_ptr[8],data->data_ptr[9]);
-                // memset(data->data_ptr,0,data->data_len);
+            for(uint16_t i=0; i< data->data_len;i++){
 
-            }else if( (char)data->data_ptr[0]=='L' ) {
-
-                // ESP_LOGW(TAG, "Received log %.*s", data->data_len, (char *)data->data_ptr);
-                // memset(data->data_ptr,0,data->data_len);
-
-            }else{
-
-                ESP_LOGE(TAG, "Received:  %.*s", data->data_len, (char *)data->data_ptr);
-
-                for(uint16_t i=0; i< data->data_len;i++){
-
-                    printf("%d ",data->data_ptr[i]);
-
-                }
-
-                // process_data((char *)data->data_ptr, data->data_len);
-                process_command((char *)data->data_ptr);
-                memset(data->data_ptr,0,data->data_len);
+                printf("%x ",data->data_ptr[i]);
 
             }
-            
 
-        }
+            process_command((char *)data->data_ptr);
+            memset(data->data_ptr,0,data->data_len);
+
+    }
 
         // ESP_LOGI(TAG, "WEBSOCKET_free");
 
-
-
-
-
-        // ESP_LOGW(TAG, "Total payload length=%d, data_len=%d, current payload offset=%d\r\n", data->payload_len, data->data_len, data->payload_offset);
-
-
-
-        // if (data->op_code == 0x08 && data->data_len == 2) {
-        //     ESP_LOGE(TAG, "WSS Closed Code: %d", 256*data->data_ptr[0] + data->data_ptr[1]);
-
-        //     vTaskDelay(100);
-        //     break;
-
-        // } else {
-
-        //     if(data->data_ptr[0]=='o')stomp_client_connect();   
-
-        //     else if(data->data_ptr[0]=='a'){
-
-        //         ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
-        //         stomp_client_handle_message(&data->data_ptr[3]);
-
-        //     }
-
-        //     else if(data->data_ptr[0]=='h'){
-        //         //---------------------------------------------------------------
-        //         if( networkStatus==STOMP_CONNECTED){
-        //             ESP_LOGI(TAG, "Ping");
-        //             time_library_time_t current_time;
-        //             uint8_t clockType = get_time(&current_time, 1);
-        //             char tempFrame[27];
-        //             snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",current_time.year,current_time.month,current_time.day,current_time.hour,current_time.minute,current_time.second,
-        //             day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
-
-        //             // if(!stompSend(tempFrame, PUBLISH_TOPIC)){
-        //             //     // ESP_LOGI(TAGSTOMP, "sending error");
-
-        //             // }
-
-        //             uint8_t time [11];
-        //             time[0]=(uint8_t)'T';
-        //             time[1]=current_time.year-2000;
-        //             time[2]=current_time.month;
-        //             time[3]=current_time.day;
-                    
-        //             time[4]=current_time.hour;
-        //             time[5]=current_time.minute;
-        //             time[6]=current_time.second;
-
-        //             time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
-        //             time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
-        //             time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
-        //             time[10]='\0';
-
-        //             printf(" data len: %d time: %c %d %d %d %d %d %d %s\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,(char*)&time[7]);
-        //             // stompS(time, sizeof(time), PUBLISH_TOPIC);
-        //             // stompSend("(char*)time", PUBLISH_TOPIC);
-        //             // vTaskDelay(100);
-
-        //             // stompSend(time[0], PUBLISH_TOPIC);
-        //             // stompSend((char*)time, PUBLISH_TOPIC);
-        //             // stompS(&time, sizeof(time), PUBLISH_TOPIC);
-
-        //         }
-        //         //--------------------------------------------------------------
-        //     }else if(data->data_ptr[0]=='c'){
-
-        //         // ESP_LOGW(TAG, "Received= %s",(char *)data->data_ptr);
-        //         networkStatus=WIFI_CONNECTED;
-        //         stompAppStart();
-        //     }
-        //     // ESP_LOGI(TAG, "WEBSOCKET_free");
-        //     memset(data->data_ptr,0,data->data_len);
-        // }
         break;
     case WEBSOCKET_EVENT_ERROR:
         ESP_LOGI(TAG, "WEBSOCKET_EVENT_ERROR");
         break;
     }
 }
-
-
-// void process_data(char* data, uint32_t len) {
-    
-//     // Find the start of "DATA:"
-//     char* d_start = strstr(data, "DATA:");
-//     if (d_start) {
-//         // Move the pointer to the actual data after "DATA:"
-//         d_start += strlen("DATA:");
-
-//         // Find the end marker ("\\n\\n\\u0000") or process till the end if no marker
-//         char* end_pos = strstr(d_start, "\\n\\n\\u0000");
-
-//         // If no end marker is found, set end_pos to the end of the buffer
-//         if (end_pos == NULL) {
-//             end_pos = data + len;
-//         }
-
-//         // Print the data between d_start and end_pos in decimal format
-//         printf("\nExtracted Data (as decimal values): ");
-//         for (char* p = d_start; p < end_pos; p++) {
-//             printf("%d ", *p); // Print each byte as a decimal number
-//         }
-
-//         printf("\n");
-
-//         // Clear the buffer after processing
-//         memset(data, 0, len);
-//     } else {
-//         printf("No 'DATA:' found in the buffer\n");
-//     }
-// }
-
-
-
-
-
 
 
 

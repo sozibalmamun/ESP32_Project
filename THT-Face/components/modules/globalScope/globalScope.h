@@ -21,9 +21,12 @@
 #define NAME_DATA_ERROR     0X08
 #define ENROLMENT_TIMEOUT   0x09
 
-#define SYNC_DUPLICATE   0x0A
-#define SYNC_DONE   0x0B
-#define SYNC_ERROR   0x0C
+#define SYNC_DUPLICATE      0x0A
+#define SYNC_DONE           0x0B
+#define SYNC_ERROR          0x0C
+
+#define TIME_UPDATE         0x0D
+#define TIME_FORMET_UPDATE  0x0E
 
 
 // sleep ----------------

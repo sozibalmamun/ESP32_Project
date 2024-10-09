@@ -34,7 +34,7 @@ typedef struct {
 
 
 
-bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id, char* topic);
+bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id);
 void stomp_client_connect(void);
 bool stompSend(char * buff, char* topic);
 void cloudHandel();
@@ -50,7 +50,7 @@ void save_face_data(uint32_t person_id, const char* name, uint32_t image_width, 
 void read_face_data(uint32_t person_id);
 void delete_face_data(uint32_t person_id);
 void write_log_attendance(uint16_t person_id,  uint8_t* timestamp);
-bool process_and_send_faces(const char* topic);
+// bool process_and_send_faces(uint16_t id);
 void print_memory_status(void);
 void format_fatfs(void);
 void process_attendance_files(void);

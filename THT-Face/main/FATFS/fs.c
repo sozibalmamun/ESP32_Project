@@ -291,19 +291,6 @@ void save_face_data(uint32_t person_id, const char* name, uint32_t image_width, 
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 void read_face_data(uint32_t person_id) {
     char file_name[64];
     snprintf(file_name, sizeof(file_name), "/fatfs/faces/%d.dat", person_id);
@@ -353,15 +340,17 @@ void read_face_data(uint32_t person_id) {
 }
 
 
-void delete_face_data(uint32_t person_id) {
+bool delete_face_data(uint16_t person_id) {
     char file_name[64];
-    snprintf(file_name, sizeof(file_name), "/fatfs/faces/person_%d.dat", person_id);
+    snprintf(file_name, sizeof(file_name), "/fatfs/faces/%d.dat", person_id);
 
     int res = remove(file_name);
     if (res == 0) {
         ESP_LOGI("delete_face_data", "Deleted face data for Person ID %d", person_id);
+        return true;
     } else {
         ESP_LOGE("delete_face_data", "Failed to delete face data for Person ID %d", person_id);
+        return false;
     }
 }
 

@@ -28,6 +28,13 @@
 #define TIME_UPDATE         0x0D
 #define TIME_FORMET_UPDATE  0x0E
 
+#define IMAGE_DELETE_SUC        0x0F
+#define IMAGE_DELETE_FAIL       0x10
+
+
+
+
+
 
 // sleep ----------------
 #define SLEEP   0x01

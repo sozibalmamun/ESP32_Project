@@ -35,6 +35,7 @@ extern "C" {
 void process_command(const char* buffer);
 void enrolOngoing(void);
 bool process_and_send_faces(uint16_t id);
+bool delete_face_data(uint16_t person_id);
 
 
 extern void eventFeedback(void);

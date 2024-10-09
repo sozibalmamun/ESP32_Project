@@ -104,15 +104,16 @@ void process_command(const char* buffer) {
     }else if(strncmp(buffer, "imagedl", strlen("imagedl")) == 0){
 
 
+        uint16_t tempid = buffer[8]<<8|buffer[9];
+        printf("giveimage: %d\n",tempid);
+        if(delete_face_data(tempid)){
+
+            CmdEvent = IMAGE_DELETE_SUC;
+        }else CmdEvent = IMAGE_DELETE_FAIL;
 
     }else if(strncmp(buffer, "cmddl", strlen("cmddl")) == 0){
 
   
-
-
-
-
-
         const char* ptr = buffer;  // Start pointer
         // Skip the command type "cmdenrol" by moving the pointer forward
         const char cmd[] = "cmddl";
@@ -403,7 +404,29 @@ void eventFeedback(void){
 
     case TIME_FORMET_UPDATE:
 
-        if (!sendToWss((uint8_t*)"ATFU",4)) {
+        if (!sendToWss((uint8_t*)"ATFU",5)) {
+
+            //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
+        } else {
+            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            CmdEvent = IDLE_EVENT;
+        }
+
+        break;
+    case IMAGE_DELETE_SUC:
+
+        if (!sendToWss((uint8_t*)"ADPI",5)) {
+
+            //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
+        } else {
+            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            CmdEvent = IDLE_EVENT;
+        }
+       break;
+
+    case IMAGE_DELETE_FAIL:
+
+            if (!sendToWss((uint8_t*)"NDPII",6)) {
 
             //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
         } else {

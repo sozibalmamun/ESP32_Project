@@ -66,7 +66,7 @@ extern void read_face_data(uint32_t person_id);
 
 extern bool readFace(const camera_fb_t *src, imageData_t **person);
 
-extern void delete_face_data(uint32_t person_id);
+extern bool delete_face_data(uint16_t person_id);
 extern void write_log_attendance(uint16_t person_id,  uint8_t* timestamp);
 extern void print_memory_status(void);
 extern void process_attendance_files(void);

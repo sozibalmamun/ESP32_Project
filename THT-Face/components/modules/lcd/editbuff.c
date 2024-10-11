@@ -87,23 +87,21 @@ void editDisplayBuff(camera_fb_t **buff){
         {
 
             // if(networkStatus==STOMP_CONNECTED && key_state== KEY_IDLE ){
-                if(networkStatus==WSS_CONNECTED && key_state== KEY_IDLE ){
+            if(networkStatus==WSS_CONNECTED && key_state== KEY_IDLE ){
 
-                
-                // display_faces( *buff);//face display at the uploading time
-
-                // if(percentage>2){
-                
-                //     char tempFrame[13] ;
+                if(percentage>2){
                     
-                //     snprintf(tempFrame, sizeof(tempFrame), "%d%s",percentage,"%");
-                //     WriteString(0, 160- (pixleLen(0,&tempFrame)/2) ,151,tempFrame,0x0000,*buff);
-                //     memset(tempFrame,0,sizeof(tempFrame));
-                //     snprintf(tempFrame, sizeof(tempFrame), "%s%s","Uploading",  percentage%10<=3?".":percentage%10<=6?".." : percentage%10<=9? "...":" " );
+                    display_faces( *buff);//face display at the uploading time
+                    char tempFrame[13] ;
                     
-                //     WriteString(0,160- (pixleLen(0,&tempFrame)/2),170,tempFrame,0x0000,*buff);
+                    snprintf(tempFrame, sizeof(tempFrame), "%d%s",percentage,"%");
+                    WriteString(0, 160- (pixleLen(0,&tempFrame)/2) ,151,tempFrame,0x0000,*buff);
+                    memset(tempFrame,0,sizeof(tempFrame));
+                    snprintf(tempFrame, sizeof(tempFrame), "%s%s","Uploading",  percentage%10<=3?".":percentage%10<=6?".." : percentage%10<=9? "...":" " );
+                    
+                    WriteString(0,160- (pixleLen(0,&tempFrame)/2),170,tempFrame,0x0000,*buff);
 
-                // }             
+                }             
                 
             }
 

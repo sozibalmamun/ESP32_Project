@@ -26,11 +26,11 @@ extern key_state_t key_state;
 extern TickType_t enrolTimeOut;
 
 
-void process_command(const char* buffer) {
+void process_command(const char* buffer ) {
     
     // if(strlen(buffer)>10)resizeBuffer();
 
-    printf("process_command :%s\n", buffer);
+    // printf("process_command :%s\n", buffer);
 
 
   // Check if the buffer starts with "cmdEnrol" (case-sensitive)
@@ -42,7 +42,7 @@ void process_command(const char* buffer) {
     const char cmd[] = "cmdenrol";
     size_t cmd_length = strlen(cmd);
     if (memcmp(ptr, cmd, cmd_length) != 0) {
-        printf("Invalid command.\n");
+        // printf("Invalid command.\n");
         return;
     }
     ptr += cmd_length;
@@ -51,23 +51,24 @@ void process_command(const char* buffer) {
     ptr++;
 
     // Now extract the name
-    char personName[25];
+    char Name[25];
+
     size_t name_length = 0;
     while (*ptr != ' ') {  // Stop when space or null is found
-        if (name_length < sizeof(personName) - 1) {  // Prevent buffer overflow
-            personName[name_length++] = *ptr;
-        }
+        // if (name_length < sizeof(Name) - 1) {  // Prevent buffer overflow
+            Name[name_length++] = *ptr;
+        // }
         ptr++;
     }
-    personName[name_length] = '\0';  // Null-terminate the name
+    Name[name_length] = '\0';  // Null-terminate the name
     // Skip spaces after the name
     ptr++;
     // Extract the 2-byte CRC
     uint16_t rxCrc = (ptr[0] << 8) | ptr[1];  // Read the next two bytes as CRC
 
-    // printf("Received Name: %s\n", personName);
+    // printf("Received Name: %s\n", Name);
     // printf("Received CRC: %x\n", rxCrc);
-    uint16_t calculated_crc = crc16(personName, strlen(personName));
+    uint16_t calculated_crc = crc16(Name, strlen(Name));
 
     // printf("CRC high CALCULATED: %x\n", calculated_crc);
 
@@ -78,8 +79,9 @@ void process_command(const char* buffer) {
         enrolTimeOut = xTaskGetTickCount();
 
         // printf("CRC check passed.\n");
-        // printf("  - Name: %s\n", personName);
-        // memset(tcpBuffer, 0, strlen(tcpBuffer));
+        // printf("Received Name: %s\n", Name);
+        memset(personName,0,sizeof(personName));
+        memcpy(personName,Name,strlen(Name));
         sleepTimeOut = xTaskGetTickCount();
         sleepEnable=WAKEUP;
         key_state=KEY_SHORT_PRESS;
@@ -93,10 +95,10 @@ void process_command(const char* buffer) {
         CmdEvent = NAME_DATA_ERROR;
         return;
     }
-    }else if(strncmp(buffer, "giveimage", strlen("giveimage")) == 0){
+    }else if(strncmp(buffer, "uploadimage", strlen("uploadimage")) == 0){
 
 
-        uint16_t tempid = buffer[10]<<8|buffer[11];
+        uint16_t tempid = buffer[12]<<8|buffer[13];
         // printf("giveimage: %d\n",tempid);
         process_and_send_faces(tempid);
 
@@ -105,7 +107,7 @@ void process_command(const char* buffer) {
 
 
         uint16_t tempid = buffer[8]<<8|buffer[9];
-        printf("giveimage: %d\n",tempid);
+        // printf("giveimage: %d\n",tempid);
         if(delete_face_data(tempid)){
 
             CmdEvent = IMAGE_DELETE_SUC;
@@ -119,7 +121,7 @@ void process_command(const char* buffer) {
         const char cmd[] = "cmddl";
         size_t cmd_length = strlen(cmd);
         if (memcmp(ptr, cmd, cmd_length) != 0) {
-            printf("Invalid command.\n");
+            // printf("Invalid command.\n");
             return;
         }
         ptr += cmd_length;
@@ -151,7 +153,7 @@ void process_command(const char* buffer) {
         strncpy(crcPac+strlen(crcPac), Name, strlen(Name));
 
         const uint16_t calculated_crc = crc16(crcPac, strlen(crcPac));
-        printf("CRC RCV: %x\n", rxCrc);
+        // printf("CRC RCV: %x\n", rxCrc);
         printf("CRC16 CALCULATED: %x\n", calculated_crc);
 
         if (calculated_crc == rxCrc) {
@@ -167,7 +169,116 @@ void process_command(const char* buffer) {
             CmdEvent = ID_DATA_ERROR;
         }
 
-    }else if(strncmp(buffer, "cmdsync", strlen("cmdsync")) == 0){
+    }else if (strncmp(buffer, "syncperson", strlen("syncperson")) == 0) {
+
+        const char* ptr = buffer;
+        // Skip the command "syncperson"
+        const char cmd[] = "syncperson";
+        size_t cmd_length = strlen(cmd);
+        if (memcmp(ptr, cmd, cmd_length) != 0) {
+            // printf("Invalid command.\n");
+            return;
+        }
+        ptr += cmd_length;
+
+        // Allocate memory for the sync structure
+        imageData_t* syncperson = (imageData_t*)heap_caps_malloc(sizeof(imageData_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+        if (syncperson == NULL) {
+            // printf("Memory allocation failed for sync\n");
+            return;
+        }
+
+        // Extract the name
+        ptr++;  // Skip spaces after the command
+
+        uint16_t NameCrc = (ptr[0] << 8) | ptr[1];  // Read the next two bytes as CRC
+
+
+        ptr += 3;  // Move pointer 
+
+
+
+        size_t name_length = 0;
+        while (*ptr != ' ') {  // Stop when space or null is found
+            // if (name_length < sizeof(sync->Name) - 1) {  // Prevent buffer overflow
+                syncperson->Name[name_length++] = *ptr++;
+            // } else {
+            //     break;
+            // }
+        }
+        syncperson->Name[name_length] = '\0';  // Null-terminate the name
+
+        const uint16_t calculated_NameCrc = crc16(syncperson->Name, name_length);
+
+        // Skip space after the name
+         ptr++;
+        // Extract height and width
+        syncperson->height = ptr[0];
+        syncperson->width = ptr[1];
+
+        ptr += 3;  // Move pointer past height and width
+
+        uint16_t imageCrc = (ptr[0] << 8) | ptr[1];  // Read the next two bytes as CRC
+
+        ptr += 3;  // Move pointer past height and width
+
+
+
+
+        // Calculate the buffer size (height * width * 2) and allocate memory
+        size_t buffer_size = (syncperson->height * syncperson->width) * 2;
+        syncperson->buf = (uint8_t*)heap_caps_malloc(buffer_size,  MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+        if (syncperson->buf == NULL) {
+            // printf("Memory allocation failed for buffer\n");
+            heap_caps_free(syncperson);  // Free previously allocated memory
+            return;
+        }
+        // Copy the buffer data from the input
+        memcpy(syncperson->buf, ptr, buffer_size);
+        // printf("buff size get %d, pointer size %d\n", buffer_size, (int)sizeof(syncperson->buf));
+
+
+        const uint16_t calculated_imageCrc = crc16((char*)syncperson->buf, buffer_size);
+
+        ESP_LOGI("save_face_data", "NAME CRC RX %x CALCULATE %x name: %s image_width: %d image_hight: %d image crc %x  Calculate imag crc %x",\
+        NameCrc,calculated_NameCrc ,\
+        syncperson->Name,syncperson->width,syncperson->height,\
+        imageCrc,calculated_imageCrc );
+
+        if(calculated_imageCrc!=imageCrc || calculated_NameCrc!=NameCrc){
+
+            // printf("CRC mismatch: invlid data.\n");
+            CmdEvent = SYNC_DATA_ERROR;
+            return;
+        }
+
+        if(memcmp(syncperson->buf, ptr, buffer_size) == 1 ) {
+
+            // printf("Data mismatch: received and saved data are different.\n");
+            CmdEvent = SYNC_SAVED_FAIL;
+            return;
+        } 
+
+        for(uint16_t i=0; i< buffer_size;i++){
+
+            printf("%x ",syncperson->buf[i]);
+
+        }
+
+
+        // Call the save function to store the data
+        save_face_data(0, syncperson->Name, syncperson->width, syncperson->height, syncperson->buf, SYNC_DIR);
+        // Properly free the allocated memory for buffer and syncperson
+        if (syncperson->buf != NULL) {
+            heap_caps_free(syncperson->buf);
+        }
+        
+        CmdEvent = SYNC_SAVED;
+
+
+
+    }
+    else if(strncmp(buffer, "cmdsync", strlen("cmdsync")) == 0){
 
         enrolTimeOut = xTaskGetTickCount();
         key_state=KEY_SYNC;
@@ -188,27 +299,14 @@ void process_command(const char* buffer) {
         //     ESP_LOGI(TAG_ENROL, "back to idle mode\n");
         // }
 
-// esp_err_t lcd_st7789_rst(uint8_t cmd){
-
-//     return LCD_WRITE_DATA(0x01);
-
-// }
-
-// esp_err_t lcd_st7789_sleep(uint8_t cmd);{
-
-//     return LCD_WRITE_DATA(0x10);
-
-// }
-
-
 
     }else if(strncmp(buffer, "restart", strlen("restart")) == 0){
 
 
         if (!sendToWss((uint8_t*)"ADRESTART",10)) {
-            ESP_LOGE("ID DELETE", "Error sending ACK");
+            // ESP_LOGE("ID DELETE", "Error sending ACK");
         } else {
-            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
         }
         vTaskDelay(200);
         esp_restart();
@@ -219,9 +317,9 @@ void process_command(const char* buffer) {
         format_fatfs();
 
         if (!sendToWss((uint8_t*)"ACFATFS",8)) {
-            ESP_LOGE("ID DELETE", "Error sending ACK");
+            // ESP_LOGE("ID DELETE", "Error sending ACK");
         } else {
-            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
         }
         vTaskDelay(100);
         CPUBgflag=0;
@@ -231,7 +329,7 @@ void process_command(const char* buffer) {
 
         // ESP_LOGI(TAG_ENROL, "time formet %d %d %d %d %d %d", buffer[5], buffer[6], buffer[7], buffer[8], buffer[9], buffer[10]);
 
-        time_library_time_t initial_time = {buffer[5], buffer[6], buffer[7], buffer[8], buffer[9], buffer[10]};//     year, month, day, hour, minute, second;
+        time_library_time_t initial_time = {buffer[5]+2000, buffer[6], buffer[7], buffer[8], buffer[9], buffer[10]};//     year, month, day, hour, minute, second;
         time_library_init(&initial_time);
         CmdEvent = TIME_UPDATE;
 
@@ -258,9 +356,9 @@ void eventFeedback(void){
         // if (!stompSend("ADI",PUBLISH_TOPIC)) {
         if (!sendToWss((uint8_t*)"ADI",4)) {
 
-            ESP_LOGE("ID DELETE", "Error sending ACK");
+            // ESP_LOGE("ID DELETE", "Error sending ACK");
         } else {
-            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
             CmdEvent = IDLE_EVENT;
         }        
         break;
@@ -268,9 +366,9 @@ void eventFeedback(void){
         // nack for delete invalide id
         // if (!stompSend("NDII",PUBLISH_TOPIC)) {
         if (!sendToWss((uint8_t*)"NDII",5)) {
-            ESP_LOGE("ID DELETE", "Error sending NACK");
+            // ESP_LOGE("ID DELETE", "Error sending NACK");
         } else {
-            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
             CmdEvent = IDLE_EVENT;
         }
         break;    
@@ -280,9 +378,9 @@ void eventFeedback(void){
         // if (!stompSend("NIDE",PUBLISH_TOPIC)) {
         if (!sendToWss((uint8_t*)"NIDE",5)) {
 
-            ESP_LOGE("ID DELETE", "Error sending NACK");
+            // ESP_LOGE("ID DELETE", "Error sending NACK");
         } else {
-            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
             CmdEvent = IDLE_EVENT;
         }
 
@@ -292,9 +390,9 @@ void eventFeedback(void){
         // nack for NAME DATA ERROR
         // if (!stompSend("NNDE",PUBLISH_TOPIC)) {
         if (!sendToWss((uint8_t*)"NNDE",5)) {
-            ESP_LOGE("ID DELETE", "Error sending NACK");
+            // ESP_LOGE("ID DELETE", "Error sending NACK");
         } else {
-            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
             CmdEvent = IDLE_EVENT;
         }
 
@@ -303,17 +401,61 @@ void eventFeedback(void){
 
         char personIdStr[30]; // assuming 32-bit uint can be represented in 11 chars + null terminator
 
+
         snprintf(personIdStr, sizeof(personIdStr), "AED %s %u",personName,personId);
+
         // if (!stompSend(personIdStr,PUBLISH_TOPIC)) {
         if (!sendToWss((uint8_t*)personIdStr,strlen(personIdStr))) {
             //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
         } else {
-            ESP_LOGI(TAG_ENROL, "id sent to client\n");
+            // ESP_LOGI(TAG_ENROL, "id sent to client\n");
             CmdEvent = IDLE_EVENT;
         }
 
         break; 
     }   
+
+
+    case SYNC_SAVED:
+
+
+        if (!sendToWss((uint8_t*)"ASSPI",6)) {
+            //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+        } else {
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            CmdEvent = IDLE_EVENT;
+        }
+
+
+
+        break;
+
+    case SYNC_SAVED_FAIL:
+
+
+        if (!sendToWss((uint8_t*)"NSSPI",6)) {
+            //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+        } else {
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            CmdEvent = IDLE_EVENT;
+        }
+
+
+
+        break;
+
+
+    case SYNC_DATA_ERROR:
+
+        if (!sendToWss((uint8_t*)"NSDE",5)) {
+            //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+        } else {
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            CmdEvent = IDLE_EVENT;
+        }
+
+        break;
+
     case DUPLICATE:
 
         // nack for duplicate person
@@ -321,7 +463,7 @@ void eventFeedback(void){
         if (!sendToWss((uint8_t*)"NDP",4)) {
             //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
         } else {
-            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
             CmdEvent = IDLE_EVENT;
         }
 
@@ -339,7 +481,7 @@ void eventFeedback(void){
         if (!sendToWss((uint8_t*)personIdStr,strlen(personIdStr))) {
             //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
         } else {
-            ESP_LOGI(TAG_ENROL, "id sent to client\n");
+            // ESP_LOGI(TAG_ENROL, "id sent to client\n");
             CmdEvent = IDLE_EVENT;
             memset(personName,0,sizeof(personName));
             personId=0;
@@ -354,7 +496,7 @@ void eventFeedback(void){
         if (!sendToWss((uint8_t*)"NSDP",5)) {
             //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
         } else {
-            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
             CmdEvent = IDLE_EVENT;
         }
 
@@ -368,7 +510,7 @@ void eventFeedback(void){
         if (!sendToWss((uint8_t*)"NSER",5)) {
             //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
         } else {
-            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
             CmdEvent = IDLE_EVENT;
         }
 
@@ -382,7 +524,7 @@ void eventFeedback(void){
 
             //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
         } else {
-            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
             CmdEvent = IDLE_EVENT;
 
         }
@@ -394,7 +536,7 @@ void eventFeedback(void){
 
             //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
         } else {
-            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
             CmdEvent = IDLE_EVENT;
 
         }
@@ -408,7 +550,7 @@ void eventFeedback(void){
 
             //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
         } else {
-            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
             CmdEvent = IDLE_EVENT;
         }
 
@@ -419,7 +561,7 @@ void eventFeedback(void){
 
             //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
         } else {
-            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
             CmdEvent = IDLE_EVENT;
         }
        break;
@@ -430,7 +572,7 @@ void eventFeedback(void){
 
             //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
         } else {
-            ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
             CmdEvent = IDLE_EVENT;
         }
 
@@ -440,3 +582,27 @@ void eventFeedback(void){
         break;
     }
 }
+
+
+// uint32_t crc32(const char *buf, size_t len) {
+//     uint32_t crc = 0xFFFFFFFF;
+//     for (size_t i = 0; i < len; i++) {
+//         uint8_t byte = buf[i];
+//         crc = crc_table[(crc ^ byte) & 0xFF] ^ (crc >> 8);
+//     }
+//     return crc ^ 0xFFFFFFFF;
+// }
+
+
+// CRC-16-CCITT table for faster computation
+uint16_t crc16(const char *buf, size_t len) {
+
+
+    uint16_t crc = 0x0000; // Initialize with 0x0000
+    for (size_t i = 0; i < len; i++) {
+        uint8_t byte = buf[i];
+        crc = (crc >> 8) ^ crc16_table[(crc & 0xFF) ^ byte];
+    }
+    return crc;
+}
+

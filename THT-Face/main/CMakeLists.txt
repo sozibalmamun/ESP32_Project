@@ -9,7 +9,6 @@
                              "app_main.cpp" 
                              "event_logic.cpp" 
                              "WssClient/WssClient.c" 
-                             "dataHandler/dataHandler.c" 
                              "cloudEvent/cloudEvent.c" 
 
                              "Conectivity/blufi_example_main.c"

@@ -257,14 +257,20 @@ void format_fatfs() {
 
 //-------------------------------------rnd
 
-void save_face_data(uint32_t person_id, const char* name, uint32_t image_width, uint32_t image_hight, const uint8_t* image_data) {
+void save_face_data(uint16_t person_id, const char* name, uint32_t image_width, uint32_t image_hight, const uint8_t* image_data ,const char* directory) {
    
+
+    // ESP_LOGI("save_face_data", "person_id: %d name: %s image_width: %d image_hight: %d directory: %s",person_id,name,image_width,image_hight, directory);
+
+
     char file_name[64];
-    snprintf(file_name, sizeof(file_name), "/fatfs/faces/%d.dat", person_id);
+
+    snprintf(file_name, sizeof(file_name), "%s/%d.dat",directory, person_id>0?person_id:strlen(name));
+
 
     FILE* f = fopen(file_name, "wb");
     if (f == NULL) {
-        ESP_LOGE("save_face_data", "Failed to open file for writing");
+        // ESP_LOGE("save_face_data", "Failed to open file for writing");
         return;
     }
 
@@ -291,53 +297,53 @@ void save_face_data(uint32_t person_id, const char* name, uint32_t image_width, 
 }
 
 
-void read_face_data(uint32_t person_id) {
-    char file_name[64];
-    snprintf(file_name, sizeof(file_name), "/fatfs/faces/%d.dat", person_id);
+// void read_face_data(uint32_t person_id) {
+//     char file_name[64];
+//     snprintf(file_name, sizeof(file_name), "/fatfs/faces/%d.dat", person_id);
 
-    FILE* f = fopen(file_name, "rb");
-    if (f == NULL) {
-        ESP_LOGE("read_face_data", "Failed to open file for reading");
-        return;
-    }
+//     FILE* f = fopen(file_name, "rb");
+//     if (f == NULL) {
+//         ESP_LOGE("read_face_data", "Failed to open file for reading");
+//         return;
+//     }
 
-    uint32_t read_person_id;
-    uint32_t name_len;
-    char name[64];
-    uint32_t image_width;
-    uint32_t image_length;
+//     uint32_t read_person_id;
+//     uint32_t name_len;
+//     char name[64];
+//     uint32_t image_width;
+//     uint32_t image_length;
 
-    // Read person ID
-    fread(&read_person_id, sizeof(read_person_id), 1, f);
+//     // Read person ID
+//     fread(&read_person_id, sizeof(read_person_id), 1, f);
 
-    // Read name length and name
-    fread(&name_len, sizeof(name_len), 1, f);
-    fread(name, name_len, 1, f);
-    name[name_len] = '\0'; // Null-terminate the string
+//     // Read name length and name
+//     fread(&name_len, sizeof(name_len), 1, f);
+//     fread(name, name_len, 1, f);
+//     name[name_len] = '\0'; // Null-terminate the string
 
-    // Read image width
-    fread(&image_width, sizeof(image_width), 1, f);
+//     // Read image width
+//     fread(&image_width, sizeof(image_width), 1, f);
 
-    // Read image length
-    fread(&image_length, sizeof(image_length), 1, f);
+//     // Read image length
+//     fread(&image_length, sizeof(image_length), 1, f);
 
-    // Read image data
-    uint8_t* image_data = malloc(image_length);
-    if (image_data == NULL) {
-        ESP_LOGE("read_face_data", "Failed to allocate memory for image data");
-        fclose(f);
-        return;
-    }
-    fread(image_data, image_length, 1, f);
+//     // Read image data
+//     uint8_t* image_data = malloc(image_length);
+//     if (image_data == NULL) {
+//         ESP_LOGE("read_face_data", "Failed to allocate memory for image data");
+//         fclose(f);
+//         return;
+//     }
+//     fread(image_data, image_length, 1, f);
 
-    fclose(f);
+//     fclose(f);
 
-    // Do something with the data (e.g., display it or process it)
-    ESP_LOGI("read_face_data", "Read Data - ID: %d, Name: %s, Width: %d, Length: %d", read_person_id, name, image_width, image_length);
+//     // Do something with the data (e.g., display it or process it)
+//     ESP_LOGI("read_face_data", "Read Data - ID: %d, Name: %s, Width: %d, Length: %d", read_person_id, name, image_width, image_length);
 
-    // Free the allocated memory for image data
-    free(image_data);
-}
+//     // Free the allocated memory for image data
+//     free(image_data);
+// }
 
 
 bool delete_face_data(uint16_t person_id) {
@@ -354,26 +360,6 @@ bool delete_face_data(uint16_t person_id) {
     }
 }
 
-
-// for text 
-// void write_log_attendance(uint16_t person_id, uint8_t* timestamp) {
-
-//     char log_file[31];// file like: /fatfs/log/2412121716.log
-//     snprintf(log_file, sizeof(log_file), "%s/%d%d%d%d%d.log",ATTENDANCE_DIR, timestamp[0],timestamp[1],timestamp[2],timestamp[3],timestamp[4]);
-
-//     ESP_LOGI("log_attendance", "file name: %s", log_file);
-
-
-//     FILE* f = fopen(log_file, "a");
-//     if (f == NULL) {
-//         // ESP_LOGE("log_attendance", "Failed to open log file for writing");
-//         return;
-//     }
-//     // Write attendance log: person ID and timestamp
-//     fprintf(f, "%02d %02d %02d %02d %02d %02d %04d ", timestamp[0],timestamp[1],timestamp[2],timestamp[3],timestamp[4],timestamp[5],person_id);
-//     fclose(f);
-//     // ESP_LOGI("attendance", "Attendance ID: %d at: %s", person_id, log_file);
-// }
 
 // for binary
 void write_log_attendance(uint16_t person_id, uint8_t* timestamp) {
@@ -409,7 +395,6 @@ void write_log_attendance(uint16_t person_id, uint8_t* timestamp) {
 
 
 void process_attendance_files() {
-
 
     DIR *dir;
     struct dirent *entry;
@@ -449,132 +434,6 @@ void process_attendance_files() {
     closedir(dir);
 }
 
-
-// bool sendFilePath(const char *file_path) {
-
-//     // Open the file
-//     FILE *file = fopen(file_path, "r");
-//     if (file == NULL) {
-//         ESP_LOGE("STOMP", "Failed to open file: %s", file_path);
-//         return false;
-//     }
-
-//     // Read the file content (this is a placeholder; adapt as needed)
-//     char buffer[1012];
-//     while (fgets(buffer, sizeof(buffer), file) != NULL) {
-
-//         // Here you would send the content via STOMP
-//         // time_library_time_t current_time;
-//         // get_time(&current_time, 0);
-//         // char tempFrame[strlen(buffer)+30];
-//         // snprintf(tempFrame, sizeof(tempFrame), "%d %d %d %d %d %d %s",
-//         // (current_time.year-2000), current_time.month, current_time.day,
-//         // current_time.hour, current_time.minute, current_time.second, // device time
-//         // buffer); // log time + id
-
-//         ESP_LOGW(TAG, "buff log %s", buffer);
-
-//         if (!stompSend(buffer,PUBLISH_TOPIC)) {
-//             //  ESP_LOGE(TAG, "Error sending log");
-//             return false;
-//         }
-//         break;
-//     }
-//     fclose(file);
-//     // Simulate successful send
-//     // ESP_LOGI("STOMP", "File sent successfully: %s", file_path);
-//     return true;
-// }
-
-// binary log data process 
-
-// bool sendFilePath(const char *filePath) {
-//     // Open file and read content here
-//     // Example: Read file into buffer
-//  FILE *file = fopen(filePath, "rb");  // Open the file in binary mode
-//     if (file == NULL) {
-//         ESP_LOGE("log", "Failed to open file: %s", filePath);
-//         return false;
-//     }
-
-//     // Move to the end of the file to get its size
-//     fseek(file, 0, SEEK_END);
-//     long fileSize = ftell(file);
-//     fseek(file, 0, SEEK_SET);  // Move back to the beginning
-
-//     if (fileSize % 8 != 0) {  // Each log entry is 8 bytes
-//         ESP_LOGE("log", "Corrupted file: %s (fileSize not a multiple of 8)", filePath);
-//         fclose(file);
-//         return false;
-//     }
-
-//     // Allocate buffer to hold the entire file
-//     char *fileContent = (char *)heap_caps_malloc(fileSize, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-//     if (fileContent == NULL) {
-//         ESP_LOGE("log", "Failed to allocate memory for file content");
-//         fclose(file);
-//         return false;
-//     }
-
-//     // Read the entire file content into the buffer
-//     fread(fileContent, 1, fileSize, file);
-//     fclose(file);
-
-//     // Allocate buffer for the wss message
-//     // We'll start the message with 'L ' and add space after each 8-byte log entry
-//     size_t stompMessageSize = fileSize + (fileSize / 8) + 2;  // 8 bytes + space for each log entry, plus 'L '
-//     char *stompMessage = (char *)heap_caps_malloc(stompMessageSize, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-//     if (stompMessage == NULL) {
-//         ESP_LOGE("log", "Failed to allocate memory for STOMP message");
-//         heap_caps_free(fileContent);
-//         return false;
-//     }
-
-//     // Start the STOMP message with 'L '
-//     stompMessage[0] = 'L';
-//     size_t stompIdx = 1;
-
-//     // Loop through the file content and process each log entry (8 bytes)
-//     for (long i = 0; i < fileSize; i += 8) {
-
-//         stompMessage[stompIdx] = ' ';
-//         stompIdx++;
-
-//         // Copy the 8 bytes (6 bytes timestamp + 2 bytes person ID) from the log
-//         memcpy(&stompMessage[stompIdx], &fileContent[i], 8);
-//         stompIdx += 8;
-
-//         // Add a space after each log entry
-
-//     }
-
-//     // Null-terminate the STOMP message
-//     stompMessage[stompIdx] = '\0';
-
-//     ESP_LOGE("log", "WSS  message:");
-
-//     for(uint16_t i=0; i<stompIdx;i++){
-
-//         printf("%d ",stompMessage[i]);
-
-//     }
-
-//     // Send the STOMP message
-//     if (!stompS((uint8_t *)stompMessage, stompIdx)) {
-//         // ESP_LOGE("log", "Error sending log via STOMP");
-//         heap_caps_free(fileContent);
-//         heap_caps_free(stompMessage);
-//         return false;
-//     }
-
-//     ESP_LOGI("log", "Successfully sent log via STOMP");
-
-//     // Free allocated buffers
-//     heap_caps_free(fileContent);
-//     heap_caps_free(stompMessage);
-
-//     return true;
-// }
 
 bool sendFilePath(const char *filePath) {
     // Open file and read content here
@@ -767,12 +626,12 @@ bool process_and_send_faces(uint16_t id) {
     char file_name[30];
     snprintf(file_name, sizeof(file_name), "%s/%d.dat", FACE_DIRECTORY, id);
 
-    ESP_LOGW("process_and_send_faces", "Open file for reading: %s", file_name);
+    // ESP_LOGW("process_and_send_faces", "Open file for reading: %s", file_name);
 
     // Open the file for reading
     FILE* f = fopen(file_name, "rb");
     if (f == NULL) {
-        ESP_LOGE("process_and_send_faces", "Failed to open file for reading: %s", file_name);
+        // ESP_LOGE("process_and_send_faces", "Failed to open file for reading: %s", file_name);
         return false;  // Correct return type for bool
     }
 
@@ -795,7 +654,7 @@ bool process_and_send_faces(uint16_t id) {
     const uint16_t image_length = (image_width * image_height) * 2;
     uint8_t* image_data = (uint8_t *)heap_caps_malloc(image_length, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     if (image_data == NULL) {
-        ESP_LOGE("process_and_send_faces", "Failed to allocate memory for image data");
+        // ESP_LOGE("process_and_send_faces", "Failed to allocate memory for image data");
         fclose(f);
         return false;
     }
@@ -804,9 +663,13 @@ bool process_and_send_faces(uint16_t id) {
     fread(image_data, image_length, 1, f);
     fclose(f);  // Close the file after reading
 
+
+
+
+
     // Send the image data using the `imagesent` function
     if (!imagesent(image_data, image_length, image_height, image_width, name, person_id)) {
-        ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_name);
+        // ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_name);
         heap_caps_free(image_data);  // Free the memory in case of failure
         return false;
     }
@@ -919,15 +782,15 @@ bool process_and_send_faces(uint16_t id) {
 //     return true;
 // }
 
- bool readFace(const camera_fb_t *src, imageData_t **person) {
+bool readFace(const camera_fb_t *src, imageData_t **person) {
+    
     DIR *dir;
     struct dirent *entry;
-
     bool syncAvailable = false;
 
 
 
-    if ((dir = opendir(FACE_DIRECTORY)) == NULL) {
+    if ((dir = opendir(SYNC_DIR)) == NULL) {
         // ESP_LOGE("display_faces", "Failed to open directory: %s", FACE_DIRECTORY);
         return syncAvailable;
     }
@@ -938,7 +801,7 @@ bool process_and_send_faces(uint16_t id) {
         if (entry->d_type == DT_REG) {
             char file_name[64];
             memset(file_name, 0, sizeof(file_name));
-            strcat(file_name, FACE_DIRECTORY);
+            strcat(file_name, SYNC_DIR);
             strcat(file_name, "/");
             strcat(file_name, entry->d_name);
 

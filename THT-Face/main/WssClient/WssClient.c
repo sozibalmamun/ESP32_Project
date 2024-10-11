@@ -17,7 +17,7 @@ bool sendToWss(uint8_t *buff, size_t buffLen) {
     uint8_t tempFrame[CHANK_SIZE];  // Buffer for each chunk
     uint16_t currentIndex = 0;
 
-    ESP_LOGW(TAGSTOMP, "Total stompS length: %d", buffLen);
+    // ESP_LOGW(TAGSTOMP, "Total stompS length: %d", buffLen);
 
     while (buffLen > 0) {
         // Prepare the chunk data
@@ -51,7 +51,7 @@ bool sendToWss(uint8_t *buff, size_t buffLen) {
         // Append frame terminator
         strcat(sendingFrame + headerLen + chunkLen, "\\n\\n\\u0000");
 
-        ESP_LOGW(TAGSTOMP, "wss pac: %s", sendingFrame);
+        // ESP_LOGW(TAGSTOMP, "wss pac: %s", sendingFrame);
 
         if (networkStatus != WSS_CONNECTED) {
             if (networkStatus > WIFI_DISS) networkStatus = WIFI_CONNECTED;
@@ -88,7 +88,17 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
 
     uint16_t totalChunks = (buffLen + IMAGE_CHANK_SIZE - 1) / IMAGE_CHANK_SIZE;  // Total number of chunks
 
-    printf("totalChunks : %d image len:  %d\n",totalChunks,buffLen);
+    printf("totalChunks : %d h %d w %d image len:  %d\n\n",totalChunks, h  , w ,buffLen);
+
+
+    // for(uint16_t i=0; i< buffLen;i++){
+
+    //     printf("%02x",buff[i]);
+
+    // }
+
+    printf("\n\n");
+
 
     // Prepare image info
     char imageInfo[35] = {0};
@@ -155,6 +165,7 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
         if (!sendToWss(sentFrame, sentFrameLen)) {
             heap_caps_free(chunk);
             heap_caps_free(sentFrame);
+            percentage=0;
             return false;
         }
 
@@ -162,6 +173,11 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
         currentIndex += chunkLen;
         chunkNo++;
 
+        float percentage_float = (chunkNo /(float)totalChunks) * 100;
+        percentage = (int)percentage_float;
+
+        // printf("total chank  %d send %d percentage: %d\n",totalChank,  chankNo,percentage);
+        if(percentage>=100)percentage=0;
         // Free allocated memory after sending
         heap_caps_free(chunk);
         heap_caps_free(sentFrame);
@@ -321,6 +337,7 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
 //             vTaskDelay(2);
 //             currentIndex += chunkLen;
 //             chankNo++;// no of chank 
+
 //             float percentage_float = (chankNo /(float)totalChank) * 100;
 //             percentage = (int)percentage_float;
             
@@ -416,19 +433,22 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
                 // printf(" data len: %d ping: %c %d %d %d %d %d %d 12/24H: %d day: %s\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,time[10],(char*)&time[7]);
                 // stompS(time, sizeof(time));
 
+            }else{
+
+                ESP_LOGE(TAG, "Received: ");
+                vTaskDelay(50);
+
+                // for(uint16_t i=0; i< data->data_len;i++){
+
+                //     printf("%x ",data->data_ptr[i]);
+
+                // }
+                process_command((char *)data->data_ptr);
+                memset(data->data_ptr,0,data->data_len);
+
             }
 
-            
-            ESP_LOGE(TAG, "Received: ");
 
-            for(uint16_t i=0; i< data->data_len;i++){
-
-                printf("%x ",data->data_ptr[i]);
-
-            }
-
-            process_command((char *)data->data_ptr);
-            memset(data->data_ptr,0,data->data_len);
 
     }
 
@@ -443,28 +463,28 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
 
 
-void stomp_client_handle_message( const char *message) {
+// void stomp_client_handle_message( const char *message) {
 
-    // ESP_LOGI(TAGSTOMP, "Received STOMP message:\n%s", message);
-        if (strstr(message, "CONNECTED")) {
-        // ESP_LOGI(TAGSTOMP, "STOMP CONNECTED");
-        // Subscribe to a topic
-        stomp_client_subscribe(SUBCRIBE_TOPIC);
-    } else if (strstr(message, "MESSAGE")) {
+//     // ESP_LOGI(TAGSTOMP, "Received STOMP message:\n%s", message);
+//         if (strstr(message, "CONNECTED")) {
+//         // ESP_LOGI(TAGSTOMP, "STOMP CONNECTED");
+//         // Subscribe to a topic
+//         stomp_client_subscribe(SUBCRIBE_TOPIC);
+//     } else if (strstr(message, "MESSAGE")) {
 
-        // stomeAck(message);
+//         // stomeAck(message);
 
-        // if(!stompSend(testdata,"/app/cloud"))ESP_LOGI(TAGSTOMP, "Data sending error");
-        dataHandele(message);
+//         // if(!stompSend(testdata,"/app/cloud"))ESP_LOGI(TAGSTOMP, "Data sending error");
+//         dataHandele(message);
 
-        // Handle the received message
-    } else if (strstr(message, "ERROR")) {
+//         // Handle the received message
+//     } else if (strstr(message, "ERROR")) {
 
-        ESP_LOGE(TAGSTOMP, "STOMP ERROR: %s", message);
+//         ESP_LOGE(TAGSTOMP, "STOMP ERROR: %s", message);
 
-    }
+//     }
 
-}
+// }
 
 
 void stompAppStart(void)

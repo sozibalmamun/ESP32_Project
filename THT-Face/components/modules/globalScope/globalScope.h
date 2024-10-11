@@ -21,19 +21,32 @@
 #define NAME_DATA_ERROR     0X08
 #define ENROLMENT_TIMEOUT   0x09
 
-#define SYNC_DUPLICATE      0x0A
-#define SYNC_DONE           0x0B
-#define SYNC_ERROR          0x0C
 
-#define TIME_UPDATE         0x0D
-#define TIME_FORMET_UPDATE  0x0E
+#define SYNC_SAVED          0x0A
+#define SYNC_SAVED_FAIL     0x0B
+#define SYNC_DATA_ERROR     0x0C
 
-#define IMAGE_DELETE_SUC        0x0F
-#define IMAGE_DELETE_FAIL       0x10
-
+#define SYNC_DUPLICATE      0x0D
+#define SYNC_DONE           0x0E
+#define SYNC_ERROR          0x0F
 
 
+#define TIME_UPDATE         0x10
+#define TIME_FORMET_UPDATE  0x11
 
+#define IMAGE_DELETE_SUC    0x12
+#define IMAGE_DELETE_FAIL   0x13
+
+
+
+
+//------FATFs directory 
+
+#define  FACE_DIRECTORY "/fatfs/faces"
+#define  ATTENDANCE_DIR  "/fatfs/log"
+#define  SYNC_DIR  "/fatfs/sync"
+
+//---------------
 
 
 // sleep ----------------

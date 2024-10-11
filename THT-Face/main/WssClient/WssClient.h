@@ -81,28 +81,15 @@ extern uint8_t networkStatus;
 extern const char* day_names[];
 extern bool dspTimeFormet;
 extern uint64_t generate_unique_id(void);
-
-extern void stomp_client_connect(void);
-void stomp_client_subscribe(char* topic);
-// bool stompSend(char * buff, char* topic);
-void stomeAck(const char * message);
-
-void stomp_client_handle_message( const char *message);
-void stomp_client_int( stompInfo_cfg_t stompSetup );
-void stompAppStart(void);
-
-void process_data(char* data, uint32_t len) ;
-
 extern void process_command(const char* buffer);
-
 extern void dataHandele(const char *rx_buffer);
-extern bool stompSend(char * buff, char* topic);
-
-bool sendToWss(uint8_t *buff, size_t buffLen);
-
-char *base64_encode(const unsigned char *data, size_t input_length, size_t *output_length);
 extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id);
 
+
+void stomp_client_int( stompInfo_cfg_t stompSetup );
+void stompAppStart(void);
+bool sendToWss(uint8_t *buff, size_t buffLen);
+void process_data(char* data, uint32_t len) ;
 
 #ifdef __cplusplus
 }

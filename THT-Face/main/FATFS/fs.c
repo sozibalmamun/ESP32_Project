@@ -257,44 +257,48 @@ void format_fatfs() {
 
 //-------------------------------------rnd
 
-void save_face_data(uint16_t person_id, const char* name, uint32_t image_width, uint32_t image_hight, const uint8_t* image_data ,const char* directory) {
+// void save_face_data(uint16_t person_id, const char* name, uint32_t image_width, uint32_t image_hight, const uint8_t* image_data ,const char* directory) {
    
 
-    // ESP_LOGI("save_face_data", "person_id: %d name: %s image_width: %d image_hight: %d directory: %s",person_id,name,image_width,image_hight, directory);
+//     // ESP_LOGI("save_face_data", "person_id: %d name: %s image_width: %d image_hight: %d directory: %s",person_id,name,image_width,image_hight, directory);
 
 
-    char file_name[64];
+//     char file_name[64];
 
-    snprintf(file_name, sizeof(file_name), "%s/%d.dat",directory, person_id);
+//     snprintf(file_name, sizeof(file_name), "%s/%d.dat",directory, person_id);
 
 
-    FILE* f = fopen(file_name, "wb");
-    if (f == NULL) {
-        // ESP_LOGE("save_face_data", "Failed to open file for writing");
-        return;
-    }
+//     FILE* f = fopen(file_name, "wb");
+//     if (f == NULL) {
+//         // ESP_LOGE("save_face_data", "Failed to open file for writing");
+//         return;
+//     }
 
-    // Write person ID
-    fwrite(&person_id, sizeof(person_id), 1, f);
+//     // Write person ID
+//     fwrite(&person_id, sizeof(person_id), 1, f);
     
-    // Write name length and name
-    uint8_t name_len = strlen(name);
-    fwrite(&name_len, sizeof(name_len), 1, f);
-    fwrite(name, name_len, 1, f);
+//     // Write name length and name
+//     uint8_t name_len = strlen(name);
+//     fwrite(&name_len, sizeof(name_len), 1, f);
+//     fwrite(name, name_len, 1, f);
 
-    // Write image dimensions
-    fwrite(&image_width, sizeof(image_width), 1, f);
-    fwrite(&image_hight, sizeof(image_hight), 1, f);
+//     // Write image dimensions
+//     fwrite(&image_width, sizeof(image_width), 1, f);
+//     fwrite(&image_hight, sizeof(image_hight), 1, f);
 
-    // Calculate the image size in bytes for RGB565 format (2 bytes per pixel)
-    uint32_t image_size = image_width * image_hight * 2;
+//     // Calculate the image size in bytes for RGB565 format (2 bytes per pixel)
+//     uint32_t image_size = image_width * image_hight * 2;
     
-    // Write the image data
-    fwrite(image_data, image_size, 1, f);
+//     // Write the image data
+//     fwrite(image_data, image_size, 1, f);
 
-    fclose(f);
-    ESP_LOGI("save_face_data", "Face data saved to %s", file_name);
-}
+//     fclose(f);
+//     ESP_LOGI("save_face_data", "Face data saved to %s", file_name);
+// }
+
+
+
+
 
 
 // void read_face_data(uint32_t person_id) {
@@ -345,6 +349,52 @@ void save_face_data(uint16_t person_id, const char* name, uint32_t image_width, 
 //     free(image_data);
 // }
 
+void save_face_data(uint16_t person_id, const char* name, uint32_t image_width, uint32_t image_height, const uint8_t* image_data, const char* directory) {
+
+    char file_name[64];
+
+    // Create the file path
+    snprintf(file_name, sizeof(file_name), "%s/%d.dat", directory, person_id);
+
+    // Check if the file already exists
+    if (access(file_name, F_OK) == 0) {  // F_OK checks if the file exists
+        // If the file exists, delete it
+        if (remove(file_name) != 0) {
+            // Handle error deleting file (optional logging or error handling here)
+            // ESP_LOGE("save_face_data", "Failed to delete existing file: %s", file_name);
+            return;
+        }
+        // ESP_LOGI("save_face_data", "Existing file deleted: %s", file_name);
+    }
+
+    // Open the file for writing (it will be created if it doesn't exist)
+    FILE* f = fopen(file_name, "wb");
+    if (f == NULL) {
+        // ESP_LOGE("save_face_data", "Failed to open file for writing");
+        return;
+    }
+
+    // Write person ID
+    fwrite(&person_id, sizeof(person_id), 1, f);
+
+    // Write name length and name
+    uint8_t name_len = strlen(name);
+    fwrite(&name_len, sizeof(name_len), 1, f);
+    fwrite(name, name_len, 1, f);
+
+    // Write image dimensions
+    fwrite(&image_width, sizeof(image_width), 1, f);
+    fwrite(&image_height, sizeof(image_height), 1, f);
+
+    // Calculate the image size in bytes for RGB565 format (2 bytes per pixel)
+    uint32_t image_size = image_width * image_height * 2;
+
+    // Write the image data
+    fwrite(image_data, image_size, 1, f);
+
+    fclose(f);
+    ESP_LOGI("save_face_data", "Face data saved to %s", file_name);
+}
 
 bool delete_face_data(uint16_t person_id , const char * directory) {
     
@@ -786,23 +836,149 @@ bool process_and_send_faces(uint16_t id) {
 // }
 
 
+// bool syncFace(const camera_fb_t *src, imageData_t **person) {
+    
+//     DIR *dir;
+//     struct dirent *entry;
+//     bool syncAvailable = false;
+
+
+
+//     if ((dir = opendir(SYNC_DIR)) == NULL) {
+//         // ESP_LOGE("display_faces", "Failed to open directory: %s", FACE_DIRECTORY);
+//         return syncAvailable;
+//     }
+
+//     uint16_t image_length = 0;
+
+//     while ((entry = readdir(dir)) != NULL) {
+//         if (entry->d_type == DT_REG) {
+//             char file_name[64];
+//             memset(file_name, 0, sizeof(file_name));
+//             strcat(file_name, SYNC_DIR);
+//             strcat(file_name, "/");
+//             strcat(file_name, entry->d_name);
+
+//             FILE* f = fopen(file_name, "rb");
+//             if (f == NULL) {
+//                 // ESP_LOGE("display_faces", "Failed to open file for reading: %s", file_name);
+//                 continue;
+//             }
+
+//             uint16_t person_id;
+//             uint8_t name_len;
+//             char name[30];
+//             uint32_t image_width;
+//             uint32_t image_height;
+
+//             // Read metadata
+//             fread(&person_id, sizeof(person_id), 1, f);
+//             fread(&name_len, sizeof(name_len), 1, f);
+//             fread(name, name_len, 1, f);
+//             name[name_len] = '\0';
+
+//             fread(&image_width, sizeof(image_width), 1, f);
+//             fread(&image_height, sizeof(image_height), 1, f);
+
+//             image_length = image_width * image_height * 2;
+
+
+//             // ESP_LOGI("save_face_data", "name: %s id %d image_width: %d image_hight: %d ",name,person_id,image_width,image_height);
+
+
+
+//             // Allocate memory for image data
+//             uint8_t* image_data = (uint8_t *)heap_caps_malloc(image_length, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+//             if (image_data == NULL) {
+//                 // ESP_LOGE("display_faces", "Failed to allocate memory for image data, requesting %d bytes", image_length);
+
+//                 fclose(f);
+//                 continue;
+//             }
+
+//             fread(image_data, image_length, 1, f);
+//             fclose(f);
+
+//             // Allocate memory for person and populate the fields
+//             *person = (imageData_t *)malloc(sizeof(imageData_t));
+//             if (*person == NULL) {
+//                 ESP_LOGE("display_faces", "Failed to allocate memory for person structure");
+//                 // heap_caps_free(image_data);  // Free allocated memory for image data
+//                 continue;
+//             }
+
+//             // Populate the person structure
+//             (*person)->buf = image_data;
+//             (*person)->len = image_length;
+//             (*person)->width = image_width;
+//             (*person)->height = image_height;
+//             (*person)->id = (uint16_t)person_id;
+
+//             // Allocate memory for the name and copy it
+//             (*person)->Name = (char *)malloc(name_len + 1);  // +1 for the null terminator
+//             if ((*person)->Name == NULL) {
+//                 // ESP_LOGE("display_faces", "Failed to allocate memory for person name");
+//                 heap_caps_free(image_data);
+//                 continue;
+//             }
+//             strcpy((*person)->Name, name);
+
+//             // Now insert the FATFS image into the middle of the camera buffer (src)
+//             uint8_t *data = src->buf;           // Camera frame buffer
+//             uint8_t *fatfs_data = (*person)->buf;  // FATFS image data
+
+//             // image_width = (*person)->width;
+//             // image_height = (*person)->height;
+//             size_t offset_x = (src->width - image_width) / 2;   // Center the FATFS image horizontally
+//             size_t offset_y = (src->height - image_height) / 2; // Center the FATFS image vertically
+
+//             int8_t bytes_per_pixel = 2;  // Assuming RGB565 format, which uses 2 bytes per pixel
+
+//             // Loop through the height and width of the FATFS image
+//             for (uint16_t i = 0; i < image_height; i++) {
+//                 for (uint16_t j = 0; j < image_width; j++) {
+//                     // Calculate the position in the camera buffer to insert the pixel
+//                     int camera_pixel_index = ((offset_y + i) * src->width + (offset_x + j)) * bytes_per_pixel;
+//                     // Calculate the position in the FATFS image buffer
+//                     int fatfs_pixel_index = (i * image_width + j) * bytes_per_pixel;
+
+//                     // Copy the FATFS image pixel to the camera buffer (RGB565, 2 bytes per pixel)
+//                     data[camera_pixel_index] = fatfs_data[fatfs_pixel_index];         // High byte of RGB565
+//                     data[camera_pixel_index + 1] = fatfs_data[fatfs_pixel_index + 1]; // Low byte of RGB565
+//                 }
+//             }
+//             syncAvailable = true;
+//             // ESP_LOGI("display_faces", "Person ID: %d, Name: %s, Image inserted at (%d, %d)", (*person)->id, (*person)->Name, offset_x, offset_y);
+//         }
+//         break;  // Read only the first valid file
+//     }
+
+//     closedir(dir);
+//     return syncAvailable;
+// }
+
 bool syncFace(const camera_fb_t *src, imageData_t **person) {
     
     DIR *dir;
     struct dirent *entry;
     bool syncAvailable = false;
 
-
-
     if ((dir = opendir(SYNC_DIR)) == NULL) {
-        // ESP_LOGE("display_faces", "Failed to open directory: %s", FACE_DIRECTORY);
         return syncAvailable;
     }
 
     uint16_t image_length = 0;
 
+    // Allocate memory for person
+    *person = (imageData_t *)malloc(sizeof(imageData_t));
+    if (*person == NULL) {
+        closedir(dir);
+        return false;  // Return immediately if memory allocation fails
+    }
+    memset(*person, 0, sizeof(imageData_t));  // Initialize to avoid issues
+
     while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_type == DT_REG) {
+        if (entry->d_type == DT_REG) {  // Only consider regular files
             char file_name[64];
             memset(file_name, 0, sizeof(file_name));
             strcat(file_name, SYNC_DIR);
@@ -811,12 +987,8 @@ bool syncFace(const camera_fb_t *src, imageData_t **person) {
 
             FILE* f = fopen(file_name, "rb");
             if (f == NULL) {
-                // ESP_LOGE("display_faces", "Failed to open file for reading: %s", file_name);
-                continue;
+                continue;  // Skip this file if it cannot be opened
             }
-
-
-
 
             uint16_t person_id;
             uint8_t name_len;
@@ -838,12 +1010,15 @@ bool syncFace(const camera_fb_t *src, imageData_t **person) {
 
             ESP_LOGI("save_face_data", "name: %s id %d image_width: %d image_hight: %d ",name,person_id,image_width,image_height);
 
-
+            // Ensure the image fits in the camera buffer
+            if (image_width > src->width || image_height > src->height) {
+                fclose(f);
+                continue;  // Skip this image if it doesn't fit in the camera buffer
+            }
 
             // Allocate memory for image data
             uint8_t* image_data = (uint8_t *)heap_caps_malloc(image_length, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
             if (image_data == NULL) {
-                // ESP_LOGE("display_faces", "Failed to allocate memory for image data, requesting %d bytes", image_length);
                 fclose(f);
                 continue;
             }
@@ -851,65 +1026,61 @@ bool syncFace(const camera_fb_t *src, imageData_t **person) {
             fread(image_data, image_length, 1, f);
             fclose(f);
 
-            // Allocate memory for person and populate the fields
-            *person = (imageData_t *)malloc(sizeof(imageData_t));
-            if (*person == NULL) {
-                ESP_LOGE("display_faces", "Failed to allocate memory for person structure");
-                // heap_caps_free(image_data);  // Free allocated memory for image data
-                continue;
+            // Allocate memory for the name and copy it
+            (*person)->Name = (char *)malloc(name_len + 1);  // +1 for the null terminator
+            if ((*person)->Name == NULL) {
+                heap_caps_free(image_data);
+                continue;  // Handle memory allocation failure
             }
+            strcpy((*person)->Name, name);
 
             // Populate the person structure
             (*person)->buf = image_data;
             (*person)->len = image_length;
             (*person)->width = image_width;
             (*person)->height = image_height;
-            (*person)->id = (uint16_t)person_id;
+            (*person)->id = person_id;
 
-            // Allocate memory for the name and copy it
-            (*person)->Name = (char *)malloc(name_len + 1);  // +1 for the null terminator
-            if ((*person)->Name == NULL) {
-                // ESP_LOGE("display_faces", "Failed to allocate memory for person name");
-                heap_caps_free(image_data);
-                // free(*person);
-                continue;
-            }
-            strcpy((*person)->Name, name);
-
-            // Now insert the FATFS image into the middle of the camera buffer (src)
-            uint8_t *data = src->buf;           // Camera frame buffer
+            // Insert FATFS image into the camera buffer (centered)
+            uint8_t *data = src->buf;  // Camera frame buffer
             uint8_t *fatfs_data = (*person)->buf;  // FATFS image data
-
-            // image_width = (*person)->width;
-            // image_height = (*person)->height;
             size_t offset_x = (src->width - image_width) / 2;   // Center the FATFS image horizontally
             size_t offset_y = (src->height - image_height) / 2; // Center the FATFS image vertically
 
-            int8_t bytes_per_pixel = 2;  // Assuming RGB565 format, which uses 2 bytes per pixel
+            int8_t bytes_per_pixel = 2;  // Assuming RGB565 format
 
-            // Loop through the height and width of the FATFS image
             for (uint16_t i = 0; i < image_height; i++) {
                 for (uint16_t j = 0; j < image_width; j++) {
-                    // Calculate the position in the camera buffer to insert the pixel
                     int camera_pixel_index = ((offset_y + i) * src->width + (offset_x + j)) * bytes_per_pixel;
-                    // Calculate the position in the FATFS image buffer
                     int fatfs_pixel_index = (i * image_width + j) * bytes_per_pixel;
 
-                    // Copy the FATFS image pixel to the camera buffer (RGB565, 2 bytes per pixel)
-                    data[camera_pixel_index] = fatfs_data[fatfs_pixel_index];         // High byte of RGB565
-                    data[camera_pixel_index + 1] = fatfs_data[fatfs_pixel_index + 1]; // Low byte of RGB565
+                    // Copy the FATFS image pixel to the camera buffer
+                    data[camera_pixel_index] = fatfs_data[fatfs_pixel_index];         // High byte
+                    data[camera_pixel_index + 1] = fatfs_data[fatfs_pixel_index + 1]; // Low byte
                 }
             }
+
             syncAvailable = true;
-            // ESP_LOGI("display_faces", "Person ID: %d, Name: %s, Image inserted at (%d, %d)", (*person)->id, (*person)->Name, offset_x, offset_y);
+            break;  // Exit after processing the first valid file
         }
-        break;  // Read only the first valid file
     }
 
     closedir(dir);
+
+    // If no valid image was found, free the person structure
+    if (!syncAvailable) {
+        if ((*person)->buf != NULL) {
+            heap_caps_free((*person)->buf);
+        }
+        if ((*person)->Name != NULL) {
+            free((*person)->Name);
+        }
+        free(*person);
+        *person = NULL;
+    }
+
     return syncAvailable;
 }
-
 
 
 

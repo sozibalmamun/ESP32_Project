@@ -443,6 +443,7 @@ void eventFeedback(void){
             // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
             CmdEvent = IDLE_EVENT;
         }
+        
         break;
 
 

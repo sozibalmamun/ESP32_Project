@@ -59,7 +59,6 @@ static QueueHandle_t xQueueResult = NULL;
 //------------------------------------------------------------------------------------
 static QueueHandle_t xQueueCloud = NULL;
 extern TaskHandle_t detectionFaceProcesingTaskHandler; // Handle for the stompSenderTask
-// extern bool readFace(imageData_t *person);
 
 //---------------------------------------------------------------------------------------
 
@@ -240,12 +239,16 @@ static void task_process_handler(void *arg)
 
                     if(_gEvent==SYNCING){
 
-                        if (!readFace(frame, &enrolFrame)) {//frame
+                        CPUBgflag=1;
+
+                        if (!syncFace(frame, &enrolFrame)) {//frame
                             CmdEvent = SYNC_ERROR;
                             key_state= KEY_IDLE;
-                            vTaskDelay(10);                        
-                            // ESP_LOGW("sync", "directory emty");
+                            vTaskDelay(10);       
+                            ESP_LOGW("sync", "directory emty");
                         }
+                        CPUBgflag=0;
+
                         // ESP_LOGI("display_faces", "Person ID: %d, Name: %s, Image w: %d h: %d", enrolFrame->id, enrolFrame->Name, enrolFrame->width, enrolFrame->height);
                     }
                     std::list<dl::detect::result_t> &detect_candidates = detector.infer((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3});
@@ -319,7 +322,9 @@ static void task_process_handler(void *arg)
                         if (xTaskGetTickCount()-enrolTimeOut> TIMEOUT_5000_MS ){
                             CmdEvent = SYNC_ERROR;
                             key_state= KEY_IDLE;
+                            delete_face_data(enrolFrame->id,SYNC_DIR);               
                             vTaskDelay(10);
+
 
                         } 
 
@@ -495,6 +500,8 @@ static void task_process_handler(void *arg)
                             if (recognize_result.id > 0){
                             CmdEvent=SYNC_DUPLICATE;// 3 FOR DUPLICATE
                             frame_show_state = SHOW_DUPLICATE_SYNC;
+                            delete_face_data(enrolFrame->id,SYNC_DIR);               
+
                             break;
                             }
 
@@ -503,6 +510,7 @@ static void task_process_handler(void *arg)
                             memset(personName, 0, sizeof(personName));
                             strncpy(personName, enrolFrame->Name, sizeof(personName) - 1);
                             personName[sizeof(personName) - 1] = '\0';
+                            delete_face_data(enrolFrame->id,SYNC_DIR);               
 
                             if (enrolFrame != NULL) {
                                 if (enrolFrame->buf != NULL) {

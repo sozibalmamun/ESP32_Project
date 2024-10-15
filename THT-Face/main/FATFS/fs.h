@@ -58,9 +58,9 @@ void delete_all_directories(const char* path);
 extern void save_face_data(uint16_t person_id, const char* name, uint32_t image_width, uint32_t image_length, const uint8_t* image_data,const char* directory);
 // extern void read_face_data(uint32_t person_id);
 
-extern bool readFace(const camera_fb_t *src, imageData_t **person);
+extern bool syncFace(const camera_fb_t *src, imageData_t **person);
 
-extern bool delete_face_data(uint16_t person_id);
+extern bool delete_face_data(uint16_t person_id , const char * directory);
 extern void write_log_attendance(uint16_t person_id,  uint8_t* timestamp);
 extern void print_memory_status(void);
 extern void process_attendance_files(void);

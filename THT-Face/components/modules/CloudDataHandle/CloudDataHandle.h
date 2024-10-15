@@ -42,8 +42,8 @@ void reconnect();
 void facedataHandle(const QueueHandle_t input);
 bool pendingData();
 
-bool readFace(const camera_fb_t *src, imageData_t **person);
-
+bool syncFace(const camera_fb_t *src, imageData_t **person);
+bool delete_face_data(uint16_t person_id , const char * directory);
 
 //---------------fs system-------------------------------------------------------------------------------------------------------
 void save_face_data(uint16_t person_id, const char* name, uint32_t image_width, uint32_t image_length, const uint8_t* image_data,const char* directory);

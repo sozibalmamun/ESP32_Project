@@ -108,7 +108,7 @@ void process_command(const char* buffer ) {
 
         uint16_t tempid = buffer[8]<<8|buffer[9];
         // printf("giveimage: %d\n",tempid);
-        if(delete_face_data(tempid)){
+        if(delete_face_data(tempid,FACE_DIRECTORY)){
 
             CmdEvent = IMAGE_DELETE_SUC;
         }else CmdEvent = IMAGE_DELETE_FAIL;
@@ -171,6 +171,7 @@ void process_command(const char* buffer ) {
 
     }else if (strncmp(buffer, "syncperson", strlen("syncperson")) == 0) {
 
+        bool dataOk= true;
         const char* ptr = buffer;
         // Skip the command "syncperson"
         const char cmd[] = "syncperson";
@@ -199,19 +200,20 @@ void process_command(const char* buffer ) {
 
 
         size_t name_length = 0;
-        while (*ptr != ' ') {  // Stop when space or null is found
-            // if (name_length < sizeof(sync->Name) - 1) {  // Prevent buffer overflow
-                syncperson->Name[name_length++] = *ptr++;
-            // } else {
-            //     break;
-            // }
+        while (*ptr != ' ') {  // Stop when space is found
+            syncperson->Name[name_length++] = *ptr++;
+
         }
         syncperson->Name[name_length] = '\0';  // Null-terminate the name
-
         const uint16_t calculated_NameCrc = crc16(syncperson->Name, name_length);
-
         // Skip space after the name
          ptr++;
+
+        syncperson->id = (ptr[0] << 8) | ptr[1];  // Read the next two bytes as id
+
+
+        ptr += 3;  // Move pointer past height and width
+
         // Extract height and width
         syncperson->height = ptr[0];
         syncperson->width = ptr[1];
@@ -222,15 +224,11 @@ void process_command(const char* buffer ) {
 
         ptr += 3;  // Move pointer past height and width
 
-
-
-
         // Calculate the buffer size (height * width * 2) and allocate memory
         size_t buffer_size = (syncperson->height * syncperson->width) * 2;
         syncperson->buf = (uint8_t*)heap_caps_malloc(buffer_size,  MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
         if (syncperson->buf == NULL) {
-            // printf("Memory allocation failed for buffer\n");
-            heap_caps_free(syncperson);  // Free previously allocated memory
+            printf("Memory allocation failed for buffer\n");
             return;
         }
         // Copy the buffer data from the input
@@ -240,24 +238,24 @@ void process_command(const char* buffer ) {
 
         const uint16_t calculated_imageCrc = crc16((char*)syncperson->buf, buffer_size);
 
-        ESP_LOGI("save_face_data", "NAME CRC RX %x CALCULATE %x name: %s image_width: %d image_hight: %d image crc %x  Calculate imag crc %x",\
+        ESP_LOGI("save_face_data", "NAME CRC RX %x CALCULATE %x name: %s id %d image_width: %d image_hight: %d image crc %x  Calculate imag crc %x",\
         NameCrc,calculated_NameCrc ,\
-        syncperson->Name,syncperson->width,syncperson->height,\
+        syncperson->Name,syncperson->id ,syncperson->width,syncperson->height,\
         imageCrc,calculated_imageCrc );
 
-        if(calculated_imageCrc!=imageCrc || calculated_NameCrc!=NameCrc){
+        // if(calculated_imageCrc!=imageCrc || calculated_NameCrc!=NameCrc){
 
-            // printf("CRC mismatch: invlid data.\n");
-            CmdEvent = SYNC_DATA_ERROR;
-            return;
-        }
+        //     // printf("CRC mismatch: invlid data.\n");
+        //     CmdEvent = SYNC_DATA_ERROR;
+        //     dataOk = false;     
+        // }
 
-        if(memcmp(syncperson->buf, ptr, buffer_size) == 1 ) {
+        // if(memcmp(syncperson->buf, ptr, buffer_size) == 1 ) {
 
-            // printf("Data mismatch: received and saved data are different.\n");
-            CmdEvent = SYNC_SAVED_FAIL;
-            return;
-        } 
+        //     // printf("Data mismatch: received and saved data are different.\n");
+        //     CmdEvent = SYNC_SAVED_FAIL;
+        //     dataOk = false;     
+        // } 
 
         for(uint16_t i=0; i< buffer_size;i++){
 
@@ -265,10 +263,11 @@ void process_command(const char* buffer ) {
 
         }
 
-
         // Call the save function to store the data
-        save_face_data(0, syncperson->Name, syncperson->width, syncperson->height, syncperson->buf, SYNC_DIR);
+        if(dataOk)save_face_data(syncperson->id, syncperson->Name, syncperson->width, syncperson->height, syncperson->buf, SYNC_DIR);
         // Properly free the allocated memory for buffer and syncperson
+        ESP_LOGE("sync", "sync image saved ");
+        vTaskDelay(100);
         if (syncperson->buf != NULL) {
             heap_caps_free(syncperson->buf);
         }
@@ -282,6 +281,9 @@ void process_command(const char* buffer ) {
 
         enrolTimeOut = xTaskGetTickCount();
         key_state=KEY_SYNC;
+        ESP_LOGE("cmdsync ", "start cmd sync");
+
+        
 
     }else if(strncmp(buffer, "cmddump", strlen("cmddump")) == 0){
 
@@ -323,6 +325,8 @@ void process_command(const char* buffer ) {
         }
         vTaskDelay(100);
         CPUBgflag=0;
+        vTaskDelay(200);
+        esp_restart();
 
 
     }else if(strncmp(buffer, "time", strlen("time"))==0){
@@ -439,9 +443,6 @@ void eventFeedback(void){
             // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
             CmdEvent = IDLE_EVENT;
         }
-
-
-
         break;
 
 
@@ -459,7 +460,6 @@ void eventFeedback(void){
     case DUPLICATE:
 
         // nack for duplicate person
-        // if (!stompSend("NDP",PUBLISH_TOPIC)) {
         if (!sendToWss((uint8_t*)"NDP",4)) {
             //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
         } else {
@@ -477,7 +477,6 @@ void eventFeedback(void){
         char personIdStr[30]; // assuming 32-bit uint can be represented in 11 chars + null terminator
 
         snprintf(personIdStr, sizeof(personIdStr), "ASD %s %u",personName,personId);
-        // if (!stompSend(personIdStr,PUBLISH_TOPIC)) {
         if (!sendToWss((uint8_t*)personIdStr,strlen(personIdStr))) {
             //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
         } else {
@@ -492,7 +491,6 @@ void eventFeedback(void){
     case  SYNC_DUPLICATE:
 
         // nack for sync duplicate person
-        // if (!stompSend("NSDP",PUBLISH_TOPIC)) {
         if (!sendToWss((uint8_t*)"NSDP",5)) {
             //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
         } else {
@@ -506,7 +504,6 @@ void eventFeedback(void){
     case SYNC_ERROR:
 
         // nack for sync error
-        // if (!stompSend("NSER",PUBLISH_TOPIC)) {
         if (!sendToWss((uint8_t*)"NSER",5)) {
             //ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
         } else {

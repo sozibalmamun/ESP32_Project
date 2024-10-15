@@ -265,7 +265,7 @@ void save_face_data(uint16_t person_id, const char* name, uint32_t image_width, 
 
     char file_name[64];
 
-    snprintf(file_name, sizeof(file_name), "%s/%d.dat",directory, person_id>0?person_id:strlen(name));
+    snprintf(file_name, sizeof(file_name), "%s/%d.dat",directory, person_id);
 
 
     FILE* f = fopen(file_name, "wb");
@@ -346,9 +346,10 @@ void save_face_data(uint16_t person_id, const char* name, uint32_t image_width, 
 // }
 
 
-bool delete_face_data(uint16_t person_id) {
+bool delete_face_data(uint16_t person_id , const char * directory) {
+    
     char file_name[64];
-    snprintf(file_name, sizeof(file_name), "/fatfs/faces/%d.dat", person_id);
+    snprintf(file_name, sizeof(file_name), "%s/%d.dat",directory, person_id);
 
     int res = remove(file_name);
     if (res == 0) {
@@ -359,6 +360,7 @@ bool delete_face_data(uint16_t person_id) {
         return false;
     }
 }
+
 
 
 // for binary
@@ -619,6 +621,7 @@ bool sendFilePath(const char *filePath) {
 //     closedir(dir);
 // }
 
+
 bool process_and_send_faces(uint16_t id) {
     dataAvailable = true;
 
@@ -782,7 +785,8 @@ bool process_and_send_faces(uint16_t id) {
 //     return true;
 // }
 
-bool readFace(const camera_fb_t *src, imageData_t **person) {
+
+bool syncFace(const camera_fb_t *src, imageData_t **person) {
     
     DIR *dir;
     struct dirent *entry;
@@ -811,9 +815,12 @@ bool readFace(const camera_fb_t *src, imageData_t **person) {
                 continue;
             }
 
-            uint32_t person_id;
+
+
+
+            uint16_t person_id;
             uint8_t name_len;
-            char name[64];
+            char name[30];
             uint32_t image_width;
             uint32_t image_height;
 
@@ -827,6 +834,11 @@ bool readFace(const camera_fb_t *src, imageData_t **person) {
             fread(&image_height, sizeof(image_height), 1, f);
 
             image_length = image_width * image_height * 2;
+
+
+            ESP_LOGI("save_face_data", "name: %s id %d image_width: %d image_hight: %d ",name,person_id,image_width,image_height);
+
+
 
             // Allocate memory for image data
             uint8_t* image_data = (uint8_t *)heap_caps_malloc(image_length, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
@@ -842,8 +854,8 @@ bool readFace(const camera_fb_t *src, imageData_t **person) {
             // Allocate memory for person and populate the fields
             *person = (imageData_t *)malloc(sizeof(imageData_t));
             if (*person == NULL) {
-                // ESP_LOGE("display_faces", "Failed to allocate memory for person structure");
-                heap_caps_free(image_data);  // Free allocated memory for image data
+                ESP_LOGE("display_faces", "Failed to allocate memory for person structure");
+                // heap_caps_free(image_data);  // Free allocated memory for image data
                 continue;
             }
 
@@ -859,7 +871,7 @@ bool readFace(const camera_fb_t *src, imageData_t **person) {
             if ((*person)->Name == NULL) {
                 // ESP_LOGE("display_faces", "Failed to allocate memory for person name");
                 heap_caps_free(image_data);
-                free(*person);
+                // free(*person);
                 continue;
             }
             strcpy((*person)->Name, name);
@@ -1082,6 +1094,32 @@ bool pendingData() {
     if (!dAvailable) {
         // ESP_LOGI("Face", "No data available in %s", FACE_DIRECTORY);
     }else return true;
+
+
+
+    // Check files in ATTENDANCE_DIR
+    if ((dir = opendir(SYNC_DIR)) == NULL) {
+        ESP_LOGE("SYNC_DIR", "Failed to open directory: %s", SYNC_DIR);
+        return false;
+    }
+
+    // Iterate through all entries in ATTENDANCE_DIR
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_REG) {  // Only process regular files
+            ESP_LOGI("SYNC_DIR", "File available: %s", entry->d_name);
+            dAvailable = true;
+        }
+    }
+    closedir(dir);
+
+    if (!dAvailable) {
+        // ESP_LOGI("Attendance", "No data available in %s", ATTENDANCE_DIR);
+    }else return true;
+
+
+
+
+
 
 
     return dAvailable;

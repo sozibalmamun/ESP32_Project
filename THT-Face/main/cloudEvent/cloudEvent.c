@@ -226,6 +226,9 @@ void process_command(const char* buffer ) {
 
         // Calculate the buffer size (height * width * 2) and allocate memory
         size_t buffer_size = (syncperson->height * syncperson->width) * 2;
+
+        // ESP_LOGI("save_face_data", "name: %s id %d image_width: %d image_hight: %d",syncperson->Name,syncperson->id ,syncperson->width,syncperson->height);
+        
         syncperson->buf = (uint8_t*)heap_caps_malloc(buffer_size,  MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
         if (syncperson->buf == NULL) {
             printf("Memory allocation failed for buffer\n");
@@ -234,7 +237,6 @@ void process_command(const char* buffer ) {
         // Copy the buffer data from the input
         memcpy(syncperson->buf, ptr, buffer_size);
         // printf("buff size get %d, pointer size %d\n", buffer_size, (int)sizeof(syncperson->buf));
-
 
         const uint16_t calculated_imageCrc = crc16((char*)syncperson->buf, buffer_size);
 
@@ -443,7 +445,7 @@ void eventFeedback(void){
             // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
             CmdEvent = IDLE_EVENT;
         }
-        
+
         break;
 
 

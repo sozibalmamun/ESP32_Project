@@ -61,7 +61,6 @@ extern "C" {
 uint16_t crc16(const char *buf, size_t len);
 
 void process_command(const char* buffer);
-void enrolOngoing(void);
 bool process_and_send_faces(uint16_t id);
 extern bool delete_face_data(uint16_t person_id , const char * directory);
 

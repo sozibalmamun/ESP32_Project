@@ -7,7 +7,7 @@
 //------------------------------------------------------------------
 
 #define DEVICE_VERSION_ID "AA00"// device v
-#define WL_FLASH_SIZE      2097152//FATFS size
+#define WL_FLASH_SIZE      5242880//2097152//FATFS size
 
 // CMD Enrol handle from server--------------------------------------
 #define IDLE_EVENT          0x00

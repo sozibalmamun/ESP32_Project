@@ -212,12 +212,13 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
      * now, as a example, we do it more simply */
     switch (event) {
     case ESP_BLUFI_EVENT_INIT_FINISH:
-        // BLUFI_INFO("BLUFI init finish\n");
+        BLUFI_INFO("BLUFI init finish\n");
+        blufi_security_deinit();
         blufiAddStart();
 
         break;
     case ESP_BLUFI_EVENT_DEINIT_FINISH:
-        // BLUFI_INFO("BLUFI deinit finish\n");
+        BLUFI_INFO("BLUFI deinit finish\n");
         break;
     case ESP_BLUFI_EVENT_BLE_CONNECT:
         BLUFI_INFO("BLUFI ble connect\n");
@@ -228,7 +229,7 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         sleepEnable=WAKEUP;
         break;
     case ESP_BLUFI_EVENT_BLE_DISCONNECT:
-        // BLUFI_INFO("BLUFI ble disconnect\n");
+        BLUFI_INFO("BLUFI ble disconnect\n");
         ble_is_connected = false;
         blufi_security_deinit();
 
@@ -244,11 +245,11 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         esp_wifi_set_config(WIFI_IF_STA, &sta_config);
 
 
-        // char ssid[param->sta_ssid.ssid_len + 1];
-        // strncpy(ssid, (char *)param->sta_ssid.ssid, param->sta_ssid.ssid_len);
-        // ssid[param->sta_ssid.ssid_len] = '\0'; // Null-terminate the SSID string
+        char ssid[param->sta_ssid.ssid_len + 1];
+        strncpy(ssid, (char *)param->sta_ssid.ssid, param->sta_ssid.ssid_len);
+        ssid[param->sta_ssid.ssid_len] = '\0'; // Null-terminate the SSID string
 
-        // BLUFI_INFO("Received STA SSID: %s\n", ssid);
+        BLUFI_INFO("Received STA SSID: %s\n", ssid);
 
        
         break;
@@ -259,14 +260,35 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         sta_config.sta.password[param->sta_passwd.passwd_len] = '\0';
         esp_wifi_set_config(WIFI_IF_STA, &sta_config);
 
-        // char password[param->sta_passwd.passwd_len + 1];
-        // strncpy(password, (char *)param->sta_passwd.passwd, param->sta_passwd.passwd_len);
-        // password[param->sta_passwd.passwd_len] = '\0'; // Null-terminate the password string
+        char password[param->sta_passwd.passwd_len + 1];
+        strncpy(password, (char *)param->sta_passwd.passwd, param->sta_passwd.passwd_len);
+        password[param->sta_passwd.passwd_len] = '\0'; // Null-terminate the password string
 
-        // BLUFI_INFO("Received STA PASSWORD: %s\n", password);
+        BLUFI_INFO("Received STA PASSWORD: %s\n", password);
 
         break;
  
+    }
+
+        case ESP_BLUFI_EVENT_RECV_CUSTOM_DATA:{
+        BLUFI_INFO("Recv Custom Data %d\n", param->custom_data.data_len);
+        esp_log_buffer_hex("Custom Data", param->custom_data.data, param->custom_data.data_len);
+
+        // Print the received data as a string
+        char received_data_str[param->custom_data.data_len + 1];
+        memcpy(received_data_str, param->custom_data.data, param->custom_data.data_len);
+        received_data_str[param->custom_data.data_len] = '\0'; // Null-terminate the string
+
+        printf("Received Custom Data: %s\n", received_data_str);
+
+
+
+
+
+
+
+
+        break;
     }
     default:
         break;
@@ -274,11 +296,10 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
 }
 
 void blufiAddStart(void){
-
-    esp_blufi_adv_start();
     char tempFrame[14] ;
     snprintf(tempFrame, sizeof(tempFrame), "%s%9llu",DEVICE_VERSION_ID, generate_unique_id());//uniqueId
     esp_ble_gap_set_device_name(tempFrame);
+    esp_blufi_adv_start();
 }
 
 void bluFiStart(void)

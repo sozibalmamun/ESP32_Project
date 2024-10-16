@@ -130,7 +130,7 @@ void print_memory_status() {
 
     // Log the available and total space
     ESP_LOGW(TAG, "Total space: %llu bytes", total_space);
-    ESP_LOGE(TAG, "free space : %llu bytes", free_space);
+    ESP_LOGE(TAG, "free space : %llu bytes\n", free_space);
 
 }
 

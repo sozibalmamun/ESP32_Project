@@ -355,9 +355,7 @@ static void task_process_handler(void *arg)
 
                     }else if(_gEvent==DUMP){
 
-
                         // ESP_LOGW("Enrolled", "ID: %d",recognizer->get_enrolled_id_num());
-                                
                         key_state= KEY_IDLE;
 
                     }
@@ -397,20 +395,12 @@ static void task_process_handler(void *arg)
                             }
                             //--------------------------------------------------------------------------
 
-                            // recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, "", true);
+                           
                             recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, personName, true);// due to add name
-                            // ESP_LOGW("ENROLL", "ID %d is enrolled", recognizer->get_enrolled_ids().back().id);
-
-                            //-------------------------pass value to struc via task----------------------------
-                        // printf("\nCopy Image Info  L:%3d w:%3d h:%3d", enrolFrame->len, enrolFrame->width, enrolFrame->height);
-                    
-                            // recognizer->set_ids( 10, true);              
-
-
                             enrolFrame->id = recognizer->get_enrolled_ids().back().id;
                             enrolFrame->Name = personName;
 
-
+                            //-------------------------pass value to struc via task----------------------------
                             if(detectionFaceProcesingTaskHandler==NULL){
 
                                 xQueueCloud = xQueueCreate(3, sizeof(int *));
@@ -418,15 +408,11 @@ static void task_process_handler(void *arg)
 
                             }
 
-
                             if (xQueueCloud) {
-                                // printf("Sending enrolFrame to xQueueCloud...\n");
+                                printf("Sending enrolFrame to xQueueCloud...\n");
                                 xQueueSend(xQueueCloud, &enrolFrame, portMAX_DELAY);
 
-                            } else {
-                                // printf("xQueueCloud is NULL, cannot send enrolFrame.\n");
                             }
-
                             //---------------------------------------------------------------------------------
 
                             frame_show_state = SHOW_STATE_ENROLL;
@@ -625,8 +611,7 @@ static void task_process_handler(void *arg)
                     uint32_t moving_point_number = dl::image::get_moving_point_number((uint16_t *)frame->buf, (uint16_t *)moveDetection->buf, frame->height, frame->width, 8, 15);
                     if (moving_point_number > 50)
                     {
-
-                        ESP_LOGE(TAG, " Motion detected!");
+                        // ESP_LOGE(TAG, " Motion detected!");
                         motion =true;
 
                     }
@@ -658,7 +643,7 @@ static void task_process_handler(void *arg)
                 //------------------------motion detection -----------------------------
                 if(motion){
 
-                    ESP_LOGI(TAG,"esp_camera_fb_return");
+                    // ESP_LOGI(TAG,"esp_camera_fb_return");
                     esp_camera_fb_return(moveDetection);
 
                 }
@@ -670,7 +655,7 @@ static void task_process_handler(void *arg)
                 //------------------------motion detection -----------------------------
                 if(motion){
 
-                    ESP_LOGI(TAG,"free moveDetection");
+                    // ESP_LOGI(TAG,"free moveDetection");
                     free(moveDetection);
 
                 }

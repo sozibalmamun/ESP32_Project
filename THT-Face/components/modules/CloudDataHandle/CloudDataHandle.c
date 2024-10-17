@@ -30,7 +30,10 @@ static void cloudeHandlerTask(void *arg)
             {
                 // Log the image details
                 // ESP_LOGI(TAG, "Received image len: %d w: %d h: %d Name: %s id: %d", image->len, image->width, image->height, image->Name,image->id);
+
+
                 save_face_data(image->id, image->Name, image->width, image->height, image->buf,FACE_DIRECTORY);
+
                 ESP_LOGE(TAG, "image saved ");
                 vTaskDelay(100);
 

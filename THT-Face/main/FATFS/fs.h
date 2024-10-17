@@ -48,35 +48,29 @@ extern "C" {
 #endif
 
 esp_err_t init_fatfs(void);
- esp_err_t formatfatfs();
-void format_fatfs(void);
-
-void create_directories();
-void delete_all_directories(const char* path);
+esp_err_t formatfatfs();
 
 
-extern void save_face_data(uint16_t person_id, const char* name, uint32_t image_width, uint32_t image_length, const uint8_t* image_data,const char* directory);
-// extern void read_face_data(uint32_t person_id);
-
+extern void save_face_data(uint16_t person_id, const char* name, uint8_t image_width, uint8_t image_height, const uint8_t* image_data, const char* directory);
 extern bool syncFace(const camera_fb_t *src, imageData_t **person);
-
 extern bool delete_face_data(uint16_t person_id , const char * directory);
 extern void write_log_attendance(uint16_t person_id,  uint8_t* timestamp);
 extern void print_memory_status(void);
 extern void process_attendance_files(void);
-bool sendFilePath(const char *file_path);
-
 extern bool process_and_send_faces(uint16_t id);
 extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id);
-
 extern bool display_faces( camera_fb_t *buff);
+extern void drawImage_u8(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t height, uint8_t *image, camera_fb_t *buff);
 extern void scaleAndDisplayImageInFrame(uint8_t *src_image, uint8_t src_width, uint8_t src_height, camera_fb_t *dst_buff, uint8_t pos_x, uint8_t pos_y);
 extern bool pendingData();
-
-extern bool stompSend(char * buff, char* topic);
 extern bool sendToWss(uint8_t *buff, size_t buffLen);
-
 extern uint64_t generate_unique_id(void);
+
+bool sendFilePath(const char *file_path);
+void format_fatfs(void);
+void create_directories();
+void delete_all_directories(const char* path);
+
 
 
 

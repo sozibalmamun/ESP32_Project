@@ -225,7 +225,111 @@ void format_fatfs() {
 }
 
 
-void save_face_data(uint16_t person_id, const char* name, uint32_t image_width, uint32_t image_height, const uint8_t* image_data, const char* directory) {
+/*
+
+void save_face_data(uint16_t person_id, const char* name, uint32_t image_width, uint32_t image_hight, const uint8_t* image_data ,const char* directory) {
+   
+
+    // ESP_LOGI("save_face_data", "person_id: %d name: %s image_width: %d image_hight: %d directory: %s",person_id,name,image_width,image_hight, directory);
+
+
+    char file_name[64];
+
+    snprintf(file_name, sizeof(file_name), "%s/%d.dat",directory, person_id);
+
+
+    FILE* f = fopen(file_name, "wb");
+    if (f == NULL) {
+        // ESP_LOGE("save_face_data", "Failed to open file for writing");
+        return;
+    }
+
+    // Write person ID
+    fwrite(&person_id, sizeof(person_id), 1, f);
+    
+    // Write name length and name
+    uint8_t name_len = strlen(name);
+    fwrite(&name_len, sizeof(name_len), 1, f);
+    fwrite(name, name_len, 1, f);
+
+    // Write image dimensions
+    fwrite(&image_width, sizeof(image_width), 1, f);
+    fwrite(&image_hight, sizeof(image_hight), 1, f);
+
+    // Calculate the image size in bytes for RGB565 format (2 bytes per pixel)
+    uint32_t image_size = image_width * image_hight * 2;
+    
+    // Write the image data
+    fwrite(image_data, image_size, 1, f);
+
+    fclose(f);
+    ESP_LOGI("save_face_data", "Face data saved to %s", file_name);
+}
+
+
+
+*/
+
+
+
+// void save_face_data(uint16_t person_id, const char* name, uint32_t image_width, uint32_t image_height, const uint8_t* image_data) {
+
+
+//     // ESP_LOGI("save_face_data", "person_id: %d name: %s image_width: %d image_hight: %d directory: %s",person_id,name,image_width,image_height, directory);
+
+
+//     char file_name[64];
+
+//     // Create the file path
+//     snprintf(file_name, sizeof(file_name), "/fatfs/faces/%d.dat", person_id);
+
+
+//     // // Check if the file already exists
+//     // if (access(file_name, F_OK) == 0) {  // F_OK checks if the file exists
+//     //     // If the file exists, delete it
+//     //     if (remove(file_name) != 0) {
+//     //         // Handle error deleting file (optional logging or error handling here)
+//     //         // ESP_LOGE("save_face_data", "Failed to delete existing file: %s", file_name);
+//     //         return;
+//     //     }
+//     //     // ESP_LOGI("save_face_data", "Existing file deleted: %s", file_name);
+//     // }
+
+//     // Open the file for writing (it will be created if it doesn't exist)
+//     FILE* f = fopen(file_name, "wb");
+//     if (f == NULL) {
+//         // ESP_LOGE("save_face_data", "Failed to open file for writing");
+//         return;
+//     }
+
+//     // Write person ID
+//     fwrite(&person_id, sizeof(person_id), 1, f);
+
+//     // Write name length and name
+//     uint8_t name_len = strlen(name);
+//     fwrite(&name_len, sizeof(name_len), 1, f);
+//     fwrite(name, name_len, 1, f);
+
+//     // Write image dimensions
+//     fwrite(&image_width, sizeof(image_width), 1, f);
+//     fwrite(&image_height, sizeof(image_height), 1, f);
+
+//     // Calculate the image size in bytes for RGB565 format (2 bytes per pixel)
+//     uint32_t image_size = image_width * image_height * 2;
+
+//     // Write the image data
+//     fwrite(image_data, image_size, 1, f);
+
+//     fclose(f);
+//     ESP_LOGI("save_face_data", "Face data saved to %s", file_name);
+// }
+
+
+void save_face_data(uint16_t person_id, const char* name, uint8_t image_width, uint8_t image_height, const uint8_t* image_data, const char* directory) {
+
+
+    // ESP_LOGI("save_face_data", "person_id: %d name: %s image_width: %d image_hight: %d directory: %s",person_id,name,image_width,image_height, directory);
+
 
     char file_name[64];
 
@@ -263,7 +367,7 @@ void save_face_data(uint16_t person_id, const char* name, uint32_t image_width, 
     fwrite(&image_height, sizeof(image_height), 1, f);
 
     // Calculate the image size in bytes for RGB565 format (2 bytes per pixel)
-    uint32_t image_size = image_width * image_height * 2;
+    uint16_t image_size = image_width * image_height * 2;
 
     // Write the image data
     fwrite(image_data, image_size, 1, f);
@@ -279,10 +383,10 @@ bool delete_face_data(uint16_t person_id , const char * directory) {
 
     int res = remove(file_name);
     if (res == 0) {
-        ESP_LOGI("delete_face_data", "Deleted face data for Person ID %d", person_id);
+        // ESP_LOGI("delete_face_data", "Deleted face data for Person ID %d", person_id);
         return true;
     } else {
-        ESP_LOGE("delete_face_data", "Failed to delete face data for Person ID %d", person_id);
+        // ESP_LOGE("delete_face_data", "Failed to delete face data for Person ID %d", person_id);
         return false;
     }
 }
@@ -313,8 +417,6 @@ void write_log_attendance(uint16_t person_id, uint8_t* timestamp) {
     fwrite(&temp, sizeof(uint8_t), 1, f);  // Write person ID once (high bytes)
     temp= person_id & 0x00ff;
     fwrite(&temp, sizeof(uint8_t), 1, f);  // Write person ID once (low bytes)
-
-
 
     fclose(f);
     ESP_LOGI("attendance", "Attendance ID: %d logged in file: %s", person_id, log_file);
@@ -482,11 +584,11 @@ bool process_and_send_faces(uint16_t id) {
     }
 
     // Read metadata
-    uint32_t person_id;
+    uint16_t person_id;
     uint8_t name_len;
     char name[64];
-    uint32_t image_width;
-    uint32_t image_height;
+    uint8_t image_width;
+    uint8_t image_height;
 
     fread(&person_id, sizeof(person_id), 1, f);
     fread(&name_len, sizeof(name_len), 1, f);
@@ -775,9 +877,9 @@ bool syncFace(const camera_fb_t *src, imageData_t **person) {
 }
 
 
-
-///----------------rnd
 bool display_faces(camera_fb_t *buff) {
+
+
     DIR *dir;
     struct dirent *entry;
 
@@ -786,8 +888,6 @@ bool display_faces(camera_fb_t *buff) {
         return false; // Return false to indicate failure to open directory
     }
     uint16_t image_length=0;
-
-
 
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_REG) {  // Only process regular files
@@ -801,15 +901,15 @@ bool display_faces(camera_fb_t *buff) {
 
             FILE* f = fopen(file_name, "rb");
             if (f == NULL) {
-                // ESP_LOGE("display_faces", "Failed to open file for reading: %s", file_name);
+                ESP_LOGE("display_faces", "Failed to open file for reading: %s", file_name);
                 continue; // Skip this file and continue with the next
             }
 
-            uint32_t person_id;
+            uint16_t person_id;
             uint8_t name_len;
             char name[64];
-            uint32_t image_width;
-            uint32_t image_height;
+            uint8_t image_width;
+            uint8_t image_height;
 
             // Read metadata
             fread(&person_id, sizeof(person_id), 1, f);
@@ -822,6 +922,9 @@ bool display_faces(camera_fb_t *buff) {
 
             // Calculate image size in bytes for RGB565 format (2 bytes per pixel)
             image_length = image_width * image_height * 2;
+
+
+
 
             // Allocate memory for image data
             uint8_t* image_data = (uint8_t *)heap_caps_malloc(image_length, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
@@ -836,8 +939,8 @@ bool display_faces(camera_fb_t *buff) {
             fclose(f);
 
             uint8_t imageXPoss = (320/2)-(image_width/2);
-            scaleAndDisplayImageInFrame(image_data,  image_width, image_height, buff, imageXPoss, 39);
 
+            scaleAndDisplayImageInFrame(image_data,  image_width, image_height, buff, imageXPoss, 39);
 
             // Free allocated memory for image data
             heap_caps_free(image_data);

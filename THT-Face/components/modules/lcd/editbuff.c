@@ -89,6 +89,7 @@ void editDisplayBuff(camera_fb_t **buff){
             // if(networkStatus==STOMP_CONNECTED && key_state== KEY_IDLE ){
             if(networkStatus==WSS_CONNECTED && key_state== KEY_IDLE ){
 
+
                 if(percentage>2){
                     
                     display_faces( *buff);//face display at the uploading time
@@ -173,8 +174,11 @@ void icnPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,uint16_t
 
 // Function to scale an image to fit within a fixed-size frame buffer and display at a specific position
 void scaleAndDisplayImageInFrame(uint8_t *src_image, uint8_t src_width, uint8_t src_height, camera_fb_t *dst_buff, uint8_t pos_x, uint8_t pos_y) {
+
     int8_t frame_width = 90;   // Fixed frame width
     int8_t frame_height = 101; // Fixed frame height
+
+    pos_x= (320/2)-(101/2);// resize
 
 
     drawFilledRoundedRectangle(pos_x-16,pos_y-5, frame_width+33 , frame_height+56, 3, 5,  0xc618,dst_buff);// round big ractrangle fill frame
@@ -767,6 +771,8 @@ void drawImage_u8(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t he
     // printf("\n");
 
 }
+
+
 void drawImage_u16(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t height, uint16_t *image, camera_fb_t *buff) {
     
     for (int y = 0; y < height; y++) {

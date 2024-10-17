@@ -70,7 +70,7 @@ void process_command(const char* buffer ) {
     // printf("Received CRC: %x\n", rxCrc);
     uint16_t calculated_crc = crc16(Name, strlen(Name));
 
-    // printf("CRC high CALCULATED: %x\n", calculated_crc);
+    printf("CRC  CALCULATED: %x\n", calculated_crc);
 
     if (calculated_crc == rxCrc) {
 

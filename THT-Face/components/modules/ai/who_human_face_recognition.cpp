@@ -385,7 +385,6 @@ static void task_process_handler(void *arg)
                             // imageData_t *cropFrame = NULL;
 
                             print_detection_result(detect_candidates);
-                            draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
                             if(!copy_rectangle(frame,&enrolFrame, boxPosition[0],boxPosition[2], boxPosition[1], boxPosition[3]))
                             {
                                 CPUBgflag=0;
@@ -395,7 +394,8 @@ static void task_process_handler(void *arg)
                             }
                             //--------------------------------------------------------------------------
 
-                           
+                            draw_detection_result((uint16_t *)frame->buf, frame->height, frame->width, detect_candidates);
+
                             recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, personName, true);// due to add name
                             enrolFrame->id = recognizer->get_enrolled_ids().back().id;
                             enrolFrame->Name = personName;

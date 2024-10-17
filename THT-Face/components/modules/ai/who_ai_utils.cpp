@@ -74,10 +74,10 @@ void print_detection_result(std::list<dl::detect::result_t> &results)
         // ESP_LOGI("detection_result", "[%2d]: (%3d, %3d, %3d, %3d)", i, prediction->box[0], prediction->box[1], prediction->box[2], prediction->box[3]);
 
         //------------------copy face detect box size------------------------------
-        boxPosition[0] =prediction->box[0];
-        boxPosition[1] =prediction->box[1];
-        boxPosition[2] =prediction->box[2];
-        boxPosition[3] =prediction->box[3];
+        boxPosition[0] =prediction->box[0]-5;
+        boxPosition[1] =prediction->box[1]-5;
+        boxPosition[2] =prediction->box[2]+5;
+        boxPosition[3] =prediction->box[3]+5;
         //--------------------------------------------------
 
         if (prediction->keypoint.size() == 10)

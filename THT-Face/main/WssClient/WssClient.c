@@ -67,7 +67,7 @@ bool sendToWss(uint8_t *buff, size_t buffLen) {
 
         // Send the prepared frame via WebSocket (replace with your WebSocket send function)
         if (esp_websocket_client_send_bin(client, sendingFrame, headerLen + chunkLen + 6, portMAX_DELAY) == 0) {
-            ESP_LOGE(TAGSTOMP, "Failed to send frame. Retrying...");
+            // ESP_LOGE(TAGSTOMP, "Failed to send frame. Retrying...");
             heap_caps_free(sendingFrame);
             vTaskDelay(1000 / portTICK_PERIOD_MS);
             continue;  // Retry if failed to send
@@ -187,173 +187,6 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
 
 
 
-//--------------------backup
-
-// bool stompSend(char * buff, char* topic){
-
-//     char tempFrame[CHANK_SIZE+1]; 
-//     memset(tempFrame,0,sizeof(tempFrame));
-
-//     uint16_t currentIndex=0;
-//     uint16_t buffLen =strlen(buff);
-//     // ESP_LOGW(TAGSTOMP, "Sending  total len: %d chank: %d\n", buffLen, (int)ceil(buffLen/CHANK_SIZE)>1?(int)ceil(buffLen/CHANK_SIZE):1);
-
-//     do{
-//         memset(tempFrame,0,sizeof(tempFrame));
-//         if(buffLen<=CHANK_SIZE){
-//             currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],buffLen) : memcpy(&tempFrame,&buff[currentIndex],buffLen);
-//             buffLen= buffLen - buffLen;
-//             ESP_LOGI(TAGSTOMP, "Sending last Chank\n");
-
-//         }else{
-
-//             currentIndex ? memcpy(&tempFrame,&buff[currentIndex-1],sizeof(tempFrame)-1) : memcpy(&tempFrame,&buff[currentIndex],sizeof(tempFrame)-1);
-
-//         }
-//         tempFrame[strlen(tempFrame)] = '\0';  // Null-terminate the chunk
-
-
-//         char sendingFrame[strlen(tempFrame)+47+strlen(topic)];
-//         memset(sendingFrame,0,sizeof(sendingFrame));
-
-//         strcat(sendingFrame, "[\"SEND\\ndestination:");
-//         strcat(sendingFrame, topic);
-//         strcat(sendingFrame, "\\n\\n");
-//         strcat(sendingFrame, tempFrame);
-//         strcat(sendingFrame, "\\n\\n\\u0000\"]");
-
-
-//         // ESP_LOGI(TAGSTOMP, "Sending STOMP MSG :\n%s", sendingFrame);
-
-//         if(networkStatus != STOMP_CONNECTED){
-//             ESP_LOGE(TAGSTOMP, "Stomp disconnect\n");
-//             if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
-//             vTaskDelay(1000 / portTICK_PERIOD_MS);
-//             continue; // Retry sending
-
-//         }
-
-//         if(esp_websocket_client_send_text(client, sendingFrame, strlen(sendingFrame), portMAX_DELAY)==ESP_OK){
-
-//             ESP_LOGI(TAGSTOMP, "Sending STOMP FAIL");
-//             if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
-//             vTaskDelay(1000 / portTICK_PERIOD_MS);
-//             continue; // Retry sending
-
-//         }else {
-//             // ESP_LOGI(TAGSTOMP, "Sending STOMP   sent len :%d  remain   %d\n", currentIndex,buffLen);
-//             currentIndex+= CHANK_SIZE;
-//             if(buffLen>0)buffLen= buffLen - CHANK_SIZE; // check bufflen 0 or not then calculate 
-//             // vTaskDelay(30);
-//         }
-
-//     }while(buffLen!=0);
-
-
-// return true;
-
-// }
-
-
-
-
-// bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name, uint16_t id, char* topic) {
-//     // Calculate the required size for hex string
-//     size_t tempLen = buffLen * 2 + 1; // 2 characters per byte + null terminator
-//     char* hexString =  (char *)heap_caps_malloc(tempLen, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-//     if (hexString == NULL) {
-//         ESP_LOGE(TAGSTOMP, "Memory allocation for hexString failed");
-//         return false;
-//     }
-
-//     // Convert the entire buffer to a hex string
-//     for (uint16_t i = 0; i < buffLen; i++) {
-//         sprintf(&hexString[i * 2], "%02x", buff[i]);
-//     }
-
-//     // Null-terminate the hex string
-//     hexString[tempLen - 1] = '\0';
-
-//     uint16_t totalChank= (int)ceil((double)strlen(hexString) / IMAGE_CHANK_SIZE);
-
-
-//     ESP_LOGW(TAGSTOMP, "Total hex string length: %d, Chunks to send: %d\n", strlen(hexString), totalChank);
-
-
-
-
-//     // Send image info
-//     char imageInfo[35];
-//     snprintf(imageInfo, sizeof(imageInfo), "%d %d %d %s %d %d", buffLen, w, h, name, id,totalChank);
-//     if (!stompSend(imageInfo, topic)) {
-//         heap_caps_free(hexString);
-//         return false;
-//     }
-//     vTaskDelay(50);
-
-//     // Send the hex string in chunks
-//     uint16_t currentIndex = 0;
-//     uint16_t chankNo=0;
-//     while (currentIndex < strlen(hexString)) {
-//         char chunk[IMAGE_CHANK_SIZE + 1]; // Buffer for each chunk
-//         memset(chunk, 0, sizeof(chunk));
-
-//         // Calculate remaining length and copy chunk
-//         size_t chunkLen = strlen(hexString) - currentIndex;
-//         if (chunkLen > IMAGE_CHANK_SIZE) {
-//             chunkLen = IMAGE_CHANK_SIZE;
-//         }
-
-//         strncpy(chunk, &hexString[currentIndex], chunkLen);
-
-//         // Prepare the STOMP frame to send
-//         char sentFrame[sizeof(chunk) + 55 + strlen(topic)];
-//         memset(sentFrame, 0, sizeof(sentFrame));
-
-//         snprintf(sentFrame, sizeof(sentFrame), "[\"SEND\\ndestination:%s\\n\\n%d %d %s\\n\\n\\u0000\"]", topic, id ,chankNo+1,chunk);
-
-//         // printf("Chunk No: %d\n", chankNo+1);// chank no 
-
-
-//         if (networkStatus != STOMP_CONNECTED) {
-//             ESP_LOGE(TAGSTOMP, "Stomp disconnected\n");
-//             vTaskDelay(50);
-//             if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
-//             vTaskDelay(100);
-//             // free(hexString);
-//             continue; // Retry sending
-//         }
-//         if (esp_websocket_client_send_text(client, sentFrame, strlen(sentFrame), portMAX_DELAY) == 0) {
-//             vTaskDelay(50);
-//             ESP_LOGI(TAGSTOMP, "STOMP send failed. Retrying...\n");
-//             if(networkStatus>WIFI_CONNECTED)networkStatus = WSS_CONNECTED;   
-//             vTaskDelay(100);
-
-
-
-//             continue; // Retry sending
-
-//         }else{
-//             vTaskDelay(2);
-//             currentIndex += chunkLen;
-//             chankNo++;// no of chank 
-
-//             float percentage_float = (chankNo /(float)totalChank) * 100;
-//             percentage = (int)percentage_float;
-            
-//             // printf("total chank  %d send %d percentage: %d\n",totalChank,  chankNo,percentage);
-//             if(percentage>=100)percentage=0;
-//         }
-
-//     }
-//     heap_caps_free(hexString);
-//     return true;
-// }
-
-//--------------------backup end
-
-
-
 static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
     esp_websocket_event_data_t *data = (esp_websocket_event_data_t *)event_data;
@@ -361,29 +194,27 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     case WEBSOCKET_EVENT_CONNECTED:
         ESP_LOGI(TAG, "WSS_CONNECTED");
         networkStatus=WSS_CONNECTED;
+        time_library_time_t current_time;
+        get_time(&current_time, dspTimeFormet);
 
-
-        // time_library_time_t current_time;
-        // get_time(&current_time, dspTimeFormet);
-
-        // uint8_t time [12];
-        // time[0]=(uint8_t)'T';
-        // time[1]=current_time.year-2000;
-        // time[2]=current_time.month;
-        // time[3]=current_time.day;
+        uint8_t time [12];
+        time[0]=(uint8_t)'T';
+        time[1]=current_time.year-2000;
+        time[2]=current_time.month;
+        time[3]=current_time.day;
         
-        // time[4]=current_time.hour;
-        // time[5]=current_time.minute;
-        // time[6]=current_time.second;
+        time[4]=current_time.hour;
+        time[5]=current_time.minute;
+        time[6]=current_time.second;
 
-        // time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
-        // time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
-        // time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
-        // time[10]= dspTimeFormet==true?0x0C:0x18;// sent time formet
-        // time[11]='\0';
+        time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
+        time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
+        time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
+        time[10]= dspTimeFormet==true?0x0C:0x18;// sent time formet
+        time[11]='\0';
 
         // printf(" data len: %d ping: %c %d %d %d %d %d %d 12/24H: %d day: %s\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,time[10],(char*)&time[7]);
-        // stompS(time, sizeof(time));
+        sendToWss(time, sizeof(time));
 
 
 
@@ -408,30 +239,28 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
             if (data->op_code == 0x0A) {
 
-                // ESP_LOGI(TAG, "Ping code: %d", data->op_code);
+                ESP_LOGI(TAG, "Ping code: %d", data->op_code);
+                time_library_time_t current_time;
+                get_time(&current_time, dspTimeFormet);
 
-
-                // time_library_time_t current_time;
-                // get_time(&current_time, dspTimeFormet);
-
-                // uint8_t time [12];
-                // time[0]=(uint8_t)'T';
-                // time[1]=current_time.year-2000;
-                // time[2]=current_time.month;
-                // time[3]=current_time.day;
+                uint8_t time [12];
+                time[0]=(uint8_t)'T';
+                time[1]=current_time.year-2000;
+                time[2]=current_time.month;
+                time[3]=current_time.day;
                 
-                // time[4]=current_time.hour;
-                // time[5]=current_time.minute;
-                // time[6]=current_time.second;
+                time[4]=current_time.hour;
+                time[5]=current_time.minute;
+                time[6]=current_time.second;
 
-                // time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
-                // time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
-                // time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
-                // time[10]= dspTimeFormet==true?0x0C:0x18;// sent time formet
-                // time[11]='\0';
+                time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
+                time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
+                time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
+                time[10]= dspTimeFormet==true?0x0C:0x18;// sent time formet
+                time[11]='\0';
 
                 // printf(" data len: %d ping: %c %d %d %d %d %d %d 12/24H: %d day: %s\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,time[10],(char*)&time[7]);
-                // stompS(time, sizeof(time));
+                sendToWss(time, sizeof(time));
 
             }else{
 

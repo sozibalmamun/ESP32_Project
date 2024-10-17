@@ -279,11 +279,11 @@ static void task_process_handler(void *arg)
 
                             }else { // loading
 
-                                uint8_t subvalue =(TIMEOUT_3000_MS-((TimeOut + TIMEOUT_3000_MS)- xTaskGetTickCount())) ;
+                                uint16_t subvalue =(TIMEOUT_3000_MS-((TimeOut + TIMEOUT_3000_MS)- xTaskGetTickCount())) ;
 
                                 float percentage_float = (subvalue /(float)TIMEOUT_3000_MS) * 100;
                                 percentage = (int8_t)percentage_float;
-                                rgb_printf(frame, RGB565_MASK_BLUE, "Loading%d%s",(int)percentage,"%");// debug due to display name
+                                rgb_printf(frame, RGB565_MASK_BLUE, "Loading %d%s",(int)percentage,"%");
 
                             }
                         }else {

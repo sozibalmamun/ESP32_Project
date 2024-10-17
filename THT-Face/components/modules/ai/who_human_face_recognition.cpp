@@ -268,17 +268,28 @@ static void task_process_handler(void *arg)
 
                         if (detect_results.size() == 1){
 
-                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_3000_MS){
+                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_3000_MS){// enter enroll case
 
+
+                                percentage=0;
                                 is_detected = true;
                                 _gEvent=ENROLL;
                                 key_state= KEY_IDLE;
+
+
+                            }else { // loading
+
+                                uint8_t subvalue =(TIMEOUT_3000_MS-((TimeOut + TIMEOUT_3000_MS)- xTaskGetTickCount())) ;
+
+                                float percentage_float = (subvalue /(float)TIMEOUT_3000_MS) * 100;
+                                percentage = (int8_t)percentage_float;
+                                rgb_printf(frame, RGB565_MASK_BLUE, "Loading%d%s",(int)percentage,"%");// debug due to display name
 
                             }
                         }else {
 
                             TimeOut= xTaskGetTickCount();
-                            if (xTaskGetTickCount()-enrolTimeOut> TIMEOUT_15_S ){
+                            if (xTaskGetTickCount()-enrolTimeOut> TIMEOUT_15_S ){// enroll time out 
                                 CmdEvent = ENROLMENT_TIMEOUT;
                                 key_state= KEY_IDLE;
                                 vTaskDelay(10);
@@ -287,6 +298,8 @@ static void task_process_handler(void *arg)
                             rgb_printf(frame, RGB565_MASK_BLUE, "Start Enroling");// debug due to display name
                             sleepTimeOut = TimeOut;
                             sleepEnable=WAKEUP;// sleep out when enroll event is genareted
+                            percentage=0;
+
 
                         }
 

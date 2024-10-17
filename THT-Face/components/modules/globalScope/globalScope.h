@@ -66,11 +66,11 @@
 #define TIMEOUT_300_MS        30
 #define TIMEOUT_500_MS        50
 #define TIMEOUT_1000_MS       100
-#define TIMEOUT_2000_MS       200
-#define TIMEOUT_3000_MS       300
-#define TIMEOUT_4000_MS       400
-#define TIMEOUT_5000_MS       500
-#define TIMEOUT_6000_MS       600
+#define TIMEOUT_2000_MS       (200)
+#define TIMEOUT_3000_MS       (300)
+#define TIMEOUT_4000_MS       (400)
+#define TIMEOUT_5000_MS       (500)
+#define TIMEOUT_6000_MS       (600)
 #define TIMEOUT_7000_MS       700
 #define TIMEOUT_9000_MS       900
 #define TIMEOUT_10000_MS     1000

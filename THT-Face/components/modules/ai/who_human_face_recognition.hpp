@@ -10,6 +10,7 @@
 #include "CloudDataHandle.h"
 
 #define   bytes_per_pixel 2
+extern int8_t percentage;
 
 typedef enum
 {

@@ -270,8 +270,6 @@ static void task_process_handler(void *arg)
 
                             if(xTaskGetTickCount()>TimeOut+TIMEOUT_3000_MS){// enter enroll case
 
-
-                                percentage=0;
                                 is_detected = true;
                                 _gEvent=ENROLL;
                                 key_state= KEY_IDLE;
@@ -279,19 +277,10 @@ static void task_process_handler(void *arg)
 
                             }else { // loading
 
-                                uint16_t subvalue =(TIMEOUT_3000_MS-((TimeOut + TIMEOUT_3000_MS)- xTaskGetTickCount())) ;
+                                float percentage_float = ((TIMEOUT_3000_MS-((TimeOut + TIMEOUT_3000_MS)- xTaskGetTickCount())) /(float)TIMEOUT_3000_MS) * 100;
 
-                                float percentage_float = (subvalue /(float)TIMEOUT_3000_MS) * 100;
-                                percentage = (int8_t)percentage_float;
-                                // rgb_printf(frame, RGB565_MASK_BLUE, "Loading %d%s",(int)percentage,"%");
-
-                                // fb_gfx_fillRect(frame, 100, 50, 50, 3, RGB565_MASK_BLUE);
-                                // void fillRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color);
-
-                                // fb_gfx_fillRect(frame, 0, 235, 320, 1, 0xFFFF);
-                                // fb_gfx_fillRect(frame, 0, 240, 320, 1, 0xFFFF);
                                 fillRect(frame, 0, 235, 320, 5, 0xFFFF);
-                                fillRect(frame, 0, 235, (uint16_t)(percentage*3.2), 5, RGB565_MASK_BLUE);
+                                fillRect(frame, 0, 235, (uint16_t)(percentage_float*3.2), 5, RGB565_MASK_BLUE);
 
                             }
 
@@ -307,7 +296,6 @@ static void task_process_handler(void *arg)
                             rgb_printf(frame, RGB565_MASK_BLUE, "Start Enroling");// debug due to display name
                             sleepTimeOut = TimeOut;
                             sleepEnable=WAKEUP;// sleep out when enroll event is genareted
-                            percentage=0;
 
 
                         }

@@ -26,7 +26,7 @@ bool sendToWss(uint8_t *buff, size_t buffLen) {
         memcpy(tempFrame, &buff[currentIndex], chunkLen);
 
         // Calculate the required size for the sending frame (adjust for extra headers)
-        size_t sendingFrameLen = chunkLen + 100;  // Adjust based on format
+        size_t sendingFrameLen = chunkLen + 80;  // Adjust based on format
         char* sendingFrame = (char*)heap_caps_malloc(sendingFrameLen + 1, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
         if (sendingFrame == NULL) {
             return false;  // Memory allocation failure
@@ -143,23 +143,32 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
         memcpy(chunk, &buff[currentIndex], chunkLen);  // Copy chunk of image data
 
         // Prepare the frame to send: id + chunkNo + chunk data
-        size_t sentFrameLen = chunkLen + 6;  // 2 bytes for ID, 1 byte for chunkNo
+        size_t sentFrameLen = chunkLen + 9;  // 2 bytes for ID, 1 byte for chunkNo+3 space+ 2byte for crc
         uint8_t* sentFrame = (uint8_t*)heap_caps_malloc(sentFrameLen, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
         if (sentFrame == NULL) {
             heap_caps_free(chunk);  // Free the allocated chunk before returning
+
             return false;
         }
+        const uint16_t Crc = crc16((char*)chunk,chunkLen);
+        
 
         // Pack the frame with ID, chunk number, and chunk data
         sentFrame[0] = (id >> 8) & 0xFF;     // High byte of ID
         sentFrame[1] = id & 0xFF;            // Low byte of ID
-        sentFrame[2] = ' ';            // space
+        sentFrame[2] = ' ';                  // space
         sentFrame[3] = chunkNo + 1;          // Current chunk number
-        sentFrame[4] = ' ';            // space
+        sentFrame[4] = ' ';                  // space
 
-        memcpy(&sentFrame[5], chunk, chunkLen);  // Copy chunk data to the frame
+        sentFrame[5] = Crc>>8;               //crc high
+        sentFrame[6] = Crc&0xFF;             //crc low
 
-        printf("Chunk No: %d\n", chunkNo + 1);  // Log the chunk number
+        sentFrame[7] = ' ';                  // space
+
+
+        memcpy(&sentFrame[8], chunk, chunkLen);  // Copy chunk data to the frame
+
+        printf("Chunk No: %d CRC: %x\n", chunkNo + 1 ,Crc);  // Log the chunk number
 
         // Send the frame
         if (!sendToWss(sentFrame, sentFrameLen)) {

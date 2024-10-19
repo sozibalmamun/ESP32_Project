@@ -31,6 +31,7 @@ void process_command(const char* buffer ) {
     // if(strlen(buffer)>10)resizeBuffer();
 
     // printf("process_command :%s\n", buffer);
+    CPUBgflag=1;
 
 
   // Check if the buffer starts with "cmdEnrol" (case-sensitive)
@@ -97,10 +98,11 @@ void process_command(const char* buffer ) {
     }
     }else if(strncmp(buffer, "uploadimage", strlen("uploadimage")) == 0){
 
-
+        // CPUBgflag=1;
         uint16_t tempid = buffer[12]<<8|buffer[13];
         // printf("giveimage: %d\n",tempid);
         process_and_send_faces(tempid);
+        // CPUBgflag=0;
 
 
     }else if(strncmp(buffer, "imagedl", strlen("imagedl")) == 0){
@@ -264,10 +266,13 @@ void process_command(const char* buffer ) {
             printf("%x ",syncperson->buf[i]);
 
         }
+        // CPUBgflag=1;
 
         // Call the save function to store the data
         if(dataOk)save_face_data(syncperson->id, syncperson->Name, syncperson->width, syncperson->height, syncperson->buf, SYNC_DIR);
         // Properly free the allocated memory for buffer and syncperson
+        // CPUBgflag=0;
+
         ESP_LOGE("sync", "sync image saved ");
         vTaskDelay(100);
         if (syncperson->buf != NULL) {
@@ -349,6 +354,8 @@ void process_command(const char* buffer ) {
         CmdEvent = TIME_FORMET_UPDATE;
 
     }
+    CPUBgflag=0;
+
 }
 
 void eventFeedback(void){

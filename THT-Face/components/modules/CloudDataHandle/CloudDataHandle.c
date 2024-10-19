@@ -85,9 +85,7 @@ static void attendanceHandlerTask(void *arg)
 void reconnect(){
 
 
-    // if(networkStatus==STOMP_CONNECTED){
     if(networkStatus==WSS_CONNECTED){
-
 
         if(CPUBgflag==0){
 
@@ -96,16 +94,8 @@ void reconnect(){
             if(!pendingData()){
 
                 dataAvailable = false;
-                // printf("\nno pending data");
-                // if (cloudeTaskHandler != NULL) {
-                // vTaskDelete(cloudeTaskHandler);   // Delete the task
-                // cloudeTaskHandler = NULL;         // Clear the handle to avoid dangling references
-                // ESP_LOGW("TAGSTOMP", "AttendanceTask deleted");
-
-                // }
 
             }else {
-
                 vTaskDelay(1000 / portTICK_PERIOD_MS); // 
                 printf("pending data\n");
                 if (cloudeTaskHandler == NULL) cloudHandel();
@@ -123,8 +113,10 @@ void reconnect(){
         if(pendingData())dataAvailable = true;
     }
     vTaskDelay(1000 / portTICK_PERIOD_MS); //Delay before retry
-    if(CPUBgflag==0)print_memory_status();
-    ESP_LOGW("HEAP", "Free      : %dkb\n\n", heap_caps_get_free_size(MALLOC_CAP_8BIT)/1024);
+    if(CPUBgflag==0){
+        print_memory_status();
+        ESP_LOGW("HEAP", "Free      : %dkb\n\n", heap_caps_get_free_size(MALLOC_CAP_8BIT)/1024);
+    }
 
 
 

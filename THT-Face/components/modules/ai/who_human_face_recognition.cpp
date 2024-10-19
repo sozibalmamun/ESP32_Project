@@ -27,6 +27,8 @@ extern key_state_t key_state;
 
 uint8_t boxPosition[5];
 static uint16_t StopMultipleAttaneId=0;
+static uint16_t recognitionCount[5];
+static uint8_t stateCounter=0;
 
 
 using namespace std;
@@ -306,9 +308,8 @@ static void task_process_handler(void *arg)
                         if (detect_results.size() == 1){
 
 
-                            if(xTaskGetTickCount()>faceDetectTimeOut+TIMEOUT_150_MS){ 
+                            if(xTaskGetTickCount()>faceDetectTimeOut+TIMEOUT_50_MS){ 
                                 
-                                // faceDetectTimeOut= xTaskGetTickCount();
                                 is_detected = true;
 
                                 if(_gEvent!=ENROLING){
@@ -369,9 +370,11 @@ static void task_process_handler(void *arg)
                         key_state= KEY_IDLE;
 
                     }
-                    
+                    uint8_t validCount=0;
                     if (is_detected)
                     {
+
+
                         switch (_gEvent)
                         {
                         case ENROLL:{
@@ -419,7 +422,7 @@ static void task_process_handler(void *arg)
                             }
 
                             if (xQueueCloud) {
-                                printf("Sending enrolFrame to xQueueCloud...\n");
+                                // printf("Sending enrolFrame to xQueueCloud...\n");
                                 xQueueSend(xQueueCloud, &enrolFrame, portMAX_DELAY);
 
                             }
@@ -431,39 +434,64 @@ static void task_process_handler(void *arg)
                         case RECOGNIZE:{
 
                             recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
+                            
+                        
                             // print_detection_result(detect_results);
                             if (recognize_result.id > 0){
 
-                                CPUBgflag=1;
+                                // CPUBgflag=1;
                                 // ESP_LOGI("RECOGNIZE", "Similarity: %f, Match Name: %s", recognize_result.similarity, recognize_result.name.c_str());
 
-                                if(xTaskGetTickCount()>TimeOut+TIMEOUT_5000_MS)StopMultipleAttaneId=0;
-
-                                if(StopMultipleAttaneId!=recognize_result.id){
-
-                                    StopMultipleAttaneId=recognize_result.id;
-                                    //--------------------------------here save the log file here----------------------------------
-                                    time_library_time_t current_time;
-                                    get_time(&current_time, 0);
-                                    uint8_t tempTimeFrame[6];
-                                    memset(tempTimeFrame,0,sizeof(tempTimeFrame));
-                                    tempTimeFrame[0] = current_time.year-2000;
-                                    tempTimeFrame[1] = current_time.month;
-                                    tempTimeFrame[2] = current_time.day;
-                                    tempTimeFrame[3] = current_time.hour;
-                                    tempTimeFrame[4] = current_time.minute;
-                                    tempTimeFrame[5] = current_time.second;
-                                    write_log_attendance(recognize_result.id, tempTimeFrame);
-                                    TimeOut=xTaskGetTickCount();
-
-                                    //----------------------------------------------------------------------------------------------
+                                recognitionCount[stateCounter>4?stateCounter=0:stateCounter++]=recognize_result.id;
+                                if(stateCounter>=ID_VALID){
+                                   for(uint8_t i=0; i<ID_VALID;i++){
+                                        if(recognitionCount[i]== recognize_result.id)validCount++;
+                                   } 
                                 }
-                                CPUBgflag=0;
+
+                                if(validCount==ID_VALID){
+                                    // printf("validCount: %d\n",validCount);
+                                    CPUBgflag=1;
+                                    if(xTaskGetTickCount()>TimeOut+TIMEOUT_5000_MS)StopMultipleAttaneId=0;
+
+                                    if(StopMultipleAttaneId!=recognize_result.id){
+
+                                        StopMultipleAttaneId=recognize_result.id;
+
+                                        //--------------------------------here save the log file here----------------------------------
+                                        time_library_time_t current_time;
+                                        get_time(&current_time, 0);
+                                        uint8_t tempTimeFrame[6];
+                                        memset(tempTimeFrame,0,sizeof(tempTimeFrame));
+                                        tempTimeFrame[0] = current_time.year-2000;
+                                        tempTimeFrame[1] = current_time.month;
+                                        tempTimeFrame[2] = current_time.day;
+                                        tempTimeFrame[3] = current_time.hour;
+                                        tempTimeFrame[4] = current_time.minute;
+                                        tempTimeFrame[5] = current_time.second;
+                                        write_log_attendance(recognize_result.id, tempTimeFrame);
+                                        TimeOut=xTaskGetTickCount();
+
+                                        //----------------------------------------------------------------------------------------------
+
+                                    }
+                                    CPUBgflag=0;
+
+                                    frame_show_state = SHOW_STATE_RECOGNIZE;
+                                    break;
+
+                                }
+                                // CPUBgflag=0;
+
+                            }else{
+
+                                frame_show_state = SHOW_STATE_RECOGNIZE;
+                                break;
 
                             }
                             // ESP_LOGE("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
-                            frame_show_state = SHOW_STATE_RECOGNIZE;
-                            break;
+                            // frame_show_state = SHOW_STATE_RECOGNIZE;
+                            // break;
                         }
                         case DELETE:
                             // vTaskDelay(10);
@@ -554,7 +582,7 @@ static void task_process_handler(void *arg)
                         case SHOW_STATE_ENROLL:{
                             CmdEvent=ENROLED;// 2 means enrol done
 
-                            rgb_printf(frame, RGB565_MASK_BLUE, "Welcome %s", personName); 
+                            if(validCount==ID_VALID)rgb_printf(frame, RGB565_MASK_BLUE, "Welcome %s", personName); 
                             personId=recognizer->get_enrolled_ids().back().id;
                             // rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id);
                             break;

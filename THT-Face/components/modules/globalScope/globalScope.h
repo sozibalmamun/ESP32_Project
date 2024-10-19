@@ -94,7 +94,7 @@
 #define     PUBLISH_TOPIC         "/app/messages"
 #define     SUBCRIBE_TOPIC        "/topic/AA00242829068"
 //-------------------------------------------------------------------
-
+#define ID_VALID 5
 //-----------network status code-------------------------------------
 #define     WIFI_DISS           0x00
 #define     WIFI_CONNECTED      0x01

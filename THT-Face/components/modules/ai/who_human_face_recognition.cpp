@@ -147,22 +147,24 @@ bool copy_rectangle(const camera_fb_t *src, imageData_t **dst, int16_t x_start, 
         printf("Invalid rectangle dimensions\n");
         return false;
     }
-
-    // Allocate memory for the destination imageData_t structure
-    *dst = (imageData_t *)heap_caps_malloc(sizeof(imageData_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-    if (*dst == NULL) {
-        printf("Memory allocation for cropFrame structure failed\n");
-        return false;
-    }
-
     // Calculate rectangle dimensions
     uint8_t rect_width = x_end - x_start;
     uint8_t rect_height = y_end - y_start;
 
+    if(rect_height<100){
+        printf("small for cropFrame structure\n");
+        return false; // small image
+    }
+
+    // Allocate memory for the destination imageData_t structure
+    *dst = (imageData_t *)heap_caps_malloc(sizeof(imageData_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    if (*dst == NULL) {
+        // printf("Memory allocation for cropFrame structure failed\n");
+        return false;
+    }
+
     (*dst)->width = rect_width;
     (*dst)->height = rect_height;
-
-
 
     (*dst)->len = rect_width * rect_height * bytes_per_pixel;
 

@@ -83,13 +83,9 @@ void app_main()
     // Initialize and mount FATFS
 
     if (init_fatfs()== ESP_OK) {
-        // Create directories
-        // format_fatfs();
-        // delete_all_directories("/storage");
+        
         print_memory_status();
         create_directories();
-
-
 
     }
     //-------------------------

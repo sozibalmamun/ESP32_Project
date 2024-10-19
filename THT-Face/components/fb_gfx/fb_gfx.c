@@ -93,27 +93,27 @@ void fb_gfx_fillRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h
 
 
 
-// void fillRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color)
-// {
-//     int bytes_per_pixel = 2; // RGB565 uses 2 bytes per pixel
+void fillRect(camera_fb_t *fb, uint8_t x, uint8_t y, uint16_t w, uint8_t h, uint16_t color)
+{
+    int bytes_per_pixel = 2; // RGB565 uses 2 bytes per pixel
 
-//     // Ensure that the rectangle doesn't go out of bounds of the framebuffer
-//     if ((x + w > fb->width) || (y + h > fb->height) || x < 0 || y < 0) {
-//         return; // Do nothing if the rectangle is out of bounds
-//     }
-//     uint8_t *data = fb->buf;
+    // Ensure that the rectangle doesn't go out of bounds of the framebuffer
+    if ((x + w > fb->width) || (y + h > fb->height) || x < 0 || y < 0) {
+        return; // Do nothing if the rectangle is out of bounds
+    }
+    uint8_t *data = fb->buf;
 
-//     // Loop through the height and width of the rectangle
-//     for (int i = 0; i < h; i++) {
-//         for (int j = 0; j < w; j++) {
-//             int pixel_index = ((y + i) * fb->width + (x + j)) * bytes_per_pixel;
+    // Loop through the height and width of the rectangle
+    for (int i = 0; i < h; i++) {
+        for (int j = 0; j < w; j++) {
+            int pixel_index = ((y + i) * fb->width + (x + j)) * bytes_per_pixel;
 
-//             // Set the pixel color (RGB565, so we need 2 bytes per pixel)
-//             data[pixel_index] = (color >> 8) & 0xFF;      // High byte of RGB565
-//             data[pixel_index + 1] = color & 0xFF;         // Low byte of RGB565
-//         }
-//     }
-// }
+            // Set the pixel color (RGB565, so we need 2 bytes per pixel)
+            data[pixel_index] = (color >> 8) & 0xFF;      // High byte of RGB565
+            data[pixel_index + 1] = color & 0xFF;         // Low byte of RGB565
+        }
+    }
+}
 
 // // Helper function to set a pixel in the framebuffer
 // static void setPixel(camera_fb_t *fb, int px, int py, uint32_t color, int bytes_per_pixel)
@@ -127,7 +127,7 @@ void fb_gfx_fillRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h
 // }
 
 // // Function to draw a filled rounded rectangle
-// void fillRoundedRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h, int32_t radius, uint32_t color)
+// void fillRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color)
 // {
 //     int bytes_per_pixel = 2;  // RGB565 uses 2 bytes per pixel
 
@@ -144,56 +144,30 @@ void fb_gfx_fillRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h
 //         h = fb->height - y;
 //     }
 
-//     // Limit the radius to avoid exceeding the rectangle size
-//     if (radius * 2 > w) {
-//         radius = w / 2;
-//     }
-//     if (radius * 2 > h) {
-//         radius = h / 2;
-//     }
+
 
 //     uint8_t *data = fb->buf;
 
 //     // Draw the inner rectangle (without rounded corners)
-//     for (int i = y + radius; i < y + h - radius; i++) {
+//     for (int i = y ; i < y + h ; i++) {
 //         for (int j = x; j < x + w; j++) {
 //             setPixel(fb, j, i, color, bytes_per_pixel);
 //         }
 //     }
 
 //     // Draw the vertical sides (left and right excluding the corners)
-//     for (int i = y; i < y + radius; i++) {
-//         for (int j = x + radius; j < x + w - radius; j++) {
+//     for (int i = y; i < y ; i++) {
+//         for (int j = x ; j < x + w ; j++) {
 //             setPixel(fb, j, i, color, bytes_per_pixel);
 //         }
 //     }
-//     for (int i = y + h - radius; i < y + h; i++) {
-//         for (int j = x + radius; j < x + w - radius; j++) {
+//     for (int i = y + h ; i < y + h; i++) {
+//         for (int j = x ; j < x + w ; j++) {
 //             setPixel(fb, j, i, color, bytes_per_pixel);
 //         }
 //     }
 
-//     // Draw rounded corners (quarter circles in each corner)
-//     for (int i = 0; i < radius; i++) {
-//         for (int j = 0; j < radius; j++) {
-//             // Top-left corner
-//             if (i * i + j * j <= radius * radius) {
-//                 setPixel(fb, x + radius - i, y + radius - j, color, bytes_per_pixel);
-//             }
-//             // Top-right corner
-//             if (i * i + j * j <= radius * radius) {
-//                 setPixel(fb, x + w - radius + i, y + radius - j, color, bytes_per_pixel);
-//             }
-//             // Bottom-left corner
-//             if (i * i + j * j <= radius * radius) {
-//                 setPixel(fb, x + radius - i, y + h - radius + j, color, bytes_per_pixel);
-//             }
-//             // Bottom-right corner
-//             if (i * i + j * j <= radius * radius) {
-//                 setPixel(fb, x + w - radius + i, y + h - radius + j, color, bytes_per_pixel);
-//             }
-//         }
-//     }
+
 // }
 
 void fillRoundedRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h, int32_t radius, uint32_t color)

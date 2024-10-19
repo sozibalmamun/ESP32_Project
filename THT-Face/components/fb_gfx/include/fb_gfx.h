@@ -37,8 +37,9 @@ extern "C" {
     uint8_t  fb_gfx_putc         (camera_fb_t *fb, int32_t x, int32_t y, uint32_t color, unsigned char c);
     uint32_t fb_gfx_print        (camera_fb_t *fb, int32_t x, int32_t y, uint32_t color, const char * str);
     uint32_t fb_gfx_printf       (camera_fb_t *fb, int32_t x, int32_t y, uint32_t color, const char *format, ...);
-    // void fillRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color);
-    // void fillRoundedRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h, int32_t radius, uint32_t color);
+
+    void  fillRect(camera_fb_t *fb, uint8_t x, uint8_t y, uint16_t w, uint8_t h, uint16_t color);
+    
     void fillRoundedRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h, int32_t radius, uint32_t color);
 
 

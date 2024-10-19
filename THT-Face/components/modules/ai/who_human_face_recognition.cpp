@@ -84,7 +84,7 @@ typedef enum
 #define RGB565_MASK_RED 0xF800
 #define RGB565_MASK_GREEN 0x14ff
 #define RGB565_MASK_BLUE 0x437e
-#define FRAME_DELAY_NUM 16
+#define FRAME_DELAY_NUM 16 
 
 
 static void rgb_print(camera_fb_t *fb, uint32_t color, const char *str)
@@ -283,9 +283,18 @@ static void task_process_handler(void *arg)
 
                                 float percentage_float = (subvalue /(float)TIMEOUT_3000_MS) * 100;
                                 percentage = (int8_t)percentage_float;
-                                rgb_printf(frame, RGB565_MASK_BLUE, "Loading %d%s",(int)percentage,"%");
+                                // rgb_printf(frame, RGB565_MASK_BLUE, "Loading %d%s",(int)percentage,"%");
+
+                                // fb_gfx_fillRect(frame, 100, 50, 50, 3, RGB565_MASK_BLUE);
+                                // void fillRect(camera_fb_t *fb, int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color);
+
+                                // fb_gfx_fillRect(frame, 0, 235, 320, 1, 0xFFFF);
+                                // fb_gfx_fillRect(frame, 0, 240, 320, 1, 0xFFFF);
+                                fillRect(frame, 0, 235, 320, 5, 0xFFFF);
+                                fillRect(frame, 0, 235, (uint16_t)(percentage*3.2), 5, RGB565_MASK_BLUE);
 
                             }
+
                         }else {
 
                             TimeOut= xTaskGetTickCount();

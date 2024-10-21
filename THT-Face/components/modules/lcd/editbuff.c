@@ -20,11 +20,11 @@ void editDisplayBuff(camera_fb_t **buff){
 
     uint8_t clockType = get_time(&current_time, dspTimeFormet);
 
-    if(sleepEnable==SLEEP){// sleep time display
+    // if(sleepEnable==SLEEP){// sleep time display
 
-        sleepTimeDate(*buff,current_time);
+    //     sleepTimeDate(*buff,current_time);
 
-    }else {// wekup time display
+    // }else {// wekup time display
 
 
         if(networkStatus==WIFI_DISS){
@@ -121,7 +121,7 @@ void editDisplayBuff(camera_fb_t **buff){
         writedateTime(*buff , current_time, clockType);
 
 
-    }
+    // }
 }
 
 void iconPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,char* logobuff,uint16_t color ,camera_fb_t *buff) {
@@ -501,6 +501,11 @@ void wrightChar(uint8_t letterSize, uint16_t x_offset, uint8_t y_offset, char c,
 
 
 void sleepTimeDate(camera_fb_t *buff, time_library_time_t current_time){
+
+
+    // time_library_time_t current_time;
+
+    uint8_t clockType = get_time(&current_time, dspTimeFormet);
 
     for (int y = 0; y < 240; y++)
     {

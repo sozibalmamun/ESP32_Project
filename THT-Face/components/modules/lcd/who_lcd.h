@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "esp_log.h"
 #include "screen_driver.h"
+#include "esp_camera.h"
 
 #define BOARD_LCD_MOSI 47
 #define BOARD_LCD_MISO -1
@@ -21,6 +22,7 @@
 #define BOARD_LCD_PARAM_BITS 8
 #define LCD_HOST SPI2_HOST
 
+extern  uint8_t sleepEnable;
 
 
 
@@ -34,6 +36,8 @@ extern "C"
     void app_lcd_draw_wallpaper();
     void app_lcd_set_color(int color);
     void app_lcd_draw_wallpaper_try();
+    void scaleImageTo320x240(camera_fb_t *src, camera_fb_t *dst);
+
 
 
 #ifdef __cplusplus

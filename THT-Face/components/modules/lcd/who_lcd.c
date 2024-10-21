@@ -1,5 +1,5 @@
 #include "who_lcd.h"
-#include "esp_camera.h"
+// #include "esp_camera.h"
 #include <string.h>
 #include "logo_en_240x240_lcd.h"
 #include "editbuff.h"
@@ -16,14 +16,53 @@ static QueueHandle_t xQueueFrameO = NULL;
 static bool gReturnFB = true;
 
 
+// static void task_process_handler(void *arg)
+// {
+//     camera_fb_t *frame = NULL;
+
+//     while (true)
+//     {
+
+
+//         if (xQueueReceive(xQueueFrameI, &frame, portMAX_DELAY))
+//         {
+//             printf("cam on\n");
+
+
+//             editDisplayBuff(&frame);
+//             g_lcd.draw_bitmap(0, 0, frame->width, frame->height, (uint16_t *)frame->buf);
+
+//             if (xQueueFrameO)
+//             {
+//                 xQueueSend(xQueueFrameO, &frame, portMAX_DELAY);
+//             }
+//             else if (gReturnFB)
+//             {
+//                 esp_camera_fb_return(frame);
+//             }
+//             else
+//             {
+//                 free(frame);
+//             }
+//         }
+//     }
+// }
+
+
+
 static void task_process_handler(void *arg)
 {
     camera_fb_t *frame = NULL;
+    const TickType_t xDelay = pdMS_TO_TICKS(50);  // Run every 100 ms
+    const TickType_t queueTimeout = pdMS_TO_TICKS(100);  // Queue receive timeout 500 ms
 
     while (true)
     {
-        if (xQueueReceive(xQueueFrameI, &frame, portMAX_DELAY))
+        // Try to receive from the queue, but with a timeout (e.g., 100 ms)
+        if (xQueueReceive(xQueueFrameI, &frame, queueTimeout))
         {
+
+            sleepEnable=WAKEUP;// IN FUTURE ITS CONTROL BY ADC PIN
 
 
             editDisplayBuff(&frame);
@@ -42,8 +81,141 @@ static void task_process_handler(void *arg)
                 free(frame);
             }
         }
+        else
+        {
+            // If no frame received, log and delay
+            vTaskDelay(xDelay);  // Delay task execution if no frame was received
+            if(sleepEnable){
+
+                printf("dsp sleep\n");
+                // editDisplayBuff(&frame);
+                time_library_time_t current_time;
+
+                sleepTimeDate(frame,current_time);
+
+                g_lcd.draw_bitmap(0, 0, frame->width, frame->height, (uint16_t *)frame->buf);
+
+            }
+
+
+
+        }
+
+        
     }
 }
+
+// // Efficient nearest-neighbor scaling of a large image to 320x240
+// void scaleImageTo320x240_on_the_fly(camera_fb_t *src, camera_fb_t *dst) {
+//     int target_width = 320;
+//     int target_height = 240;
+//     int bytes_per_pixel = 2; // RGB565 format, 2 bytes per pixel
+
+//     float x_ratio = (float)src->width / target_width;
+//     float y_ratio = (float)src->height / target_height;
+
+//     // Iterate over each pixel in the destination (320x240)
+//     for (int y = 0; y < target_height; y++) {
+//         for (int x = 0; x < target_width; x++) {
+//             int nearest_x = (int)(x * x_ratio);
+//             int nearest_y = (int)(y * y_ratio);
+
+//             // Calculate source pixel index in the original 1024x768 image
+//             int src_index = (nearest_y * src->width + nearest_x) * bytes_per_pixel;
+
+//             // Calculate destination pixel index in the 320x240 image
+//             int dst_index = (y * target_width + x) * bytes_per_pixel;
+
+//             // Copy the pixel data from source to destination
+//             dst->buf[dst_index] = src->buf[src_index];         // High byte
+//             dst->buf[dst_index + 1] = src->buf[src_index + 1]; // Low byte
+//         }
+//     }
+
+//     // Update the destination frame properties
+//     dst->width = target_width;
+//     dst->height = target_height;
+//     dst->len = target_width * target_height * bytes_per_pixel;
+
+
+
+
+
+
+
+
+
+
+// }
+
+// void task_process_handler(void *arg)
+// {
+//     camera_fb_t *frame = NULL;
+//     const TickType_t xDelay = pdMS_TO_TICKS(50);  // Delay for retries
+//     const TickType_t queueTimeout = pdMS_TO_TICKS(100);  // Queue timeout
+
+//     while (true) {
+//         // Try to receive a frame from the queue
+//         if (xQueueReceive(xQueueFrameI, &frame, queueTimeout)) {
+//             // Ensure enough memory is available for resized frame
+//             size_t free_heap_size = heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+//             if (free_heap_size < (320 * 240 * 2 + sizeof(camera_fb_t))) {
+//                 printf("Insufficient memory to process frame\n");
+//                 vTaskDelay(xDelay);  // Wait and retry
+//                 continue;
+//             }
+
+//             // Allocate memory for resized frame
+//             camera_fb_t *resized_frame = (camera_fb_t *)heap_caps_malloc(sizeof(camera_fb_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+//             if (!resized_frame) {
+//                 printf("Failed to allocate memory for resized frame\n");
+//                 vTaskDelay(xDelay);
+//                 continue;
+//             }
+
+//             // Allocate buffer for resized frame (320x240, RGB565)
+//             resized_frame->buf = (uint8_t *)heap_caps_malloc(320 * 240 * 2, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+//             if (!resized_frame->buf) {
+//                 printf("Failed to allocate memory for resized frame buffer\n");
+//                 heap_caps_free(resized_frame);
+//                 vTaskDelay(xDelay);
+//                 continue;
+//             }
+
+//             // Scale the original frame to 320x240
+//             scaleImageTo320x240_on_the_fly(frame, resized_frame);
+
+//             // Process and display the resized frame
+//             // editDisplayBuff(resized_frame);
+
+//             // printf("w %d h %d\n",resized_frame->width, resized_frame->height);
+
+//             g_lcd.draw_bitmap(0, 0, 320, 240, (uint16_t *)resized_frame->buf);
+
+//             // Free the resized frame's buffer and structure after use
+//             heap_caps_free(resized_frame->buf);
+//             heap_caps_free(resized_frame);
+
+//             // Return or send the processed frame back to queue
+//             if (xQueueFrameO) {
+//                 xQueueSend(xQueueFrameO, &frame, portMAX_DELAY);
+//             } else if (gReturnFB) {
+//                 esp_camera_fb_return(frame);
+//             } else {
+//                 free(frame);
+//             }
+//         } else {
+//             // No frame received, delay task and check sleep mode
+//             vTaskDelay(xDelay);
+
+//             if (sleepEnable) {
+//                 printf("Display sleep mode\n");
+//             }
+//         }
+//     }
+// }
+
+
 
 esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o, const bool return_fb)
 {

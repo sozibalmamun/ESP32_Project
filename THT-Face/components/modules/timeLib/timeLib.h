@@ -67,27 +67,16 @@ uint32_t time_library_get_time_ms(void);
 ----------------------------------------------------------------------------------------------------------------------------
 ***/
 
+// Define RTC pin connections
+#define DS1302_SCLK_PIN 39
+#define DS1302_IO_PIN 40
+#define DS1302_CE_PIN 38
 
+// Define delays
+#define DelayRST 1000
+#define DelayIO DelayRST
+#define DelayClk DelayRST
 
-
-#define DS1302_CE_PIN      GPIO_NUM_38  // Chip Enable pin (CS)
-#define DS1302_IO_PIN      GPIO_NUM_40   // Data I/O pin (SDA)
-#define DS1302_SCLK_PIN    GPIO_NUM_39   // Serial Clock pin (CLK)
-
-
-#define DelayRST 10  // Define delay for stabilization
-#define CLK_DELAY 10
-#define MODE_CHANGE_DELAY 10
-
-// Structure to store time and date information
-typedef struct {
-    uint8_t seconds;
-    uint8_t minutes;
-    uint8_t hours;
-    uint8_t day;
-    uint8_t month;
-    uint8_t year;
-} RTC_TimeDate;
 
 #define  RTC_WR_SEC_ADDR        0x80
 #define  RTC_RD_SEC_ADDR        0x81
@@ -139,29 +128,13 @@ typedef struct {
 
 
 
-enum eRtcDataType
-{
-
-	eRtcDataSec,
-	eRtcDataMin,
-	eRtcDataHour,
-	eRtcDataDay,
-	eRtcDataWeek,
-	eRtcDataMonth,
-	eRtcDataYear
-
-};
 
 
 
-uint8_t RtcReadBuffer(void); // 800us
- void RtcDataRead(uint8_t eRtcDataType);
- void RtcDataWrite(uint8_t eRtcDataType);
- void RtcInit(void);
-
-void PrintTimeAndDate();
-
-
+void RtcInit(void);
+void RtcSetDate(uint8_t day, uint8_t month, uint8_t weekday, uint8_t year);
+void RtcSetTime(uint8_t sec, uint8_t min, uint8_t hour);
+void RtcDataRead(uint8_t eRtcDataType);
 #ifdef __cplusplus
 }
 #endif

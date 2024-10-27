@@ -87,7 +87,7 @@ static void task_process_handler(void *arg)
             vTaskDelay(xDelay);  // Delay task execution if no frame was received
             if(sleepEnable){
 
-                printf("dsp sleep\n");
+                // printf("dsp sleep\n");
                 // editDisplayBuff(&frame);
                 time_library_time_t current_time;
 

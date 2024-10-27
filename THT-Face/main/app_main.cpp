@@ -27,6 +27,10 @@
 //--------fatfs-------------------
 #include "FATFS/fs.h"
 //-------------------------------
+#include "esp_sleep.h"
+
+
+
 
 static const char *TAG = "app_main";
 
@@ -38,20 +42,57 @@ static QueueHandle_t xQueueEventLogic = NULL;
 static QueueHandle_t xQueueCloud = NULL;
 
 
-#define GPIO_BOOT GPIO_NUM_0
-#define CAM_CONTROL 3
+#define GPIO_WAKEUP_BUTTON GPIO_NUM_0
+#define CAM_CONTROL GPIO_NUM_3
 #define LCE_BL GPIO_NUM_14
+#define RX GPIO_NUM_20
 
 
-#define SLEEP 30
-#define WAKE 90
+
+#define SLEEP 10
+#define WAKE 70
+
+
 
 
 #define MIN_BRIGHTNESS (8191)
 #define BRIGHTNESS(x)  MIN_BRIGHTNESS-(((MIN_BRIGHTNESS/100)*x))
 
-void PwmInt(ledc_channel_config_t *ledc_channel);
+void PwmInt( ledc_channel_config_t *ledc_channel ,gpio_num_t pinNo );
 
+
+
+void configure_wakeup() {
+    // Configure the button GPIO for input with pull-up, active-low
+    gpio_pad_select_gpio(GPIO_WAKEUP_BUTTON);
+    gpio_set_direction(GPIO_WAKEUP_BUTTON, GPIO_MODE_INPUT);
+    gpio_pullup_en(GPIO_WAKEUP_BUTTON);  // Enable pull-up for stable input
+
+
+
+    // gpio_pullup_en(GPIO_WAKEUP_BUTTON);
+    // esp_sleep_enable_ext0_wakeup(GPIO_WAKEUP_BUTTON, 0); // Wake up when GPIO is low
+
+    // Enable external wakeup on GPIO_WAKEUP_BUTTON, active low
+    esp_sleep_enable_ext0_wakeup(GPIO_WAKEUP_BUTTON, 0);  // Wake on falling edge (button press)
+}
+// Function to enter light sleep mode
+void enter_light_sleep() {
+
+    configure_wakeup();
+    vTaskDelay(200);
+    ESP_LOGI("Sleep", "Entering light sleep...");
+    gpio_set_level((gpio_num_t)CAM_CONTROL, 1);  // Ensure peripherals are powered off or set to sleep state
+
+    // Set the wake-up source to external (GPIO_BOOT, active low)
+    // esp_sleep_enable_ext0_wakeup(GPIO_WAKEUP_BUTTON, 0);  // Wake when GPIO_BOOT goes low
+
+    // Enter light sleep
+    esp_light_sleep_start();
+
+    ESP_LOGI("Sleep", "Woke up from light sleep!");
+    sleepEnable = false;  // Disable sleep mode after waking up
+}
 
 extern "C" 
 void app_main()
@@ -61,9 +102,20 @@ void app_main()
     gpio_pad_select_gpio(CAM_CONTROL);
     gpio_set_direction((gpio_num_t)CAM_CONTROL, GPIO_MODE_OUTPUT);
     gpio_set_level((gpio_num_t)CAM_CONTROL, 0);
+
+    gpio_set_level((gpio_num_t)LCE_BL, 0);
+
     gpio_pad_select_gpio(LCE_BL);
     gpio_set_direction((gpio_num_t)LCE_BL, GPIO_MODE_OUTPUT);
     gpio_set_level((gpio_num_t)LCE_BL, 0);
+
+
+
+    gpio_pad_select_gpio(RX);
+    gpio_set_direction((gpio_num_t)RX, GPIO_MODE_OUTPUT);
+    gpio_set_level((gpio_num_t)RX, 0);
+
+
 
     esp_err_t ret;
 
@@ -117,13 +169,47 @@ void app_main()
 
     // Declare LEDC timer and channel configuration structs
     ledc_channel_config_t ledc_channel;
+
+
     // Initialize PWM using the PwmInt function
-    PwmInt(&ledc_channel);
+    PwmInt(&ledc_channel,(gpio_num_t)LCE_BL);
+
+    // ledc_channel_config_t rx_channel;
+    // PwmInt(&rx_channel,(gpio_num_t)RX);
+
+
+
+
+    RtcInit();
+
+    // RtcSetTime(30, 45, 12); // Set time: 12:45:30
+    // RtcSetDate(23, 10, 4, 24); // Set date: 23rd Oct, 2024, Weekday = 4 (Wednesday)
+
+    vTaskDelay(1000 / portTICK_PERIOD_MS); // Wait for 1 second
+
+    // Read and print the time and date
+    // RtcDataRead(RTC_RD_SEC_ADDR);
+    // RtcDataRead(RTC_RD_MIN_ADDR);
+    // RtcDataRead(RTC_RD_HOUR_ADDR);
+    // RtcDataRead(RTC_RD_DAY_ADDR);
+    // RtcDataRead(RTC_RD_MONTH_ADDR);
+    // RtcDataRead(RTC_RD_WEEKDAY_ADDR);
+    // RtcDataRead(RTC_RD_YEAR_ADDR);
 
     while(true){
 
+    PrintTimeAndDate();
 
-        reconnect();
+    // RtcDataRead(RTC_RD_SEC_ADDR);
+    // RtcDataRead(RTC_RD_MIN_ADDR);
+    // RtcDataRead(RTC_RD_HOUR_ADDR);
+    // RtcDataRead(RTC_RD_DAY_ADDR);
+    // RtcDataRead(RTC_RD_MONTH_ADDR);
+    // RtcDataRead(RTC_RD_WEEKDAY_ADDR);
+    // RtcDataRead(RTC_RD_YEAR_ADDR);
+
+    vTaskDelay(100);
+        // reconnect();
         if(xTaskGetTickCount()-sleepTimeOut>3000 && xTaskGetTickCount()-sleepTimeOut< 3500){
 
             sleepEnable=SLEEP;
@@ -135,8 +221,14 @@ void app_main()
 
             gpio_set_level((gpio_num_t)CAM_CONTROL, 1);
 
+
             ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, BRIGHTNESS(SLEEP));
             ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
+
+            // enter_light_sleep();  // Enter light sleep mode
+
+            // ledc_set_duty(rx_channel.speed_mode, rx_channel.channel, 0);
+            // ledc_update_duty(rx_channel.speed_mode, rx_channel.channel);
 
         }else{
             gpio_set_level((gpio_num_t)CAM_CONTROL, 0);
@@ -148,7 +240,7 @@ void app_main()
     }
 }
 
-void PwmInt( ledc_channel_config_t *ledc_channel) {
+void PwmInt( ledc_channel_config_t *ledc_channel ,gpio_num_t pinNo ) {
 
     ledc_timer_config_t ledc_timer = {
         .speed_mode      = LEDC_LOW_SPEED_MODE,   // Low-speed mode
@@ -160,7 +252,7 @@ void PwmInt( ledc_channel_config_t *ledc_channel) {
     ledc_timer_config(&ledc_timer);
 
     // Configure LEDC channel for GPIO 14
-    ledc_channel->gpio_num   = LCE_BL;                // GPIO pin for PWM output
+    ledc_channel->gpio_num   = pinNo;                // GPIO pin for PWM output
     ledc_channel->speed_mode = LEDC_LOW_SPEED_MODE;        // Low-speed mode
     ledc_channel->channel    = LEDC_CHANNEL_0;             // Channel: 0
     ledc_channel->intr_type  = LEDC_INTR_DISABLE;          // Disable fade interrupt

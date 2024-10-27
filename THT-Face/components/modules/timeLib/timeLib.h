@@ -73,9 +73,12 @@ uint32_t time_library_get_time_ms(void);
 #define DS1302_CE_PIN 38
 
 // Define delays
-#define DelayRST 1000
-#define DelayIO DelayRST
-#define DelayClk DelayRST
+
+
+#define test 33
+#define DelayRST    test
+#define DelayIO     test
+#define CLK_DELAY   test
 
 
 #define  RTC_WR_SEC_ADDR        0x80
@@ -125,10 +128,6 @@ uint32_t time_library_get_time_ms(void);
 
 #define RTC_WR_RAM_BURST_ADDR   0xFE
 #define RTC_RD_RAM_BURST_ADDR   0xFF
-
-
-
-
 
 
 void RtcInit(void);

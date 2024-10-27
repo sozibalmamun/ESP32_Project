@@ -175,14 +175,14 @@ void RTCStart(void) {
 	RTC_CLK_LOW
 	RTC_DATA_LOW
 
-	for(c8c1=DelayIO; c8c1; c8c1--)RTC_CS_HIGH
+	RTC_CS_HIGH ets_delay_us(DelayRST);
 
 }
 
 void RTCStop(void) {
 	uint8_t c8c1;
 
-	for(c8c1=DelayIO; c8c1; c8c1--)RTC_CS_LOW;
+	RTC_CS_LOW;  ets_delay_us(DelayRST);
 	RTC_CLK_LOW
 	RTC_DATA_LOW
 }
@@ -190,33 +190,60 @@ void RTCStop(void) {
 // Reading and writing bytes to the DS1302
 uint8_t RTCReadByte(void) {
 	uint8_t c8c1, c8c2 ,ByteData = 0;
-    for(c8c1=DelayRST; c8c1; c8c1--)RTC_DATA_READ_MODE;
+    // for(c8c1=DelayRST; c8c1; c8c1--)RTC_DATA_READ_MODE;
+
+	// for(c8c2 = 0x01; c8c2; c8c2<<=1)
+	// {
+	// 	if(RTC_DATA_READ)ByteData |= c8c2;	
+
+	// 	for(c8c1=DelayClk; c8c1; c8c1--) 
+    //     RTC_CLK_HIGH
+	// 	for(c8c1=DelayClk; c8c1; c8c1--) 
+    //     RTC_CLK_LOW
+	// }
+
+
+
+    RTC_DATA_READ_MODE;ets_delay_us(DelayIO);
 
 	for(c8c2 = 0x01; c8c2; c8c2<<=1)
 	{
 		if(RTC_DATA_READ)ByteData |= c8c2;	
-		for(c8c1=DelayClk; c8c1; c8c1--) RTC_CLK_HIGH
-		for(c8c1=DelayClk; c8c1; c8c1--) RTC_CLK_LOW
+        
+        RTC_CLK_HIGH       ets_delay_us(CLK_DELAY);
+        RTC_CLK_LOW        ets_delay_us(CLK_DELAY);
 	}
+
 	return ByteData;
 }
 
 void RTCWriteByte(uint8_t ByteData) {
 	uint8_t  c8c1, c8c2;
 
-    for(c8c1=DelayRST; c8c1; c8c1--)RTC_DATA_WRITE_MODE;
+    // for(c8c1=DelayRST; c8c1; c8c1--)RTC_DATA_WRITE_MODE;
+
+	// for(c8c2 = 0x01; c8c2; c8c2<<=1)
+	// {
+	// 	for(c8c1=DelayIO; c8c1; c8c1--)
+	// 	{
+	// 		if(ByteData&c8c2)	RTC_DATA_HIGH
+	// 		else				RTC_DATA_LOW
+	// 	}
+	// 	for(c8c1=DelayClk; c8c1; c8c1--) RTC_CLK_HIGH
+	// 	for(c8c1=DelayClk; c8c1; c8c1--) RTC_CLK_LOW
+	// }
+
+    RTC_DATA_WRITE_MODE;ets_delay_us(DelayIO);
 
 	for(c8c2 = 0x01; c8c2; c8c2<<=1)
 	{
-		for(c8c1=DelayIO; c8c1; c8c1--)
-		{
-			if(ByteData&c8c2)	RTC_DATA_HIGH
-			else				RTC_DATA_LOW
-		}
-		for(c8c1=DelayClk; c8c1; c8c1--) RTC_CLK_HIGH
-		for(c8c1=DelayClk; c8c1; c8c1--) RTC_CLK_LOW
+		if(ByteData&c8c2) RTC_DATA_HIGH 
+		else RTC_DATA_LOW
+			
+        ets_delay_us(DelayIO);
+		RTC_CLK_HIGH ets_delay_us(CLK_DELAY);
+		RTC_CLK_LOW  ets_delay_us(CLK_DELAY);
 	}
-
 
 }
 
@@ -328,7 +355,7 @@ void RtcInit(void) {
 		RtcSetDate(23, 10, 4, 24); // Set date: 23rd Oct, 2024, Weekday = 4 (Wednesday)
 
     } else {
-        printf("RTC already configured.\n");
+        // printf("RTC already configured.\n");
         printf("ramData1 %x  ramData2 %x \n", ramData1,ramData2);
     }
 }

@@ -551,7 +551,9 @@ void sleepTimeDate(camera_fb_t *buff, time_library_time_t current_time){
 // date 2024-08-08 day
     char tempFrame[17] ;
     snprintf(tempFrame, sizeof(tempFrame), "%d-%02d-%02d  %s",current_time.year,current_time.month,current_time.day,
-    day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
+    day_names[current_time.weekday]);
+
+    // day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
 
     uint16_t len = 160- (pixleLen(2,&tempFrame)/2);//x start poss
     WriteString(2,len, 130,tempFrame,0xffff,buff);

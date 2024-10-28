@@ -80,7 +80,7 @@
         "wssclient.h": "c"
     },
     "idf.flashType": "UART",
-    "idf.portWin": "COM14",
+    "idf.portWin": "COM5",
     "idf.openOcdConfigs": [
         "board/esp32s3-builtin.cfg"
     ]

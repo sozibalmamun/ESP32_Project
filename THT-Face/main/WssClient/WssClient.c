@@ -206,23 +206,25 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         time_library_time_t current_time;
         get_time(&current_time, dspTimeFormet);
 
-        uint8_t time [12];
+        uint8_t time [10];
         time[0]=(uint8_t)'T';
         time[1]=current_time.year-2000;
         time[2]=current_time.month;
         time[3]=current_time.day;
-        
-        time[4]=current_time.hour;
-        time[5]=current_time.minute;
-        time[6]=current_time.second;
+        time[4]= current_time.weekday;
 
-        time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
-        time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
-        time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
-        time[10]= dspTimeFormet==true?0x0C:0x18;// sent time formet
-        time[11]='\0';
+        time[5]=current_time.hour;
+        time[6]=current_time.minute;
+        time[7]=current_time.second;
 
-        // printf(" data len: %d ping: %c %d %d %d %d %d %d 12/24H: %d day: %s\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,time[10],(char*)&time[7]);
+        // time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
+        // time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
+        // time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
+
+        time[8]= dspTimeFormet==true?0x0C:0x18;// sent time formet
+        time[9]='\0';
+
+        // printf(" data len: %d ping: %c %d %d %d %d %d %d 12/24H: %d\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,time[7]);
         sendToWss(time, sizeof(time));
 
 
@@ -252,23 +254,41 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
                 time_library_time_t current_time;
                 get_time(&current_time, dspTimeFormet);
 
-                uint8_t time [12];
+                // uint8_t time [12];
+                // time[0]=(uint8_t)'T';
+                // time[1]=current_time.year-2000;
+                // time[2]=current_time.month;
+                // time[3]=current_time.day;
+                
+                // time[4]=current_time.hour;
+                // time[5]=current_time.minute;
+                // time[6]=current_time.second;
+
+                // time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
+                // time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
+                // time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
+                // time[10]= dspTimeFormet==true?0x0C:0x18;// sent time formet
+                // time[11]='\0';
+
+                uint8_t time [10];
                 time[0]=(uint8_t)'T';
                 time[1]=current_time.year-2000;
                 time[2]=current_time.month;
                 time[3]=current_time.day;
-                
-                time[4]=current_time.hour;
-                time[5]=current_time.minute;
-                time[6]=current_time.second;
+                time[4]= current_time.weekday;
 
-                time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
-                time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
-                time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
-                time[10]= dspTimeFormet==true?0x0C:0x18;// sent time formet
-                time[11]='\0';
+                time[5]=current_time.hour;
+                time[6]=current_time.minute;
+                time[7]=current_time.second;
 
-                // printf(" data len: %d ping: %c %d %d %d %d %d %d 12/24H: %d day: %s\n",sizeof(time),time[0],time[1],time[2],time[3],time[4],time[5],time[6] ,time[10],(char*)&time[7]);
+                // time[7]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][0];
+                // time[8]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][1];
+                // time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
+
+                time[8]= dspTimeFormet==true?0x0C:0x18;// sent time formet
+                time[9]='\0';
+
+                printf(" data len: %d ping: %d %d %d %d %d %d %d %dH \n",sizeof(time),time[1],time[2],time[3],time[4],time[5],time[6] ,time[7] ,time[8]);
                 sendToWss(time, sizeof(time));
 
             }else{
@@ -298,31 +318,6 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         break;
     }
 }
-
-
-
-// void stomp_client_handle_message( const char *message) {
-
-//     // ESP_LOGI(TAGSTOMP, "Received STOMP message:\n%s", message);
-//         if (strstr(message, "CONNECTED")) {
-//         // ESP_LOGI(TAGSTOMP, "STOMP CONNECTED");
-//         // Subscribe to a topic
-//         stomp_client_subscribe(SUBCRIBE_TOPIC);
-//     } else if (strstr(message, "MESSAGE")) {
-
-//         // stomeAck(message);
-
-//         // if(!stompSend(testdata,"/app/cloud"))ESP_LOGI(TAGSTOMP, "Data sending error");
-//         dataHandele(message);
-
-//         // Handle the received message
-//     } else if (strstr(message, "ERROR")) {
-
-//         ESP_LOGE(TAGSTOMP, "STOMP ERROR: %s", message);
-
-//     }
-
-// }
 
 
 void stompAppStart(void)

@@ -5,10 +5,6 @@ static const char *TAG = "TimeLib";
 
 time_library_time_t reference_time;
 static uint32_t reference_tick_count;
-// time_library_time_t current_time;
-
-
-
 
 static const uint8_t days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 const DATA_FLASH char* day_names[] = {
@@ -57,25 +53,50 @@ static void add_seconds_to_time(time_library_time_t *time, uint32_t seconds) {
 }
 
 // Initialize the time library with a known time
-void time_library_init(time_library_time_t *initial_time) {
+void time_library_init(time_library_time_t *initial_time, bool rtcUpdate) {
+
     reference_time = *initial_time;
     reference_tick_count = xTaskGetTickCount();
-    ESP_LOGI(TAG, "Time library initialized with reference time: %d-%d-%d %d:%d:%d",
-             reference_time.year, reference_time.month, reference_time.day,
+    ESP_LOGI(TAG, "Time library initialized with reference time: %d-%d-%d %d %d:%d:%d",
+             reference_time.year, reference_time.month, reference_time.day, reference_time.weekday,
              reference_time.hour, reference_time.minute, reference_time.second);
+
+    if(rtcUpdate){
+        RtcSetTime(reference_time.second, reference_time.minute, reference_time.hour); // Set time: 12:45:30
+        RtcSetDate(reference_time.day, reference_time.month, reference_time.weekday, reference_time.year); // Set date: 23rd Oct, 2024, Weekday = 4 (Wednesday)
+    }
+	
 }
 
 // Set the current time manually
-void time_library_set_time(time_library_time_t *time) {
-    time_library_init(time);
+void time_library_set_time(time_library_time_t *time ,bool rtcUpdate) {
+    time_library_init(time ,rtcUpdate);
 }
-
 // Get the current time
+// void time_library_get_time(time_library_time_t *current_time) {
+//     uint32_t elapsed_ticks = xTaskGetTickCount() - reference_tick_count;
+//     uint32_t elapsed_seconds = (elapsed_ticks * portTICK_PERIOD_MS) / 1000;
+//     *current_time = reference_time;
+//     add_seconds_to_time(current_time, elapsed_seconds);
+// }
+
+
 void time_library_get_time(time_library_time_t *current_time) {
+    // Get the number of ticks that have elapsed since reference
     uint32_t elapsed_ticks = xTaskGetTickCount() - reference_tick_count;
     uint32_t elapsed_seconds = (elapsed_ticks * portTICK_PERIOD_MS) / 1000;
+
+    // Copy reference time as the starting point
     *current_time = reference_time;
+    
+    // Add elapsed seconds to update the time
     add_seconds_to_time(current_time, elapsed_seconds);
+
+    // Calculate the elapsed days
+    uint32_t elapsed_days = elapsed_seconds / 86400;
+
+    // Update the weekday based on elapsed days
+    current_time->weekday = (reference_time.weekday + elapsed_days) % 7;
 }
 
 // Calculate the elapsed time in milliseconds
@@ -104,8 +125,6 @@ uint8_t  get_time(time_library_time_t *time, bool is_12) {
         return PM;
 
     }
-
-
 }
 
 // Function to calculate the day of the week using Zeller's Congruence
@@ -122,43 +141,6 @@ uint8_t calculate_day_of_week(uint16_t year, uint8_t month, uint8_t day) {
     return (day_of_week + 6) % 7;
 }
 
-
-
-// GPIO control macros
-#define RTC_DATA_WRITE_MODE {gpio_set_direction(DS1302_IO_PIN, GPIO_MODE_OUTPUT); }
-#define RTC_DATA_READ_MODE  {gpio_set_direction(DS1302_IO_PIN, GPIO_MODE_INPUT); }
-
-#define RTC_CLK_HIGH        {gpio_set_level(DS1302_SCLK_PIN, 1); }
-#define RTC_CLK_LOW         {gpio_set_level(DS1302_SCLK_PIN, 0); }
-
-#define RTC_CS_HIGH         {gpio_set_level(DS1302_CE_PIN, 1); }
-#define RTC_CS_LOW          {gpio_set_level(DS1302_CE_PIN, 0); }
-
-#define RTC_DATA_HIGH       {gpio_set_level(DS1302_IO_PIN, 1);}
-#define RTC_DATA_LOW        {gpio_set_level(DS1302_IO_PIN, 0);}
-
-#define RTC_DATA_READ       gpio_get_level(DS1302_IO_PIN)
-
-
-
-
-
-
-void gpioMode(bool output , gpio_num_t pinNo){
-
- gpio_config_t io_conf = {
-        .intr_type = GPIO_INTR_DISABLE,
-        .mode = output?GPIO_MODE_OUTPUT:GPIO_MODE_INPUT,
-        .pin_bit_mask = (1ULL << pinNo),
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .pull_up_en = GPIO_PULLUP_DISABLE 
-    };
-    gpio_config(&io_conf);
-
-}
-
-
-
 // BCD to decimal and vice versa conversions
 uint8_t BCD2Dec(uint8_t bcd) {
     return ((bcd >> 4) * 10) + (bcd & 0x0F);
@@ -170,39 +152,21 @@ uint8_t Dec2BCD(uint8_t dec) {
 
 // RTC Control Functions
 void RTCStart(void) {
-	uint8_t c8c1;
-
 	RTC_CLK_LOW
 	RTC_DATA_LOW
-
 	RTC_CS_HIGH ets_delay_us(DelayRST);
-
 }
 
 void RTCStop(void) {
-	uint8_t c8c1;
-
-	RTC_CS_LOW;  ets_delay_us(DelayRST);
+	RTC_CS_LOW;  
+    ets_delay_us(DelayRST);
 	RTC_CLK_LOW
 	RTC_DATA_LOW
 }
 
 // Reading and writing bytes to the DS1302
 uint8_t RTCReadByte(void) {
-	uint8_t c8c1, c8c2 ,ByteData = 0;
-    // for(c8c1=DelayRST; c8c1; c8c1--)RTC_DATA_READ_MODE;
-
-	// for(c8c2 = 0x01; c8c2; c8c2<<=1)
-	// {
-	// 	if(RTC_DATA_READ)ByteData |= c8c2;	
-
-	// 	for(c8c1=DelayClk; c8c1; c8c1--) 
-    //     RTC_CLK_HIGH
-	// 	for(c8c1=DelayClk; c8c1; c8c1--) 
-    //     RTC_CLK_LOW
-	// }
-
-
+	uint8_t c8c2 ,ByteData = 0;
 
     RTC_DATA_READ_MODE;ets_delay_us(DelayIO);
 
@@ -210,29 +174,15 @@ uint8_t RTCReadByte(void) {
 	{
 		if(RTC_DATA_READ)ByteData |= c8c2;	
         
-        RTC_CLK_HIGH       ets_delay_us(CLK_DELAY);
-        RTC_CLK_LOW        ets_delay_us(CLK_DELAY);
+        RTC_CLK_HIGH    ets_delay_us(CLK_DELAY);
+        RTC_CLK_LOW     ets_delay_us(CLK_DELAY);
 	}
 
 	return ByteData;
 }
 
 void RTCWriteByte(uint8_t ByteData) {
-	uint8_t  c8c1, c8c2;
-
-    // for(c8c1=DelayRST; c8c1; c8c1--)RTC_DATA_WRITE_MODE;
-
-	// for(c8c2 = 0x01; c8c2; c8c2<<=1)
-	// {
-	// 	for(c8c1=DelayIO; c8c1; c8c1--)
-	// 	{
-	// 		if(ByteData&c8c2)	RTC_DATA_HIGH
-	// 		else				RTC_DATA_LOW
-	// 	}
-	// 	for(c8c1=DelayClk; c8c1; c8c1--) RTC_CLK_HIGH
-	// 	for(c8c1=DelayClk; c8c1; c8c1--) RTC_CLK_LOW
-	// }
-
+	uint8_t c8c2;
     RTC_DATA_WRITE_MODE;ets_delay_us(DelayIO);
 
 	for(c8c2 = 0x01; c8c2; c8c2<<=1)
@@ -259,58 +209,103 @@ void RtcDataRead(uint8_t eRtcDataType) {
     switch (eRtcDataType) {
         case RTC_RD_SEC_ADDR: printf("Seconds: %d", data); break;
         case RTC_RD_MIN_ADDR: printf(" Minutes: %d", data); break;
-        case RTC_RD_HOUR_ADDR: printf(" Hours: %d\n", data); break;
+        case RTC_RD_HOUR_ADDR: printf(" Hours: %d", data); break;
         case RTC_RD_DAY_ADDR: printf(" Day: %d", data); break;
         case RTC_RD_MONTH_ADDR: printf(" Month: %d", data); break;
         case RTC_RD_WEEKDAY_ADDR: printf( " Weekday: %d", data); break;
-        case RTC_RD_YEAR_ADDR: printf("Year: %d\n", data + 2000); break;
+        case RTC_RD_YEAR_ADDR: printf(" Year: %d\n", data + 2000); break;
         default: printf("Unknown data type\n"); break;
     }
 }
 
 // Writing specific data to RTC
 void RtcDataWrite(uint8_t eRtcDataType, uint8_t data) {
-    uint8_t bcdData = Dec2BCD(data);
+    // uint8_t bcdData = Dec2BCD(data);
+    // RTCStart();
+    // RTCWriteByte(eRtcDataType);
+    // RTCWriteByte(bcdData);
+    // RTCStop();
 
     RTCStart();
     RTCWriteByte(eRtcDataType);
-    RTCWriteByte(bcdData);
+    RTCWriteByte(data);
     RTCStop();
+
+
 }
 
 // Set time in the RTC
 void RtcSetTime(uint8_t sec, uint8_t min, uint8_t hour) {
-    RtcDataWrite(RTC_WR_SEC_ADDR, sec);
-    RtcDataWrite(RTC_WR_MIN_ADDR, min);
-    RtcDataWrite(RTC_WR_HOUR_ADDR, hour);
+
+
+    uint8_t bcdData = Dec2BCD(sec);
+    RtcDataWrite(RTC_WR_SEC_ADDR, (bcdData &= ~0x80));
+    ets_delay_us(DelayIO);
+
+    bcdData = Dec2BCD(min);
+    RtcDataWrite(RTC_WR_MIN_ADDR, (bcdData &= ~0x80));
+    ets_delay_us(DelayIO);
+
+    bcdData = Dec2BCD(hour);
+    RtcDataWrite(RTC_WR_HOUR_ADDR, (bcdData &= ~0x80));
+    ets_delay_us(DelayIO);
+
 }
 
 // Set date in the RTC
 void RtcSetDate(uint8_t day, uint8_t month, uint8_t weekday, uint8_t year) {
-    RtcDataWrite(RTC_WR_DAY_ADDR, day);
-    RtcDataWrite(RTC_WR_MONTH_ADDR, month);
-    RtcDataWrite(RTC_WR_WEEKDAY_ADDR, weekday);
-    RtcDataWrite(RTC_WR_YEAR_ADDR, year);
+
+    uint8_t bcdData = Dec2BCD(day);
+    RtcDataWrite(RTC_WR_DAY_ADDR, (bcdData &= ~0xc0));
+    ets_delay_us(DelayIO);
+
+    bcdData = Dec2BCD(month);
+    RtcDataWrite(RTC_WR_MONTH_ADDR, (bcdData &= ~0xe0));
+    ets_delay_us(DelayIO);
+
+    bcdData = Dec2BCD(weekday);
+    RtcDataWrite(RTC_WR_WEEKDAY_ADDR, (bcdData &= ~0xf8));
+    ets_delay_us(DelayIO);
+
+    bcdData = Dec2BCD(year);
+    RtcDataWrite(RTC_WR_YEAR_ADDR, bcdData);
+    ets_delay_us(DelayIO);
 }
 
-// 12-hour to 24-hour time format conversion
-bool RTCAdjustTimeFormat(unsigned short *hour) {
-    bool isPM = false;
 
-    if (*hour >= 24) {
-        *hour = *hour % 12;
-    }
+void RtcReadBuffer(void) // 800us
+{
+	uint8_t Result = 0; // 0: normal !0:Err
+	uint8_t sec, min, hour, day, month, week, year;
 
-    if (*hour == 0) {
-        *hour = 12;
-    } else if (*hour == 12) {
-        isPM = true;
-    } else if (*hour > 12) {
-        *hour -= 12;
-        isPM = true;
-    }
+	RTCStart();
+	RTCWriteByte(RTC_RD_CLK_BURST_ADDR);
+	sec = BCD2Dec(RTCReadByte());	// sec
+	min = BCD2Dec(RTCReadByte());	// min
+	hour = BCD2Dec(RTCReadByte());	// hour
+	day = BCD2Dec(RTCReadByte());	// day
+	month = BCD2Dec(RTCReadByte());	// month
+	week = BCD2Dec(RTCReadByte());	// week
+	year = BCD2Dec(RTCReadByte());	// year
 
-    return isPM;
+	RTCStop();
+
+	time_library_time_t initial_time = {year+2000, month, day, week, hour, min, sec};//     year, month, day, hour, minute, second;
+    time_library_init(&initial_time, 0);
+
+	return Result;
+}
+
+void gpioMode(bool output , gpio_num_t pinNo){
+
+ gpio_config_t io_conf = {
+        .intr_type = GPIO_INTR_DISABLE,
+        .mode = output?GPIO_MODE_OUTPUT:GPIO_MODE_INPUT,
+        .pin_bit_mask = (1ULL << pinNo),
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .pull_up_en = GPIO_PULLUP_DISABLE 
+    };
+    gpio_config(&io_conf);
 }
 
 // RTC Initialization
@@ -319,6 +314,7 @@ void RtcInit(void) {
 	gpioMode(1, DS1302_CE_PIN);   // CE (chip select) pin as output
     gpioMode(1, DS1302_IO_PIN);   // IO (data) pin as output (initially)
     gpioMode(1, DS1302_SCLK_PIN); // SCLK (clock) pin as output
+    vTaskDelay(100); // Wait for 1 second
 
     // Disable write protect
     RTCStart();
@@ -333,12 +329,11 @@ void RtcInit(void) {
     uint8_t ramData2 = RTCReadByte();
     RTCStop();
 
-
+    printf("ramData1 %x  ramData2 %x \n", ramData1,ramData2);
 
     if (ramData1 != 'O' || ramData2 != 'K') {
 
         printf("RTC not configured.\n");
-
 
 		RTCStart();
 		RTCWriteByte(RTC_WR_TCS_ADDR);
@@ -354,9 +349,10 @@ void RtcInit(void) {
 		RtcSetTime(30, 45, 12); // Set time: 12:45:30
 		RtcSetDate(23, 10, 4, 24); // Set date: 23rd Oct, 2024, Weekday = 4 (Wednesday)
 
-    } else {
-        // printf("RTC already configured.\n");
-        printf("ramData1 %x  ramData2 %x \n", ramData1,ramData2);
-    }
+    } 
+
+    RtcReadBuffer();
+
+
 }
 

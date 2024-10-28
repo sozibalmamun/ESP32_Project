@@ -13,36 +13,6 @@
 extern "C" {
 #endif
 
-
-// Time structure
-typedef struct {
-    uint16_t year;
-    uint8_t month;
-    uint8_t day;
-    uint8_t hour;
-    uint8_t minute;
-    uint8_t second;
-    // bool pm;
-} time_library_time_t;
-
-// Function to initialize the time library
-void time_library_init(time_library_time_t *initial_time);
-// Function to set the current time manually
-void time_library_set_time(time_library_time_t *time);
-// Function to get the current time
-void time_library_get_time(time_library_time_t *time);
-//get time 12/24 type
-uint8_t get_time(time_library_time_t *time, bool is_12);
-// Function to calculate the day of the week
-uint8_t calculate_day_of_week(uint16_t year, uint8_t month, uint8_t day);
-// Function to calculate the elapsed time in milliseconds
-uint32_t time_library_elapsed_time_ms(uint32_t start_time);
-// Function to get the current time in milliseconds
-uint32_t time_library_get_time_ms(void);
-
-
-
-
 /***       // Araf_20240417                            Ram Map
 ----------------------------------------------------------------------------------------------------------------------------
 | READ | WRITE |  BIT 7    |  BIT 6    |  BIT 5    |  BIT 4    |  BIT 3    |  BIT 2    |  BIT 1    |  BIT 0    | RANGE     |
@@ -67,19 +37,15 @@ uint32_t time_library_get_time_ms(void);
 ----------------------------------------------------------------------------------------------------------------------------
 ***/
 
-// Define RTC pin connections
-#define DS1302_SCLK_PIN 39
-#define DS1302_IO_PIN 40
-#define DS1302_CE_PIN 38
-
 // Define delays
-
-
 #define test 33
 #define DelayRST    test
 #define DelayIO     test
 #define CLK_DELAY   test
-
+// Define RTC pin connections
+#define DS1302_SCLK_PIN 39
+#define DS1302_IO_PIN 40
+#define DS1302_CE_PIN 38
 
 #define  RTC_WR_SEC_ADDR        0x80
 #define  RTC_RD_SEC_ADDR        0x81
@@ -129,11 +95,50 @@ uint32_t time_library_get_time_ms(void);
 #define RTC_WR_RAM_BURST_ADDR   0xFE
 #define RTC_RD_RAM_BURST_ADDR   0xFF
 
+// GPIO control macros
+#define RTC_DATA_WRITE_MODE {gpio_set_direction(DS1302_IO_PIN, GPIO_MODE_OUTPUT); }
+#define RTC_DATA_READ_MODE  {gpio_set_direction(DS1302_IO_PIN, GPIO_MODE_INPUT); }
+#define RTC_CLK_HIGH        {gpio_set_level(DS1302_SCLK_PIN, 1); }
+#define RTC_CLK_LOW         {gpio_set_level(DS1302_SCLK_PIN, 0); }
+#define RTC_CS_HIGH         {gpio_set_level(DS1302_CE_PIN, 1); }
+#define RTC_CS_LOW          {gpio_set_level(DS1302_CE_PIN, 0); }
+#define RTC_DATA_HIGH       {gpio_set_level(DS1302_IO_PIN, 1);}
+#define RTC_DATA_LOW        {gpio_set_level(DS1302_IO_PIN, 0);}
+#define RTC_DATA_READ       gpio_get_level(DS1302_IO_PIN)
 
+//rtc 
 void RtcInit(void);
 void RtcSetDate(uint8_t day, uint8_t month, uint8_t weekday, uint8_t year);
 void RtcSetTime(uint8_t sec, uint8_t min, uint8_t hour);
 void RtcDataRead(uint8_t eRtcDataType);
+
+
+// Time structure
+typedef struct {
+    uint16_t year;
+    uint8_t month;
+    uint8_t day;
+    uint8_t weekday;  // 0 = Sunday, ..., 6 = Saturday
+    uint8_t hour;
+    uint8_t minute;
+    uint8_t second;
+} time_library_time_t;
+
+// Function to initialize the time library
+void time_library_init(time_library_time_t *initial_time ,bool rtcUpdate);
+// Function to set the current time manually
+void  time_library_set_time(time_library_time_t *time ,bool rtcUpdate);
+// Function to get the current time
+void time_library_get_time(time_library_time_t *time);
+//get time 12/24 type
+uint8_t get_time(time_library_time_t *time, bool is_12);
+// Function to calculate the day of the week
+uint8_t calculate_day_of_week(uint16_t year, uint8_t month, uint8_t day);
+// Function to calculate the elapsed time in milliseconds
+uint32_t time_library_elapsed_time_ms(uint32_t start_time);
+// Function to get the current time in milliseconds
+uint32_t time_library_get_time_ms(void);
+
 #ifdef __cplusplus
 }
 #endif

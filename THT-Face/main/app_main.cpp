@@ -109,122 +109,87 @@ void app_main()
     gpio_set_direction((gpio_num_t)LCE_BL, GPIO_MODE_OUTPUT);
     gpio_set_level((gpio_num_t)LCE_BL, 0);
 
+    // gpio_pad_select_gpio(RX);
+    // gpio_set_direction((gpio_num_t)RX, GPIO_MODE_OUTPUT);
+    // gpio_set_level((gpio_num_t)RX, 0);
 
-
-    gpio_pad_select_gpio(RX);
-    gpio_set_direction((gpio_num_t)RX, GPIO_MODE_OUTPUT);
-    gpio_set_level((gpio_num_t)RX, 0);
-
+    //-----------time int here-------------------------------------
+    RtcInit();
+    vTaskDelay(100); // Wait for 1 second
+    //--------------------------------------------------------------
 
 
     // esp_err_t ret;
 
-    // // ESP_LOGI(TAG, "Starting app_main");
+    // ESP_LOGI(TAG, "Starting app_main");
 
-    // xQueueAIFrame = xQueueCreate(2, sizeof(camera_fb_t *));
-    // xQueueLCDFrame = xQueueCreate(2, sizeof(camera_fb_t *));
-    // // xQueueKeyState = xQueueCreate(1, sizeof(int *));
-    // xQueueEventLogic = xQueueCreate(1, sizeof(int *));
-
-    // xQueueCloud = xQueueCreate(3, sizeof(int *));
+    xQueueAIFrame = xQueueCreate(2, sizeof(camera_fb_t *));
+    xQueueLCDFrame = xQueueCreate(2, sizeof(camera_fb_t *));
+    xQueueEventLogic = xQueueCreate(1, sizeof(int *));
+    xQueueCloud = xQueueCreate(3, sizeof(int *));
 
 
 
-    // if (xQueueAIFrame == NULL || xQueueLCDFrame == NULL || xQueueEventLogic == NULL) {
-    //     // ESP_LOGE(TAG, "Failed to create queues");
-    //     esp_restart();
-    // }
+    if (xQueueAIFrame == NULL || xQueueLCDFrame == NULL || xQueueEventLogic == NULL) {
+        // ESP_LOGE(TAG, "Failed to create queues");
+        esp_restart();
+    }
     
-    // register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);//core 1    
-    // register_event(xQueueEventLogic);//core 1
-    // register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false); //core 0+1
-
-    // // cloudHandel();// core 0
-
-    // register_lcd(xQueueLCDFrame, NULL, true);// core 1
-    // vTaskDelay(pdMS_TO_TICKS(10));
+    register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);//core 1    
+    register_event(xQueueEventLogic);//core 1
+    register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false); //core 0+1
+    register_lcd(xQueueLCDFrame, NULL, true);// core 1
+    vTaskDelay(pdMS_TO_TICKS(10));
 
 
-    // // Initialize Conectivity----------------------------
+    // Initialize Conectivity----------------------------
+    bluFiStart();
+    //--------------------------------------------------
 
-    // bluFiStart();
-    // //--------------------------------------------------
 
-    // //-----------time int here-------------------------------------
-    // time_library_time_t initial_time = {2024, 1, 1, 22, 58, 0};//     year, month, day, hour, minute, second;
-    // time_library_init(&initial_time);
-    // //--------------------------------------------------------------
-
-    // //-------------------------
-    // // Initialize and mount FATFS
-
-    // if (init_fatfs()== ESP_OK) {
+    //-------------------------
+    // Initialize and mount FATFS
+    if (init_fatfs()== ESP_OK) {
         
-    //     print_memory_status();
-    //     create_directories();
+        print_memory_status();
+        create_directories();
+    }
+    //-------------------------
+    // Declare LEDC timer and channel configuration structs
+    ledc_channel_config_t ledc_channel;
+    // Initialize PWM using the PwmInt function
+    PwmInt(&ledc_channel,(gpio_num_t)LCE_BL);
 
-    // }
-    // //-------------------------
-    // ESP_LOGI(TAG, "app_main finished");
-
-    // // Declare LEDC timer and channel configuration structs
-    // ledc_channel_config_t ledc_channel;
-
-
-    // // Initialize PWM using the PwmInt function
-    // PwmInt(&ledc_channel,(gpio_num_t)LCE_BL);
 
     // ledc_channel_config_t rx_channel;
     // PwmInt(&rx_channel,(gpio_num_t)RX);
-
-    // gpio_set_level((gpio_num_t)DS1302_IO_PIN, 1);
-    RtcInit();
-
-    vTaskDelay(100); // Wait for 1 second
-
-
+    ESP_LOGI(TAG, "app_main finished");
     while(true){
 
-    // Read and print the time and date
-    RtcDataRead(RTC_RD_SEC_ADDR);
-    RtcDataRead(RTC_RD_MIN_ADDR);
-    RtcDataRead(RTC_RD_HOUR_ADDR);
-    // RtcDataRead(RTC_RD_DAY_ADDR);
-    // RtcDataRead(RTC_RD_MONTH_ADDR);
-    // RtcDataRead(RTC_RD_WEEKDAY_ADDR);
-    // RtcDataRead(RTC_RD_YEAR_ADDR);
+        reconnect();
+        if(xTaskGetTickCount()-sleepTimeOut>3000 && xTaskGetTickCount()-sleepTimeOut< 3500){
 
-    vTaskDelay(100);
+            sleepEnable=SLEEP;
+            printf("\nsleepEnable");
 
-        // reconnect();
-        // if(xTaskGetTickCount()-sleepTimeOut>3000 && xTaskGetTickCount()-sleepTimeOut< 3500){
+        }
 
-        //     sleepEnable=SLEEP;
-        //     printf("\nsleepEnable");
+        if(sleepEnable){
 
-        // }
+            gpio_set_level((gpio_num_t)CAM_CONTROL, 1);
+            ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, BRIGHTNESS(SLEEP));//8192
+            ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
 
-        // if(sleepEnable){
+            // enter_light_sleep();  // Enter light sleep mode
+            // ledc_set_duty(rx_channel.speed_mode, rx_channel.channel, 0);
+            // ledc_update_duty(rx_channel.speed_mode, rx_channel.channel);
 
-        //     gpio_set_level((gpio_num_t)CAM_CONTROL, 1);
+        }else{
+            gpio_set_level((gpio_num_t)CAM_CONTROL, 0);
+            ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel,BRIGHTNESS(WAKE));
+            ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
 
-
-        //     ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, BRIGHTNESS(SLEEP));//8192
-        //                 // ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, 8192);//8192
-
-        //     ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
-
-        //     // enter_light_sleep();  // Enter light sleep mode
-
-        //     // ledc_set_duty(rx_channel.speed_mode, rx_channel.channel, 0);
-        //     // ledc_update_duty(rx_channel.speed_mode, rx_channel.channel);
-
-        // }else{
-        //     gpio_set_level((gpio_num_t)CAM_CONTROL, 0);
-        //     ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel,BRIGHTNESS(WAKE));
-        //     ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
-
-        // }
+        }
 
     }
 }

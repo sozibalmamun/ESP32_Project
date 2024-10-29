@@ -98,7 +98,6 @@ extern "C"
 void app_main()
 {
 
-
     gpio_pad_select_gpio(CAM_CONTROL);
     gpio_set_direction((gpio_num_t)CAM_CONTROL, GPIO_MODE_OUTPUT);
     gpio_set_level((gpio_num_t)CAM_CONTROL, 0);
@@ -113,6 +112,10 @@ void app_main()
     // gpio_set_direction((gpio_num_t)RX, GPIO_MODE_OUTPUT);
     // gpio_set_level((gpio_num_t)RX, 0);
 
+
+    // Initialize Conectivity----------------------------
+    bluFiStart();
+    //--------------------------------------------------
     //-----------time int here-------------------------------------
     RtcInit();
     vTaskDelay(100); // Wait for 1 second
@@ -129,7 +132,6 @@ void app_main()
     xQueueCloud = xQueueCreate(3, sizeof(int *));
 
 
-
     if (xQueueAIFrame == NULL || xQueueLCDFrame == NULL || xQueueEventLogic == NULL) {
         // ESP_LOGE(TAG, "Failed to create queues");
         esp_restart();
@@ -140,12 +142,6 @@ void app_main()
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false); //core 0+1
     register_lcd(xQueueLCDFrame, NULL, true);// core 1
     vTaskDelay(pdMS_TO_TICKS(10));
-
-
-    // Initialize Conectivity----------------------------
-    bluFiStart();
-    //--------------------------------------------------
-
 
     //-------------------------
     // Initialize and mount FATFS

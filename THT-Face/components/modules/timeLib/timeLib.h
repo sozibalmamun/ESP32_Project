@@ -6,8 +6,10 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
-
 #include "driver/ledc.h"
+
+#include "nvs_flash.h"
+#include "nvs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -113,6 +115,10 @@ void RtcSetTime(uint8_t sec, uint8_t min, uint8_t hour);
 void RtcDataRead(uint8_t eRtcDataType);
 
 
+
+
+static const char *NVS_NAMESPACE = "Config";
+static const char *TIME_FORMAT_KEY = "Format";
 // Time structure
 typedef struct {
     uint16_t year;
@@ -138,6 +144,8 @@ uint8_t calculate_day_of_week(uint16_t year, uint8_t month, uint8_t day);
 uint32_t time_library_elapsed_time_ms(uint32_t start_time);
 // Function to get the current time in milliseconds
 uint32_t time_library_get_time_ms(void);
+
+void save_time_format(bool is_12_hour);
 
 #ifdef __cplusplus
 }

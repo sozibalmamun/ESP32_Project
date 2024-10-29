@@ -5,6 +5,7 @@ static const char *TAG = "TimeLib";
 
 time_library_time_t reference_time;
 static uint32_t reference_tick_count;
+bool dspTimeFormet;
 
 static const uint8_t days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 const DATA_FLASH char* day_names[] = {
@@ -53,7 +54,7 @@ static void add_seconds_to_time(time_library_time_t *time, uint32_t seconds) {
 }
 
 // Initialize the time library with a known time
-void time_library_init(time_library_time_t *initial_time, bool rtcUpdate) {
+void time_library_set_time(time_library_time_t *initial_time, bool rtcUpdate) {
 
     reference_time = *initial_time;
     reference_tick_count = xTaskGetTickCount();
@@ -69,9 +70,9 @@ void time_library_init(time_library_time_t *initial_time, bool rtcUpdate) {
 }
 
 // Set the current time manually
-void time_library_set_time(time_library_time_t *time ,bool rtcUpdate) {
-    time_library_init(time ,rtcUpdate);
-}
+// void time_library_set_time(time_library_time_t *time ,bool rtcUpdate) {
+//     time_library_init(time ,rtcUpdate);
+// }
 // Get the current time
 // void time_library_get_time(time_library_time_t *current_time) {
 //     uint32_t elapsed_ticks = xTaskGetTickCount() - reference_tick_count;
@@ -291,7 +292,7 @@ void RtcReadBuffer(void) // 800us
 	RTCStop();
 
 	time_library_time_t initial_time = {year+2000, month, day, week, hour, min, sec};//     year, month, day, hour, minute, second;
-    time_library_init(&initial_time, 0);
+    time_library_set_time(&initial_time, 0);
 
 	return Result;
 }
@@ -306,6 +307,25 @@ void gpioMode(bool output , gpio_num_t pinNo){
         .pull_up_en = GPIO_PULLUP_DISABLE 
     };
     gpio_config(&io_conf);
+}
+
+static void intTimeFormet(void){
+
+// dspTimeFormet;
+    nvs_handle_t nvs_handle;
+    esp_err_t  ret = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &nvs_handle);
+    if (ret == ESP_OK) {
+        int32_t saved_format = 0;
+        ret = nvs_get_i32(nvs_handle, TIME_FORMAT_KEY, &saved_format);
+        if (ret == ESP_OK) {
+            dspTimeFormet = saved_format;
+            ESP_LOGI(TAG, "Retrieved time format: %s-hour", dspTimeFormet ? "12" : "24");
+        } else {
+            ESP_LOGI(TAG, "Time format not found, defaulting to 12-hour.");
+            dspTimeFormet = true; // Default to 12-hour format if not set
+        }
+        nvs_close(nvs_handle);
+    }
 }
 
 // RTC Initialization
@@ -351,8 +371,19 @@ void RtcInit(void) {
 
     } 
 
+    intTimeFormet();
     RtcReadBuffer();
 
-
 }
-
+void save_time_format(bool is_12_hour) {
+    nvs_handle_t nvs_handle;
+    esp_err_t ret = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &nvs_handle);
+    if (ret == ESP_OK) {
+        ret = nvs_set_i32(nvs_handle, TIME_FORMAT_KEY, is_12_hour);
+        if (ret == ESP_OK) {
+            nvs_commit(nvs_handle);
+            ESP_LOGI(TAG, "Time format saved as %s-hour", is_12_hour ? "12" : "24");
+        }
+        nvs_close(nvs_handle);
+    }
+}

@@ -15,6 +15,7 @@ extern int8_t percentage;
 extern key_state_t key_state;
 extern uint8_t CPUBgflag;
 extern bool dataAvailable;
+extern bool dspTimeFormet;
 
 
 

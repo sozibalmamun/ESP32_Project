@@ -10,7 +10,6 @@
 
 uint8_t sleepEnable=WAKEUP;
 volatile TickType_t sleepTimeOut=0; 
-bool dspTimeFormet=true;
 
 void editDisplayBuff(camera_fb_t **buff){
 

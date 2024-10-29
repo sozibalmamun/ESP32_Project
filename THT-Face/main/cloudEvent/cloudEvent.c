@@ -340,8 +340,8 @@ void process_command(const char* buffer ) {
 
         ESP_LOGI(TAG_ENROL, "time formet %d %d %d %d %d %d %d", buffer[5], buffer[6], buffer[7], buffer[8], buffer[9], buffer[10] , buffer[11]);
 
-        time_library_time_t initial_time = {buffer[5], buffer[6], buffer[7] ,buffer[8], buffer[9], buffer[10] ,buffer[11]};//     year, month, day,weekday, hour, minute, second;
-        time_library_init(&initial_time, 1);
+        time_library_time_t initial_time = {buffer[5], buffer[6], buffer[7] ,buffer[8], buffer[9], buffer[10] ,buffer[11]+1};//     year, month, day,weekday, hour, minute, second;
+        time_library_set_time(&initial_time, 1);
         CmdEvent = TIME_UPDATE;
 
 
@@ -351,6 +351,7 @@ void process_command(const char* buffer ) {
 
         dspTimeFormet =  buffer[6]==0x0C ? 1 : 0 ;// assign time formet 
         CmdEvent = TIME_FORMET_UPDATE;
+        save_time_format(dspTimeFormet);
 
     }
     CPUBgflag=0;

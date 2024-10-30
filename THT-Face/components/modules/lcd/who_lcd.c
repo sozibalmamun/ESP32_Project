@@ -62,7 +62,7 @@ static void task_process_handler(void *arg)
         if (xQueueReceive(xQueueFrameI, &frame, queueTimeout))
         {
 
-            sleepEnable=WAKEUP;// IN FUTURE ITS CONTROL BY ADC PIN
+            // sleepEnable=WAKEUP;// IN FUTURE ITS CONTROL BY ADC PIN
 
 
             editDisplayBuff(&frame);

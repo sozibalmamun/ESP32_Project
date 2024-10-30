@@ -58,7 +58,7 @@ void time_library_set_time(time_library_time_t *initial_time, bool rtcUpdate) {
 
     reference_time = *initial_time;
     reference_tick_count = xTaskGetTickCount();
-    ESP_LOGI(TAG, "Time library initialized with reference time: %d-%d-%d %d %d:%d:%d",
+    ESP_LOGI(TAG, "initialized with reference time: %d-%d-%d %d %d:%d:%d",
              reference_time.year, reference_time.month, reference_time.day, reference_time.weekday,
              reference_time.hour, reference_time.minute, reference_time.second);
 
@@ -291,6 +291,15 @@ void RtcReadBuffer(void) // 800us
 
 	RTCStop();
 
+/*
+
+RtcSetTime(0, 0, 12); // Set time: 12:45:30
+		RtcSetDate(1, 1, 1, 20); // Set date: 23rd Oct, 2024, Weekday = 4 (Wednesday)
+
+*/
+
+
+
 	time_library_time_t initial_time = {year+2000, month, day, week, hour, min, sec};//     year, month, day, hour, minute, second;
     time_library_set_time(&initial_time, 0);
 
@@ -319,9 +328,9 @@ static void intTimeFormet(void){
         ret = nvs_get_i32(nvs_handle, TIME_FORMAT_KEY, &saved_format);
         if (ret == ESP_OK) {
             dspTimeFormet = saved_format;
-            ESP_LOGI(TAG, "Retrieved time format: %s-hour", dspTimeFormet ? "12" : "24");
+            // ESP_LOGI(TAG, "Retrieved time format: %s-hour", dspTimeFormet ? "12" : "24");
         } else {
-            ESP_LOGI(TAG, "Time format not found, defaulting to 12-hour.");
+            // ESP_LOGI(TAG, "Time format not found, defaulting to 12-hour.");
             dspTimeFormet = true; // Default to 12-hour format if not set
         }
         nvs_close(nvs_handle);
@@ -366,11 +375,10 @@ void RtcInit(void) {
 		RTCWriteByte('K');
 		RTCStop();
 
-		RtcSetTime(30, 45, 12); // Set time: 12:45:30
-		RtcSetDate(23, 10, 4, 24); // Set date: 23rd Oct, 2024, Weekday = 4 (Wednesday)
+		RtcSetTime(0, 0, 12); // Set time: 12:45:30
+		RtcSetDate(1, 1, 1, 20); // Set date: 23rd Oct, 2024, Weekday = 4 (Wednesday)
 
     } 
-
     intTimeFormet();
     RtcReadBuffer();
 
@@ -382,7 +390,7 @@ void save_time_format(bool is_12_hour) {
         ret = nvs_set_i32(nvs_handle, TIME_FORMAT_KEY, is_12_hour);
         if (ret == ESP_OK) {
             nvs_commit(nvs_handle);
-            ESP_LOGI(TAG, "Time format saved as %s-hour", is_12_hour ? "12" : "24");
+            // ESP_LOGI(TAG, "Time format saved as %s-hour", is_12_hour ? "12" : "24");
         }
         nvs_close(nvs_handle);
     }

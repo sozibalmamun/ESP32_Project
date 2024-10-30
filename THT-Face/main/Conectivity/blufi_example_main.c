@@ -32,6 +32,11 @@
 #include "blufi_example.h"
 
 #include "esp_blufi.h"
+#include "esp_bt_main.h"
+#include "esp_netif.h"  // For netif functions
+
+
+static const char *TAG = "BLUFI_HANDLER";
 
 
 #include "handleQrCode.h"
@@ -48,6 +53,7 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
 
 static wifi_config_t sta_config;
 static wifi_config_t ap_config;
+esp_netif_t *sta_netif= NULL;
 
 /* FreeRTOS event group to signal when we are connected & ready to make a request */
 static EventGroupHandle_t wifi_event_group;
@@ -184,8 +190,15 @@ static void initialise_wifi(void)
 {
     ESP_ERROR_CHECK(esp_netif_init());
     wifi_event_group = xEventGroupCreate();
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-    esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
+
+    // ESP_ERROR_CHECK(esp_event_loop_create_default());
+
+    // Create event loop if not created already
+    if (esp_event_loop_create_default() != ESP_OK) {
+        ESP_LOGW(TAG, "Event loop already created.");
+    }
+
+    sta_netif = esp_netif_create_default_wifi_sta();
     assert(sta_netif);
 
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL));
@@ -291,14 +304,12 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         break;
     }
 }
-
 void blufiAddStart(void){
     char tempFrame[14] ;
     snprintf(tempFrame, sizeof(tempFrame), "%s%9llu",DEVICE_VERSION_ID, generate_unique_id());//uniqueId
     esp_ble_gap_set_device_name(tempFrame);
     esp_blufi_adv_start();
 }
-
 void bluFiStart(void)
 {
     esp_err_t ret;
@@ -333,4 +344,32 @@ void bluFiStart(void)
         return;
     }
 
+}
+
+void deinitBlufi(void) {
+    // printf("\nBLUFI: Disabling...");
+
+    // Stop and deinitialize Wi-Fi
+    esp_wifi_stop();
+    esp_wifi_deinit();
+    esp_netif_destroy_default_wifi(sta_netif);  // Remove the default Wi-Fi netif
+    // ESP_LOGI(TAG, "Wi-Fi deinitialized and netif destroyed.");
+
+    // Deinitialize BLUFI profile
+    esp_blufi_profile_deinit();
+    // ESP_LOGI(TAG, "BLUFI profile deinitialized.");
+
+    // Delete the default event loop
+    esp_event_loop_delete_default();
+    // ESP_LOGI(TAG, "Event loop deleted.");
+
+    // Disable and deinitialize Bluedroid stack
+    esp_bluedroid_disable();
+    esp_bluedroid_deinit();
+    // ESP_LOGI(TAG, "Bluedroid stack deinitialized.");
+
+    // Disable and deinitialize Bluetooth controller
+    esp_bt_controller_disable();
+    esp_bt_controller_deinit();
+    // ESP_LOGI(TAG, "Bluetooth controller deinitialized.");
 }

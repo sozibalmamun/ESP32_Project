@@ -52,6 +52,7 @@
 // sleep ----------------
 #define SLEEP   0x01
 #define WAKEUP  0x00
+#define RE_INIT 0x02
 //---------------------
 
 

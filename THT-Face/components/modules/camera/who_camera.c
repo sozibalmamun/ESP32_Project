@@ -6,6 +6,8 @@
 static const char *TAG = "camera_task";
 static QueueHandle_t xQueueFrameO = NULL;
 
+extern TaskHandle_t cameraTaskHandler;
+
 static void task_process_handler(void *arg)
 {
     while (true)
@@ -89,5 +91,5 @@ void register_camera(const pixformat_t pixel_fromat,
     }
 
     xQueueFrameO = frame_o;
-    xTaskCreatePinnedToCore(task_process_handler, TAG, 3 * 1024, NULL, 5, NULL, 1);//2*1024
+    xTaskCreatePinnedToCore(task_process_handler, TAG, 3 * 1024, NULL, 5,&cameraTaskHandler, 1);//2*1024
 }

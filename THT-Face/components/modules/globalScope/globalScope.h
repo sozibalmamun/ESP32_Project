@@ -84,8 +84,7 @@
 #define TIMEOUT_2_MIN         12000
 #define TIMEOUT_5_MIN         30000
 //-------------------------------------------------------------------
-
-
+#define HALT while(1);
 //-------------------topic-------------------------------------------
 
 // #define     PUBLISH_TOPIC         "/app/cloud"
@@ -95,7 +94,7 @@
 #define     PUBLISH_TOPIC         "/app/messages"
 #define     SUBCRIBE_TOPIC        "/topic/AA00242829068"
 //-------------------------------------------------------------------
-#define ID_VALID 5
+#define ID_VALID 3
 //-----------network status code-------------------------------------
 #define     WIFI_DISS           0x00
 #define     WIFI_CONNECTED      0x01

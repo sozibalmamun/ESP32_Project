@@ -61,6 +61,10 @@ static QueueHandle_t xQueueResult = NULL;
 //------------------------------------------------------------------------------------
 static QueueHandle_t xQueueCloud = NULL;
 extern TaskHandle_t detectionFaceProcesingTaskHandler; // Handle for the stompSenderTask
+extern TaskHandle_t recognitionTaskHandler;
+extern TaskHandle_t recognitioneventTaskHandler ;
+
+
 
 //---------------------------------------------------------------------------------------
 
@@ -316,6 +320,7 @@ static void task_process_handler(void *arg)
 
                                 if(_gEvent!=ENROLING){
                                     _gEvent=RECOGNIZE;// enroling is the 1st priority
+
                                 }
 
                             }else {
@@ -435,19 +440,21 @@ static void task_process_handler(void *arg)
                         }
                         case RECOGNIZE:{
 
+                            sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
+                            sleepEnable=WAKEUP;
+
                             recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
                             
-                        
                             // print_detection_result(detect_results);
                             if (recognize_result.id > 0){
 
                                 // CPUBgflag=1;
                                 // ESP_LOGI("RECOGNIZE", "Similarity: %f, Match Name: %s", recognize_result.similarity, recognize_result.name.c_str());
 
-                                recognitionCount[stateCounter>4?stateCounter=0:stateCounter++]=recognize_result.id;
+                                recognitionCount[stateCounter>(ID_VALID-1)?stateCounter=0:stateCounter++]=recognize_result.id;// save id in array
                                 if(stateCounter>=ID_VALID){
                                    for(uint8_t i=0; i<ID_VALID;i++){
-                                        if(recognitionCount[i]== recognize_result.id)validCount++;
+                                        if(recognitionCount[i]== recognize_result.id)validCount++;// check all array id is same or not
                                    } 
                                 }
 
@@ -759,9 +766,9 @@ void register_human_face_recognition(const QueueHandle_t frame_i,
     gReturnFB = camera_fb_return;
     xMutex = xSemaphoreCreateMutex();
 
-    xTaskCreatePinnedToCore(task_process_handler, TAG, 5 * 1024, NULL, 5, NULL, 0);
+    xTaskCreatePinnedToCore(task_process_handler, TAG, 5 * 1024, NULL, 5, &recognitionTaskHandler, 0);
         // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
 
     if (xQueueEvent)
-        xTaskCreatePinnedToCore(task_event_handler, TAG, 1 * 1024, NULL,5, NULL, 1);
+        xTaskCreatePinnedToCore(task_event_handler, TAG, 1 * 1024, NULL,5, &recognitioneventTaskHandler, 1);
 }

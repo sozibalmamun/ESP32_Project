@@ -15,6 +15,7 @@ typedef enum {
 
 static QueueHandle_t xQueueEventO = NULL;
 key_state_t key_state ;    
+extern TaskHandle_t eventTaskHandler;
 
 static recognizer_state_t recognizer_state;
 
@@ -64,5 +65,5 @@ void event_generate(void *arg) {
 
 void register_event(const QueueHandle_t event_o) {
     xQueueEventO = event_o;
-    xTaskCreatePinnedToCore(event_generate, "event_task", 1024, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(event_generate, "event_task", 1024, NULL, 1, &eventTaskHandler, 1);
 }

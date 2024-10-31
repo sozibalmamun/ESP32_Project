@@ -37,24 +37,19 @@ static const char *TAG = "app_main";
 
 static QueueHandle_t xQueueAIFrame = NULL;
 static QueueHandle_t xQueueLCDFrame = NULL;
-// static QueueHandle_t xQueueKeyState = NULL;
 static QueueHandle_t xQueueEventLogic = NULL;
-
 static QueueHandle_t xQueueCloud = NULL;
 
 
+
 #define GPIO_WAKEUP_BUTTON GPIO_NUM_0
-#define CAM_CONTROL GPIO_NUM_3
+#define CAM_CONTROL GPIO_NUM_1
 #define LCE_BL GPIO_NUM_14
 #define RX GPIO_NUM_20
-
 
 #define ESP_INTR_FLAG_DEFAULT 0
 #define SLEEP_LCD 10
 #define WAKE_LCD 70
-
-
-
 
 #define MIN_BRIGHTNESS (8191)
 #define BRIGHTNESS(x)  MIN_BRIGHTNESS-(((MIN_BRIGHTNESS/100)*x))
@@ -62,19 +57,31 @@ static QueueHandle_t xQueueCloud = NULL;
 void PwmInt( ledc_channel_config_t *ledc_channel ,gpio_num_t pinNo );
 void interruptInt(void);
 void gpioInt(void);
+void reInt(void);
+void reduce_cpu_frequency();
+void restore_cpu_frequency();
+void configure_dynamic_frequency();
+
+TaskHandle_t cameraTaskHandler = NULL;
+TaskHandle_t eventTaskHandler = NULL;
+TaskHandle_t recognitionTaskHandler = NULL;
+TaskHandle_t recognitioneventTaskHandler = NULL;
+TaskHandle_t lcdTaskHandler = NULL;
+TaskHandle_t cloudeTaskHandler = NULL;
+
 
 extern "C" 
 void app_main()
 {
-    ESP_LOGI(TAG, "Starting app_main");
-    gpioInt();
+
+    configure_dynamic_frequency();
+    // reduce_cpu_frequency();
+    // esp_pm_dump_locks(stdout);  // Check for any active locks
+
+    // ESP_LOGI(TAG, "Starting app_main");
     // Initialize Conectivity----------------------------
     bluFiStart();
     //--------------------------------------------------
-    //-----------time int here-------------------------------------
-    RtcInit();
-    //--------------------------------------------------------------
-
 
     // esp_err_t ret;
 
@@ -102,22 +109,30 @@ void app_main()
         print_memory_status();
         create_directories();
     }
+
+
+    //-----------time int here-------------------------------------
+    RtcInit();
+    //--------------------------------------------------------------
+    gpioInt();
+
     //-------------------------
     // Declare LEDC timer and channel configuration structs
     ledc_channel_config_t ledc_channel;
     // Initialize PWM using the PwmInt function
     PwmInt(&ledc_channel,(gpio_num_t)LCE_BL);
 
-
-    // ledc_channel_config_t rx_channel;
-    // PwmInt(&rx_channel,(gpio_num_t)RX);
     ESP_LOGI(TAG, "app_main finished");
+
+    // reduce_cpu_frequency();
+    // esp_pm_dump_locks(stdout);  // Check for any active locks
+
     while(true){
 
         // Log or print the CPU frequency
-        // int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
-        // ESP_LOGI("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
-
+        int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
+        ESP_LOGI("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
+        // esp_pm_dump_locks(stdout);
 
         reconnect();
         if(xTaskGetTickCount()-sleepTimeOut>3000 && /*xTaskGetTickCount()-sleepTimeOut< 3500 &&*/ sleepEnable == WAKEUP){
@@ -127,8 +142,9 @@ void app_main()
             gpio_set_level((gpio_num_t)CAM_CONTROL, 1);
             ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, BRIGHTNESS(SLEEP_LCD));//8192
             ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
-            // set_cpu_frequency_low();
             deinitBlufi();
+            reduce_cpu_frequency();
+            vTaskDelay(pdMS_TO_TICKS(5000));
 
         }
 
@@ -136,17 +152,38 @@ void app_main()
             // enter_light_sleep();  // Enter light sleep mode
             if( gpio_get_level(GPIO_WAKEUP_BUTTON)==0){
                 sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
-                bluFiStart();
-                sleepEnable = WAKEUP;
-                gpio_set_level((gpio_num_t)CAM_CONTROL, 0);
+                restore_cpu_frequency();
+                reInt();
                 ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel,BRIGHTNESS(WAKE_LCD));
-                ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);    
+                ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);  
+                printf("\nsleep disable");
             }
         }
     }
 }
 
 
+void gpioInt(void){
+
+    gpio_set_level((gpio_num_t)LCE_BL, 0);
+    gpio_pad_select_gpio(LCE_BL);
+    gpio_set_direction((gpio_num_t)LCE_BL, GPIO_MODE_OUTPUT);
+    gpio_set_level((gpio_num_t)LCE_BL, 0);
+
+   
+    gpio_pad_select_gpio(CAM_CONTROL);
+    gpio_set_direction((gpio_num_t)CAM_CONTROL, GPIO_MODE_OUTPUT);
+    gpio_set_level((gpio_num_t)CAM_CONTROL, 0);
+
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << GPIO_WAKEUP_BUTTON), // Pin mask
+        .mode = GPIO_MODE_INPUT,                  // Set as input
+        .pull_up_en = GPIO_PULLUP_ENABLE,         // Enable pull-up resistor
+        .pull_down_en = GPIO_PULLDOWN_DISABLE     // Disable pull-down resistor
+    };
+    gpio_config(&io_conf);
+
+}
 
 void PwmInt( ledc_channel_config_t *ledc_channel ,gpio_num_t pinNo ) {
 
@@ -173,18 +210,146 @@ void PwmInt( ledc_channel_config_t *ledc_channel ,gpio_num_t pinNo ) {
     ledc_channel_config(ledc_channel);
 
     // Set initial duty cycle to 50% (for 13-bit resolution, this is 4096 out of 8192)
-    ledc_set_duty(ledc_channel->speed_mode, ledc_channel->channel, BRIGHTNESS(SLEEP));
+    ledc_set_duty(ledc_channel->speed_mode, ledc_channel->channel, 8192);
     ledc_update_duty(ledc_channel->speed_mode, ledc_channel->channel);
 
     // Optional: Use fading
     ledc_fade_func_install(0);  // Install the fade function
-    ledc_set_fade_time_and_start(ledc_channel->speed_mode, ledc_channel->channel, BRIGHTNESS(SLEEP), 1000, LEDC_FADE_NO_WAIT);
+    ledc_set_fade_time_and_start(ledc_channel->speed_mode, ledc_channel->channel, 8192, 1000, LEDC_FADE_NO_WAIT);
     for (int duty = 8191; duty >= 0; duty -= 512) {
         ledc_set_duty(ledc_channel->speed_mode, ledc_channel->channel, duty);
         ledc_update_duty(ledc_channel->speed_mode, ledc_channel->channel);
         vTaskDelay(300 / portTICK_PERIOD_MS);     // Delay to see the dimming effect
     }
 }
+
+
+
+void reInt(void){
+
+    bluFiStart();
+    gpio_set_level((gpio_num_t)CAM_CONTROL, 0);
+
+
+
+    sleepEnable = WAKEUP;
+}
+
+
+
+void configure_dynamic_frequency() {
+    esp_pm_config_esp32s3_t pm_config = {
+        .max_freq_mhz = 240,      // Maximum frequency
+        .min_freq_mhz = 40,       // Minimum frequency
+        .light_sleep_enable = false  // Keep in active mode
+    };
+    esp_err_t ret = esp_pm_configure(&pm_config);
+    if (ret == ESP_OK) {
+        ESP_LOGI("Frequency", "Dynamic CPU frequency scaling configured.");
+    } else {
+        ESP_LOGE("Frequency", "Failed to configure CPU frequency: %s", esp_err_to_name(ret));
+    }
+}
+void reduce_cpu_frequency() {
+
+
+
+// extern TaskHandle_t cameraTaskHandler = NULL;
+// extern TaskHandle_t eventTaskHandler = NULL;
+// extern TaskHandle_t recognitionTaskHandler = NULL;
+// extern TaskHandle_t recognitioneventTaskHandler = NULL;
+// extern TaskHandel_t lcdTaskHandler = NULL;
+// extern TaskHandle_t cloudeTaskHandler = NULL;
+
+
+
+
+
+    if (cameraTaskHandler) vTaskSuspend(cameraTaskHandler);
+    if (eventTaskHandler) vTaskSuspend(eventTaskHandler);
+    if (recognitionTaskHandler) vTaskSuspend(recognitionTaskHandler);
+    if (recognitioneventTaskHandler) vTaskSuspend(recognitioneventTaskHandler);
+    if (lcdTaskHandler) vTaskSuspend(lcdTaskHandler);
+    if (cloudeTaskHandler) vTaskSuspend(cloudeTaskHandler);
+
+
+    ESP_LOGE("Frequency", "delete all task");
+
+
+    esp_pm_dump_locks(stdout);
+
+    esp_pm_config_esp32s3_t pm_config = {
+        .max_freq_mhz = 40,   // Set both min and max to 80 MHz to reduce power
+        .min_freq_mhz = 40,
+        .light_sleep_enable = false
+    };
+    esp_err_t ret = esp_pm_configure(&pm_config);
+    vTaskDelay(pdMS_TO_TICKS(10));  // Allow time for frequency update
+
+    if (ret == ESP_OK) {
+        ESP_LOGI("Frequency", "Dynamic CPU frequency scaling configured.");
+    } else {
+        ESP_LOGE("Frequency", "Failed to configure CPU frequency: %s", esp_err_to_name(ret));
+    }    
+
+
+
+    if (cameraTaskHandler) vTaskResume(cameraTaskHandler);
+    if (eventTaskHandler) vTaskResume(eventTaskHandler);
+    if (recognitionTaskHandler) vTaskResume(recognitionTaskHandler);
+    if (recognitioneventTaskHandler) vTaskResume(recognitioneventTaskHandler);
+    if (lcdTaskHandler) vTaskResume(lcdTaskHandler);
+    if (cloudeTaskHandler) vTaskResume(cloudeTaskHandler);
+
+    esp_pm_dump_locks(stdout);
+
+    int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
+    ESP_LOGI("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
+
+    // HALT
+
+}
+
+void restore_cpu_frequency() {
+
+    if (cameraTaskHandler) vTaskSuspend(cameraTaskHandler);
+    if (eventTaskHandler) vTaskSuspend(eventTaskHandler);
+    if (recognitionTaskHandler) vTaskSuspend(recognitionTaskHandler);
+    if (recognitioneventTaskHandler) vTaskSuspend(recognitioneventTaskHandler);
+    if (lcdTaskHandler) vTaskSuspend(lcdTaskHandler);
+    if (cloudeTaskHandler) vTaskSuspend(cloudeTaskHandler);
+
+    esp_pm_config_esp32s3_t pm_config = {
+        .max_freq_mhz = 240,  // Restore max frequency
+        .min_freq_mhz = 240,   // Set min to 80 for dynamic scaling
+        .light_sleep_enable = false
+    };
+
+    esp_err_t ret = esp_pm_configure(&pm_config);
+    vTaskDelay(pdMS_TO_TICKS(10));  // Allow time for frequency update
+
+    if (ret == ESP_OK) {
+        ESP_LOGI("Frequency", "Dynamic CPU frequency scaling configured.");
+    } else {
+        ESP_LOGE("Frequency", "Failed to configure CPU frequency: %s", esp_err_to_name(ret));
+    } 
+
+
+
+    if (cameraTaskHandler) vTaskResume(cameraTaskHandler);
+    if (eventTaskHandler) vTaskResume(eventTaskHandler);
+    if (recognitionTaskHandler) vTaskResume(recognitionTaskHandler);
+    if (recognitioneventTaskHandler) vTaskResume(recognitioneventTaskHandler);
+    if (lcdTaskHandler) vTaskResume(lcdTaskHandler);
+    if (cloudeTaskHandler) vTaskResume(cloudeTaskHandler);
+}
+
+
+
+
+
+
+
 
 
 void IRAM_ATTR gpio_isr_handler(void* arg) {
@@ -242,46 +407,3 @@ void enter_light_sleep() {
 }
 
 
-
-void set_cpu_frequency_low() {
-    esp_pm_config_esp32s3_t pm_config = {
-        .max_freq_mhz = 240,   // Set maximum frequency to 80 MHz
-        .min_freq_mhz = 80,   // Set minimum frequency to 40 MHz (or as low as desired)
-    };
-    esp_err_t ret = esp_pm_configure(&pm_config);
-    if (ret == ESP_OK) {
-        ESP_LOGI("Frequency", "CPU frequency configured to 40-80 MHz");
-    } else {
-        ESP_LOGE("Frequency", "Failed to configure CPU frequency: %s", esp_err_to_name(ret));
-    }
-    vTaskDelay(pdMS_TO_TICKS(10));
-}
-
-void gpioInt(void){
-
-   
-    gpio_pad_select_gpio(CAM_CONTROL);
-    gpio_set_direction((gpio_num_t)CAM_CONTROL, GPIO_MODE_OUTPUT);
-    gpio_set_level((gpio_num_t)CAM_CONTROL, 0);
-
-    gpio_set_level((gpio_num_t)LCE_BL, 0);
-
-    gpio_pad_select_gpio(LCE_BL);
-    gpio_set_direction((gpio_num_t)LCE_BL, GPIO_MODE_OUTPUT);
-    gpio_set_level((gpio_num_t)LCE_BL, 0);
-
-    // gpio_pad_select_gpio(RX);
-    // gpio_set_direction((gpio_num_t)RX, GPIO_MODE_OUTPUT);
-    // gpio_set_level((gpio_num_t)RX, 0);
-
-// 
-
-    gpio_config_t io_conf = {
-        .pin_bit_mask = (1ULL << GPIO_WAKEUP_BUTTON), // Pin mask
-        .mode = GPIO_MODE_INPUT,                  // Set as input
-        .pull_up_en = GPIO_PULLUP_ENABLE,         // Enable pull-up resistor
-        .pull_down_en = GPIO_PULLDOWN_DISABLE     // Disable pull-down resistor
-    };
-    gpio_config(&io_conf);
-
-}

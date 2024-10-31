@@ -542,8 +542,8 @@ void sleepTimeDate(camera_fb_t *buff, time_library_time_t current_time){
     }
 // secend dot toggole
     if(xTaskGetTickCount()-animationTime <50){
-        icnPrint(segmentBaseX+85,segmentBaseY+10 ,5,5 ,&secondicon,WHITE,buff);
-        icnPrint(segmentBaseX+85,segmentBaseY+56,5,5 ,&secondicon,WHITE,buff);
+        icnPrint(segmentBaseX+85,segmentBaseY+10 ,5,5 ,&secondicon,0xf800,buff);
+        icnPrint(segmentBaseX+85,segmentBaseY+56,5,5 ,&secondicon,0xf800,buff);
     }else if(xTaskGetTickCount()-animationTime >140){
         animationTime = xTaskGetTickCount();
     }
@@ -555,7 +555,8 @@ void sleepTimeDate(camera_fb_t *buff, time_library_time_t current_time){
     // day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
 
     uint16_t len = 160- (pixleLen(2,&tempFrame)/2);//x start poss
-    WriteString(2,len, 130,tempFrame,0xffff,buff);
+
+    WriteString(2,len, 130,tempFrame,0xF800,buff);
 
 /*
     WriteString(2,5, 0,"abcdefghijklmnopqrstuvwxyz",buff);
@@ -709,13 +710,11 @@ void wrighSingle7segment(uint16_t x_offset, uint8_t y_offset, char c, camera_fb_
                 // Get the pixel value from the character data
                 if (char_data[y] & (1 << (WIDTH_32-x))) {
                     // Draw white (pixel set)
-                    buff->buf[buff_index] = 0xFF;
-                    buff->buf[buff_index + 1] = 0xFF;
+                    buff->buf[buff_index] = 0xF8;
+                    buff->buf[buff_index + 1] = 0x00;
                 }
             }
         }
-        
-
     }else{
 
 #define HEIGHT_8 26
@@ -735,8 +734,8 @@ void wrighSingle7segment(uint16_t x_offset, uint8_t y_offset, char c, camera_fb_
                 // Get the pixel value from the character data
                 if (char_data[y] & (1 << (WIDTH_8-x))) {
                     // Draw white (pixel set)
-                    buff->buf[buff_index] = 0xFF;
-                    buff->buf[buff_index + 1] = 0xFF;
+                    buff->buf[buff_index] = 0xF8;
+                    buff->buf[buff_index + 1] = 0x00;
                 }
             }
         }

@@ -76,11 +76,12 @@ extern "C"
 void app_main()
 {
 
+    ESP_LOGE(TAG, "Starting app_main");
+    gpioInt();
     configure_dynamic_frequency();
     // reduce_cpu_frequency();
     // esp_pm_dump_locks(stdout);  // Check for any active locks
 
-    // ESP_LOGI(TAG, "Starting app_main");
     // Initialize Conectivity----------------------------
     bluFiStart();
     //--------------------------------------------------
@@ -116,7 +117,7 @@ void app_main()
     //-----------time int here-------------------------------------
     RtcInit();
     //--------------------------------------------------------------
-    gpioInt();
+    // gpioInt();
 
     //-------------------------
     // Declare LEDC timer and channel configuration structs
@@ -167,10 +168,10 @@ void app_main()
 
 void gpioInt(void){
 
-    gpio_set_level((gpio_num_t)LCE_BL, 0);
-    gpio_pad_select_gpio(LCE_BL);
-    gpio_set_direction((gpio_num_t)LCE_BL, GPIO_MODE_OUTPUT);
-    gpio_set_level((gpio_num_t)LCE_BL, 0);
+    // gpio_set_level((gpio_num_t)LCE_BL, 0);
+    // gpio_pad_select_gpio(LCE_BL);
+    // gpio_set_direction((gpio_num_t)LCE_BL, GPIO_MODE_OUTPUT);
+    // gpio_set_level((gpio_num_t)LCE_BL, 0);
 
    
     gpio_pad_select_gpio(CAM_CONTROL);
@@ -218,10 +219,10 @@ void PwmInt( ledc_channel_config_t *ledc_channel ,gpio_num_t pinNo ) {
     // Optional: Use fading
     ledc_fade_func_install(0);  // Install the fade function
     ledc_set_fade_time_and_start(ledc_channel->speed_mode, ledc_channel->channel, 8192, 1000, LEDC_FADE_NO_WAIT);
-    for (int duty = 8191; duty >= 0; duty -= 512) {
+    for (int duty = 8192; duty >= 0; duty -= 8) {
         ledc_set_duty(ledc_channel->speed_mode, ledc_channel->channel, duty);
         ledc_update_duty(ledc_channel->speed_mode, ledc_channel->channel);
-        vTaskDelay(300 / portTICK_PERIOD_MS);     // Delay to see the dimming effect
+        vTaskDelay(40 / portTICK_PERIOD_MS);     // Delay to see the dimming effect
     }
 }
 

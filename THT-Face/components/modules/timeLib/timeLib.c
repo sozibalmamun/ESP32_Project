@@ -282,12 +282,14 @@ void RtcReadBuffer(void) // 800us
 	week =  BCD2Dec(RTCReadByte());	// week
 	year =  BCD2Dec(RTCReadByte());	// year
 	RTCStop();
+
 	time_library_time_t initial_time = {(year==165?-1:year)+2000, month, day, week, hour>129?12:hour, min>110?0:min, sec};//     year, month, day, hour, minute, second;
     time_library_set_time(&initial_time, 0);
 
 }
 
 void gpioMode(bool output , gpio_num_t pinNo){
+
 
  gpio_config_t io_conf = {
         .intr_type = GPIO_INTR_DISABLE,
@@ -297,6 +299,7 @@ void gpioMode(bool output , gpio_num_t pinNo){
         .pull_up_en = GPIO_PULLUP_DISABLE 
     };
     gpio_config(&io_conf);
+
 }
 
 static void intTimeFormet(void){

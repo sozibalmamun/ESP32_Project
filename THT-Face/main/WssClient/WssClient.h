@@ -85,7 +85,7 @@ extern void process_command(const char* buffer);
 extern void dataHandele(const char *rx_buffer);
 extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id);
 extern uint16_t crc16(const char *buf, size_t len);
-
+uint8_t wifi_rssi_to_percentage(int32_t rssi);
 
 void stomp_client_int( stompInfo_cfg_t stompSetup );
 void stompAppStart(void);

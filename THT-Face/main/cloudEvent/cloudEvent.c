@@ -99,10 +99,14 @@ void process_command(const char* buffer ) {
     }else if(strncmp(buffer, "uploadimage", strlen("uploadimage")) == 0){
 
         // CPUBgflag=1;
+        sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
+        sleepEnable=WAKEUP;
         uint16_t tempid = buffer[12]<<8|buffer[13];
         // printf("giveimage: %d\n",tempid);
+        
         process_and_send_faces(tempid);
         // CPUBgflag=0;
+
 
 
     }else if(strncmp(buffer, "imagedl", strlen("imagedl")) == 0){
@@ -371,7 +375,7 @@ void eventFeedback(void){
 
             // ESP_LOGE("ID DELETE", "Error sending ACK");
         } else {
-            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            // ESP_LOGI(TAG_ENROL, "back to idle mode ID DELETE\n");
             CmdEvent = IDLE_EVENT;
         }        
         break;
@@ -419,7 +423,7 @@ void eventFeedback(void){
 
         // if (!stompSend(personIdStr,PUBLISH_TOPIC)) {
         if (!sendToWss((uint8_t*)personIdStr,strlen(personIdStr))) {
-            //  ESP_LOGE(TAGSOCKET, "Error sending id: errno %d", errno);
+            //  ESP_LOGE("feedback", "Error sending id: errno %d", errno);
         } else {
             // ESP_LOGI(TAG_ENROL, "id sent to client\n");
             CmdEvent = IDLE_EVENT;

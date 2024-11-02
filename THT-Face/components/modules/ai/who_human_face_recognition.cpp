@@ -269,7 +269,7 @@ static void task_process_handler(void *arg)
 
                             is_detected= true;
                             key_state= KEY_IDLE;
-                            ESP_LOGW("DELETE", "ID: %d",personId );
+                            // ESP_LOGW("DELETE CMD", "ID: %d",personId );
                         }
                         
                     }else if(_gEvent==ENROLING){
@@ -385,6 +385,9 @@ static void task_process_handler(void *arg)
                         switch (_gEvent)
                         {
                         case ENROLL:{
+
+                            // ESP_LOGW("Enrolled", "Enrolled");
+
                             CPUBgflag=1;
                             // vTaskDelay(10);
                             // duplicate 
@@ -434,6 +437,7 @@ static void task_process_handler(void *arg)
 
                             }
                             //---------------------------------------------------------------------------------
+                            // ESP_LOGW("Enrolled", "ID: %d",recognizer->get_enrolled_id_num());
 
                             frame_show_state = SHOW_STATE_ENROLL;
                             break;
@@ -452,6 +456,7 @@ static void task_process_handler(void *arg)
                                 // ESP_LOGI("RECOGNIZE", "Similarity: %f, Match Name: %s", recognize_result.similarity, recognize_result.name.c_str());
 
                                 recognitionCount[stateCounter>(ID_VALID-1)?stateCounter=0:stateCounter++]=recognize_result.id;// save id in array
+
                                 if(stateCounter>=ID_VALID){
                                    for(uint8_t i=0; i<ID_VALID;i++){
                                         if(recognitionCount[i]== recognize_result.id)validCount++;// check all array id is same or not
@@ -459,6 +464,7 @@ static void task_process_handler(void *arg)
                                 }
 
                                 if(validCount==ID_VALID){
+
                                     // printf("validCount: %d\n",validCount);
                                     CPUBgflag=1;
                                     if(xTaskGetTickCount()>TimeOut+TIMEOUT_5000_MS)StopMultipleAttaneId=0;
@@ -485,12 +491,12 @@ static void task_process_handler(void *arg)
 
                                     }
                                     CPUBgflag=0;
-
                                     frame_show_state = SHOW_STATE_RECOGNIZE;
                                     break;
 
                                 }
                                 // CPUBgflag=0;
+
 
                             }else{
 
@@ -501,15 +507,16 @@ static void task_process_handler(void *arg)
                             // ESP_LOGE("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
                             // frame_show_state = SHOW_STATE_RECOGNIZE;
                             // break;
+                            break;
+
                         }
-                        case DELETE:
+                        case DELETE:{
                             // vTaskDelay(10);
                             // recognizer->delete_id(true);
-
                             if(recognizer->delete_id(personId,true)== -1 ){// invalide id if "-1"// custom id delete logic
 
                                 personId=0;// deafalt for test
-                                // ESP_LOGE("DELETE", "Invalided ID: %d", personId);
+                                // ESP_LOGE("DELETE", "Invalided ID:");
                                 CmdEvent = ID_INVALID; // delete done 
 
                                 break;
@@ -525,7 +532,7 @@ static void task_process_handler(void *arg)
 
                             frame_show_state = SHOW_STATE_DELETE;
                             break;
-
+                        }
                         case SYNC: {
                             // ESP_LOGE("sync", "end syncing");
                             recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
@@ -767,7 +774,7 @@ void register_human_face_recognition(const QueueHandle_t frame_i,
     xMutex = xSemaphoreCreateMutex();
 
     xTaskCreatePinnedToCore(task_process_handler, TAG, 5 * 1024, NULL, 5, &recognitionTaskHandler, 0);
-        // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
+    // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
 
     if (xQueueEvent)
         xTaskCreatePinnedToCore(task_event_handler, TAG, 1 * 1024, NULL,5, &recognitioneventTaskHandler, 1);

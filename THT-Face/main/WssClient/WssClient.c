@@ -1,7 +1,7 @@
 #include "WssClient.h"
 #include "timeLib.h"
 #include <math.h>
-
+#include "esp_wifi.h"
 #define     TAG             "WSS"
 #define     TAGSTOMP        "STOMP_CLIENT"
 
@@ -270,7 +270,19 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
                 // time[10]= dspTimeFormet==true?0x0C:0x18;// sent time formet
                 // time[11]='\0';
 
-                uint8_t time [10];
+
+
+
+
+                wifi_ap_record_t ap_info;
+                
+                esp_wifi_sta_get_ap_info(&ap_info);
+                int32_t rssi = ap_info.rssi;
+                uint8_t wifiRssi = wifi_rssi_to_percentage(rssi);
+                ESP_LOGI("WiFi", "Current Wi-Fi RSSI: %d dBm (%d%%)", rssi, percentage);
+    
+
+                uint8_t time [12];
                 time[0]=(uint8_t)'T';
                 time[1]=current_time.year-2000;
                 time[2]=current_time.month;
@@ -286,7 +298,10 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
                 // time[9]= day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )][2];
 
                 time[8]= dspTimeFormet==true?0x0C:0x18;// sent time formet
-                time[9]='\0';
+                time[9]= wifiRssi;
+                // time[9]= batPercentage;
+
+                time[10]='\0';
 
                 printf(" data len: %d ping: %d %d %d %d %d %d %d %dH \n",sizeof(time),time[1],time[2],time[3],time[4],time[5],time[6] ,time[7] ,time[8]);
                 sendToWss(time, sizeof(time));

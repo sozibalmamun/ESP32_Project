@@ -94,10 +94,12 @@ void reconnect(){
             if(!pendingData()){
 
                 dataAvailable = false;
+                if (cloudeTaskHandler) vTaskSuspend(cloudeTaskHandler);
 
             }else {
                 vTaskDelay(1000 / portTICK_PERIOD_MS); // 
                 printf("pending data\n");
+                if (cloudeTaskHandler) vTaskResume(cloudeTaskHandler);
                 if (cloudeTaskHandler == NULL) cloudHandel();
 
             } 

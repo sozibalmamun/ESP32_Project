@@ -605,9 +605,6 @@ bool process_and_send_faces(uint16_t id) {
     fclose(f);  // Close the file after reading
 
 
-
-
-
     // Send the image data using the `imagesent` function
     if (!imagesent(image_data, image_length, image_height, image_width, name, person_id)) {
         // ESP_LOGE("process_and_send_faces", "Failed to send file: %s", file_name);

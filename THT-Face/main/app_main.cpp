@@ -21,6 +21,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
+#include "freertos/task.h"
 
 #include "CloudDataHandle.h"
 
@@ -43,7 +44,7 @@ static QueueHandle_t xQueueCloud = NULL;
 
 
 #define GPIO_WAKEUP_BUTTON GPIO_NUM_0
-#define CAM_CONTROL GPIO_NUM_1
+#define CAM_CONTROL GPIO_NUM_3 
 #define LCE_BL GPIO_NUM_14
 #define RX GPIO_NUM_20
 
@@ -61,6 +62,7 @@ void reInt(void);
 void reduce_cpu_frequency();
 void restore_cpu_frequency();
 void configure_dynamic_frequency();
+void list_all_tasks(void);
 
 TaskHandle_t cameraTaskHandler = NULL;
 TaskHandle_t eventTaskHandler = NULL;
@@ -124,15 +126,14 @@ void app_main()
 
     ESP_LOGI(TAG, "app_main finished");
 
-    // reduce_cpu_frequency();
-    // esp_pm_dump_locks(stdout);  // Check for any active locks
-
     while(true){
 
         // Log or print the CPU frequency
         int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
         ESP_LOGI("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
         // esp_pm_dump_locks(stdout);
+        // list_all_tasks();
+
 
         reconnect();
         if(xTaskGetTickCount()-sleepTimeOut>3000 && /*xTaskGetTickCount()-sleepTimeOut< 3500 &&*/ sleepEnable == WAKEUP){
@@ -143,8 +144,9 @@ void app_main()
             ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, BRIGHTNESS(SLEEP_LCD));//8192
             ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
             deinitBlufi();
+            vTaskDelay(pdMS_TO_TICKS(3000));
             reduce_cpu_frequency();
-            vTaskDelay(pdMS_TO_TICKS(5000));
+            vTaskDelay(pdMS_TO_TICKS(3000));
 
         }
 
@@ -229,9 +231,6 @@ void reInt(void){
 
     bluFiStart();
     gpio_set_level((gpio_num_t)CAM_CONTROL, 0);
-
-
-
     sleepEnable = WAKEUP;
 }
 
@@ -251,18 +250,6 @@ void configure_dynamic_frequency() {
     }
 }
 void reduce_cpu_frequency() {
-
-
-
-// extern TaskHandle_t cameraTaskHandler = NULL;
-// extern TaskHandle_t eventTaskHandler = NULL;
-// extern TaskHandle_t recognitionTaskHandler = NULL;
-// extern TaskHandle_t recognitioneventTaskHandler = NULL;
-// extern TaskHandel_t lcdTaskHandler = NULL;
-// extern TaskHandle_t cloudeTaskHandler = NULL;
-
-
-
 
 
     if (cameraTaskHandler) vTaskSuspend(cameraTaskHandler);
@@ -294,12 +281,12 @@ void reduce_cpu_frequency() {
 
 
 
-    if (cameraTaskHandler) vTaskResume(cameraTaskHandler);
-    if (eventTaskHandler) vTaskResume(eventTaskHandler);
-    if (recognitionTaskHandler) vTaskResume(recognitionTaskHandler);
-    if (recognitioneventTaskHandler) vTaskResume(recognitioneventTaskHandler);
+    // if (cameraTaskHandler) vTaskResume(cameraTaskHandler);
+    // if (eventTaskHandler) vTaskResume(eventTaskHandler);
+    // if (recognitionTaskHandler) vTaskResume(recognitionTaskHandler);
+    // if (recognitioneventTaskHandler) vTaskResume(recognitioneventTaskHandler);
     if (lcdTaskHandler) vTaskResume(lcdTaskHandler);
-    if (cloudeTaskHandler) vTaskResume(cloudeTaskHandler);
+    // if (cloudeTaskHandler) vTaskResume(cloudeTaskHandler);
 
     esp_pm_dump_locks(stdout);
 
@@ -312,12 +299,12 @@ void reduce_cpu_frequency() {
 
 void restore_cpu_frequency() {
 
-    if (cameraTaskHandler) vTaskSuspend(cameraTaskHandler);
-    if (eventTaskHandler) vTaskSuspend(eventTaskHandler);
-    if (recognitionTaskHandler) vTaskSuspend(recognitionTaskHandler);
-    if (recognitioneventTaskHandler) vTaskSuspend(recognitioneventTaskHandler);
+    // if (cameraTaskHandler) vTaskSuspend(cameraTaskHandler);
+    // if (eventTaskHandler) vTaskSuspend(eventTaskHandler);
+    // if (recognitionTaskHandler) vTaskSuspend(recognitionTaskHandler);
+    // if (recognitioneventTaskHandler) vTaskSuspend(recognitioneventTaskHandler);
     if (lcdTaskHandler) vTaskSuspend(lcdTaskHandler);
-    if (cloudeTaskHandler) vTaskSuspend(cloudeTaskHandler);
+    // if (cloudeTaskHandler) vTaskSuspend(cloudeTaskHandler);
 
     esp_pm_config_esp32s3_t pm_config = {
         .max_freq_mhz = 240,  // Restore max frequency
@@ -343,13 +330,6 @@ void restore_cpu_frequency() {
     if (lcdTaskHandler) vTaskResume(lcdTaskHandler);
     if (cloudeTaskHandler) vTaskResume(cloudeTaskHandler);
 }
-
-
-
-
-
-
-
 
 
 void IRAM_ATTR gpio_isr_handler(void* arg) {
@@ -388,6 +368,8 @@ void configure_wakeup() {
     // Enable external wakeup on GPIO_WAKEUP_BUTTON, active low
     esp_sleep_enable_ext0_wakeup(GPIO_WAKEUP_BUTTON, 0);  // Wake on falling edge (button press)
 }
+
+
 // Function to enter light sleep mode
 void enter_light_sleep() {
 
@@ -407,3 +389,56 @@ void enter_light_sleep() {
 }
 
 
+void list_all_tasks(void) {
+    // Get the number of tasks currently running
+    UBaseType_t numTasks = uxTaskGetNumberOfTasks();
+    // Allocate memory to hold task information
+    TaskStatus_t *taskStatusArray = (TaskStatus_t *) pvPortMalloc(numTasks * sizeof(TaskStatus_t));
+    
+    if (taskStatusArray != NULL) {
+        // Get task details
+        UBaseType_t taskCount = uxTaskGetSystemState(taskStatusArray, numTasks, NULL);
+
+        ESP_LOGI(TAG, "Number of tasks: %d", taskCount);
+        ESP_LOGI(TAG, "Listing all tasks:");
+
+        // Loop through all tasks and print their names and other info
+        for (UBaseType_t i = 0; i < taskCount; i++) {
+            ESP_LOGI(TAG, "Task Name: %s, Task State: %d, Priority: %d, Stack High Water Mark: %d",
+                     taskStatusArray[i].pcTaskName,
+                     taskStatusArray[i].eCurrentState,
+                     taskStatusArray[i].uxCurrentPriority,
+                     taskStatusArray[i].usStackHighWaterMark);
+        }
+
+        // Free the allocated memory after use
+        vPortFree(taskStatusArray);
+    } else {
+        ESP_LOGE(TAG, "Failed to allocate memory for task status array.");
+    }
+}
+
+
+// #define MAX_TASKS 20  // Define a limit for the number of tasks you want to handle
+
+// void list_and_control_tasks() {
+//     TaskStatus_t taskStatusArray[MAX_TASKS];
+//     UBaseType_t taskCount = uxTaskGetSystemState(taskStatusArray, MAX_TASKS, NULL);
+
+//     ESP_LOGI("TaskList", "Total tasks: %d", taskCount);
+
+//     for (int i = 0; i < taskCount; i++) {
+//         ESP_LOGI("TaskList", "Task Name: %s, Task Handle: %p", taskStatusArray[i].pcTaskName, taskStatusArray[i].xHandle);
+
+//         // Example: Suspend a task by name if it matches "exampleTaskName"
+//         if (strcmp(taskStatusArray[i].pcTaskName, "exampleTaskName") == 0) {
+//             ESP_LOGI("TaskControl", "Suspending task: %s", taskStatusArray[i].pcTaskName);
+//             vTaskSuspend(taskStatusArray[i].xHandle);
+
+//             // Optionally resume the task after a delay
+//             vTaskDelay(pdMS_TO_TICKS(1000));
+//             ESP_LOGI("TaskControl", "Resuming task: %s", taskStatusArray[i].pcTaskName);
+//             vTaskResume(taskStatusArray[i].xHandle);
+//         }
+//     }
+// }

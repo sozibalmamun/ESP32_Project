@@ -221,17 +221,11 @@ void RtcDataRead(uint8_t eRtcDataType) {
 
 // Writing specific data to RTC
 void RtcDataWrite(uint8_t eRtcDataType, uint8_t data) {
-    // uint8_t bcdData = Dec2BCD(data);
-    // RTCStart();
-    // RTCWriteByte(eRtcDataType);
-    // RTCWriteByte(bcdData);
-    // RTCStop();
 
     RTCStart();
     RTCWriteByte(eRtcDataType);
     RTCWriteByte(data);
     RTCStop();
-
 
 }
 
@@ -281,20 +275,20 @@ void RtcReadBuffer(void) // 800us
 
 	RTCStart();
 	RTCWriteByte(RTC_RD_CLK_BURST_ADDR);
-	sec = BCD2Dec(RTCReadByte());	// sec
-	min = BCD2Dec(RTCReadByte());	// min
-	hour = BCD2Dec(RTCReadByte());	// hour
-	day = BCD2Dec(RTCReadByte());	// day
+	sec =   BCD2Dec(RTCReadByte());	// sec
+	min =   BCD2Dec(RTCReadByte());	// min
+	hour =  BCD2Dec(RTCReadByte());	// hour
+	day =   BCD2Dec(RTCReadByte());	// day
 	month = BCD2Dec(RTCReadByte());	// month
-	week = BCD2Dec(RTCReadByte());	// week
-	year = BCD2Dec(RTCReadByte());	// year
+	week =  BCD2Dec(RTCReadByte());	// week
+	year =  BCD2Dec(RTCReadByte());	// year
 
 	RTCStop();
 
 /*
 
-RtcSetTime(0, 0, 12); // Set time: 12:45:30
-		RtcSetDate(1, 1, 1, 20); // Set date: 23rd Oct, 2024, Weekday = 4 (Wednesday)
+    RtcSetTime(0, 0, 12); // Set time: 12:45:30
+    RtcSetDate(1, 1, 1, 00); // Set date: 23rd Oct, 2024, Weekday = 4 (Wednesday)
 
 */
 
@@ -362,7 +356,7 @@ void RtcInit(void) {
 
     if (ramData1 != 'O' || ramData2 != 'K') {
 
-        printf("RTC not configured.\n");
+        // printf("RTC not configured.\n");
 
 		RTCStart();
 		RTCWriteByte(RTC_WR_TCS_ADDR);

@@ -373,3 +373,13 @@ void deinitBlufi(void) {
     esp_bt_controller_deinit();
     // ESP_LOGI(TAG, "Bluetooth controller deinitialized.");
 }
+
+uint8_t wifi_rssi_to_percentage(int32_t rssi) {
+    if (rssi <= -100) {
+        return 0;    // 0% signal strength
+    } else if (rssi >= -50) {
+        return 100;  // 100% signal strength
+    } else {
+        return (uint8_t)(2 * (rssi + 100));  // Map -100 to -50 dBm to 0-100%
+    }
+}

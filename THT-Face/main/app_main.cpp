@@ -129,8 +129,8 @@ void app_main()
     while(true){
 
         // Log or print the CPU frequency
-        int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
-        ESP_LOGI("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
+        // int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
+        // ESP_LOGI("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
         // esp_pm_dump_locks(stdout);
         // list_all_tasks();
 

@@ -114,8 +114,8 @@ void reconnect(){
         CPUBgflag=0;
         if(pendingData())dataAvailable = true;
     }
-    vTaskDelay(1000 / portTICK_PERIOD_MS); //Delay before retry
     if(CPUBgflag==0){
+        vTaskDelay(500 / portTICK_PERIOD_MS); //Delay before retry
         print_memory_status();
         ESP_LOGW("HEAP", "Free      : %dkb\n\n", heap_caps_get_free_size(MALLOC_CAP_8BIT)/1024);
     }

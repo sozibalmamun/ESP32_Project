@@ -89,9 +89,7 @@ static void task_process_handler(void *arg)
             if(sleepEnable){
 
                 // printf("dsp sleep\n");
-                // editDisplayBuff(&frame);
                 time_library_time_t current_time;
-
                 sleepTimeDate(frame,current_time);
 
                 g_lcd.draw_bitmap(0, 0, frame->width, frame->height, (uint16_t *)frame->buf);

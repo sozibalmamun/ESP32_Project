@@ -270,7 +270,6 @@ void RtcSetDate(uint8_t day, uint8_t month, uint8_t weekday, uint8_t year) {
 
 void RtcReadBuffer(void) // 800us
 {
-	uint8_t Result = 0; // 0: normal !0:Err
 	uint8_t sec, min, hour, day, month, week, year;
 
 	RTCStart();
@@ -282,22 +281,10 @@ void RtcReadBuffer(void) // 800us
 	month = BCD2Dec(RTCReadByte());	// month
 	week =  BCD2Dec(RTCReadByte());	// week
 	year =  BCD2Dec(RTCReadByte());	// year
-
 	RTCStop();
-
-/*
-
-    RtcSetTime(0, 0, 12); // Set time: 12:45:30
-    RtcSetDate(1, 1, 1, 00); // Set date: 23rd Oct, 2024, Weekday = 4 (Wednesday)
-
-*/
-
-
-
-	time_library_time_t initial_time = {year+2000, month, day, week, hour, min, sec};//     year, month, day, hour, minute, second;
+	time_library_time_t initial_time = {(year==165?-1:year)+2000, month, day, week, hour>129?12:hour, min>110?0:min, sec};//     year, month, day, hour, minute, second;
     time_library_set_time(&initial_time, 0);
 
-	return Result;
 }
 
 void gpioMode(bool output , gpio_num_t pinNo){

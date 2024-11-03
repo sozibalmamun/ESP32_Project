@@ -350,6 +350,11 @@ void bluFiStart(void)
 void deinitBlufi(void) {
     // printf("\nBLUFI: Disabling...");
 
+    if (client != NULL) {
+    esp_websocket_client_stop(client);
+    esp_websocket_client_destroy(client);
+    client = NULL;
+    }
     // networkStatus=0;
     gl_sta_got_ip = false;
     ble_is_connected = false;

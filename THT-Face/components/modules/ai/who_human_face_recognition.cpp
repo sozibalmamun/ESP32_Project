@@ -209,7 +209,7 @@ static void task_process_handler(void *arg)
 {
 
     camera_fb_t *frame = NULL;
-    camera_fb_t *moveDetection = NULL;
+    // camera_fb_t *moveDetection = NULL;
 
 
     HumanFaceDetectMSR01 detector(0.3F, 0.3F, 10, 0.3F);
@@ -653,41 +653,41 @@ static void task_process_handler(void *arg)
                     }
                 }// wake up section normal oparetion 
             }
+//--------------------------------------------------------------------------------------
+            // bool motion = false;
 
-            bool motion = false;
+            // if(sleepEnable==SLEEP){ 
 
-            if(sleepEnable==SLEEP){ 
+            //     if (xQueueReceive(xQueueFrameI, &(moveDetection), portMAX_DELAY))// motion detection 
+            //     {  
 
-                if (xQueueReceive(xQueueFrameI, &(moveDetection), portMAX_DELAY))// motion detection 
-                {  
+            //         //------------------------motion detection -----------------------------
+            //         uint32_t moving_point_number = dl::image::get_moving_point_number((uint16_t *)frame->buf, (uint16_t *)moveDetection->buf, frame->height, frame->width, 8, 15);
+            //         if (moving_point_number > 50)
+            //         {
+            //             // ESP_LOGE(TAG, " Motion detected!");
+            //             motion =true;
 
-                    //------------------------motion detection -----------------------------
-                    uint32_t moving_point_number = dl::image::get_moving_point_number((uint16_t *)frame->buf, (uint16_t *)moveDetection->buf, frame->height, frame->width, 8, 15);
-                    if (moving_point_number > 50)
-                    {
-                        // ESP_LOGE(TAG, " Motion detected!");
-                        motion =true;
+            //         }
+            //         // end---------------------------------------------------------------------
 
-                    }
-                    // end---------------------------------------------------------------------
+            //     }// motion end
 
-                }// motion end
-
-            }
-                
+            // }
+//-------------------------------------------------------------------------------------------- 
             if (xQueueFrameO)
             {
 
                 xQueueSend(xQueueFrameO, &frame, portMAX_DELAY);
                 //------------------------motion detection -----------------------------
-                if(sleepEnable==SLEEP){
-                    xQueueSend(xQueueFrameO, &moveDetection, portMAX_DELAY);
-                    // ESP_LOGI(TAG,"xQueueFrameO");
-                    if(motion){
-                        sleepTimeOut = xTaskGetTickCount();
-                        sleepEnable=WAKEUP;
-                    }
-                }
+                // if(sleepEnable==SLEEP){
+                //     xQueueSend(xQueueFrameO, &moveDetection, portMAX_DELAY);
+                //     // ESP_LOGI(TAG,"xQueueFrameO");
+                //     if(motion){
+                //         sleepTimeOut = xTaskGetTickCount();
+                //         sleepEnable=WAKEUP;
+                //     }
+                // }//----------------------------------------------------------------
 
 
             }
@@ -695,24 +695,24 @@ static void task_process_handler(void *arg)
             {
                 esp_camera_fb_return(frame);
                 //------------------------motion detection -----------------------------
-                if(motion){
+                // if(motion){
 
-                    // ESP_LOGI(TAG,"esp_camera_fb_return");
-                    esp_camera_fb_return(moveDetection);
+                //     // ESP_LOGI(TAG,"esp_camera_fb_return");
+                //     esp_camera_fb_return(moveDetection);
 
-                }
+                // }//------------------------------
 
             }
             else
             {
                 free(frame);
                 //------------------------motion detection -----------------------------
-                if(motion){
+                // if(motion){
 
-                    // ESP_LOGI(TAG,"free moveDetection");
-                    free(moveDetection);
+                //     // ESP_LOGI(TAG,"free moveDetection");
+                //     free(moveDetection);
 
-                }
+                // }//--------------------------------------------------------------
 
             }
 
@@ -722,17 +722,18 @@ static void task_process_handler(void *arg)
 
 
             }
-            if(xQueueResult){
+            //---------------------------------------------------------
+            // if(xQueueResult){
 
-                if(motion){
+            //     if(motion){
 
-                    ESP_LOGI(TAG,"xQueueResult");
-                    xQueueSend(xQueueResult, &motion, portMAX_DELAY);
+            //         ESP_LOGI(TAG,"xQueueResult");
+            //         xQueueSend(xQueueResult, &motion, portMAX_DELAY);
 
-                }
+            //     }
 
 
-            }
+            // }//----------------------------------------------------------
 
         }
     }

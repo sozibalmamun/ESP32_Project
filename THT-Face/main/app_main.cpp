@@ -245,9 +245,9 @@ void configure_dynamic_frequency() {
     };
     esp_err_t ret = esp_pm_configure(&pm_config);
     if (ret == ESP_OK) {
-        ESP_LOGI("Frequency", "Dynamic CPU frequency scaling configured.");
+        // ESP_LOGI("Frequency", "Dynamic CPU frequency scaling configured.");
     } else {
-        ESP_LOGE("Frequency", "Failed to configure CPU frequency: %s", esp_err_to_name(ret));
+        // ESP_LOGE("Frequency", "Failed to configure CPU frequency: %s", esp_err_to_name(ret));
     }
 }
 void reduce_cpu_frequency() {
@@ -261,7 +261,7 @@ void reduce_cpu_frequency() {
     if (cloudeTaskHandler) vTaskSuspend(cloudeTaskHandler);
 
 
-    ESP_LOGE("Frequency", "delete all task");
+    // ESP_LOGE("Frequency", "delete all task");
 
 
     esp_pm_dump_locks(stdout);
@@ -275,9 +275,9 @@ void reduce_cpu_frequency() {
     vTaskDelay(pdMS_TO_TICKS(10));  // Allow time for frequency update
 
     if (ret == ESP_OK) {
-        ESP_LOGI("Frequency", "Dynamic CPU frequency scaling configured.");
+        // ESP_LOGI("Frequency", "Dynamic CPU frequency scaling configured.");
     } else {
-        ESP_LOGE("Frequency", "Failed to configure CPU frequency: %s", esp_err_to_name(ret));
+        // ESP_LOGE("Frequency", "Failed to configure CPU frequency: %s", esp_err_to_name(ret));
     }    
 
 
@@ -317,9 +317,9 @@ void restore_cpu_frequency() {
     vTaskDelay(pdMS_TO_TICKS(10));  // Allow time for frequency update
 
     if (ret == ESP_OK) {
-        ESP_LOGI("Frequency", "Dynamic CPU frequency scaling configured.");
+        // ESP_LOGI("Frequency", "Dynamic CPU frequency scaling configured.");
     } else {
-        ESP_LOGE("Frequency", "Failed to configure CPU frequency: %s", esp_err_to_name(ret));
+        // ESP_LOGE("Frequency", "Failed to configure CPU frequency: %s", esp_err_to_name(ret));
     } 
 
 
@@ -336,7 +336,7 @@ void restore_cpu_frequency() {
 void IRAM_ATTR gpio_isr_handler(void* arg) {
     int gpio_num = (int)arg;
     // Handle the interrupt (e.g., toggle a flag or send an event)
-    ESP_LOGI("GPIO_ISR", "Interrupt on GPIO %d", gpio_num);
+    // ESP_LOGI("GPIO_ISR", "Interrupt on GPIO %d", gpio_num);
 }
 void interruptInt(void){
 

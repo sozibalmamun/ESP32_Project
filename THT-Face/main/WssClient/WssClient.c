@@ -57,17 +57,20 @@ bool sendToWss(uint8_t *buff, size_t buffLen) {
             if (networkStatus > WIFI_DISS) networkStatus = WIFI_CONNECTED;
             heap_caps_free(sendingFrame);
             vTaskDelay(1000 / portTICK_PERIOD_MS);
+            ESP_LOGE(TAGSTOMP, "Failed to send frame. maxTry...%d" ,maxTry);
             maxTry++;
             if (maxTry > MAXTRY) {
                 maxTry = 0;
                 return false;
+            }else if(maxTry == 5){
+                wssReset();
             }
             continue;
         }
 
         // Send the prepared frame via WebSocket (replace with your WebSocket send function)
         if (esp_websocket_client_send_bin(client, sendingFrame, headerLen + chunkLen + 6, portMAX_DELAY) == 0) {
-            // ESP_LOGE(TAGSTOMP, "Failed to send frame. Retrying...");
+            ESP_LOGE(TAGSTOMP, "Failed to send frame. Retrying...");
             heap_caps_free(sendingFrame);
             vTaskDelay(1000 / portTICK_PERIOD_MS);
             continue;  // Retry if failed to send
@@ -76,6 +79,8 @@ bool sendToWss(uint8_t *buff, size_t buffLen) {
         // Update index and remaining length
         currentIndex += chunkLen;
         buffLen -= chunkLen;
+        maxTry = 0;
+
 
         // Free allocated memory
         heap_caps_free(sendingFrame);
@@ -168,7 +173,7 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
 
         memcpy(&sentFrame[8], chunk, chunkLen);  // Copy chunk data to the frame
 
-        printf("Chunk No: %d CRC: %x\n", chunkNo + 1 ,Crc);  // Log the chunk number
+        // printf("Chunk No: %d CRC: %x\n", chunkNo + 1 ,Crc);  // Log the chunk number
 
         // Send the frame
         if (!sendToWss(sentFrame, sentFrameLen)) {
@@ -191,6 +196,8 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
         heap_caps_free(chunk);
         heap_caps_free(sentFrame);
     }
+
+    printf("Chunk done: %d \n",chunkNo);  // Log the chunk number
     return true;
 }
 
@@ -242,17 +249,18 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         if (data->op_code == 0x08 && data->data_len == 2) {
 
             ESP_LOGW(TAG, "Received closed message with code=%d", 256*data->data_ptr[0] + data->data_ptr[1]);
-                            // ESP_LOGI(TAG, "WEBSOCKET_free");
-        // memset(data->data_ptr,0,data->data_len);
+            networkStatus=WIFI_CONNECTED;
+            memset(data->data_ptr,0,data->data_len);
+            wssReset();
 
         } else {
-
 
             if (data->op_code == 0x0A) {
 
                 ESP_LOGI(TAG, "Ping code: %d", data->op_code);
                 time_library_time_t current_time;
                 get_time(&current_time, dspTimeFormet);
+
 
                 // uint8_t time [12];
                 // time[0]=(uint8_t)'T';
@@ -279,7 +287,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
                 esp_wifi_sta_get_ap_info(&ap_info);
                 int32_t rssi = ap_info.rssi;
                 uint8_t wifiRssi = wifi_rssi_to_percentage(rssi);
-                ESP_LOGI("WiFi", "Current Wi-Fi RSSI: %d dBm (%d%%)", rssi, percentage);
+                // ESP_LOGI("WiFi", "Current Wi-Fi RSSI: %d dBm (%d%%)", rssi, wifiRssi);
     
 
                 uint8_t time [12];
@@ -299,16 +307,16 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
                 time[8]= dspTimeFormet==true?0x0C:0x18;// sent time formet
                 time[9]= wifiRssi;
-                // time[9]= batPercentage;
+                time[10]=0;// batPercentage;
 
-                time[10]='\0';
+                time[11]='\0';
 
-                printf(" data len: %d ping: %d %d %d %d %d %d %d %dH \n",sizeof(time),time[1],time[2],time[3],time[4],time[5],time[6] ,time[7] ,time[8]);
+                // printf(" data len: %d ping: %d %d %d %d %d %d %d %dH \n",sizeof(time),time[1],time[2],time[3],time[4],time[5],time[6] ,time[7] ,time[8]);
                 sendToWss(time, sizeof(time));
 
             }else{
 
-                ESP_LOGE(TAG, "Received: ");
+                // ESP_LOGE(TAG, "Received: ");
                 vTaskDelay(50);
 
                 // for(uint16_t i=0; i< data->data_len;i++){
@@ -335,64 +343,20 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 }
 
 
-void stompAppStart(void)
-{
-
-    stompInfo_cfg_t stompInfo ={
-        .uri = THT,
-        .host = HOST,
-        .port = PORT,
-        .path = PATH
-    };
-    stomp_client_int(stompInfo);
-}
-void stomp_client_int( stompInfo_cfg_t stompSetup ) {
+void wssClientInt(void) {
    
     esp_websocket_client_config_t websocket_cfg = {};
 
-    char socket[100];
-    snprintf(socket, sizeof(socket), "%s", stompSetup.uri);
 
-
-    // int random1 = esp_random() % 999; // Generates a random number between 0 and 999
-    // int random2 = esp_random() % 999999; // Generates a random number between 0 and 999999
-    // snprintf(socket + strlen(socket), sizeof(socket) - strlen(socket), "%d/%d/websocket", random1, random2);
-
-
-    websocket_cfg.uri = (const char*)socket;
-    websocket_cfg.cert_pem = echo_org_ssl_ca_cert;  
+    websocket_cfg.uri = (const char*)THT;
+    websocket_cfg.cert_pem = echo_org_ssl_ca_cert; 
+    websocket_cfg.ping_interval_sec= 5; 
     websocket_cfg.pingpong_timeout_sec=10;
-
-
-    // char uinqeheaders[14];
-    // snprintf(uinqeheaders, sizeof(uinqeheaders), "%s%08llu",DEVICE_VERSION_ID, generate_unique_id());
-    // printf("\nheadr:  %s",uinqeheaders);
-
-    // websocket_cfg.headers = (const char*)uinqeheaders;
-
-    // memset(socket,0,strlen(socket));
-
-    // snprintf(socket, sizeof(socket), "%s", stompSetup.path);
-    // snprintf(socket + strlen(socket), sizeof(socket) - strlen(socket), "%d/%d/websocket", random1, random2);
-    
-    // websocket_cfg.path = (const char*)socket;// path
-    // websocket_cfg.port = stompSetup.port;
-    // websocket_cfg.host = (const char*)stompSetup.host;
-
-    // websocket_cfg.use_global_ca_store = false;// try 
-    // websocket_cfg.skip_cert_common_name_check = false;
-    // websocket_cfg.disable_auto_reconnect = false;
-
     websocket_cfg.use_global_ca_store = true;// ok 
     websocket_cfg.skip_cert_common_name_check = true;
     websocket_cfg.disable_auto_reconnect = false;
     websocket_cfg.task_stack = 1024*4;  // Increased stack size
-    websocket_cfg.task_prio =10;      // Set an appropriate task priority
-
-
-    // ESP_LOGI(TAG, "Constructed WebSocket URL: %s", websocket_cfg.uri);
-    // ESP_LOGI(TAG, "Constructed WebSocket PATH: %s", websocket_cfg.path);
-
+    websocket_cfg.task_prio =10;      // Set an appropriate task priorit
 
     // ESP_LOGI(TAG, "Initializing global CA store...");
     ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));
@@ -402,3 +366,95 @@ void stomp_client_int( stompInfo_cfg_t stompSetup ) {
     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
     esp_websocket_client_start(client);
 }
+
+void wssReset(void){
+
+
+
+    if (client != NULL) {
+    esp_websocket_client_stop(client);
+    esp_websocket_client_destroy(client);
+    ESP_LOGI(TAG, "esp_websocket_client_stop");
+    client = NULL;
+    
+    }            
+    vTaskDelay(50);
+    wssClientInt();
+    ESP_LOGI(TAG, "wssAppStart");
+
+}
+
+
+
+
+
+// void wssAppStart(void)
+// {
+
+//     stompInfo_cfg_t stompInfo ={
+//         .uri = THT,
+//         .host = HOST,
+//         .port = PORT,
+//         .path = PATH
+//     };
+//     wss_client_int(stompInfo);
+// }
+
+// void wss_client_int( stompInfo_cfg_t stompSetup ) {
+   
+//     esp_websocket_client_config_t websocket_cfg = {};
+
+//     // char socket[100];
+//     // snprintf(socket, sizeof(socket), "%s", stompSetup.uri);
+
+
+//     // int random1 = esp_random() % 999; // Generates a random number between 0 and 999
+//     // int random2 = esp_random() % 999999; // Generates a random number between 0 and 999999
+//     // snprintf(socket + strlen(socket), sizeof(socket) - strlen(socket), "%d/%d/websocket", random1, random2);
+
+
+//     websocket_cfg.uri = (const char*)THT;
+//     websocket_cfg.cert_pem = echo_org_ssl_ca_cert;  
+//     websocket_cfg.pingpong_timeout_sec=10;
+
+
+//     // char uinqeheaders[14];
+//     // snprintf(uinqeheaders, sizeof(uinqeheaders), "%s%08llu",DEVICE_VERSION_ID, generate_unique_id());
+//     // printf("\nheadr:  %s",uinqeheaders);
+
+//     // websocket_cfg.headers = (const char*)uinqeheaders;
+
+//     // memset(socket,0,strlen(socket));
+
+//     // snprintf(socket, sizeof(socket), "%s", stompSetup.path);
+//     // snprintf(socket + strlen(socket), sizeof(socket) - strlen(socket), "%d/%d/websocket", random1, random2);
+    
+//     // websocket_cfg.path = (const char*)socket;// path
+//     // websocket_cfg.port = stompSetup.port;
+//     // websocket_cfg.host = (const char*)stompSetup.host;
+
+//     // websocket_cfg.use_global_ca_store = false;// try 
+//     // websocket_cfg.skip_cert_common_name_check = false;
+//     // websocket_cfg.disable_auto_reconnect = false;
+
+//     websocket_cfg.use_global_ca_store = true;// ok 
+//     websocket_cfg.skip_cert_common_name_check = true;
+//     websocket_cfg.disable_auto_reconnect = false;
+//     websocket_cfg.task_stack = 1024*4;  // Increased stack size
+//     websocket_cfg.task_prio =10;      // Set an appropriate task priority
+
+
+//     // ESP_LOGI(TAG, "Constructed WebSocket URL: %s", websocket_cfg.uri);
+//     // ESP_LOGI(TAG, "Constructed WebSocket PATH: %s", websocket_cfg.path);
+
+
+//     // ESP_LOGI(TAG, "Initializing global CA store...");
+//     ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));
+
+
+//     client = esp_websocket_client_init(&websocket_cfg);
+//     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
+//     esp_websocket_client_start(client);
+// }
+
+

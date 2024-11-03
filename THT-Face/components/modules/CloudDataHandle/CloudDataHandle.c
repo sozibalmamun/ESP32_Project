@@ -105,14 +105,18 @@ void reconnect(){
             } 
 
         }
-    }else if(networkStatus<STOMP_CONNECTED && networkStatus>WIFI_CONNECTED){
+    }
+    // else if(networkStatus<WSS_CONNECTED && networkStatus>WIFI_DISS){
 
-        // stomp_client_connect();
+    //     vTaskDelay(250);
+    //     if(networkStatus==WSS_CONNECTED)wssReset();
 
-    }else if(networkStatus==WIFI_DISS){
+    // }
+    else if(networkStatus==WIFI_DISS){
 
         CPUBgflag=0;
         if(pendingData())dataAvailable = true;
+
     }
     if(CPUBgflag==0){
         vTaskDelay(500 / portTICK_PERIOD_MS); //Delay before retry

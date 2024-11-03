@@ -136,7 +136,6 @@ void app_main()
         // list_all_tasks();
 
 
-        reconnect();
         if(xTaskGetTickCount()-sleepTimeOut>3000 && /*xTaskGetTickCount()-sleepTimeOut< 3500 &&*/ sleepEnable == WAKEUP){
 
             sleepEnable=SLEEP;
@@ -161,7 +160,8 @@ void app_main()
                 ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);  
                 printf("\nsleep disable");
             }
-        }
+        }else reconnect();
+
     }
 }
 
@@ -219,10 +219,10 @@ void PwmInt( ledc_channel_config_t *ledc_channel ,gpio_num_t pinNo ) {
     // Optional: Use fading
     ledc_fade_func_install(0);  // Install the fade function
     ledc_set_fade_time_and_start(ledc_channel->speed_mode, ledc_channel->channel, 8192, 1000, LEDC_FADE_NO_WAIT);
-    for (int duty = 8192; duty >= 0; duty -= 8) {
+    for (int duty = 8192; duty >= 0; duty -= 32) {
         ledc_set_duty(ledc_channel->speed_mode, ledc_channel->channel, duty);
         ledc_update_duty(ledc_channel->speed_mode, ledc_channel->channel);
-        vTaskDelay(40 / portTICK_PERIOD_MS);     // Delay to see the dimming effect
+        vTaskDelay(100 / portTICK_PERIOD_MS);     // Delay to see the dimming effect
     }
 }
 

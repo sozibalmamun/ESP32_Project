@@ -87,8 +87,9 @@ extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,cha
 extern uint16_t crc16(const char *buf, size_t len);
 uint8_t wifi_rssi_to_percentage(int32_t rssi);
 
-void stomp_client_int( stompInfo_cfg_t stompSetup );
-void stompAppStart(void);
+// void wss_client_int( stompInfo_cfg_t stompSetup );
+void wssClientInt(void);
+void wssReset(void);
 bool sendToWss(uint8_t *buff, size_t buffLen);
 void process_data(char* data, uint32_t len) ;
 

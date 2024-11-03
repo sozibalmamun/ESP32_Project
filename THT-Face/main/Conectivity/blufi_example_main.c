@@ -34,12 +34,10 @@
 #include "esp_blufi.h"
 #include "esp_bt_main.h"
 #include "esp_netif.h"  // For netif functions
-
-
+#include "handleQrCode.h"
+#include "math.h"
 static const char *TAG = "BLUFI_HANDLER";
 
-
-#include "handleQrCode.h"
 
 
 
@@ -142,9 +140,8 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
     case WIFI_EVENT_STA_CONNECTED:{
         printf("WiFi CONNECTED\n");
 
-        vTaskDelay(500);
-        stompAppStart();
-
+        vTaskDelay(300);
+        wssClientInt();
         networkStatus=WIFI_CONNECTED;
         gl_sta_is_connecting = false;
         event = (wifi_event_sta_connected_t*) event_data;
@@ -208,7 +205,11 @@ static void initialise_wifi(void)
     ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
     ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
     example_record_wifi_conn_info(EXAMPLE_INVALID_RSSI, EXAMPLE_INVALID_REASON);
-    ESP_ERROR_CHECK( esp_wifi_start() );
+
+    ESP_ERROR_CHECK( esp_wifi_start());
+
+    // esp_wifi_set_max_tx_power(8);  // Set power level to 8 (2 dBm)
+
 }
 
 static esp_blufi_callbacks_t example_callbacks = {
@@ -349,6 +350,11 @@ void bluFiStart(void)
 void deinitBlufi(void) {
     // printf("\nBLUFI: Disabling...");
 
+    // networkStatus=0;
+    gl_sta_got_ip = false;
+    ble_is_connected = false;
+    gl_sta_is_connecting = false;
+
     // Stop and deinitialize Wi-Fi
     esp_wifi_stop();
     esp_wifi_deinit();
@@ -375,11 +381,14 @@ void deinitBlufi(void) {
 }
 
 uint8_t wifi_rssi_to_percentage(int32_t rssi) {
-    if (rssi <= -100) {
-        return 0;    // 0% signal strength
-    } else if (rssi >= -50) {
-        return 100;  // 100% signal strength
+
+     if (rssi <= -120) {
+        return 0;    // 0% for very weak signals or below -120 dBm
+    } else if (rssi >= -35) {
+        return 100;  // 100% for strong signals at or above -35 dBm
     } else {
-        return (uint8_t)(2 * (rssi + 100));  // Map -100 to -50 dBm to 0-100%
+        // Linear mapping from -120 dBm to -35 dBm to 0-100%
+        return (uint8_t)((rssi + 120) * 100 / 85);
     }
+
 }

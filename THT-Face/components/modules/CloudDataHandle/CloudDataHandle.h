@@ -22,7 +22,6 @@ extern "C"
 #endif
 
 extern uint8_t networkStatus;
-
 typedef struct {
     uint8_t *buf;             /*!< Pointer to the copied pixel data */
     size_t len;               /*!< Length of the buffer in bytes */
@@ -55,6 +54,8 @@ void format_fatfs(void);
 void process_attendance_files(void);
 //----------------event feedback--------------------------------------------------
 void eventFeedback(void);
+
+extern void wssReset(void);
 
 
 

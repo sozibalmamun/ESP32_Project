@@ -54,11 +54,34 @@
 #define WAKEUP  0x00
 #define RE_INIT 0x02
 //---------------------
+//Sleep config--------------------------------------------
+#define MAX_FREQ   240    // Maximum frequency
+#define MIN_FREQ   8
+#define GPIO_WAKEUP_BUTTON GPIO_NUM_0
+#define CAM_CONTROL GPIO_NUM_3 
+#define LCE_BL GPIO_NUM_14
+#define ESP_INTR_FLAG_DEFAULT 0
+#define SLEEP_LCD 10
+#define WAKE_LCD 70
+#define MIN_BRIGHTNESS (8191)
+#define BRIGHTNESS(x)  MIN_BRIGHTNESS-(((MIN_BRIGHTNESS/100)*x))
+//-------------sleep config file end------------------------------
 
+//------7seegment-------------------------------------------------
+// size in H segment
+#define HEIGHT_32 6
+#define WIDTH_32 30
+// size in V segment
+#define HEIGHT_8 26
+#define WIDTH_8 8
 
-//--------------------------------------------------------------------
+//170-87
+#define segmentBaseX  73
+#define segmentBaseY  58 
 
-//-------------------Time value in ms---------------------------------
+#define SEVENSEGMENT_COLOR 0x07E0
+//----------------------------------------------------------------
+//-------------------Time value in ms-----------------------------
 #define TIMEOUT_50_MS         5
 #define TIMEOUT_100_MS        10
 #define TIMEOUT_120_MS        12
@@ -83,9 +106,9 @@
 #define TIMEOUT_1_MIN         6000
 #define TIMEOUT_2_MIN         12000
 #define TIMEOUT_5_MIN         30000
-//-------------------------------------------------------------------
+//--------------------------------------------------------------
 #define HALT while(1);
-//-------------------topic-------------------------------------------
+//-------------------topic--------------------------------------
 
 // #define     PUBLISH_TOPIC         "/app/cloud"
 // #define     SUBCRIBE_TOPIC        "/topic/cloud"
@@ -93,14 +116,14 @@
 
 #define     PUBLISH_TOPIC         "/app/messages"
 #define     SUBCRIBE_TOPIC        "/topic/AA00242829068"
-//-------------------------------------------------------------------
+//--------------------------------------------------------------
 #define ID_VALID 3
-//-----------network status code-------------------------------------
+//-----------network status code--------------------------------
 #define     WIFI_DISS           0x00
 #define     WIFI_CONNECTED      0x01
 #define     WSS_CONNECTED       0x02
 #define     STOMP_CONNECTED     0x03
-//-------------------------------------------------------------------
+//--------------------------------------------------------------
 
 //-------------------------------------------------------------
 #define     IMAGE_CHANK_SIZE      900 //512//760//256 //128

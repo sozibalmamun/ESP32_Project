@@ -774,7 +774,7 @@ void register_human_face_recognition(const QueueHandle_t frame_i,
     gReturnFB = camera_fb_return;
     xMutex = xSemaphoreCreateMutex();
 
-    xTaskCreatePinnedToCore(task_process_handler, TAG, 5 * 1024, NULL, 5, &recognitionTaskHandler, 0);
+    xTaskCreatePinnedToCore(task_process_handler, TAG, 5 * 1024, NULL, 5, &recognitionTaskHandler, 1);
     // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
 
     if (xQueueEvent)

@@ -102,8 +102,7 @@ void process_command(const char* buffer ) {
         sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
         sleepEnable=WAKEUP;
         uint16_t tempid = buffer[12]<<8|buffer[13];
-        // printf("giveimage: %d\n",tempid);
-        
+        printf("giveimage: %d\n",tempid);
         process_and_send_faces(tempid);
         // CPUBgflag=0;
 

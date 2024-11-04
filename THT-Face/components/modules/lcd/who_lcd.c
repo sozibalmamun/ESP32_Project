@@ -86,12 +86,12 @@ static void task_process_handler(void *arg)
         {
             // If no frame received, log and delay
             vTaskDelay(xDelay);  // Delay task execution if no frame was received
+            
             if(sleepEnable){
 
                 // printf("dsp sleep\n");
                 time_library_time_t current_time;
                 sleepTimeDate(frame,current_time);
-
                 g_lcd.draw_bitmap(0, 0, frame->width, frame->height, (uint16_t *)frame->buf);
 
             }
@@ -276,7 +276,7 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
     xQueueFrameI = frame_i;
     xQueueFrameO = frame_o;
     gReturnFB = return_fb;
-    xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, &lcdTaskHandler, 1);
+    xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, &lcdTaskHandler, 0);
         // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
 
 

@@ -501,68 +501,119 @@ void wrightChar(uint8_t letterSize, uint16_t x_offset, uint8_t y_offset, char c,
 
 void sleepTimeDate(camera_fb_t *buff, time_library_time_t current_time){
 
-
-    // time_library_time_t current_time;
-
     uint8_t clockType = get_time(&current_time, dspTimeFormet);
 
-    for (int y = 0; y < 240; y++)
-    {
-        for (int x = 0; x < 320; x++)
-        {
-            int index = (y * buff->width + x) * 2; // Assuming 2 bytes per pixel
-            buff->buf[index] = 0;
-            buff->buf[index + 1] = 0;
+
+// second dot toggole second
+    if(current_time.second%2==1){
+        icnPrint(segmentBaseX+85,segmentBaseY+10 ,5,5 ,&secondicon,SEVENSEGMENT_COLOR,buff);
+        icnPrint(segmentBaseX+85,segmentBaseY+56,5,5 ,&secondicon,SEVENSEGMENT_COLOR,buff);
+    }else if(current_time.second%2==0){
+        for (int y = 0; y < 240; y++){
+            for (int x = 0; x < 320; x++)
+            {
+                int index = (y * buff->width + x) * 2; // Assuming 2 bytes per pixel
+                buff->buf[index] = 0;
+                buff->buf[index + 1] = 0;
+            }
         }
-    }
 
-    uint8_t tempHours= current_time.hour;
-    uint8_t tempMinuts= current_time.minute;
-//170-87
-#define segmentBaseX  73
-#define segmentBaseY  58 
-// write hours
-    if(tempHours<=9){
-    timeDisplay( segmentBaseX, segmentBaseY, 0 , buff);
-    timeDisplay( segmentBaseX+44, segmentBaseY, tempHours , buff);
-    }else { 
-    timeDisplay( segmentBaseX, segmentBaseY, tempHours/10 , buff);
-    timeDisplay( segmentBaseX+44, segmentBaseY, tempHours%10 , buff);
-    }
-// write minuts
-    if(tempMinuts<=9){
-        timeDisplay( segmentBaseX+100, segmentBaseY, 0 , buff);
-        timeDisplay( segmentBaseX+144, segmentBaseY, tempMinuts , buff);
-    }else if(tempMinuts==0){
-        timeDisplay( segmentBaseX+100, segmentBaseY, 0 , buff);
-        timeDisplay( segmentBaseX+144, segmentBaseY, 0 , buff);
-    }else{ 
-        timeDisplay( segmentBaseX+100, segmentBaseY, tempMinuts / 10 , buff);
-        timeDisplay( segmentBaseX+144, segmentBaseY, tempMinuts % 10 , buff);
-    }
-// secend dot toggole
-    if(xTaskGetTickCount()-animationTime <50){
-        icnPrint(segmentBaseX+85,segmentBaseY+10 ,5,5 ,&secondicon,0xf800,buff);
-        icnPrint(segmentBaseX+85,segmentBaseY+56,5,5 ,&secondicon,0xf800,buff);
-    }else if(xTaskGetTickCount()-animationTime >140){
-        animationTime = xTaskGetTickCount();
-    }
-// date 2024-08-08 day
-    char tempFrame[17] ;
-    snprintf(tempFrame, sizeof(tempFrame), "%d-%02d-%02d  %s",current_time.year,current_time.month,current_time.day,
-    day_names[current_time.weekday]);
+    // write hours
+        if(current_time.hour<=9){
+        timeDisplay( segmentBaseX, segmentBaseY, 0 , buff);
+        timeDisplay( segmentBaseX+44, segmentBaseY, current_time.hour , buff);
+        }else { 
+        timeDisplay( segmentBaseX, segmentBaseY, current_time.hour/10 , buff);
+        timeDisplay( segmentBaseX+44, segmentBaseY, current_time.hour%10 , buff);
+        }
+    // write minuts
+        if(current_time.minute<=9){
+            timeDisplay( segmentBaseX+100, segmentBaseY, 0 , buff);
+            timeDisplay( segmentBaseX+144, segmentBaseY, current_time.minute , buff);
+        }else if(current_time.minute==0){
+            timeDisplay( segmentBaseX+100, segmentBaseY, 0 , buff);
+            timeDisplay( segmentBaseX+144, segmentBaseY, 0 , buff);
+        }else{ 
+            timeDisplay( segmentBaseX+100, segmentBaseY, current_time.minute / 10 , buff);
+            timeDisplay( segmentBaseX+144, segmentBaseY, current_time.minute % 10 , buff);
+        }
 
-    // day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
+    // date 2024-08-08 day
+        char tempFrame[17] ;
+        snprintf(tempFrame, sizeof(tempFrame), "%d-%02d-%02d  %s",current_time.year,current_time.month,current_time.day,
+        day_names[current_time.weekday]);
 
-    uint16_t len = 160- (pixleLen(2,&tempFrame)/2);//x start poss
+        // day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
 
-    WriteString(2,len, 130,tempFrame,0xF800,buff);
+        uint16_t len = 160- (pixleLen(2,&tempFrame)/2);//x start poss
+
+        WriteString(2,len, 130,tempFrame,SEVENSEGMENT_COLOR,buff);
 
 /*
-    WriteString(2,5, 0,"abcdefghijklmnopqrstuvwxyz",buff);
-    WriteString(2,5, 130,"ABCDEFGHIJKLMNOPQRSTUVWXYZ",buff);
-    WriteString(2,5, 160,"1234567890",buff);
+        uint8_t tempXstart = segmentBaseX -2;
+        uint8_t tempYstart = segmentBaseY-2;
+        uint16_t tempXend   = 250;
+        uint8_t tempYend   = 160;
+
+        if(xTaskGetTickCount()-sleepTimeOut<4000){
+            tempXstart=0 ;
+            tempYstart=0;
+            tempXend=320;
+            tempYend=240;
+
+        }
+        for (int y = tempYstart; y < tempYend; y++)
+        {
+            for (int x = tempXstart; x < tempXend; x++)
+            {
+                int index = (y * buff->width + x) * 2; // Assuming 2 bytes per pixel
+                buff->buf[index] = 0;
+                buff->buf[index + 1] = 0;
+            }
+        }
 */
+    }
+
+
+//     uint8_t tempHours= current_time.hour;
+//     uint8_t tempMinuts= current_time.minute;
+
+// // write hours
+//     if(tempHours<=9){
+//     timeDisplay( segmentBaseX, segmentBaseY, 0 , buff);
+//     timeDisplay( segmentBaseX+44, segmentBaseY, tempHours , buff);
+//     }else { 
+//     timeDisplay( segmentBaseX, segmentBaseY, tempHours/10 , buff);
+//     timeDisplay( segmentBaseX+44, segmentBaseY, tempHours%10 , buff);
+//     }
+// // write minuts
+//     if(tempMinuts<=9){
+//         timeDisplay( segmentBaseX+100, segmentBaseY, 0 , buff);
+//         timeDisplay( segmentBaseX+144, segmentBaseY, tempMinuts , buff);
+//     }else if(tempMinuts==0){
+//         timeDisplay( segmentBaseX+100, segmentBaseY, 0 , buff);
+//         timeDisplay( segmentBaseX+144, segmentBaseY, 0 , buff);
+//     }else{ 
+//         timeDisplay( segmentBaseX+100, segmentBaseY, tempMinuts / 10 , buff);
+//         timeDisplay( segmentBaseX+144, segmentBaseY, tempMinuts % 10 , buff);
+//     }
+
+// // date 2024-08-08 day
+//     char tempFrame[17] ;
+//     snprintf(tempFrame, sizeof(tempFrame), "%d-%02d-%02d  %s",current_time.year,current_time.month,current_time.day,
+//     day_names[current_time.weekday]);
+
+//     // day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
+
+//     uint16_t len = 160- (pixleLen(2,&tempFrame)/2);//x start poss
+
+//     WriteString(2,len, 130,tempFrame,SEVENSEGMENT_COLOR,buff);
+
+// /*
+//     WriteString(2,5, 0,"abcdefghijklmnopqrstuvwxyz",buff);
+//     WriteString(2,5, 130,"ABCDEFGHIJKLMNOPQRSTUVWXYZ",buff);
+//     WriteString(2,5, 160,"1234567890",buff);
+// */
 
 }
 uint16_t pixleLen(uint8_t letSize, char *str){
@@ -691,9 +742,6 @@ void wrighSingle7segment(uint16_t x_offset, uint8_t y_offset, char c, camera_fb_
     
     if(c=='a'|| c=='g'||c=='d'){
 
-#define HEIGHT_32 6
-#define WIDTH_32 30
-
         // Get the bitmap data for the character
         const uint32_t *char_data = segment_table1[(uint8_t)c];
 
@@ -710,16 +758,12 @@ void wrighSingle7segment(uint16_t x_offset, uint8_t y_offset, char c, camera_fb_
                 // Get the pixel value from the character data
                 if (char_data[y] & (1 << (WIDTH_32-x))) {
                     // Draw white (pixel set)
-                    buff->buf[buff_index] = 0xF8;
-                    buff->buf[buff_index + 1] = 0x00;
+                    buff->buf[buff_index] = SEVENSEGMENT_COLOR>>8;
+                    buff->buf[buff_index + 1] = SEVENSEGMENT_COLOR & 0xff;
                 }
             }
         }
     }else{
-
-#define HEIGHT_8 26
-#define WIDTH_8 8
-
         // Get the bitmap data for the character
         const uint8_t *char_data = segment_table2[(uint8_t)c];
         // Ensure the character fits within the buffer dimensions
@@ -734,8 +778,8 @@ void wrighSingle7segment(uint16_t x_offset, uint8_t y_offset, char c, camera_fb_
                 // Get the pixel value from the character data
                 if (char_data[y] & (1 << (WIDTH_8-x))) {
                     // Draw white (pixel set)
-                    buff->buf[buff_index] = 0xF8;
-                    buff->buf[buff_index + 1] = 0x00;
+                    buff->buf[buff_index] = SEVENSEGMENT_COLOR>>8;
+                    buff->buf[buff_index + 1] = SEVENSEGMENT_COLOR & 0xff;
                 }
             }
         }

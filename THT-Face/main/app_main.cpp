@@ -42,6 +42,10 @@ static QueueHandle_t xQueueLCDFrame = NULL;
 static QueueHandle_t xQueueEventLogic = NULL;
 static QueueHandle_t xQueueCloud = NULL;
 
+static xQueueHandle gpio_evt_queue = NULL;
+
+ledc_channel_config_t ledc_channel;
+
 void PwmInt( ledc_channel_config_t *ledc_channel ,gpio_num_t pinNo );
 void interruptInt(void);
 void gpioInt(void);
@@ -53,8 +57,6 @@ void list_all_tasks(void);
 void enter_light_sleep(void);
 
 
-void wake_up_core1() ;
-void disable_core1();
 
 TaskHandle_t cameraTaskHandler = NULL;
 TaskHandle_t eventTaskHandler = NULL;
@@ -109,11 +111,9 @@ void app_main()
     //-----------time int here-------------------------------------
     RtcInit();
     //--------------------------------------------------------------
-    // gpioInt();
-
     //-------------------------
     // Declare LEDC timer and channel configuration structs
-    ledc_channel_config_t ledc_channel;
+    // ledc_channel_config_t ledc_channel;
     // Initialize PWM using the PwmInt function
     PwmInt(&ledc_channel,(gpio_num_t)LCE_BL);
 
@@ -138,11 +138,10 @@ void app_main()
             ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, BRIGHTNESS(SLEEP_LCD));//8192
             ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
             deinitBlufi();
-            vTaskDelay(pdMS_TO_TICKS(3000));
+            vTaskDelay(pdMS_TO_TICKS(2000));
             reduce_cpu_frequency();
-            vTaskDelay(pdMS_TO_TICKS(3000));
+            vTaskDelay(pdMS_TO_TICKS(2000));
             // enter_light_sleep();  // Enter light sleep mode
-
 
         }
 
@@ -156,11 +155,11 @@ void app_main()
                 ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);  
                 printf("\nsleep disable");
             }
+
         }else reconnect();
 
     }
 }
-
 
 void gpioInt(void){
 
@@ -215,7 +214,7 @@ void PwmInt( ledc_channel_config_t *ledc_channel ,gpio_num_t pinNo ) {
     // Optional: Use fading
     ledc_fade_func_install(0);  // Install the fade function
     ledc_set_fade_time_and_start(ledc_channel->speed_mode, ledc_channel->channel, 8192, 1000, LEDC_FADE_NO_WAIT);
-    for (int duty = 8192; duty >= 0; duty -= 32) {
+    for (int duty = 8192; duty >= 0; duty -= 64) {
         ledc_set_duty(ledc_channel->speed_mode, ledc_channel->channel, duty);
         ledc_update_duty(ledc_channel->speed_mode, ledc_channel->channel);
         vTaskDelay(100 / portTICK_PERIOD_MS);     // Delay to see the dimming effect
@@ -258,7 +257,7 @@ void reduce_cpu_frequency() {
 
 
     // ESP_LOGE("Frequency", "delete all task");
-    esp_pm_dump_locks(stdout);
+    // esp_pm_dump_locks(stdout);
 
     esp_pm_config_esp32s3_t pm_config = {
         .max_freq_mhz = MIN_FREQ,   // Set both min and max to 80 MHz to reduce power
@@ -274,10 +273,9 @@ void reduce_cpu_frequency() {
         // ESP_LOGE("Frequency", "Failed to configure CPU frequency: %s", esp_err_to_name(ret));
     }    
 
-
     if (lcdTaskHandler) vTaskResume(lcdTaskHandler);
 
-    esp_pm_dump_locks(stdout);
+    // esp_pm_dump_locks(stdout);
 
     int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
     ESP_LOGI("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
@@ -290,6 +288,7 @@ void restore_cpu_frequency() {
 
 
     if (lcdTaskHandler) vTaskSuspend(lcdTaskHandler);
+
 
     esp_pm_config_esp32s3_t pm_config = {
         .max_freq_mhz = MAX_FREQ,  // Restore max frequency
@@ -312,35 +311,11 @@ void restore_cpu_frequency() {
     if (recognitioneventTaskHandler) vTaskResume(recognitioneventTaskHandler);
     if (lcdTaskHandler) vTaskResume(lcdTaskHandler);
     if (cloudeTaskHandler) vTaskResume(cloudeTaskHandler);
-}
-
-
-void IRAM_ATTR gpio_isr_handler(void* arg) {
-    int gpio_num = (int)arg;
-    // Handle the interrupt (e.g., toggle a flag or send an event)
-    // ESP_LOGI("GPIO_ISR", "Interrupt on GPIO %d", gpio_num);
-}
-void interruptInt(void){
-
-    // Configure the GPIO
-    gpio_config_t io_conf = {
-        .pin_bit_mask = (1ULL << GPIO_WAKEUP_BUTTON), // Pin mask
-        .mode = GPIO_MODE_INPUT,                  // Set as input
-        .pull_up_en = GPIO_PULLUP_ENABLE,         // Enable pull-up resistor
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,    // Disable pull-down resistor
-        .intr_type = GPIO_INTR_POSEDGE            // Set interrupt on rising edge
-    };
-    gpio_config(&io_conf);
-
-    // Install GPIO ISR service
-    gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
-
-    // Attach interrupt handler for the specified pin
-    gpio_isr_handler_add(GPIO_WAKEUP_BUTTON, gpio_isr_handler, (void*) GPIO_WAKEUP_BUTTON);
-
 
 }
 
+
+// Function to enter light sleep mode--------------------------------------
 
 void configure_wakeup() {
     // Configure the button GPIO for input with pull-up, active-low
@@ -351,9 +326,6 @@ void configure_wakeup() {
     // Enable external wakeup on GPIO_WAKEUP_BUTTON, active low
     esp_sleep_enable_ext0_wakeup(GPIO_WAKEUP_BUTTON, 0);  // Wake on falling edge (button press)
 }
-
-
-// Function to enter light sleep mode
 void enter_light_sleep(void) {
 
     configure_wakeup();
@@ -370,7 +342,7 @@ void enter_light_sleep(void) {
     ESP_LOGI("Sleep", "Woke up from light sleep!");
     sleepEnable = WAKEUP;  // Disable sleep mode after waking up
 }
-
+//------------------------------------------------------------------------------
 
 // void list_all_tasks(void) {
 //     // Get the number of tasks currently running

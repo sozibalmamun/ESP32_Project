@@ -63,8 +63,6 @@ static void task_process_handler(void *arg)
         if (xQueueReceive(xQueueFrameI, &frame, queueTimeout))
         {
 
-            // sleepEnable=WAKEUP;// IN FUTURE ITS CONTROL BY ADC PIN
-
 
             editDisplayBuff(&frame);
             g_lcd.draw_bitmap(0, 0, frame->width, frame->height, (uint16_t *)frame->buf);
@@ -86,8 +84,8 @@ static void task_process_handler(void *arg)
         {
             // If no frame received, log and delay
             vTaskDelay(xDelay);  // Delay task execution if no frame was received
-            
-            if(sleepEnable){
+
+            if(sleepEnable!=WAKEUP){
 
                 // printf("dsp sleep\n");
                 time_library_time_t current_time;

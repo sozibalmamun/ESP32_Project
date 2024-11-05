@@ -62,7 +62,7 @@ void register_camera(const pixformat_t pixel_fromat,
     config.xclk_freq_hz = XCLK_FREQ_HZ;
     config.pixel_format = pixel_fromat;
     config.frame_size = frame_size;
-    config.jpeg_quality = 1;// default: 12 camera quality range 0-63
+    config.jpeg_quality = 12;// default: 12 camera quality range 0-63
     config.fb_count = fb_count;
     config.fb_location = CAMERA_FB_IN_PSRAM;
     config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
@@ -77,12 +77,20 @@ void register_camera(const pixformat_t pixel_fromat,
 
     sensor_t *s = esp_camera_sensor_get();
 
-    // s->set_vflip(s, 1); //flip it back//change by sozib due to camera flip  int value was 0 for 2640 camera module
-    
-    s->set_vflip(s, 0); //flip it back//change by sozib due to camera flip  int value was 0 for 5640 camera module
+    // s->set_vflip(s, 1);      //  flip it back//change by sozib due to camera flip  int value was 1 for 2640 camera module
+    s->set_vflip(s, 0);         //  flip it back//change by sozib due to camera flip  int value was 0 for 5640 camera module
+    s->set_hmirror(s, 1);       //  miror camera change by sozib 
+    s->set_contrast(s, -1);     //  contrast    -2 - 2
+    s->set_brightness(s,-2);    //  brightness  -2 - 2
+    s->set_saturation(s, 2);    //  saturation  -2 - 2
+    s->set_sharpness(s, 2);     //  sharpness   -2 - 2
+    s->set_wb_mode(s, 2);       //  white balance mode    0 - 4
+    s->set_whitebal(s, 1);
+    s->set_wpc(s, 1);
+    s->set_bpc(s, 1);
 
-    s->set_hmirror(s, 1);//  miror camera change by sozib 
-    
+
+
     //initial sensors are flipped vertically and colors are a bit saturated
     if (s->id.PID == OV3660_PID)
     {

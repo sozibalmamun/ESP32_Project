@@ -192,7 +192,7 @@ static void initialise_wifi(void)
 
     // Create event loop if not created already
     if (esp_event_loop_create_default() != ESP_OK) {
-        ESP_LOGW(TAG, "Event loop already created.");
+        // ESP_LOGW(TAG, "Event loop already created.");
     }
 
     sta_netif = esp_netif_create_default_wifi_sta();

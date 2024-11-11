@@ -73,13 +73,19 @@ void editDisplayBuff(camera_fb_t **buff){
             // snprintf(tempFrame, sizeof(tempFrame), "%09llu", generate_unique_id());//uniqueId
             // createQrcode(tempFrame , *buff);
             // writeSn(*buff);
-
             // uint64_t Id= generate_unique_id();
+
             char tempFrame[14] ;
             snprintf(tempFrame, sizeof(tempFrame), "%s%9llu",DEVICE_VERSION_ID, generate_unique_id());//uniqueId
             createQrcode(tempFrame , *buff);
             writeSn(*buff, generate_unique_id());
-            if(dataAvailable)icnPrint(NETWORK_ICON_POSS_X-26, NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,RED ,*buff);
+            if(dataAvailable){
+                icnPrint(NETWORK_ICON_POSS_X-26, NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,RED ,*buff);
+                icnPrint(NETWORK_ICON_POSS_X-38, NETWORK_ICON_POSS_Y, WIFI_WIDTH, WIFI_HEIGHT,&betteryIcn,WHITE ,*buff);
+
+            }else{
+                icnPrint(NETWORK_ICON_POSS_X-23, NETWORK_ICON_POSS_Y, WIFI_WIDTH, WIFI_HEIGHT,&betteryIcn,WHITE ,*buff);
+            }
 
         
         }else 
@@ -107,7 +113,19 @@ void editDisplayBuff(camera_fb_t **buff){
 
             icnPrint(NETWORK_ICON_POSS_X, NETWORK_ICON_POSS_Y, WIFI_WIDTH, WIFI_HEIGHT,&wifiIcn,WHITE ,*buff);
             
-            if(dataAvailable)icnPrint(NETWORK_ICON_POSS_X-13, NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,RED ,*buff);
+            if(dataAvailable){
+                icnPrint(NETWORK_ICON_POSS_X-13, NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,RED ,*buff);
+                icnPrint(NETWORK_ICON_POSS_X-25, NETWORK_ICON_POSS_Y, WIFI_WIDTH, WIFI_HEIGHT,&betteryIcn,WHITE ,*buff);
+
+            }else{
+
+
+                    // char tempFrame[13] ;
+                    // snprintf(tempFrame, sizeof(tempFrame), "%d%s",percentage,"%");
+                    // WriteString(0, 160- (pixleLen(0,&tempFrame)/2) ,151,tempFrame,0x0000,*buff);
+
+                icnPrint(NETWORK_ICON_POSS_X-10, NETWORK_ICON_POSS_Y, WIFI_WIDTH, WIFI_HEIGHT,&betteryIcn,WHITE ,*buff);
+            }
 
             // if(networkStatus==STOMP_CONNECTED){//WSS_CONNECTED
             if(networkStatus==WSS_CONNECTED){//WSS_CONNECTED
@@ -118,6 +136,10 @@ void editDisplayBuff(camera_fb_t **buff){
             animationTime = xTaskGetTickCount();
         }
         writedateTime(*buff , current_time, clockType);
+
+
+
+
 
 
     // }

@@ -87,7 +87,6 @@ void app_main()
     xQueueEventLogic = xQueueCreate(1, sizeof(int *));
     xQueueCloud = xQueueCreate(3, sizeof(int *));
 
-
     if (xQueueAIFrame == NULL || xQueueLCDFrame == NULL || xQueueEventLogic == NULL) {
         // ESP_LOGE(TAG, "Failed to create queues");
         esp_restart();
@@ -141,8 +140,6 @@ void app_main()
             vTaskDelay(pdMS_TO_TICKS(2000));
             reduce_cpu_frequency();
             vTaskDelay(pdMS_TO_TICKS(2000));
-            // enter_light_sleep();  // Enter light sleep mode
-
         }
 
         if(sleepEnable == SLEEP){
@@ -154,6 +151,7 @@ void app_main()
                 ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel,BRIGHTNESS(WAKE_LCD));
                 ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);  
                 printf("\nsleep disable");
+
             }
 
         }else reconnect();
@@ -225,9 +223,12 @@ void PwmInt( ledc_channel_config_t *ledc_channel ,gpio_num_t pinNo ) {
 
 void reInt(void){
 
-    bluFiStart();
     gpio_set_level((gpio_num_t)CAM_CONTROL, 0);
+    RtcInit();
     sleepEnable = WAKEUP;
+    bluFiStart();
+
+
 }
 
 
@@ -334,11 +335,9 @@ void enter_light_sleep(void) {
     gpio_set_level((gpio_num_t)CAM_CONTROL, 1);  // Ensure peripherals are powered off or set to sleep state
 
     // Set the wake-up source to external (GPIO_BOOT, active low)
-    esp_sleep_enable_ext0_wakeup(GPIO_WAKEUP_BUTTON, 0);  // Wake when GPIO_BOOT goes low
-
+    // esp_sleep_enable_timer_wakeup(1000000 * 120); // Wake up every 120 seconds (in microseconds)
     // Enter light sleep
     esp_light_sleep_start();
-
     ESP_LOGI("Sleep", "Woke up from light sleep!");
     sleepEnable = WAKEUP;  // Disable sleep mode after waking up
 }

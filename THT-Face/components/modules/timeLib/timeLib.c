@@ -327,7 +327,7 @@ void RtcInit(void) {
 	gpioMode(1, DS1302_CE_PIN);   // CE (chip select) pin as output
     gpioMode(1, DS1302_IO_PIN);   // IO (data) pin as output (initially)
     gpioMode(1, DS1302_SCLK_PIN); // SCLK (clock) pin as output
-    vTaskDelay(100); // Wait for 1 second
+    // vTaskDelay(10); // Wait for 1 second
 
     // Disable write protect
     RTCStart();
@@ -342,11 +342,11 @@ void RtcInit(void) {
     uint8_t ramData2 = RTCReadByte();
     RTCStop();
 
-    printf("ramData1 %x  ramData2 %x \n", ramData1,ramData2);
+    // printf("ramData1 %x  ramData2 %x \n", ramData1,ramData2);
 
     if (ramData1 != 'O' || ramData2 != 'K') {
 
-        // printf("RTC not configured.\n");
+        printf("RTC not configured.\n");
 
 		RTCStart();
 		RTCWriteByte(RTC_WR_TCS_ADDR);

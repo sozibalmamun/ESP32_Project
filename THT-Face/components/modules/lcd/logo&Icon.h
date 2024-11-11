@@ -206,9 +206,20 @@ const DATA_FLASH uint16_t cloudePending[]={
 
 };
 
+const DATA_FLASH uint16_t betteryIcn[] = {
 
-
-
+0b0001110000000000,
+0b0111111100000000,
+0b0100000100000000,
+0b0100000100000000,
+0b0100000100000000,
+0b0100000100000000,
+0b0100000100000000,
+0b0100000100000000,
+0b0100000100000000,
+0b0100000100000000,
+0b0111111100000000,
+};
 
 
 const DATA_FLASH uint16_t secondicon[]={
@@ -3243,9 +3254,14 @@ const uint16_t *font_table_2[] = {
     // ['x'] = x_s2,
     // ['y'] = y_s2,
     // ['z'] = z_s2
-
-
 };
+
+
+
+
+
+
+
 
 
 #ifdef __cplusplus

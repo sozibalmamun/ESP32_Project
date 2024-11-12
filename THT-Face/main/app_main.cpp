@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <math.h>
 #include "who_camera.h"
 #include "who_human_face_recognition.hpp"
 #include "who_lcd.h"
@@ -33,6 +35,16 @@
 #include "esp_clk.h"
 #include "driver/gpio.h"
 
+// ADC
+#include "driver/adc.h"
+#include "esp_adc_cal.h"
+
+
+#define ADC_CHANNEL ADC2_CHANNEL_8   // GPIO19 for ADC2
+#define DEFAULT_VREF 1100           // Default reference voltage in mV (you may need to adjust this)
+#define NO_OF_SAMPLES 64            // Multisampling to improve accuracy
+
+
 
 
 static const char *TAG = "app_main";
@@ -45,6 +57,8 @@ static QueueHandle_t xQueueCloud = NULL;
 static xQueueHandle gpio_evt_queue = NULL;
 
 ledc_channel_config_t ledc_channel;
+// ADC calibration characteristics
+esp_adc_cal_characteristics_t *adc_chars;
 
 void PwmInt( ledc_channel_config_t *ledc_channel ,gpio_num_t pinNo );
 void interruptInt(void);
@@ -55,7 +69,9 @@ void restore_cpu_frequency();
 void configure_dynamic_frequency();
 void list_all_tasks(void);
 void enter_light_sleep(void);
-
+void init_adc();
+uint32_t get_battery_voltage();
+extern uint32_t batVoltage;
 
 
 TaskHandle_t cameraTaskHandler = NULL;
@@ -110,18 +126,21 @@ void app_main()
     //-----------time int here-------------------------------------
     RtcInit();
     //--------------------------------------------------------------
+    init_adc();
     //-------------------------
     // Declare LEDC timer and channel configuration structs
     // ledc_channel_config_t ledc_channel;
     // Initialize PWM using the PwmInt function
     PwmInt(&ledc_channel,(gpio_num_t)LCE_BL);
-
     ESP_LOGI(TAG, "app_main finished");
 
     while(true){
 
+        batVoltage = get_battery_voltage();
+        printf("Battery Voltage: %d mV\n", batVoltage);
+        vTaskDelay(pdMS_TO_TICKS(1000));  // Update every 1 second
 
-
+      
         // // Log or print the CPU frequency
         // int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
         // ESP_LOGI("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
@@ -129,32 +148,32 @@ void app_main()
         // list_all_tasks();
 
 
-        if(xTaskGetTickCount()-sleepTimeOut>3000 && /*xTaskGetTickCount()-sleepTimeOut< 3500 &&*/ sleepEnable == WAKEUP){
+        // if(xTaskGetTickCount()-sleepTimeOut>3000 && /*xTaskGetTickCount()-sleepTimeOut< 3500 &&*/ sleepEnable == WAKEUP){
 
-            sleepEnable=SLEEP;
-            printf("\nsleepEnable");
-            gpio_set_level((gpio_num_t)CAM_CONTROL, 1);
-            ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, BRIGHTNESS(SLEEP_LCD));//8192
-            ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
-            deinitBlufi();
-            vTaskDelay(pdMS_TO_TICKS(2000));
-            reduce_cpu_frequency();
-            vTaskDelay(pdMS_TO_TICKS(2000));
-        }
+        //     sleepEnable=SLEEP;
+        //     printf("\nsleepEnable");
+        //     gpio_set_level((gpio_num_t)CAM_CONTROL, 1);
+        //     ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, BRIGHTNESS(SLEEP_LCD));//8192
+        //     ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
+        //     deinitBlufi();
+        //     vTaskDelay(pdMS_TO_TICKS(2000));
+        //     reduce_cpu_frequency();
+        //     vTaskDelay(pdMS_TO_TICKS(2000));
+        // }
 
-        if(sleepEnable == SLEEP){
-            // enter_light_sleep();  // Enter light sleep mode
-            if( gpio_get_level(GPIO_WAKEUP_BUTTON)==0){
-                sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
-                restore_cpu_frequency();
-                reInt();
-                ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel,BRIGHTNESS(WAKE_LCD));
-                ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);  
-                printf("\nsleep disable");
+        // if(sleepEnable == SLEEP){
+        //     // enter_light_sleep();  // Enter light sleep mode
+        //     if( gpio_get_level(GPIO_WAKEUP_BUTTON)==0){
+        //         sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
+        //         restore_cpu_frequency();
+        //         reInt();
+        //         ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel,BRIGHTNESS(WAKE_LCD));
+        //         ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);  
+        //         printf("\nsleep disable");
 
-            }
+        //     }
 
-        }else reconnect();
+        // }else reconnect();
 
     }
 }
@@ -180,6 +199,9 @@ void gpioInt(void){
     gpio_config(&io_conf);
 
 }
+
+
+
 
 void PwmInt( ledc_channel_config_t *ledc_channel ,gpio_num_t pinNo ) {
 
@@ -342,6 +364,30 @@ void enter_light_sleep(void) {
     sleepEnable = WAKEUP;  // Disable sleep mode after waking up
 }
 //------------------------------------------------------------------------------
+
+
+void init_adc() {
+    // Configure ADC width and attenuation for ADC2
+    adc2_config_channel_atten(ADC_CHANNEL, ADC_ATTEN_DB_11);  // 0-3.6V range
+    adc_chars = (esp_adc_cal_characteristics_t*) calloc(1, sizeof(esp_adc_cal_characteristics_t));
+    esp_adc_cal_characterize(ADC_UNIT_2, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars);
+}
+
+
+// Function to read ADC and calculate voltage
+uint32_t get_battery_voltage() {
+    uint32_t adc_reading = 0;
+    int raw;
+    for (int i = 0; i < NO_OF_SAMPLES; i++) {
+        // Read ADC2 channel (this call returns the raw value directly)
+        if (adc2_get_raw(ADC_CHANNEL, ADC_WIDTH_BIT_12, &raw) == ESP_OK) {
+            adc_reading += raw;
+        }
+    }
+    adc_reading /= NO_OF_SAMPLES;
+    return esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
+}
+
 
 // void list_all_tasks(void) {
 //     // Get the number of tasks currently running

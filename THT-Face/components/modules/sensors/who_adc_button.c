@@ -119,3 +119,6 @@ void register_adc_button(button_adc_config_t *buttons_ptr, int button_num, const
     }
     xTaskCreatePinnedToCore(adc_button_task, "adc_button_scan_task", 3 * 1024, NULL, 5, NULL, 0);
 }
+
+
+

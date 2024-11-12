@@ -3,6 +3,12 @@
 // #define     TAG             "Wss"
 // #define     TAGSTOMP        "STOMP_CLIENT"
 
+// ADC--------------
+// #define ADC_CHANNEL ADC_CHANNEL_2   // GPIO19 for ADC1
+// #define DEFAULT_VREF 1100           // Default reference voltage in mV (you may need to adjust this)
+// #define NO_OF_SAMPLES 64            // Multisampling to improve accuracy
+
+
 
 //------------------------------------------------------------------
 

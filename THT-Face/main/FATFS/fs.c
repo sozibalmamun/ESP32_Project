@@ -957,7 +957,7 @@ bool pendingData() {
     // Iterate through all entries in ATTENDANCE_DIR
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_REG) {  // Only process regular files
-            ESP_LOGI("Attendance", "File available: %s", entry->d_name);
+            // ESP_LOGI("Attendance", "File available: %s", entry->d_name);
             dAvailable = true;
         }
     }
@@ -993,7 +993,7 @@ bool pendingData() {
 
     // Check files in ATTENDANCE_DIR
     if ((dir = opendir(SYNC_DIR)) == NULL) {
-        ESP_LOGE("SYNC_DIR", "Failed to open directory: %s", SYNC_DIR);
+        // ESP_LOGE("SYNC_DIR", "Failed to open directory: %s", SYNC_DIR);
         return false;
     }
 

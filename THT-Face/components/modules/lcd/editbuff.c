@@ -7,7 +7,7 @@
 #include "esp_log.h"
 
 
-
+extern uint32_t batVoltage=0;
 uint8_t sleepEnable=WAKEUP;
 volatile TickType_t sleepTimeOut=0; 
 
@@ -79,21 +79,11 @@ void editDisplayBuff(camera_fb_t **buff){
             snprintf(tempFrame, sizeof(tempFrame), "%s%9llu",DEVICE_VERSION_ID, generate_unique_id());//uniqueId
             createQrcode(tempFrame , *buff);
             writeSn(*buff, generate_unique_id());
-            if(dataAvailable){
-                icnPrint(NETWORK_ICON_POSS_X-26, NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,RED ,*buff);
-                icnPrint(NETWORK_ICON_POSS_X-38, NETWORK_ICON_POSS_Y, WIFI_WIDTH, WIFI_HEIGHT,&betteryIcn,WHITE ,*buff);
 
-            }else{
-                icnPrint(NETWORK_ICON_POSS_X-23, NETWORK_ICON_POSS_Y, WIFI_WIDTH, WIFI_HEIGHT,&betteryIcn,WHITE ,*buff);
-            }
-
-        
         }else 
         {
 
-            // if(networkStatus==STOMP_CONNECTED && key_state== KEY_IDLE ){
             if(networkStatus==WSS_CONNECTED && key_state== KEY_IDLE ){
-
 
                 if(percentage>2){
                     
@@ -113,32 +103,29 @@ void editDisplayBuff(camera_fb_t **buff){
 
             icnPrint(NETWORK_ICON_POSS_X, NETWORK_ICON_POSS_Y, WIFI_WIDTH, WIFI_HEIGHT,&wifiIcn,WHITE ,*buff);
             
-            if(dataAvailable){
-                icnPrint(NETWORK_ICON_POSS_X-13, NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,RED ,*buff);
-                icnPrint(NETWORK_ICON_POSS_X-25, NETWORK_ICON_POSS_Y, WIFI_WIDTH, WIFI_HEIGHT,&betteryIcn,WHITE ,*buff);
-
-            }else{
-
-
-                    // char tempFrame[13] ;
-                    // snprintf(tempFrame, sizeof(tempFrame), "%d%s",percentage,"%");
-                    // WriteString(0, 160- (pixleLen(0,&tempFrame)/2) ,151,tempFrame,0x0000,*buff);
-
-                icnPrint(NETWORK_ICON_POSS_X-10, NETWORK_ICON_POSS_Y, WIFI_WIDTH, WIFI_HEIGHT,&betteryIcn,WHITE ,*buff);
-            }
-
-            // if(networkStatus==STOMP_CONNECTED){//WSS_CONNECTED
             if(networkStatus==WSS_CONNECTED){//WSS_CONNECTED
-                icnPrint(NETWORK_ICON_POSS_X+14,NETWORK_ICON_POSS_Y+5,7,7 ,&connectedIcon,GREEN,*buff);//+8
+                icnPrint(NETWORK_ICON_POSS_X+11,NETWORK_ICON_POSS_Y+5,7,7 ,&connectedIcon,GREEN,*buff);//+8
             }else{
-                icnPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+6,2,7,&disconnectedIcon,RED,*buff);//+9
+                icnPrint(NETWORK_ICON_POSS_X+13,NETWORK_ICON_POSS_Y+7,2,7,&disconnectedIcon,RED,*buff);//+9
             }
             animationTime = xTaskGetTickCount();
         }
         writedateTime(*buff , current_time, clockType);
 
+        uint8_t bBar = calculate_battery_level(batVoltage);
+
+        icnPrint(NETWORK_ICON_POSS_X+19, NETWORK_ICON_POSS_Y+9-bBar, BATTERY_WIDTH, bBar-1,&betterybar, bBar<=2?RED:WHITE ,*buff);
+        icnPrint(NETWORK_ICON_POSS_X+20, NETWORK_ICON_POSS_Y, BATTERY_WIDTH, BATTERY_HEIGHT,&betteryIcn,bBar<2?RED:WHITE ,*buff);
 
 
+
+
+
+
+        if(dataAvailable ){
+        
+            icnPrint(networkStatus==0?NETWORK_ICON_POSS_X-26: NETWORK_ICON_POSS_X-15 , NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,RED ,*buff);
+        }
 
 
 
@@ -425,7 +412,7 @@ void writeSn(camera_fb_t *buff ,uint64_t id){
 
     uint16_t xoffset = (buff->width-(pixleLen(0,&tempFrame )))-6;   //x start poss
 
-    WriteString(0,xoffset, buff->height-(tablehight[0]+0),tempFrame,0xffff,buff);
+    WriteString(SN_LETTER,xoffset, buff->height-(tablehight[0]+0),tempFrame,0xffff,buff);
 }
 
 void writedateTime(camera_fb_t *buff ,time_library_time_t current_time,uint8_t clockType){
@@ -861,6 +848,27 @@ void drawImage_u16(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t h
     }
 }
 
+
+uint8_t calculate_battery_level(uint32_t voltage) {
+
+
+    if (voltage < 1500) return 0;  // Level 0 (below 1500 mV)
+
+    else if (voltage < 1600) return 1;  // Level 1
+
+    else if (voltage < 1700) return 2;  // Level 2
+
+    else if (voltage < 1800) return 3;  // Level 3
+
+    else if (voltage < 1900) return 4;  // Level 4
+
+    else if (voltage < 2000) return 5;  // Level 5
+
+    else if (voltage <= 2200) return 6;  // Level 6 (up to 2200 mV)
+
+    else return 0;  // Out of range, return Level 0
+
+}
 
 
 

@@ -8,7 +8,7 @@ set(src_dirs
                 camera
                 lcd
                 led
-                button
+                sensors
                 web
                 trace
                 imu
@@ -22,7 +22,7 @@ set(include_dirs
                     camera
                     lcd
                     led
-                    button
+                    sensors
                     web
                     trace
                     imu

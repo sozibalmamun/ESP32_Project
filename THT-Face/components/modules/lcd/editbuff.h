@@ -16,8 +16,7 @@ extern key_state_t key_state;
 extern uint8_t CPUBgflag;
 extern bool dataAvailable;
 extern bool dspTimeFormet;
-
-
+uint8_t calculate_battery_level(uint32_t voltage);
 
 
 

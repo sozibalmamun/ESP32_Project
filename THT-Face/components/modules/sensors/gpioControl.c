@@ -16,12 +16,27 @@ void gpioInt(void){
     gpio_set_level((gpio_num_t)CAM_CONTROL, 0);
 
     gpio_config_t io_conf = {
+        .intr_type = GPIO_INTR_DISABLE,
         .pin_bit_mask = (1ULL << GPIO_WAKEUP_BUTTON), // Pin mask
         .mode = GPIO_MODE_INPUT,                  // Set as input
         .pull_up_en = GPIO_PULLUP_ENABLE,         // Enable pull-up resistor
         .pull_down_en = GPIO_PULLDOWN_DISABLE     // Disable pull-down resistor
     };
     gpio_config(&io_conf);
+
+    io_conf.intr_type = GPIO_INTR_DISABLE;
+    io_conf.pin_bit_mask = (1ULL << BATTERY_CHARGE_STATE); // Pin mask
+    io_conf.mode = GPIO_MODE_INPUT;                  // Set as input
+    io_conf.pull_up_en = GPIO_PULLUP_ENABLE;         // Enable pull-up resistor
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;   // Disable pull-down resistor
+
+    gpio_config(&io_conf);
+    
+
+
+
+
+
 
 }
 

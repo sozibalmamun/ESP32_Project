@@ -117,7 +117,7 @@ void editDisplayBuff(camera_fb_t **buff){
         uint8_t tempBlvl = calculate_battery_level(batVoltage);
         if(xTaskGetTickCount()-animationTime> 150){
             animationTime = xTaskGetTickCount();
-            if(tempBlvl<=6 && true){
+            if(tempBlvl<=6 && CHARGING){
                 bBar++;
                 // printf("bBar %d\n",bBar);
             }else bBar=0;

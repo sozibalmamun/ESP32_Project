@@ -70,7 +70,7 @@ void app_main()
 
         if(sleepEnable == SLEEP){
             // enter_light_sleep();  // Enter light sleep mode
-            if( gpio_get_level(GPIO_WAKEUP_BUTTON)==0){
+            if( WAKE  || CHARGING ){
                 sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
                 restore_cpu_frequency();
                 reInt();

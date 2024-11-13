@@ -59,18 +59,6 @@
 #define WAKEUP  0x00
 #define RE_INIT 0x02
 //-----------------------
-//Sleep config---------------------------------------------------
-#define MAX_FREQ   240    // Maximum frequency
-#define MIN_FREQ   8
-#define GPIO_WAKEUP_BUTTON GPIO_NUM_0
-#define CAM_CONTROL GPIO_NUM_3 
-#define LCE_BL GPIO_NUM_14
-#define ESP_INTR_FLAG_DEFAULT 0
-#define SLEEP_LCD 5
-#define WAKE_LCD 70
-#define MIN_BRIGHTNESS (8191)
-#define BRIGHTNESS(x)  MIN_BRIGHTNESS-(((MIN_BRIGHTNESS/100)*x))
-//-------------sleep config file end------------------------------
 
 //------7seegment-------------------------------------------------
 // size in H segment

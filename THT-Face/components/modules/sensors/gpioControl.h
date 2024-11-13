@@ -39,6 +39,28 @@ extern "C"
     #define DEFAULT_VREF 1100           // Default reference voltage in mV (you may need to adjust this)
     #define NO_OF_SAMPLES 64            // Multisampling to improve accuracy
 
+
+    //Sleep config---------------------------------------------------
+    #define MAX_FREQ   240    // Maximum frequency
+    #define MIN_FREQ   8
+    #define GPIO_WAKEUP_BUTTON GPIO_NUM_0
+    #define BATTERY_CHARGE_STATE GPIO_NUM_20
+
+    #define CAM_CONTROL GPIO_NUM_3 
+    #define LCE_BL GPIO_NUM_14
+    #define ESP_INTR_FLAG_DEFAULT 0
+    #define SLEEP_LCD 5
+    #define WAKE_LCD 70
+    #define MIN_BRIGHTNESS (8191)
+    #define BRIGHTNESS(x)  MIN_BRIGHTNESS-(((MIN_BRIGHTNESS/100)*x))
+
+    #define WAKE (gpio_get_level(GPIO_WAKEUP_BUTTON)==0)
+    #define CHARGING (gpio_get_level(BATTERY_CHARGE_STATE)==0)
+    //-------------sleep config file end------------------------------
+
+
+
+
     ledc_channel_config_t ledc_channel;
     // ADC calibration characteristics
     esp_adc_cal_characteristics_t *adc_chars;

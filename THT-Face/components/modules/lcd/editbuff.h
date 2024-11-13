@@ -6,6 +6,7 @@
 #include "handleQrCode.h"
 #include "timeLib.h"
 #include "who_button.h"
+#include "gpioControl.h"
 
 
 extern qrcode_t qrInfo;
@@ -17,8 +18,6 @@ extern uint8_t CPUBgflag;
 extern bool dataAvailable;
 extern bool dspTimeFormet;
 uint8_t calculate_battery_level(uint32_t voltage);
-
-
 
 
 #ifdef __cplusplus

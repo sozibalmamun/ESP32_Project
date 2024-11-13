@@ -70,6 +70,7 @@ void app_main()
         if(sleepEnable == SLEEP){
             // enter_light_sleep();  // Enter light sleep mode
             if( WAKE_STATE ){
+
                 sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
                 restore_cpu_frequency();
                 reInt();
@@ -80,10 +81,9 @@ void app_main()
             else plugIn(false);
 
         }else {
-
             reconnect();
             readBatteryVoltage();
-            vTaskDelay(pdMS_TO_TICKS(1000));  // Update every 1 second
+            vTaskDelay(pdMS_TO_TICKS(100));  // Update every 1 second
 
         }
 

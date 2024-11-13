@@ -14,7 +14,7 @@ static scr_info_t g_lcd_info;
 static QueueHandle_t xQueueFrameI = NULL;
 static QueueHandle_t xQueueFrameO = NULL;
 static bool gReturnFB = true;
-extern TaskHandle_t lcdTaskHandler;
+TaskHandle_t lcdTaskHandler=NULL;
 
 
 // static void task_process_handler(void *arg)

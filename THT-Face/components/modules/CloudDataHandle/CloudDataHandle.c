@@ -13,7 +13,7 @@ extern  volatile uint8_t CmdEvent;
 static QueueHandle_t xQueueCloudI = NULL;
 TaskHandle_t detectionFaceProcesingTaskHandler=NULL;
 
-extern TaskHandle_t cloudeTaskHandler;
+TaskHandle_t cloudeTaskHandler=NULL;
 
 static void cloudeHandlerTask(void *arg)
 {

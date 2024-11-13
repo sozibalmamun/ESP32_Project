@@ -343,10 +343,11 @@ void RtcInit(void) {
     RTCStop();
 
     // printf("ramData1 %x  ramData2 %x \n", ramData1,ramData2);
+    ESP_LOGW("RTC", "Ram 1: %x  Ram 2: %x \n",ramData1,ramData2 );
 
     if (ramData1 != 'O' || ramData2 != 'K') {
 
-        printf("RTC not configured.\n");
+        // printf("RTC not configured.\n");
 
 		RTCStart();
 		RTCWriteByte(RTC_WR_TCS_ADDR);

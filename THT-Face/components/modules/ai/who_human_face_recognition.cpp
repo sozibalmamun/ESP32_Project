@@ -61,8 +61,8 @@ static QueueHandle_t xQueueResult = NULL;
 //------------------------------------------------------------------------------------
 static QueueHandle_t xQueueCloud = NULL;
 extern TaskHandle_t detectionFaceProcesingTaskHandler; // Handle for the stompSenderTask
-extern TaskHandle_t recognitionTaskHandler;
-extern TaskHandle_t recognitioneventTaskHandler ;
+TaskHandle_t recognitionTaskHandler= NULL;
+TaskHandle_t recognitioneventTaskHandler= NULL;
 
 
 

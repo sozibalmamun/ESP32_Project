@@ -15,7 +15,7 @@ typedef enum {
 
 static QueueHandle_t xQueueEventO = NULL;
 key_state_t key_state ;    
-extern TaskHandle_t eventTaskHandler;
+TaskHandle_t eventTaskHandler= NULL;
 
 static recognizer_state_t recognizer_state;
 

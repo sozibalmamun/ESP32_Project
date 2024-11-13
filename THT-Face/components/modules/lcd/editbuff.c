@@ -7,9 +7,10 @@
 #include "esp_log.h"
 
 
-extern uint32_t batVoltage=0;
+extern uint32_t batVoltage;
 uint8_t sleepEnable=WAKEUP;
 volatile TickType_t sleepTimeOut=0; 
+uint8_t bBar=1;
 
 void editDisplayBuff(camera_fb_t **buff){
 
@@ -52,9 +53,10 @@ void editDisplayBuff(camera_fb_t **buff){
                 icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn,WHITE,*buff);//wifi 4
                 icnPrint(NETWORK_ICON_POSS_X+13,NETWORK_ICON_POSS_Y+8,7,7 ,&noWifiIcon,RED,*buff);//+9//
 
-            }else if(xTaskGetTickCount()-animationTime>= 150){
-                animationTime = xTaskGetTickCount();
             }
+            // else if(xTaskGetTickCount()-animationTime>= 150){
+            //     animationTime = xTaskGetTickCount();
+            // }
             // icnPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+6,7,7 ,&noWifiIcon,RED,*buff);//+9
 
             for (uint8_t y = qrInfo.yOfset-3; y < qrInfo.yOfset-3 + qrInfo.erase_size; y++)
@@ -108,24 +110,32 @@ void editDisplayBuff(camera_fb_t **buff){
             }else{
                 icnPrint(NETWORK_ICON_POSS_X+13,NETWORK_ICON_POSS_Y+7,2,7,&disconnectedIcon,RED,*buff);//+9
             }
-            animationTime = xTaskGetTickCount();
+            // animationTime = xTaskGetTickCount();
         }
         writedateTime(*buff , current_time, clockType);
-
-        uint8_t bBar = calculate_battery_level(batVoltage);
-
-        icnPrint(NETWORK_ICON_POSS_X+19, NETWORK_ICON_POSS_Y+9-bBar, BATTERY_WIDTH, bBar-1,&betterybar, bBar<=2?RED:WHITE ,*buff);
-        icnPrint(NETWORK_ICON_POSS_X+20, NETWORK_ICON_POSS_Y, BATTERY_WIDTH, BATTERY_HEIGHT,&betteryIcn,bBar<2?RED:WHITE ,*buff);
-
-
-
-
-
-
-        if(dataAvailable ){
-        
-            icnPrint(networkStatus==0?NETWORK_ICON_POSS_X-26: NETWORK_ICON_POSS_X-15 , NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,RED ,*buff);
+// charging level & animatio --------------------------------------------
+        uint8_t tempBlvl = calculate_battery_level(batVoltage);
+        if(xTaskGetTickCount()-animationTime> 150){
+            animationTime = xTaskGetTickCount();
+            if(tempBlvl<=6 && true){
+                bBar++;
+                // printf("bBar %d\n",bBar);
+            }else bBar=0;
         }
+        tempBlvl=tempBlvl+bBar;
+        if(tempBlvl>=6){
+            bBar=0;
+            tempBlvl=6;
+        }
+
+        icnPrint(NETWORK_ICON_POSS_X+19, NETWORK_ICON_POSS_Y+9-tempBlvl, BATTERY_WIDTH, tempBlvl-1,&betterybar, tempBlvl<=2?RED:WHITE ,*buff);
+        icnPrint(NETWORK_ICON_POSS_X+20, NETWORK_ICON_POSS_Y, BATTERY_WIDTH, BATTERY_HEIGHT,&betteryIcn,tempBlvl<2?RED:WHITE ,*buff);
+// ----------------------------------------------------------------------
+
+    if(dataAvailable ){
+    
+        icnPrint(networkStatus==0?NETWORK_ICON_POSS_X-26: NETWORK_ICON_POSS_X-15 , NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,RED ,*buff);
+    }
 
 
 

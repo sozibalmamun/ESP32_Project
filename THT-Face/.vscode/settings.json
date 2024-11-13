@@ -77,7 +77,8 @@
         "cinttypes": "cpp",
         "cloudevent.h": "c",
         "st7789.h": "c",
-        "wssclient.h": "c"
+        "wssclient.h": "c",
+        "gpiocontrol.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM6",

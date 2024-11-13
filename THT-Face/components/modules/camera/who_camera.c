@@ -4,9 +4,9 @@
 #include "esp_system.h"
 
 static const char *TAG = "camera_task";
-static QueueHandle_t xQueueFrameO = NULL;
 
-extern TaskHandle_t cameraTaskHandler;
+static QueueHandle_t xQueueFrameO = NULL;
+TaskHandle_t cameraTaskHandler=NULL;
 
 static void task_process_handler(void *arg)
 {

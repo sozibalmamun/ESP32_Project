@@ -1,6 +1,7 @@
 #include "gpioControl.h"
 
 uint32_t batVoltage;
+uint8_t chargeState=0;
 
 
 void gpioInt(void){
@@ -32,15 +33,9 @@ void gpioInt(void){
 
     gpio_config(&io_conf);
     
-
-
-
-
-
-
 }
 
-void PwmInt( ledc_channel_config_t *ledc_channel ,gpio_num_t pinNo ) {
+void PwmInt( gpio_num_t pinNo ) {
 
     ledc_timer_config_t ledc_timer = {
         .speed_mode      = LEDC_LOW_SPEED_MODE,   // Low-speed mode
@@ -51,32 +46,61 @@ void PwmInt( ledc_channel_config_t *ledc_channel ,gpio_num_t pinNo ) {
     };
     ledc_timer_config(&ledc_timer);
 
+    ledc_channel_config_t ledc_channel={
+
     // Configure LEDC channel for GPIO 14
-    ledc_channel->gpio_num   = pinNo;                // GPIO pin for PWM output
-    ledc_channel->speed_mode = LEDC_LOW_SPEED_MODE;        // Low-speed mode
-    ledc_channel->channel    = LEDC_CHANNEL_0;             // Channel: 0
-    ledc_channel->intr_type  = LEDC_INTR_DISABLE;          // Disable fade interrupt
-    ledc_channel->timer_sel  = LEDC_TIMER_0;               // Select Timer 0
-    ledc_channel->duty       = 0;                          // Initial duty cycle: 0
-    ledc_channel->hpoint     = 0;                          // Hpoint: 0
-    ledc_channel->flags.output_invert = 0;                 // Disable output inversion
+        .gpio_num   = pinNo,                // GPIO pin for PWM output
+        .speed_mode = LEDC_LOW_SPEED_MODE,        // Low-speed mode
+        .channel    = LEDC_CHANNEL_0,             // Channel: 0
+        .intr_type  = LEDC_INTR_DISABLE,          // Disable fade interrupt
+        .timer_sel  = LEDC_TIMER_0,               // Select Timer 0
+        .duty       = 0,                          // Initial duty cycle: 0
+        .hpoint     = 0,                          // Hpoint: 0
+        .flags.output_invert = 0                 // Disable output inversion
+    };
+
+    // // Configure LEDC channel for GPIO 14
+    // ledc_channel->gpio_num   = pinNo;                // GPIO pin for PWM output
+    // ledc_channel->speed_mode = LEDC_LOW_SPEED_MODE;        // Low-speed mode
+    // ledc_channel->channel    = LEDC_CHANNEL_0;             // Channel: 0
+    // ledc_channel->intr_type  = LEDC_INTR_DISABLE;          // Disable fade interrupt
+    // ledc_channel->timer_sel  = LEDC_TIMER_0;               // Select Timer 0
+    // ledc_channel->duty       = 0;                          // Initial duty cycle: 0
+    // ledc_channel->hpoint     = 0;                          // Hpoint: 0
+    // ledc_channel->flags.output_invert = 0;                 // Disable output inversion
 
     // Initialize the channel
-    ledc_channel_config(ledc_channel);
+    ledc_channel_config(&ledc_channel);
 
     // Set initial duty cycle to 50% (for 13-bit resolution, this is 4096 out of 8192)
-    ledc_set_duty(ledc_channel->speed_mode, ledc_channel->channel, 8192);
-    ledc_update_duty(ledc_channel->speed_mode, ledc_channel->channel);
+    ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, 8192);
+    ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
 
     // Optional: Use fading
     ledc_fade_func_install(0);  // Install the fade function
-    ledc_set_fade_time_and_start(ledc_channel->speed_mode, ledc_channel->channel, 8192, 1000, LEDC_FADE_NO_WAIT);
+    ledc_set_fade_time_and_start(ledc_channel.speed_mode, ledc_channel.channel, 8192, 1000, LEDC_FADE_NO_WAIT);
     for (int duty = 8192; duty >= 0; duty -= 64) {
-        ledc_set_duty(ledc_channel->speed_mode, ledc_channel->channel, duty);
-        ledc_update_duty(ledc_channel->speed_mode, ledc_channel->channel);
+        ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, duty);
+        ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
         vTaskDelay(100 / portTICK_PERIOD_MS);     // Delay to see the dimming effect
     }
 }
+
+
+void brightness(bool sleep){
+    
+    ledc_channel_config_t ledc_channel={
+
+        .speed_mode = LEDC_LOW_SPEED_MODE,        // Low-speed mode
+        .channel    = LEDC_CHANNEL_0,             // Channel: 0
+
+    };
+
+    ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, sleep?BRIGHTNESS(SLEEP_LCD): BRIGHTNESS(WAKE_LCD));//8192
+    ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
+
+}
+
 
 
 void configure_dynamic_frequency() {
@@ -214,6 +238,40 @@ void readBatteryVoltage() {
 
 }
 
+
+void plugIn(bool plugin){
+
+    if(plugin){
+        if(chargeState==CHARGE_IDLE || chargeState == UN_PLUGING){
+            sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
+            brightness(false);
+            // printf("charging high lcd\n");
+            chargeState=CHARGER_PLUGED;
+        }
+
+        if(sleepTimeOut+500 < xTaskGetTickCount() && chargeState == CHARGER_PLUGED ){
+            brightness(true);
+            // printf("charging low lcd\n");
+            chargeState=CHARGEING;
+        }
+    }else{
+
+        if(chargeState==CHARGEING || chargeState==CHARGER_PLUGED){
+            sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
+            // printf("CHARGER_UNPLUGING\n");
+            brightness(false);
+            chargeState=UN_PLUGING;
+        }
+
+        if(sleepTimeOut+500 < xTaskGetTickCount() && chargeState == UN_PLUGING ){
+            brightness(true);
+            // printf("CHARGER_UNPLUGING low lcd\n");
+            chargeState=CHARGE_IDLE;
+        }
+
+    }
+
+}
 
 
 // void list_all_tasks(void) {

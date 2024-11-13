@@ -7,7 +7,7 @@
 #include "esp_websocket_client.h"
 
 extern uint8_t sleepEnable;
-extern TickType_t sleepTimeOut; 
+extern volatile TickType_t sleepTimeOut; 
 esp_websocket_client_handle_t client;
 
 #ifdef __cplusplus

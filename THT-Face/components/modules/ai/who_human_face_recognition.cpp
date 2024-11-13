@@ -42,9 +42,11 @@ uint16_t personId;
 
 
 
+
+
 //---------------time flag--------------------
 extern  uint8_t sleepEnable;
-extern TickType_t sleepTimeOut; 
+extern volatile TickType_t sleepTimeOut; 
 TickType_t TimeOut,faceDetectTimeOut;
 TickType_t enrolTimeOut;
 

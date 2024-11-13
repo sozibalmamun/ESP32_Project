@@ -113,11 +113,13 @@ void editDisplayBuff(camera_fb_t **buff){
             // animationTime = xTaskGetTickCount();
         }
         writedateTime(*buff , current_time, clockType);
+
+
 // charging level & animatio --------------------------------------------
         uint8_t tempBlvl = calculate_battery_level(batVoltage);
         if(xTaskGetTickCount()-animationTime> 150){
             animationTime = xTaskGetTickCount();
-            if(tempBlvl<=6 && CHARGING){
+            if(tempBlvl<=6 && CHARGING_STATE){
                 bBar++;
                 // printf("bBar %d\n",bBar);
             }else bBar=0;
@@ -568,73 +570,31 @@ void sleepTimeDate(camera_fb_t *buff, time_library_time_t current_time){
 
         WriteString(2,len, 130,tempFrame,SEVENSEGMENT_COLOR,buff);
 
-/*
-        uint8_t tempXstart = segmentBaseX -2;
-        uint8_t tempYstart = segmentBaseY-2;
-        uint16_t tempXend   = 250;
-        uint8_t tempYend   = 160;
-
-        if(xTaskGetTickCount()-sleepTimeOut<4000){
-            tempXstart=0 ;
-            tempYstart=0;
-            tempXend=320;
-            tempYend=240;
-
-        }
-        for (int y = tempYstart; y < tempYend; y++)
-        {
-            for (int x = tempXstart; x < tempXend; x++)
-            {
-                int index = (y * buff->width + x) * 2; // Assuming 2 bytes per pixel
-                buff->buf[index] = 0;
-                buff->buf[index + 1] = 0;
-            }
-        }
-*/
     }
 
+// charging level & animatio --------------------------------------------
+        uint8_t tempBlvl = calculate_battery_level(batVoltage);
+        if(xTaskGetTickCount()-animationTime> 150){
+            animationTime = xTaskGetTickCount();
+            if(tempBlvl<=6 && CHARGING_STATE){
+                bBar++;
+                // printf("bBar %d\n",bBar);
+            }else bBar=0;
+        }
+        tempBlvl=tempBlvl+bBar;
+        if(tempBlvl>=6){
+            bBar=0;
+            tempBlvl=6;
+        }
 
-//     uint8_t tempHours= current_time.hour;
-//     uint8_t tempMinuts= current_time.minute;
-
-// // write hours
-//     if(tempHours<=9){
-//     timeDisplay( segmentBaseX, segmentBaseY, 0 , buff);
-//     timeDisplay( segmentBaseX+44, segmentBaseY, tempHours , buff);
-//     }else { 
-//     timeDisplay( segmentBaseX, segmentBaseY, tempHours/10 , buff);
-//     timeDisplay( segmentBaseX+44, segmentBaseY, tempHours%10 , buff);
-//     }
-// // write minuts
-//     if(tempMinuts<=9){
-//         timeDisplay( segmentBaseX+100, segmentBaseY, 0 , buff);
-//         timeDisplay( segmentBaseX+144, segmentBaseY, tempMinuts , buff);
-//     }else if(tempMinuts==0){
-//         timeDisplay( segmentBaseX+100, segmentBaseY, 0 , buff);
-//         timeDisplay( segmentBaseX+144, segmentBaseY, 0 , buff);
-//     }else{ 
-//         timeDisplay( segmentBaseX+100, segmentBaseY, tempMinuts / 10 , buff);
-//         timeDisplay( segmentBaseX+144, segmentBaseY, tempMinuts % 10 , buff);
-//     }
-
-// // date 2024-08-08 day
-//     char tempFrame[17] ;
-//     snprintf(tempFrame, sizeof(tempFrame), "%d-%02d-%02d  %s",current_time.year,current_time.month,current_time.day,
-//     day_names[current_time.weekday]);
-
-//     // day_names[calculate_day_of_week( current_time.year, current_time.month, current_time.day )]);
-
-//     uint16_t len = 160- (pixleLen(2,&tempFrame)/2);//x start poss
-
-//     WriteString(2,len, 130,tempFrame,SEVENSEGMENT_COLOR,buff);
-
-// /*
-//     WriteString(2,5, 0,"abcdefghijklmnopqrstuvwxyz",buff);
-//     WriteString(2,5, 130,"ABCDEFGHIJKLMNOPQRSTUVWXYZ",buff);
-//     WriteString(2,5, 160,"1234567890",buff);
-// */
+        icnPrint(NETWORK_ICON_POSS_X+19, NETWORK_ICON_POSS_Y+9-tempBlvl, BATTERY_WIDTH, tempBlvl-1,&betterybar, tempBlvl<=2?RED:WHITE ,buff);
+        icnPrint(NETWORK_ICON_POSS_X+20, NETWORK_ICON_POSS_Y, BATTERY_WIDTH, BATTERY_HEIGHT,&betteryIcn,tempBlvl<2?RED:WHITE ,buff);
+// ----------------------------------------------------------------------
 
 }
+
+
+
 uint16_t pixleLen(uint8_t letSize, char *str){
 
     uint16_t len=0;

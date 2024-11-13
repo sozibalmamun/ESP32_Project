@@ -50,7 +50,7 @@ const DATA_FLASH uint16_t crc16_table[256] =
   };
 extern char tcpBuffer; // Adjust MAX_TRANSACTION_SIZE as needed
 extern  uint8_t sleepEnable;
-extern TickType_t sleepTimeOut; 
+extern volatile TickType_t sleepTimeOut; 
 extern bool dspTimeFormet;
 
 #ifdef __cplusplus

@@ -42,7 +42,7 @@ void app_main()
     init_adc();
     //-------------------------
     // Initialize PWM using the PwmInt function
-    PwmInt(&ledc_channel,(gpio_num_t)LCE_BL);
+    PwmInt((gpio_num_t)LCE_BL);
     ESP_LOGI(TAG, "app_main finished");
 
     while(true){
@@ -60,25 +60,24 @@ void app_main()
             sleepEnable=SLEEP;
             printf("\nsleepEnable");
             gpio_set_level((gpio_num_t)CAM_CONTROL, 1);
-            ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, BRIGHTNESS(SLEEP_LCD));//8192
-            ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
+            brightness(true);
             deinitBlufi();
-            vTaskDelay(pdMS_TO_TICKS(2000));
+            vTaskDelay(pdMS_TO_TICKS(1000));
             reduce_cpu_frequency();
-            vTaskDelay(pdMS_TO_TICKS(2000));
+            vTaskDelay(pdMS_TO_TICKS(1000));
         }
 
         if(sleepEnable == SLEEP){
             // enter_light_sleep();  // Enter light sleep mode
-            if( WAKE  || CHARGING ){
+            if( WAKE_STATE ){
                 sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
                 restore_cpu_frequency();
                 reInt();
-                ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel,BRIGHTNESS(WAKE_LCD));
-                ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);  
+                brightness(false);//sleep
                 printf("\nsleep disable");
 
-            }
+            }else if(CHARGING_STATE)plugIn(true);
+            else plugIn(false);
 
         }else {
 

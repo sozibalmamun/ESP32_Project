@@ -343,7 +343,7 @@ void process_command(const char* buffer ) {
 
         ESP_LOGI(TAG_ENROL, "time formet %d %d %d %d %d %d %d", buffer[5], buffer[6], buffer[7], buffer[8], buffer[9], buffer[10] , buffer[11]);
 
-        time_library_time_t initial_time = {buffer[5], buffer[6], buffer[7] ,buffer[8], buffer[9], buffer[10] ,buffer[11]+1};//     year, month, day,weekday, hour, minute, second;
+        time_library_time_t initial_time = {buffer[5]+2000, buffer[6], buffer[7] ,buffer[8], buffer[9], buffer[10] ,buffer[11]+1};//     year, month, day,weekday, hour, minute, second;
         time_library_set_time(&initial_time, 1);
         CmdEvent = TIME_UPDATE;
 

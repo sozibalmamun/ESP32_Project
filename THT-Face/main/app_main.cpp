@@ -51,9 +51,6 @@ void app_main()
         // // Log or print the CPU frequency
         // int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
         // ESP_LOGI("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
-        // esp_pm_dump_locks(stdout);
-        // list_all_tasks();
-
 
         if(xTaskGetTickCount()-sleepTimeOut>3000 && /*xTaskGetTickCount()-sleepTimeOut< 3500 &&*/ sleepEnable == WAKEUP){
 
@@ -62,12 +59,13 @@ void app_main()
             gpio_set_level((gpio_num_t)CAM_CONTROL, 1);
             brightness(true);
             deinitBlufi();
+
             vTaskDelay(pdMS_TO_TICKS(1000));
             reduce_cpu_frequency();
             vTaskDelay(pdMS_TO_TICKS(1000));
         }
 
-        if(sleepEnable == SLEEP){
+        if(sleepEnable == SLEEP){ 
             // enter_light_sleep();  // Enter light sleep mode
             if( WAKE_STATE ){
 
@@ -94,6 +92,7 @@ void reInt(void){
 
     gpio_set_level((gpio_num_t)CAM_CONTROL, 0);
     RtcInit();
+    vTaskDelay(pdMS_TO_TICKS(10));  // Allow time for frequency update
     sleepEnable = WAKEUP;
     bluFiStart();
 

@@ -7,7 +7,7 @@
 #include "esp_log.h"
 
 
-extern uint32_t batVoltage;
+extern uint16_t batVoltage;
 uint8_t sleepEnable=WAKEUP;
 volatile TickType_t sleepTimeOut=0; 
 uint8_t bBar=1;

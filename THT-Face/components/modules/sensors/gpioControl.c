@@ -1,6 +1,6 @@
 #include "gpioControl.h"
 
-uint32_t batVoltage;
+uint16_t batVoltage;
 uint8_t chargeState=0;
 
 
@@ -168,7 +168,7 @@ void restore_cpu_frequency() {
     };
 
     esp_err_t ret = esp_pm_configure(&pm_config);
-    vTaskDelay(pdMS_TO_TICKS(10));  // Allow time for frequency update
+    vTaskDelay(pdMS_TO_TICKS(50));  // Allow time for frequency update
 
     if (ret == ESP_OK) {
         // ESP_LOGI("Frequency", "Dynamic CPU frequency scaling configured.");

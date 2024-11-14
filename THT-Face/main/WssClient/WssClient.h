@@ -80,6 +80,8 @@ extern uint8_t networkStatus;
 
 extern const char* day_names[];
 extern bool dspTimeFormet;
+extern uint16_t batVoltage;
+
 extern uint64_t generate_unique_id(void);
 extern void process_command(const char* buffer);
 extern void dataHandele(const char *rx_buffer);

@@ -113,7 +113,7 @@ static bool example_wifi_reconnect(void)
 {
     bool ret;
     if (gl_sta_is_connecting && example_wifi_retry++ < EXAMPLE_WIFI_CONNECTION_MAXIMUM_RETRY) {
-        BLUFI_INFO("BLUFI WiFi starts reconnection\n");
+        // BLUFI_INFO("BLUFI WiFi starts reconnection\n");
         gl_sta_is_connecting = (esp_wifi_connect() == ESP_OK);
         example_record_wifi_conn_info(EXAMPLE_INVALID_RSSI, EXAMPLE_INVALID_REASON);
         ret = true;
@@ -139,11 +139,13 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
 
     case WIFI_EVENT_STA_CONNECTED:{
         printf("WiFi CONNECTED\n");
-
-        vTaskDelay(300);
-        wssClientInt();
         networkStatus=WIFI_CONNECTED;
         gl_sta_is_connecting = false;
+
+        vTaskDelay(100);
+        wssClientInt();
+        // networkStatus=WIFI_CONNECTED;
+        // gl_sta_is_connecting = false;
         event = (wifi_event_sta_connected_t*) event_data;
         memcpy(gl_sta_bssid, event->bssid, 6);
         memcpy(gl_sta_ssid, event->ssid, event->ssid_len);
@@ -166,7 +168,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
         
         }
 
-        printf("Retrying to Connect...\n");
+        // printf("Retrying to Connect...\n");
         example_wifi_connect();
 
         blufi_security_deinit();
@@ -232,7 +234,7 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
 
         break;
     case ESP_BLUFI_EVENT_DEINIT_FINISH:
-        BLUFI_INFO("BLUFI deinit finish\n");
+        // BLUFI_INFO("BLUFI deinit finish\n");
         break;
     case ESP_BLUFI_EVENT_BLE_CONNECT:
         BLUFI_INFO("BLUFI ble connect\n");
@@ -263,8 +265,6 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         // ssid[param->sta_ssid.ssid_len] = '\0'; // Null-terminate the SSID string
 
         // BLUFI_INFO("Received STA SSID: %s\n", ssid);
-
-       
         break;
     }
 	case ESP_BLUFI_EVENT_RECV_STA_PASSWD:{//ok
@@ -278,7 +278,6 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         // password[param->sta_passwd.passwd_len] = '\0'; // Null-terminate the password string
 
         // BLUFI_INFO("Received STA PASSWORD: %s\n", password);
-
         example_wifi_connect();
 
 

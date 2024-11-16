@@ -283,6 +283,8 @@ static void task_process_handler(void *arg)
                                 is_detected = true;
                                 _gEvent=ENROLL;
                                 key_state= KEY_IDLE;
+                                CmdEvent=ENROLING_EVENT;
+
 
 
                             }else { // loading
@@ -291,6 +293,7 @@ static void task_process_handler(void *arg)
 
                                 fillRect(frame, 0, 235, 320, 5, 0xFFFF);
                                 fillRect(frame, 0, 235, (uint16_t)(percentage_float*3.2), 5, RGB565_MASK_BLUE);
+
 
                             }
 
@@ -310,20 +313,15 @@ static void task_process_handler(void *arg)
 
                         }
 
-                    }else if(_gEvent==DETECT){
+                    }else if(_gEvent==DETECT  &&  CmdEvent!=ENROLING_EVENT ){
 
 
                         if (detect_results.size() == 1){
 
-
                             if(xTaskGetTickCount()>faceDetectTimeOut+TIMEOUT_50_MS){ 
                                 
                                 is_detected = true;
-
-                                if(_gEvent!=ENROLING){
-                                    _gEvent=RECOGNIZE;// enroling is the 1st priority
-
-                                }
+                                _gEvent=RECOGNIZE;// enroling is the 1st priority
 
                             }else {
 

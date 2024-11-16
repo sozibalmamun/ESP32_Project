@@ -47,7 +47,7 @@ extern TaskHandle_t cloudeTaskHandler;
 
 //Sleep config---------------------------------------------------
 #define MAX_FREQ   240    // Maximum frequency
-#define MIN_FREQ   8
+#define MIN_FREQ   40
 #define GPIO_WAKEUP_BUTTON GPIO_NUM_0
 #define BATTERY_CHARGE_STATE GPIO_NUM_20
 
@@ -69,7 +69,6 @@ extern "C"
 #endif
 
 
-    // ledc_channel_config_t *ledc_channel;
     // ADC calibration characteristics
     esp_adc_cal_characteristics_t *adc_chars;
     // void PwmInt( ledc_channel_config_t *ledc_channel ,gpio_num_t pinNo );
@@ -81,7 +80,7 @@ extern "C"
     void reduce_cpu_frequency();
     void restore_cpu_frequency();
     void configure_dynamic_frequency();
-    void list_all_tasks(void);
+    // void list_all_tasks(void);
     void enter_light_sleep(void);
     void init_adc();
     void readBatteryVoltage();

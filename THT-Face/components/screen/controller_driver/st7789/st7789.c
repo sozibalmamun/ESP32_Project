@@ -87,9 +87,11 @@ scr_driver_t lcd_st7789_default_driver = {
 
 static void lcd_st7789_init_reg(void)
 {
+
+#if !defined GC9306
+
     LCD_WRITE_CMD(0x3A);
     LCD_WRITE_DATA(0x05);
-
     LCD_WRITE_CMD(0xB2);
     LCD_WRITE_DATA(0x0C);
     LCD_WRITE_DATA(0x0C);
@@ -157,6 +159,172 @@ static void lcd_st7789_init_reg(void)
     LCD_WRITE_CMD(0x11);  //Sleep Out
 
     LCD_WRITE_CMD(0x29);  //Display On
+
+#else
+
+//----------------------------------------end Reset Sequence---------------------------------------//
+//----------------------------------display control setting----------------------------------------//
+LCD_WRITE_CMD(0xfe);
+LCD_WRITE_CMD(0xef);
+LCD_WRITE_CMD(0x36);
+LCD_WRITE_DATA(0x48);
+LCD_WRITE_CMD(0x3a);
+LCD_WRITE_DATA(0x05);
+LCD_WRITE_CMD(0xad);
+LCD_WRITE_DATA(0x33);
+LCD_WRITE_CMD(0xaf);
+LCD_WRITE_DATA(0x55);
+LCD_WRITE_CMD(0xae);
+LCD_WRITE_DATA(0x2b);
+
+//----------------------------------end display control setting--------------------------------//
+//----------------------------------Power Control Registers Initial--------------------------------//
+LCD_WRITE_CMD(0xa4);
+LCD_WRITE_DATA(0x44);
+LCD_WRITE_DATA(0x44);
+LCD_WRITE_CMD(0xa5);
+LCD_WRITE_DATA(0x42);
+LCD_WRITE_DATA(0x42);
+LCD_WRITE_CMD(0xaa);
+LCD_WRITE_DATA(0x88);
+LCD_WRITE_DATA(0x88);
+LCD_WRITE_CMD(0xae);
+LCD_WRITE_DATA(0x2b);
+LCD_WRITE_CMD(0xe8);
+LCD_WRITE_DATA(0x11);
+LCD_WRITE_DATA(0x0b);
+LCD_WRITE_CMD(0xe3);
+LCD_WRITE_DATA(0x01);
+LCD_WRITE_DATA(0x10);
+LCD_WRITE_CMD(0xff);
+LCD_WRITE_DATA(0x61);
+LCD_WRITE_CMD(0xAC);
+LCD_WRITE_DATA(0x00);
+LCD_WRITE_CMD(0xAf);
+LCD_WRITE_DATA(0x67);
+LCD_WRITE_CMD(0xa6);
+LCD_WRITE_DATA(0x2a);
+LCD_WRITE_DATA(0x2a);
+LCD_WRITE_CMD(0xa7);
+LCD_WRITE_DATA(0x2b);
+LCD_WRITE_DATA(0x2b);
+LCD_WRITE_CMD(0xa8);
+LCD_WRITE_DATA(0x18);
+LCD_WRITE_DATA(0x18);
+LCD_WRITE_CMD(0xa9);
+LCD_WRITE_DATA(0x2a);
+LCD_WRITE_DATA(0x2a);
+//---------------------------------display window 240X320-------------------------------------//
+LCD_WRITE_CMD(0x2a);
+LCD_WRITE_DATA(0x00);
+LCD_WRITE_DATA(0x00);
+LCD_WRITE_DATA(0x00);
+LCD_WRITE_DATA(0xef);
+LCD_WRITE_CMD(0x2b);
+LCD_WRITE_DATA(0x00);
+LCD_WRITE_DATA(0x00);
+LCD_WRITE_DATA(0x01);
+LCD_WRITE_DATA(0x3f);
+LCD_WRITE_CMD(0x2c);
+//------------------------------------end display window ------------------------------------------//
+//----------------------------------------gamma setting----------------------------------------------//
+
+// LCD_WRITE_CMD(0xf0);
+// LCD_WRITE_DATA(0x02);
+// LCD_WRITE_DATA(0x00);
+// LCD_WRITE_DATA(0x00);
+
+// LCD_WRITE_DATA(0x1b);
+
+// LCD_WRITE_DATA(0x1f);
+// LCD_WRITE_DATA(0xb);
+// LCD_WRITE_CMD(0xf1);
+// LCD_WRITE_DATA(0x01);
+// LCD_WRITE_DATA(0x3);
+// LCD_WRITE_DATA(0x00);
+
+// LCD_WRITE_DATA(0x28);
+
+// LCD_WRITE_DATA(0x2b);
+// LCD_WRITE_DATA(0xe);
+// LCD_WRITE_CMD(0xf2);
+// LCD_WRITE_DATA(0xb);
+// LCD_WRITE_DATA(0x08);
+// LCD_WRITE_DATA(0x3b);
+// LCD_WRITE_DATA(0x04);
+// LCD_WRITE_DATA(0x03);
+// LCD_WRITE_DATA(0x4c);
+// LCD_WRITE_CMD(0xf3);
+// LCD_WRITE_DATA(0xe);
+// LCD_WRITE_DATA(0x7);
+// LCD_WRITE_DATA(0x46);
+// LCD_WRITE_DATA(0x4);
+// LCD_WRITE_DATA(0x5);
+// LCD_WRITE_DATA(0x51);
+// LCD_WRITE_CMD(0xf4);
+// LCD_WRITE_DATA(0x08);
+// LCD_WRITE_DATA(0x15);
+// LCD_WRITE_DATA(0x15);
+// LCD_WRITE_DATA(0x1f);
+// LCD_WRITE_DATA(0x22);
+// LCD_WRITE_DATA(0x0F);
+// LCD_WRITE_CMD(0xf5);
+// LCD_WRITE_DATA(0xb);
+// LCD_WRITE_DATA(0x13);
+// LCD_WRITE_DATA(0x11);
+// LCD_WRITE_DATA(0x1f);
+// LCD_WRITE_DATA(0x21);
+// LCD_WRITE_DATA(0x0F);
+
+
+
+// Gamma correction (adjust white balance)
+LCD_WRITE_CMD(0xF0);
+LCD_WRITE_DATA(0x02);
+LCD_WRITE_DATA(0x00);
+LCD_WRITE_DATA(0x00);
+LCD_WRITE_DATA(20); // Adjust for white balance 20
+LCD_WRITE_DATA(0x1C);
+LCD_WRITE_DATA(0x08);
+
+LCD_WRITE_CMD(0xF1);
+LCD_WRITE_DATA(0x01);
+LCD_WRITE_DATA(0x02);
+LCD_WRITE_DATA(0x00);
+LCD_WRITE_DATA(0x00); // Adjust for white balance 20
+LCD_WRITE_DATA(0x22);
+LCD_WRITE_DATA(0x0C);
+
+// Brightness control
+LCD_WRITE_CMD(0x51);
+LCD_WRITE_DATA(0x00); // Set brightness to medium (0x00 - 0xFF) 80 
+
+// Contrast control
+LCD_WRITE_CMD(0xA6);
+LCD_WRITE_DATA(0x00); // Adjust contrast level 30 
+LCD_WRITE_DATA(0x30);
+
+
+
+
+//------------------------------------end gamma setting------------------------------------------//
+LCD_WRITE_CMD(0x11);
+vTaskDelay(120 / portTICK_RATE_MS);
+LCD_WRITE_CMD(0x29);
+LCD_WRITE_CMD(0x2c);
+
+// sleep exit 
+
+LCD_WRITE_CMD(0xfe);
+LCD_WRITE_CMD(0xef);
+LCD_WRITE_CMD(0x11);
+vTaskDelay(120 / portTICK_RATE_MS);
+LCD_WRITE_CMD(0x29);
+
+#endif
+
+
+
 }
 
 esp_err_t lcd_st7789_init(const scr_controller_config_t *lcd_conf)
@@ -213,7 +381,14 @@ esp_err_t lcd_st7789_set_rotation(scr_dir_t dir)
 {
     esp_err_t ret;
     uint8_t reg_data = 0;
-    reg_data &= ~MADCTL_RGB;
+
+// to configure our new display
+#if !defined GC9306
+    reg_data &= ~MADCTL_RGB;// st7789
+#else
+    reg_data |= MADCTL_RGB; // GC9306
+#endif
+
     if (SCR_DIR_MAX < dir) {
         dir >>= 5;
     }

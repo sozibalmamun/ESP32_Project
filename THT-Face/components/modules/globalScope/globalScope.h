@@ -71,7 +71,10 @@
 #define segmentBaseX  73
 #define segmentBaseY  58 
 
-#define SEVENSEGMENT_COLOR 0x07E0
+// #define SEVENSEGMENT_COLOR 0x07E0//. green
+#define SEVENSEGMENT_COLOR 0xf800   // red
+// #define SEVENSEGMENT_COLOR 0x003f   //blue
+
 //----------------------------------------------------------------
 //-------------------Time value in ms-----------------------------
 #define TIMEOUT_50_MS         5

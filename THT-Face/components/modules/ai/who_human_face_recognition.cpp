@@ -313,7 +313,7 @@ static void task_process_handler(void *arg)
 
                         }
 
-                    }else if(_gEvent==DETECT  &&  CmdEvent!=ENROLING_EVENT ){
+                    }else if(_gEvent==DETECT  &&  CmdEvent!=ENROLING_EVENT ){// enroling is the 1st priority
 
 
                         if (detect_results.size() == 1){
@@ -321,7 +321,7 @@ static void task_process_handler(void *arg)
                             if(xTaskGetTickCount()>faceDetectTimeOut+TIMEOUT_50_MS){ 
                                 
                                 is_detected = true;
-                                _gEvent=RECOGNIZE;// enroling is the 1st priority
+                                _gEvent=RECOGNIZE;
 
                             }else {
 
@@ -591,7 +591,7 @@ static void task_process_handler(void *arg)
                                 rgb_printf(frame, RGB565_MASK_GREEN, "%s",recognize_result.name.c_str());// debug due to display name
                             }else{
                                 rgb_print(frame, RGB565_MASK_RED, "Unregister");
-                                // ESP_LOGI(TAG,"Not Recognize");
+                                ESP_LOGI(TAG,"Not Recognize");
                             }
                             break;
 

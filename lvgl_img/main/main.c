@@ -38,11 +38,11 @@ static void lvgl_task(void *arg) // GUI任务
    disp_drv.ver_res = 240;                /*Set the vertical resolution in pixels*/
    lv_disp_drv_register(&disp_drv);       /*Register the driver and save the created display objects*/
                                           /*触摸屏输入接口配置*/
-   lv_indev_drv_t indev_drv;
-   lv_indev_drv_init(&indev_drv);
-   indev_drv.read_cb = touch_driver_read;
-   indev_drv.type = LV_INDEV_TYPE_POINTER;
-   lv_indev_drv_register(&indev_drv);
+   // lv_indev_drv_t indev_drv;
+   // lv_indev_drv_init(&indev_drv);
+   // indev_drv.read_cb = touch_driver_read;
+   // indev_drv.type = LV_INDEV_TYPE_POINTER;
+   // lv_indev_drv_register(&indev_drv);
 
    /* 创建一个10ms定时器*/ // 定期处理GUI回调
    const esp_timer_create_args_t periodic_timer_args = {

@@ -1,7 +1,7 @@
 {
     "version":            "1",
     "project_name":       "hello-world",
-    "project_version":    "94fb1f6d-dirty",
+    "project_version":    "5c3e60ba-dirty",
     "project_path":       "D:/Project/ESP32_lvgl/lvgl_img",
     "idf_path":           "C:/Espressif/frameworks/esp-idf-v4.4.7",
     "build_dir":          "D:/Project/ESP32_lvgl/lvgl_img/build",

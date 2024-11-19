@@ -20,6 +20,8 @@
 
 #include "pwm.h"
 
+#include "blufi_example.h"
+
 
 #define WIFI_SSID "I"
 #define WIFI_PASS "islam!@#"
@@ -366,23 +368,23 @@ void app_main(void)
     gpio_set_direction((gpio_num_t)LCE_BL, GPIO_MODE_OUTPUT);
     gpio_set_level((gpio_num_t)LCE_BL, 1);
 
-   esp_err_t ret = nvs_flash_init();
-   if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-      ESP_ERROR_CHECK(nvs_flash_erase());
-      ret = nvs_flash_init();
-   }
-   ESP_ERROR_CHECK(ret);
+//    esp_err_t ret = nvs_flash_init();
+//    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+//       ESP_ERROR_CHECK(nvs_flash_erase());
+//       ret = nvs_flash_init();
+//    }
+//    ESP_ERROR_CHECK(ret);
+
+    bluFiStart();
+
 
     // Initialize Wi-Fi
-    wifi_init();
+    // wifi_init();
    // Initialize SNTP and get the time
     initialize_sntp();
 
     // Obtain and update the local time and date
     obtain_and_update_local_time();
-
-
-
 
     xTaskCreate(time_tick_task, "time_tick_task", 2048, NULL, 5, NULL);
     xTaskCreatePinnedToCore(lvgl_task, "gui task", 1024 * 4, NULL, 1, NULL, 0);

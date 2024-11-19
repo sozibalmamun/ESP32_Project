@@ -1,8 +1,9 @@
 
  idf_component_register(SRCS 
                              "main.c"
-                             "blufi_example_main.c"
-                             "blufi_security.c"
-                             "blufi_init.c"
+                             "Connectivity/blufi_example_main.c"
+                             "Connectivity/blufi_security.c"
+                             "Connectivity/blufi_init.c"
+                             "Time/mytime.c"
 
                     INCLUDE_DIRS ".")

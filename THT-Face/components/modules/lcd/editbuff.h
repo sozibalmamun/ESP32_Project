@@ -20,6 +20,24 @@ extern bool dspTimeFormet;
 uint8_t calculate_battery_level(uint32_t voltage);
 
 
+
+
+typedef struct {
+    uint32_t bitmap_index; // Index of the glyph bitmap in the bitmap array
+    uint16_t adv_w;        // Advance width
+    uint8_t box_w;         // Glyph width in pixels
+    uint8_t box_h;         // Glyph height in pixels
+    int8_t ofs_x;          // Horizontal offset from cursor position
+    int8_t ofs_y;          // Vertical offset from baseline
+} lv_font_fmt_txt_glyph_dsc_t;
+
+
+
+
+
+
+
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -45,6 +63,12 @@ void sleepTimeDate(camera_fb_t *buff, time_library_time_t current_time);
 void wrighSingle7segment(uint16_t x_offset, uint8_t y_offset, char c, camera_fb_t *buff);
 void WriteMulti7segment(uint16_t x_offset, uint8_t y_offset, const char *str, camera_fb_t *buff);
 void timeDisplay(uint8_t x, uint8_t y, uint8_t value,camera_fb_t *buff);
+
+
+
+void renderText(camera_fb_t *fb, int x, int y, const char *text, const lv_font_fmt_txt_glyph_dsc_t *glyph_dsc, const uint8_t *bitmap, uint16_t color) ;
+// void renderText(camera_fb_t *fb, int x, int y, const char *text, const uint8_t *font_bitmap, int glyph_width, int glyph_height, uint16_t color) ;
+
 
 
 #ifdef __cplusplus

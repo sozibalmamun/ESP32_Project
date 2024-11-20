@@ -13,7 +13,7 @@
 // limitations under the License.
 #ifndef _IOT_LCD_ST7789_H_
 #define _IOT_LCD_ST7789_H_
-#define GC9306 
+// #define GC9306 
 
 
 #include "screen_driver.h"

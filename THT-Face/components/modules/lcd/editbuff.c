@@ -3,6 +3,7 @@
 #include "math.h"
 #include "editbuff.h"
 #include "logo&Icon.h"
+#include "front.h"
 #include "esp_wifi.h"
 #include "esp_log.h"
 
@@ -522,6 +523,9 @@ void wrightChar(uint8_t letterSize, uint16_t x_offset, uint8_t y_offset, char c,
 
 void sleepTimeDate(camera_fb_t *buff, time_library_time_t current_time){
 
+
+
+
     uint8_t clockType = get_time(&current_time, dspTimeFormet);
 
 
@@ -595,6 +599,7 @@ void sleepTimeDate(camera_fb_t *buff, time_library_time_t current_time){
 //     icnPrint(NETWORK_ICON_POSS_X+19, NETWORK_ICON_POSS_Y+9-tempBlvl, BATTERY_WIDTH, tempBlvl-1,&betterybar, tempBlvl<=2?RED:WHITE ,buff);
 //     icnPrint(NETWORK_ICON_POSS_X+20, NETWORK_ICON_POSS_Y, BATTERY_WIDTH, BATTERY_HEIGHT,&betteryIcn,tempBlvl<2?RED:WHITE ,buff);
 // // ----------------------------------------------------------------------
+
 
 }
 
@@ -888,3 +893,51 @@ uint8_t calculate_battery_level(uint32_t voltage) {
 //         }
 //     }
 // }
+
+
+void drawGlyph(camera_fb_t *fb, int x, int y, const lv_font_fmt_txt_glyph_dsc_t *glyph, const uint8_t *bitmap, uint16_t color) {
+    int bytes_per_row = (glyph->box_w + 7) / 8; // Number of bytes per row for the glyph bitmap
+    uint8_t *data = fb->buf;
+
+    // Loop through the bounding box height and width
+    for (int row = 0; row < glyph->box_h; row++) {
+        for (int col = 0; col < glyph->box_w; col++) {
+            // Find the bit in the glyph bitmap
+            int byte_index = glyph->bitmap_index + row * bytes_per_row + (col / 8);
+            int bit_index = 7 - (col % 8); // MSB to LSB in a byte
+
+            if (bitmap[byte_index] & (1 << bit_index)) {
+                // Calculate the pixel index in the framebuffer
+                int pixel_x = x + col + glyph->ofs_x;
+                int pixel_y = y + row + glyph->ofs_y;
+
+                // Ensure we're within framebuffer bounds
+                if (pixel_x >= 0 && pixel_x < fb->width && pixel_y >= 0 && pixel_y < fb->height) {
+                    int pixel_index = (pixel_y * fb->width + pixel_x) * 2;
+                    data[pixel_index] = (color >> 8) & 0xFF; // High byte of RGB565
+                    data[pixel_index + 1] = color & 0xFF;    // Low byte of RGB565
+                }
+            }
+        }
+    }
+}
+
+void renderText(camera_fb_t *fb, int x, int y, const char *text, const lv_font_fmt_txt_glyph_dsc_t *glyph_dsc, const uint8_t *bitmap, uint16_t color) {
+    int cursor_x = x;
+
+    for (int i = 0; text[i] != '\0'; i++) {
+        char c = text[i];
+
+        // Assuming ASCII mapping: '0' -> glyph_dsc[1], '1' -> glyph_dsc[2], etc.
+        if (c >= '0' && c <= '9') {
+            int glyph_index = c - '0' + 1; // Adjust index for glyph_dsc
+            const lv_font_fmt_txt_glyph_dsc_t *glyph = &glyph_dsc[glyph_index];
+
+            // Render the glyph
+            drawGlyph(fb, cursor_x, y, glyph, bitmap, color);
+
+            // Move the cursor by the glyph's advance width
+            cursor_x += glyph->adv_w / 16; // Assuming adv_w is scaled by 16 for subpixel accuracy
+        }
+    }
+}

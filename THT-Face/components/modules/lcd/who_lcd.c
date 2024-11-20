@@ -249,10 +249,12 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
         .offset_ver = 0,
         .width = 240,
         .height = 320,
+#if defined GC9306
         .rotate = SCR_DIR_TBLR,           // SCR_DIR_TBLR, /**< From top to bottom then from left to right */ GC9306
-        // .rotate = SCR_DIR_BTLR,  //  h miror lcd . st7789
+#else
+        .rotate = SCR_DIR_BTLR,  //  h miror lcd . st7789
        // .rotate = SCR_DIR_TBRL,/**< From top to bottom then from right to left change by sozib due to flip the display*/
-
+#endif
     };
     ret = g_lcd.init(&lcd_cfg);
     if (ESP_OK != ret)

@@ -78,10 +78,11 @@
         "cloudevent.h": "c",
         "st7789.h": "c",
         "wssclient.h": "c",
-        "gpiocontrol.h": "c"
+        "gpiocontrol.h": "c",
+        "front.h": "c"
     },
     "idf.flashType": "UART",
-    "idf.portWin": "COM13",
+    "idf.portWin": "COM3",
     "idf.openOcdConfigs": [
         "board/esp32s3-builtin.cfg"
     ]

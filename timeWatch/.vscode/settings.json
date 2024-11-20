@@ -1,10 +1,12 @@
 {
     "idf.adapterTargetName": "esp32s3",
-    "idf.portWin": "COM11",
+    "idf.portWin": "COM6",
     "idf.flashType": "UART",
     "files.associations": {
         "lvgl.h": "c",
         "mytime.h": "c",
-        "blufi_example.h": "c"
+        "blufi_example.h": "c",
+        "mylvgl.h": "c",
+        "lvgl_helpers.h": "c"
     }
 }

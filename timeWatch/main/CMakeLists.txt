@@ -5,5 +5,6 @@
                              "Connectivity/blufi_security.c"
                              "Connectivity/blufi_init.c"
                              "Time/mytime.c"
+                             "mylvgl/mylvgl.c"
 
                     INCLUDE_DIRS ".")

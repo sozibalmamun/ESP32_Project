@@ -1,7 +1,8 @@
+#ifndef MYLVGL_H
+#define MYLVGL_H
 
-#ifndef MYTIME_H
-#define MYTIME_H
-
+#include "lvgl/demos/lv_demos.h"
+#include "lvgl_helpers.h"
 #include <stdio.h>
 #include "time.h"
 #include "esp_http_client.h" 
@@ -24,18 +25,12 @@
 #include "nvs_flash.h"
 #include "freertos/event_groups.h"
 
+extern void update_time(lv_obj_t *hour_label, lv_obj_t *min_label ,lv_obj_t * sec_label ,lv_obj_t * ampm_label  );
+extern void update_date(lv_obj_t *label);
+extern void obtain_and_update_local_time();
 
-// #include "pwm.h"
-#include "Connectivity/blufi_example.h"
-// #include "Time/mytime.h"
-
-
-
- void initialize_sntp();
- void obtain_and_update_local_time();
- void update_time(lv_obj_t *hour_label, lv_obj_t *min_label ,lv_obj_t * sec_label ,lv_obj_t * ampm_label  ) ;
- void update_date(lv_obj_t *label);
- void time_tick_task(void *arg);
+void lvgl_task(void *arg);
+void lv_tick_task(void *arg);
 
 
- #endif
+#endif

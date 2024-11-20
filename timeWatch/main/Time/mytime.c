@@ -90,17 +90,15 @@ void obtain_and_update_local_time() {
 }
 
 
-void lv_tick_task(void *arg) // LVGL tick task
-{
-   (void)arg;
-   lv_tick_inc(10);
-}
 
-void update_time(lv_obj_t *time_label,lv_obj_t * sec_label ,lv_obj_t * ampm_label  ) {
+
+void update_time(lv_obj_t *hour_label, lv_obj_t *min_label ,lv_obj_t * sec_label ,lv_obj_t * ampm_label  ) {
     struct tm timeinfo;
-    char time_str[10];  // Enough to hold "HH:MM AM/PM" plus null terminator
-    char ampm_str[3];   // For "AM" or "PM"
+    char time_hour[4];  // Enough to hold "HH:MM AM/PM" plus null terminator
+    char time_min[3]; 
     char sec_str[3];   // For "AM" or "PM"
+    char time_dot[2]; 
+    char ampm_str[3];   // For "AM" or "PM"
 
     // Convert custom_time to struct tm
     localtime_r(&custom_time, &timeinfo);
@@ -109,10 +107,13 @@ void update_time(lv_obj_t *time_label,lv_obj_t * sec_label ,lv_obj_t * ampm_labe
     int hour = timeinfo.tm_hour % 12; // Convert to 12-hour format
     if (hour == 0) hour = 12; // Handle midnight
 
-    // Prepare the time string in the format "HH:MM"
-    snprintf(time_str, sizeof(time_str), "%02d%s%02d", hour, dot_on?":":" "  , timeinfo.tm_min);
 
+    snprintf(time_hour, sizeof(time_hour), "%02d",hour);
+    snprintf(time_min, sizeof(time_min), "%02d",timeinfo.tm_min);
     snprintf(sec_str, sizeof(sec_str), "%02d",timeinfo.tm_sec);
+
+    // snprintf(time_dot, sizeof(time_dot), "%s", dot_on?":":" ");
+
 
 
     // Determine AM/PM
@@ -123,9 +124,16 @@ void update_time(lv_obj_t *time_label,lv_obj_t * sec_label ,lv_obj_t * ampm_labe
     }
 
     // Set the time label text
-    lv_label_set_text(time_label, time_str);
+    lv_label_set_text(hour_label, time_hour); //hour
+    lv_label_set_text(min_label, time_min); //min
     lv_label_set_text(sec_label, sec_str);
     lv_label_set_text(ampm_label, ampm_str);
+
+
+
+    // lv_label_set_text(time_label, time_min); //dot
+
+
     dot_on = !dot_on; // Toggle colon state
 }
 

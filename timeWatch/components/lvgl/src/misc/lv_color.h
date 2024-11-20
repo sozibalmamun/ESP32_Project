@@ -702,7 +702,30 @@ static inline lv_color_t lv_color_white(void)
 }
 static inline lv_color_t lv_color_black(void)
 {
-    return lv_color_make(0x00, 0x0, 0x00);
+    return lv_color_make(0x00, 0x00, 0x00);
+}
+
+
+//0x2555   00100 101010 10101
+static inline lv_color_t lv_color_min(void)
+{
+
+    return lv_color_make(50, 255, 255);
+
+}
+
+
+static inline lv_color_t lv_color_hour(void)
+{
+
+    return lv_color_make(50, 180, 225);
+
+}
+static inline lv_color_t lv_color_sec(void)
+{
+
+    return lv_color_make(255, 0, 0);
+
 }
 lv_color_t lv_palette_lighten(lv_palette_t p, uint8_t lvl);
 lv_color_t lv_palette_darken(lv_palette_t p, uint8_t lvl);

@@ -22,9 +22,9 @@
 #include "driver/mcpwm.h"
 //------------------------
 
-#define LCE_BL GPIO_NUM_14
+#define LCE_BL GPIO_NUM_13
 #define SLEEP_LCD 5
-#define WAKE_LCD 20
+#define WAKE_LCD 10
 #define MIN_BRIGHTNESS (8191)
 #define BRIGHTNESS(x)  MIN_BRIGHTNESS-(((MIN_BRIGHTNESS/100)*x))
 
@@ -37,10 +37,8 @@ extern "C"
 {
 #endif
 
-    void PwmInt(gpio_num_t pinNo );
-
+    void PwmInt(gpio_num_t pinNo);
     void brightness(bool sleep);
-
 
 
 #ifdef __cplusplus

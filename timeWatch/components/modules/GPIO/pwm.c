@@ -1,8 +1,6 @@
 #include "pwm.h"
 
 
-
-
 void PwmInt( gpio_num_t pinNo ) {
 
     ledc_timer_config_t ledc_timer = {

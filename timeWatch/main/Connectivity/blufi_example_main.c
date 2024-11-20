@@ -51,6 +51,8 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
 static wifi_config_t sta_config;
 static wifi_config_t ap_config;
 esp_netif_t *sta_netif= NULL;
+uint8_t   wifiStatus = false;
+
 
 /* FreeRTOS event group to signal when we are connected & ready to make a request */
 static EventGroupHandle_t wifi_event_group;
@@ -139,6 +141,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
     case WIFI_EVENT_STA_CONNECTED:{
         printf("WiFi CONNECTED\n");
         gl_sta_is_connecting = false;
+        wifiStatus = true;
 
         vTaskDelay(100);
         // gl_sta_is_connecting = false;
@@ -154,7 +157,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
     }
     case WIFI_EVENT_STA_DISCONNECTED:{//ok
 
- 
+        wifiStatus = false;
         printf("Retrying to Connect...\n");
         example_wifi_connect();
 
@@ -334,7 +337,6 @@ void deinitBlufi(void) {
     printf("\nBLUFI: Disabling...");
 
 
-    // networkStatus=0;
     gl_sta_got_ip = false;
     ble_is_connected = false;
     gl_sta_is_connecting = false;

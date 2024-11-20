@@ -80,7 +80,8 @@ void obtain_and_update_local_time() {
         }
         else
         {
-            // ESP_LOGI("TIME", "Custom time set: %s", asctime(&timeinfo));
+            ESP_LOGI("TIME", "Custom time set: %s", asctime(&timeinfo));
+
         }
 
     } else {

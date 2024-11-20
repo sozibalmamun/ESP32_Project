@@ -113,11 +113,12 @@ void lv_tick_task(void *arg) // LVGL tick task
       if (pdTRUE == xSemaphoreTake(xGuiSemaphore, portMAX_DELAY))
       {
 
-        update_time(hour_label, min_label , sec_label);
-        update_date(date_label);      // Update the date label
-        obtain_and_update_local_time() ;
-        lv_timer_handler();           // Handle LVGL tasks
-        xSemaphoreGive(xGuiSemaphore);// Release semaphore
+         update_time(hour_label, min_label , sec_label);
+         update_date(date_label);      // Update the date label
+         if(wifiStatus==1)obtain_and_update_local_time();
+         lv_timer_handler();           // Handle LVGL tasks
+         xSemaphoreGive(xGuiSemaphore);// Release semaphore
+
       }
    }
 }

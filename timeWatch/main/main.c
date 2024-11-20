@@ -18,10 +18,12 @@
 #include "Time/mytime.h"
 #include "mylvgl/mylvgl.h"
 
-
-
-
 #define TAG  "Time_Update"
+
+
+TaskHandle_t timeTask = NULL;
+TaskHandle_t lvglTask = NULL;
+extern uint8_t wifiStatus;
 
 
 void app_main(void)
@@ -33,17 +35,34 @@ void app_main(void)
     gpio_set_direction((gpio_num_t)LCE_BL, GPIO_MODE_OUTPUT);
     gpio_set_level((gpio_num_t)LCE_BL, 1);
 
+
+
+
     bluFiStart();
    // Initialize SNTP and get the time
     initialize_sntp();
     // Obtain and update the local time and date
-    obtain_and_update_local_time();
+    if(wifiStatus)obtain_and_update_local_time();
+    vTaskDelay(100);
 
-    xTaskCreatePinnedToCore(time_tick_task, "time_tick_task", 2048, NULL, 5, NULL,1);
-    xTaskCreatePinnedToCore(lvgl_task, "gui task", 1024 *6, NULL, 6, NULL, 0);
+    xTaskCreatePinnedToCore(time_tick_task, "time_tick_task", 2048, NULL, 5, &timeTask,1);
+    xTaskCreatePinnedToCore(lvgl_task, "gui task", 1024 *6, NULL, 6, &lvglTask, 0);
 
     PwmInt((gpio_num_t)LCE_BL);
     brightness(false);//sleep
+
+
+    // while(1){
+
+    //     int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
+    //     ESP_LOGW("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
+
+
+
+
+
+
+    // }
 
 }
 

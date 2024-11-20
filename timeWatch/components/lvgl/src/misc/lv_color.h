@@ -724,7 +724,7 @@ static inline lv_color_t lv_color_hour(void)
 static inline lv_color_t lv_color_sec(void)
 {
 
-    return lv_color_make(255, 0, 0);
+    return lv_color_make(50, 136,196);
 
 }
 lv_color_t lv_palette_lighten(lv_palette_t p, uint8_t lvl);

@@ -391,10 +391,7 @@
  *You can use these fonts as default font too and they will be available globally.
  *E.g. #define LV_FONT_CUSTOM_DECLARE   LV_FONT_DECLARE(my_font_1) LV_FONT_DECLARE(my_font_2)*/
 
-#define LV_FONT_CUSTOM_DECLARE  LV_FONT_DECLARE(watch1)
-#define LV_FONT_CUSTOM_DECLARE  LV_FONT_DECLARE(watch)
-
-
+#define LV_FONT_CUSTOM_DECLARE  LV_FONT_DECLARE(watch)  LV_FONT_DECLARE(sec) LV_FONT_DECLARE(date)
 
 
 

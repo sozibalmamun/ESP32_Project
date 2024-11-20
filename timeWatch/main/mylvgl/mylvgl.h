@@ -25,7 +25,7 @@
 #include "nvs_flash.h"
 #include "freertos/event_groups.h"
 
-extern void update_time(lv_obj_t *hour_label, lv_obj_t *min_label ,lv_obj_t * sec_label ,lv_obj_t * ampm_label  );
+extern void update_time(lv_obj_t *hour_label, lv_obj_t *min_label ,lv_obj_t * sec_label  );
 extern void update_date(lv_obj_t *label);
 extern void obtain_and_update_local_time();
 

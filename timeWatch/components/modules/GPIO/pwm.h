@@ -22,7 +22,7 @@
 #include "driver/mcpwm.h"
 //------------------------
 
-#define LCE_BL GPIO_NUM_13
+#define LCE_BL GPIO_NUM_14
 #define SLEEP_LCD 5
 #define WAKE_LCD 20
 #define MIN_BRIGHTNESS (8191)

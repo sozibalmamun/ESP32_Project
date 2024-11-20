@@ -1,5 +1,4 @@
 
-
 #include "mylvgl.h"
 
 
@@ -46,70 +45,57 @@ void lv_tick_task(void *arg) // LVGL tick task
 
 //===============================================
 
+   // Create a label for sec
+   lv_obj_t * sec_label = lv_label_create(lv_scr_act());
+   lv_obj_set_style_text_color(sec_label, lv_color_sec(), 0); // White text
+   lv_label_set_text(sec_label, "12");
+   lv_obj_align(sec_label, LV_ALIGN_CENTER, 77, 25); // Align the time at the center
 
-    lv_obj_t * hour_label = lv_label_create(lv_scr_act());
-    lv_obj_set_style_text_color(hour_label, lv_color_hour(), 0); // White text
-    lv_label_set_text(hour_label, "12");
-    lv_obj_align(hour_label, LV_ALIGN_CENTER, 0, -85); // Align the time at the center
+   lv_style_t secStyle ;
+   lv_style_init(&secStyle);
+   lv_style_set_text_font(&secStyle,&sec); 
+   lv_obj_add_style(sec_label, &secStyle, 0);
+
+   // Create a label for hour
+   lv_obj_t * hour_label = lv_label_create(lv_scr_act());
+   lv_obj_set_style_text_color(hour_label, lv_color_hour(), 0); // White text
+   lv_label_set_text(hour_label, "12");
+   lv_obj_align(hour_label, LV_ALIGN_CENTER, 0, -85); // Align the time at the center
 
    lv_style_t hourStyle;
    lv_style_init(&hourStyle);
-   lv_style_set_text_font(&hourStyle,&watch); //引用字库
+   lv_style_set_text_font(&hourStyle,&watch); 
    lv_obj_add_style(hour_label, &hourStyle, 0);
 
 
 
-    // Create a label for min
-    lv_obj_t * min_label = lv_label_create(lv_scr_act());
-    lv_obj_set_style_text_color(min_label, lv_color_min(), 0); // White text
-    lv_label_set_text(min_label, "12");
-    lv_obj_align(min_label, LV_ALIGN_CENTER, 0, 0); // Align the time at the center
+   // Create a label for min
+   lv_obj_t * min_label = lv_label_create(lv_scr_act());
+   lv_obj_set_style_text_color(min_label, lv_color_min(), 0); 
+   lv_label_set_text(min_label, "12");
+   lv_obj_align(min_label, LV_ALIGN_CENTER, 0, 0); // Align the time at the center
 
    lv_style_t minStyle;
    lv_style_init(&minStyle);
-   lv_style_set_text_font(&minStyle,&watch); //引用字库
+   lv_style_set_text_font(&minStyle,&watch);
    lv_obj_add_style(min_label, &minStyle, 0);
 
 
-    // // // Create a label for time
-    // lv_obj_t * sec_label = lv_label_create(lv_scr_act());
-    // lv_obj_set_style_text_color(sec_label, lv_color_white(), 0); // White text
-    // lv_obj_set_style_text_font(sec_label, &lv_font_montserrat_16, 0); // Set large font for time  lv_font_unscii_8
-    // lv_label_set_text(sec_label, "12");
-    // lv_obj_align(sec_label, LV_ALIGN_CENTER, 79, -104); // Align the time at the center
-
-
-
-    lv_obj_t * sec_label = lv_label_create(lv_scr_act());
-    lv_obj_set_style_text_color(sec_label, lv_color_sec(), 0); // White text
-    lv_label_set_text(sec_label, "12");
-    lv_obj_align(sec_label, LV_ALIGN_CENTER, 79, 0); // Align the time at the center
-
-    lv_style_t secStyle ;
-    lv_style_init(&secStyle);
-    lv_style_set_text_font(&secStyle,&watch1); 
-    lv_obj_add_style(sec_label, &secStyle, 0);
-
-
-
-//    lv_style_t segment;
-//    lv_style_init(&segment);
-//    lv_style_set_text_font(&segment,&tft7segment);
-//    lv_obj_add_style(time_label, &segment, 0);
-
-//========================================================
-    // Create a label for the AM/PM indicator
-    lv_obj_t * am_pm_label = lv_label_create(lv_scr_act());
-    lv_obj_set_style_text_color(am_pm_label, lv_color_white(), 0); // White text
-    lv_obj_set_style_text_font(am_pm_label, &lv_font_montserrat_12, 0); // Set large font for time  lv_font_unscii_8
-    lv_label_set_text(am_pm_label, "PM");
-    lv_obj_align(am_pm_label, LV_ALIGN_CENTER, 80, -126); // Align the AM/PM beside the time
 
     // // Create a label for the date
-    // lv_obj_t * date_label = lv_label_create(lv_scr_act());
-    // lv_obj_set_style_text_color(date_label, lv_color_white(), 0); // White text
-    // lv_label_set_text(date_label, "24-09-2024");
-    // lv_obj_align(date_label, LV_ALIGN_CENTER, 0, -60); // Align date below the time
+    lv_obj_t * date_label = lv_label_create(lv_scr_act());
+    lv_obj_set_style_text_color(date_label, lv_color_sec(), 0); // White text
+    lv_label_set_text(date_label, "24-09-2024");
+    lv_obj_align(date_label, LV_ALIGN_CENTER, 0, 80); // Align date below the time
+
+   lv_style_t dateStyle;
+   lv_style_init(&dateStyle);
+   lv_style_set_text_font(&dateStyle,&date); 
+   lv_obj_add_style(date_label, &dateStyle, 0);
+
+
+
+
 
 
     // Create a label for the weather (optional)
@@ -127,9 +113,8 @@ void lv_tick_task(void *arg) // LVGL tick task
       if (pdTRUE == xSemaphoreTake(xGuiSemaphore, portMAX_DELAY))
       {
 
-        update_time(hour_label, min_label , sec_label  ,am_pm_label);
-        // update_date(date_label);      // Update the date label
-
+        update_time(hour_label, min_label , sec_label);
+        update_date(date_label);      // Update the date label
         obtain_and_update_local_time() ;
         lv_timer_handler();           // Handle LVGL tasks
         xSemaphoreGive(xGuiSemaphore);// Release semaphore

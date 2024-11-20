@@ -16,7 +16,6 @@ const int WIFI_FAIL_BIT = BIT1;
 
 
 SemaphoreHandle_t xGuiSemaphore;
-static bool dot_on = true;  // State for toggling the colon
 time_t custom_time;
 
 
@@ -92,62 +91,41 @@ void obtain_and_update_local_time() {
 
 
 
-void update_time(lv_obj_t *hour_label, lv_obj_t *min_label ,lv_obj_t * sec_label ,lv_obj_t * ampm_label  ) {
+void update_time(lv_obj_t *hour_label, lv_obj_t *min_label ,lv_obj_t * sec_label ) {
+
     struct tm timeinfo;
-    char time_hour[4];  // Enough to hold "HH:MM AM/PM" plus null terminator
+    char time_hour[4]; 
     char time_min[3]; 
-    char sec_str[3];   // For "AM" or "PM"
-    char time_dot[2]; 
-    char ampm_str[3];   // For "AM" or "PM"
+    char sec_str[3];   
 
     // Convert custom_time to struct tm
     localtime_r(&custom_time, &timeinfo);
-
     // Format hour and minute in 12-hour format
     int hour = timeinfo.tm_hour % 12; // Convert to 12-hour format
     if (hour == 0) hour = 12; // Handle midnight
-
 
     snprintf(time_hour, sizeof(time_hour), "%02d",hour);
     snprintf(time_min, sizeof(time_min), "%02d",timeinfo.tm_min);
     snprintf(sec_str, sizeof(sec_str), "%02d",timeinfo.tm_sec);
 
-    // snprintf(time_dot, sizeof(time_dot), "%s", dot_on?":":" ");
-
-
-
-    // Determine AM/PM
-    if (timeinfo.tm_hour >= 12) {
-        strcpy(ampm_str, "PM");
-    } else {
-        strcpy(ampm_str, "AM");
-    }
-
     // Set the time label text
-    lv_label_set_text(hour_label, time_hour); //hour
+    lv_label_set_text(sec_label, sec_str);// sec
     lv_label_set_text(min_label, time_min); //min
-    lv_label_set_text(sec_label, sec_str);
-    lv_label_set_text(ampm_label, ampm_str);
+    lv_label_set_text(hour_label, time_hour); //hour
 
-
-
-    // lv_label_set_text(time_label, time_min); //dot
-
-
-    dot_on = !dot_on; // Toggle colon state
 }
 
 
 void update_date(lv_obj_t *label)
 {
    struct tm timeinfo;
-   char date_str[64];
+   char date_str[15];
 
    // Convert custom_time to struct tm
    localtime_r(&custom_time, &timeinfo);
 
    // Format date as YYYY-MM-DD Day
-   strftime(date_str, sizeof(date_str), "%d-%m-%y %a", &timeinfo);
+   strftime(date_str, sizeof(date_str), "%02d-%02m-%y %a", &timeinfo);
    lv_label_set_text(label, date_str); // Set text to the date label
 }
 

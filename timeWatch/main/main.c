@@ -39,8 +39,8 @@ void app_main(void)
     // Obtain and update the local time and date
     obtain_and_update_local_time();
 
-    xTaskCreate(time_tick_task, "time_tick_task", 2048, NULL, 5, NULL);
-    xTaskCreatePinnedToCore(lvgl_task, "gui task", 1024 * 4, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore(time_tick_task, "time_tick_task", 2048, NULL, 5, NULL,1);
+    xTaskCreatePinnedToCore(lvgl_task, "gui task", 1024 *6, NULL, 6, NULL, 0);
 
     PwmInt((gpio_num_t)LCE_BL);
     brightness(false);//sleep

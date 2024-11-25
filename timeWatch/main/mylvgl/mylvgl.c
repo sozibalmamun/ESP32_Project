@@ -119,14 +119,14 @@ static void updateIcon(lv_obj_t *labelWIFI, lv_obj_t *labelWBLE){
    lv_obj_t * labelWIFI = lv_label_create(lv_scr_act());
    lv_obj_set_style_text_color(labelWIFI, lv_color_black(), 0); // White text
    lv_label_set_text(labelWIFI , LV_SYMBOL_WIFI);
-   lv_obj_align(labelWIFI, LV_ALIGN_CENTER, 107, -152); // Align date below the time
+   lv_obj_align(labelWIFI, LV_ALIGN_CENTER, 105, -148); // Align date below the time
 
 
 // ble icon
    lv_obj_t * labelWBLE = lv_label_create(lv_scr_act());
    lv_obj_set_style_text_color(labelWBLE, lv_color_black(), 0); // White text
    lv_label_set_text(labelWBLE , LV_SYMBOL_BLUETOOTH );
-   lv_obj_align(labelWBLE, LV_ALIGN_CENTER, 90, -152); // Align date below the time
+   lv_obj_align(labelWBLE, LV_ALIGN_CENTER, 88, -148); // Align date below the time
 
 
 
@@ -146,16 +146,6 @@ static void updateIcon(lv_obj_t *labelWIFI, lv_obj_t *labelWBLE){
 
 //    lv_label_set_text(labelDown , LV_SYMBOL_DOWN );
 //    lv_obj_align(labelDown, LV_ALIGN_CENTER, 109, -151); // Align date below the time
-
-
-
-
-
-
-
-
-
-
 
 
 

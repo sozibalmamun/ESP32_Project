@@ -18,7 +18,7 @@
 #include "Time/mytime.h"
 #include "mylvgl/mylvgl.h"
 
-#define TAG  "Time_Update"
+
 
 
 TaskHandle_t timeTask = NULL;
@@ -26,15 +26,15 @@ TaskHandle_t lvglTask = NULL;
 extern uint8_t wifiStatus;
 
 
+
+
 void app_main(void)
 {
-
 
     gpio_set_level((gpio_num_t)LCE_BL, 1);
     gpio_pad_select_gpio(LCE_BL);
     gpio_set_direction((gpio_num_t)LCE_BL, GPIO_MODE_OUTPUT);
     gpio_set_level((gpio_num_t)LCE_BL, 1);
-
 
 
 
@@ -52,17 +52,18 @@ void app_main(void)
     brightness(false);//sleep
 
 
-    // while(1){
 
+    // while(1){
     //     int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
     //     ESP_LOGW("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
-
-
-
-
-
-
     // }
 
+
 }
+
+
+
+
+
+
 

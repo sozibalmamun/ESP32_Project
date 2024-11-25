@@ -34,6 +34,7 @@ void initialize_sntp();
 void obtain_and_update_local_time();
 void update_time(lv_obj_t *hour_label, lv_obj_t *min_label ,lv_obj_t * sec_label );
 void update_date(lv_obj_t *label);
+
 void time_tick_task(void *arg);
 
 

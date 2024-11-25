@@ -27,9 +27,12 @@
 
 
 extern uint8_t wifiStatus;
+extern uint8_t networkAvaiable;
+
 extern void update_time(lv_obj_t *hour_label, lv_obj_t *min_label ,lv_obj_t * sec_label  );
 extern void update_date(lv_obj_t *label);
 extern void obtain_and_update_local_time();
+// void updateIcon(lv_obj_t *labelWIFI, lv_obj_t *labelWBLE);
 
 void lvgl_task(void *arg);
 void lv_tick_task(void *arg);

@@ -17,6 +17,7 @@ const int WIFI_FAIL_BIT = BIT1;
 
 SemaphoreHandle_t xGuiSemaphore;
 time_t custom_time;
+uint8_t networkAvaiable = false;
 
 
 
@@ -77,14 +78,19 @@ void obtain_and_update_local_time() {
         if (custom_time == -1)
         {
             // ESP_LOGE("TIME", "Error setting custom time");
+            networkAvaiable=false;
+
         }
         else
         {
-            ESP_LOGI("TIME", "Custom time set: %s", asctime(&timeinfo));
+
+            // ESP_LOGI("TIME", "Custom time set: %s", asctime(&timeinfo));
+            networkAvaiable=true;
 
         }
 
     } else {
+        networkAvaiable=false;
         // ESP_LOGE(TAG, "Failed to get valid time after multiple retries");
     }
 }
@@ -129,10 +135,6 @@ void update_date(lv_obj_t *label)
    strftime(date_str, sizeof(date_str), "%02d-%02m-%y %a", &timeinfo);
    lv_label_set_text(label, date_str); // Set text to the date label
 }
-
-
-
-
 
 void print_custom_time()
 {

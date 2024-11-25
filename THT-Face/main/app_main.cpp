@@ -55,7 +55,7 @@ void app_main()
         if(xTaskGetTickCount()-sleepTimeOut>3000 && /*xTaskGetTickCount()-sleepTimeOut< 3500 &&*/ sleepEnable == WAKEUP){
 
             sleepEnable=SLEEP;
-            printf("\nsleepEnable");
+            printf("\nsleepEnable"); 
             gpio_set_level((gpio_num_t)CAM_CONTROL, 1);
             brightness(true);
             deinitBlufi();
@@ -87,6 +87,7 @@ void app_main()
 
     }
 }
+
 
 void reInt(void){
 

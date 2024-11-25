@@ -7,9 +7,9 @@ converter link :
 https://lvgl.io/tools/fontconverter
 
 
-
 past path :
 D:\Project\ESP32_lvgl\timeWatch\components\lvgl\src\font
+
 
 config path :
 D:\Project\ESP32_lvgl\timeWatch\components\lvgl\src\lv_conf.h

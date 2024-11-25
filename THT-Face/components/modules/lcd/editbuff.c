@@ -594,8 +594,6 @@ void sleepTimeDate(camera_fb_t *buff, time_library_time_t current_time){
 //         bBar=0;
 //         tempBlvl=6;
 //     }
-
-
 //     icnPrint(NETWORK_ICON_POSS_X+19, NETWORK_ICON_POSS_Y+9-tempBlvl, BATTERY_WIDTH, tempBlvl-1,&betterybar, tempBlvl<=2?RED:WHITE ,buff);
 //     icnPrint(NETWORK_ICON_POSS_X+20, NETWORK_ICON_POSS_Y, BATTERY_WIDTH, BATTERY_HEIGHT,&betteryIcn,tempBlvl<2?RED:WHITE ,buff);
 // // ----------------------------------------------------------------------

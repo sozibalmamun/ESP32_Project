@@ -11,6 +11,28 @@ void lv_tick_task(void *arg) // LVGL tick task
 }
 
 
+
+
+
+static void updateIcon(lv_obj_t *labelWIFI, lv_obj_t *labelWBLE){
+
+
+    if(wifiStatus==1){
+        
+        lv_obj_set_style_text_color(labelWIFI, networkAvaiable?lv_color_white():lv_color_red(), 0); // White text
+        lv_obj_set_style_text_color(labelWBLE, lv_color_black(), 0); // White text
+        
+    }else{
+
+        lv_obj_set_style_text_color(labelWIFI, lv_color_black(), 0); // White text
+        lv_obj_set_style_text_color(labelWBLE, lv_color_white(), 0); // White text
+    }
+
+
+
+    
+}
+
  void lvgl_task(void *arg) // GUI task
 {
    xGuiSemaphore = xSemaphoreCreateMutex(); // Create GUI semaphore
@@ -93,6 +115,45 @@ void lv_tick_task(void *arg) // LVGL tick task
    lv_style_set_text_font(&dateStyle,&date); 
    lv_obj_add_style(date_label, &dateStyle, 0);
 
+//wifi icon
+   lv_obj_t * labelWIFI = lv_label_create(lv_scr_act());
+   lv_obj_set_style_text_color(labelWIFI, lv_color_black(), 0); // White text
+   lv_label_set_text(labelWIFI , LV_SYMBOL_WIFI);
+   lv_obj_align(labelWIFI, LV_ALIGN_CENTER, 107, -152); // Align date below the time
+
+
+// ble icon
+   lv_obj_t * labelWBLE = lv_label_create(lv_scr_act());
+   lv_obj_set_style_text_color(labelWBLE, lv_color_black(), 0); // White text
+   lv_label_set_text(labelWBLE , LV_SYMBOL_BLUETOOTH );
+   lv_obj_align(labelWBLE, LV_ALIGN_CENTER, 90, -152); // Align date below the time
+
+
+
+// // up icon 
+//    lv_obj_t * labelUp = lv_label_create(lv_scr_act());
+//    lv_obj_set_style_text_color(labelUp, lv_color_sec(), 0); // White text
+//    lv_obj_set_style_text_font(labelUp, &lv_font_montserrat_12, 0); 
+//    lv_label_set_text(labelUp , LV_SYMBOL_UP );
+//    lv_obj_align(labelUp, LV_ALIGN_CENTER, 109, -157); // Align date below the time
+
+
+// // doun icon
+//    lv_obj_t * labelDown = lv_label_create(lv_scr_act());
+//    lv_obj_set_style_text_color(labelDown, lv_color_sec(), 0); // White text
+
+//    lv_obj_set_style_text_font(labelDown, &lv_font_montserrat_12, 0); // Set large font for time  lv_font_unscii_8
+
+//    lv_label_set_text(labelDown , LV_SYMBOL_DOWN );
+//    lv_obj_align(labelDown, LV_ALIGN_CENTER, 109, -151); // Align date below the time
+
+
+
+
+
+
+
+
 
 
 
@@ -116,9 +177,12 @@ void lv_tick_task(void *arg) // LVGL tick task
          update_time(hour_label, min_label , sec_label);
          update_date(date_label);      // Update the date label
          if(wifiStatus==1)obtain_and_update_local_time();
+
+         updateIcon(labelWIFI,labelWBLE);
          lv_timer_handler();           // Handle LVGL tasks
          xSemaphoreGive(xGuiSemaphore);// Release semaphore
 
       }
    }
 }
+

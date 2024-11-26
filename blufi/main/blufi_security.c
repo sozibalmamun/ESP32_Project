@@ -93,6 +93,9 @@ void blufi_dh_negotiate_data_handler(uint8_t *data, int len, uint8_t **output_da
         if (blufi_sec->dh_param == NULL) {
             BLUFI_ERROR("%s, blufi_sec->dh_param == NULL\n", __func__);
             btc_blufi_report_error(ESP_BLUFI_DH_PARAM_ERROR);
+
+            printf("data");
+
             return;
         }
         uint8_t *param = blufi_sec->dh_param;

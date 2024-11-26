@@ -39,6 +39,9 @@
 
 static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_param_t *param);
 
+
+extern void btc_blufi_recv_handler(uint8_t *data, int len);
+
 #define WIFI_LIST_NUM   10
 
 static wifi_config_t sta_config;
@@ -331,6 +334,14 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
     case ESP_BLUFI_EVENT_REPORT_ERROR:
         BLUFI_ERROR("BLUFI report error, error code %d\n", param->report_error.state);
         esp_blufi_send_error_info(param->report_error.state);
+
+        // char* data;
+        // uint8_t len= 0;
+
+        // btc_blufi_recv_handler(&data, len);
+        // printf("in received data  %s    %d",data ,len );
+
+
         break;
     case ESP_BLUFI_EVENT_GET_WIFI_STATUS: {
         wifi_mode_t mode;
@@ -455,12 +466,6 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         received_data_str[param->custom_data.data_len] = '\0'; // Null-terminate the string
 
         printf("Received Custom Data: %s\n", received_data_str);
-
-
-
-
-
-
 
 
         break;

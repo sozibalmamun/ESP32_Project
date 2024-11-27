@@ -342,7 +342,6 @@ void RtcInit(void) {
     uint8_t ramData2 = RTCReadByte();
     RTCStop();
 
-    // printf("ramData1 %x  ramData2 %x \n", ramData1,ramData2);
     ESP_LOGW("RTC", "Ram 1: %x  Ram 2: %x \n",ramData1,ramData2 );
 
     if (ramData1 != 'O' || ramData2 != 'K') {
@@ -351,7 +350,7 @@ void RtcInit(void) {
 
 		RTCStart();
 		RTCWriteByte(RTC_WR_TCS_ADDR);
-		RTCWriteByte(RTC_TCS_0_DNRN);//RTCWriteByte(RTC_TCS_0_DNRN); // hard ware 3.3V
+		RTCWriteByte(RTC_TCS_0_DNRN); // hard ware 3.3V
 		RTCStop();
 
 		RTCStart();

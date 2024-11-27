@@ -16,6 +16,7 @@
     "type_traits": "c",
     "utility": "c",
     "esp_blufi_api.h": "c",
-    "blufi_example.h": "c"
+    "blufi_example.h": "c",
+    "esp_err.h": "c"
   }
 }

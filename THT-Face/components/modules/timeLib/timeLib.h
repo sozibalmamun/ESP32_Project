@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-/***       // Araf_20240417                            Ram Map
+/***   Sozib al Mamun                                   Ram Map
 ----------------------------------------------------------------------------------------------------------------------------
 | READ | WRITE |  BIT 7    |  BIT 6    |  BIT 5    |  BIT 4    |  BIT 3    |  BIT 2    |  BIT 1    |  BIT 0    | RANGE     |
 |------|-------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|
@@ -40,10 +40,10 @@ extern "C" {
 ***/
 
 // Define delays
-#define test 5
-#define DelayRST    test
-#define DelayIO     test
-#define CLK_DELAY   test
+#define testTime 5
+#define DelayRST    testTime
+#define DelayIO     testTime
+#define CLK_DELAY   testTime
 // Define RTC pin connections
 #define DS1302_SCLK_PIN 39
 #define DS1302_IO_PIN 40
@@ -130,12 +130,8 @@ typedef struct {
     uint8_t second;
 } time_library_time_t;
 
-// Function to initialize the time library
-void time_library_init(time_library_time_t *initial_time ,bool rtcUpdate);
-// Function to set the current time manually
-void  time_library_set_time(time_library_time_t *time ,bool rtcUpdate);
-// Function to get the current time
-void time_library_get_time(time_library_time_t *time);
+
+
 //get time 12/24 type
 uint8_t get_time(time_library_time_t *time, bool is_12);
 // Function to calculate the day of the week
@@ -145,6 +141,12 @@ uint32_t time_library_elapsed_time_ms(uint32_t start_time);
 // Function to get the current time in milliseconds
 uint32_t time_library_get_time_ms(void);
 
+// Function to initialize the time library
+void time_library_init(time_library_time_t *initial_time ,bool rtcUpdate);
+// Function to set the current time manually
+void  time_library_set_time(time_library_time_t *time ,bool rtcUpdate);
+// Function to get the current time
+void time_library_get_time(time_library_time_t *time);
 void save_time_format(bool is_12_hour);
 
 #ifdef __cplusplus

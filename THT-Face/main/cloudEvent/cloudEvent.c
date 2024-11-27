@@ -91,8 +91,6 @@ void process_command(const char* buffer ) {
 
     } else {
 
-        // printf("CRC check failed.\n");
-        // memset(tcpBuffer, 0, strlen(tcpBuffer));
         CmdEvent = NAME_DATA_ERROR;
         return;
     }
@@ -195,7 +193,7 @@ void process_command(const char* buffer ) {
         }
 
         // Extract the name
-        ptr++;  // Skip spaces after the command
+        ptr++;  // Skip spaces 
 
         uint16_t NameCrc = (ptr[0] << 8) | ptr[1];  // Read the next two bytes as CRC
 
@@ -250,20 +248,20 @@ void process_command(const char* buffer ) {
         syncperson->Name,syncperson->id ,syncperson->width,syncperson->height,\
         imageCrc,calculated_imageCrc );
 
-        // if(calculated_imageCrc!=imageCrc || calculated_NameCrc!=NameCrc){
+// image validity check ...........................................................
+        if(calculated_imageCrc!=imageCrc || calculated_NameCrc!=NameCrc){
 
-        //     // printf("CRC mismatch: invlid data.\n");
-        //     CmdEvent = SYNC_DATA_ERROR;
-        //     dataOk = false;     
-        // }
+            printf("CRC mismatch: invlid data.\n");
+            CmdEvent = SYNC_DATA_ERROR;
+            dataOk = false;     
+        }
+        if(memcmp(syncperson->buf, ptr, buffer_size) == 1 ) {
 
-        // if(memcmp(syncperson->buf, ptr, buffer_size) == 1 ) {
-
-        //     // printf("Data mismatch: received and saved data are different.\n");
-        //     CmdEvent = SYNC_SAVED_FAIL;
-        //     dataOk = false;     
-        // } 
-
+            printf("Data mismatch: received and saved data are different.\n");
+            CmdEvent = SYNC_SAVED_FAIL;
+            dataOk = false;     
+        } 
+// ---------------------------------------------------------------------------------
         for(uint16_t i=0; i< buffer_size;i++){
 
             printf("%x ",syncperson->buf[i]);
@@ -343,7 +341,7 @@ void process_command(const char* buffer ) {
 
         ESP_LOGI(TAG_ENROL, "time formet %d %d %d %d %d %d %d", buffer[5], buffer[6], buffer[7], buffer[8], buffer[9], buffer[10] , buffer[11]);
 
-        time_library_time_t initial_time = {buffer[5]+2000, buffer[6], buffer[7] ,buffer[8], buffer[9], buffer[10] ,buffer[11]+1};//     year, month, day,weekday, hour, minute, second;
+        time_library_time_t initial_time = {buffer[5]+2000, buffer[6], buffer[7] ,buffer[8], buffer[9], buffer[10] ,buffer[11]+1};//year, month, day,weekday, hour, minute, second;
         time_library_set_time(&initial_time, 1);
         CmdEvent = TIME_UPDATE;
 

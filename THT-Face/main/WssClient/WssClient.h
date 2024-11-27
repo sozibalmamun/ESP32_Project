@@ -74,10 +74,9 @@ const DATA_FLASH char echo_org_ssl_ca_cert[]  = \
 "Zale8OMckn/BU3O/3aFNLHLfET2H2hT6Wb3nwxjpLIfXmSVcVd8A58XH0g==\n" \
 "-----END CERTIFICATE-----\n";
 
-
-extern uint8_t networkStatus;
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
+extern uint8_t networkStatus;
 extern const char* day_names[];
 extern bool dspTimeFormet;
 extern uint16_t batVoltage;

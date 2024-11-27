@@ -3,21 +3,18 @@
 #include <math.h>
 #include "esp_wifi.h"
 #define     TAG             "WSS"
-#define     TAGSTOMP        "STOMP_CLIENT"
+#define     TAG_WSS        "WSS_CLIENT"
 
 int8_t percentage=0;
 int8_t maxTry=0;
 
 
 
-
-//====================================done end
-
 bool sendToWss(uint8_t *buff, size_t buffLen) {
     uint8_t tempFrame[CHANK_SIZE];  // Buffer for each chunk
     uint16_t currentIndex = 0;
 
-    // ESP_LOGW(TAGSTOMP, "Total stompS length: %d", buffLen);
+    // ESP_LOGW(TAG_WSS, "Total stompS length: %d", buffLen);
 
     while (buffLen > 0) {
         // Prepare the chunk data
@@ -51,13 +48,13 @@ bool sendToWss(uint8_t *buff, size_t buffLen) {
         // Append frame terminator
         strcat(sendingFrame + headerLen + chunkLen, "\\n\\n\\u0000");
 
-        // ESP_LOGW(TAGSTOMP, "wss pac: %s", sendingFrame);
+        // ESP_LOGW(TAG_WSS, "wss pac: %s", sendingFrame);
 
         if (networkStatus != WSS_CONNECTED) {
             if (networkStatus > WIFI_DISS) networkStatus = WIFI_CONNECTED;
             heap_caps_free(sendingFrame);
             vTaskDelay(1000 / portTICK_PERIOD_MS);
-            ESP_LOGE(TAGSTOMP, "Failed to send frame. maxTry...%d" ,maxTry);
+            ESP_LOGE(TAG_WSS, "Failed to send frame. maxTry...%d" ,maxTry);
             maxTry++;
             if (maxTry > MAXTRY) {
                 maxTry = 0;
@@ -70,7 +67,7 @@ bool sendToWss(uint8_t *buff, size_t buffLen) {
 
         // Send the prepared frame via WebSocket (replace with your WebSocket send function)
         if (esp_websocket_client_send_bin(client, sendingFrame, headerLen + chunkLen + 6, portMAX_DELAY) == 0) {
-            ESP_LOGE(TAGSTOMP, "Failed to send frame. Retrying...");
+            ESP_LOGE(TAG_WSS, "Failed to send frame. Retrying...");
             heap_caps_free(sendingFrame);
             vTaskDelay(1000 / portTICK_PERIOD_MS);
             continue;  // Retry if failed to send
@@ -104,35 +101,36 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
 
     printf("\n\n");
 
+//--------------------------- start of info sent--------------------------------------------------------------
 
     // Prepare image info
     char imageInfo[35] = {0};
-    imageInfo[0] = (buffLen >> 8) & 0xFF;  // High byte of buffLen
-    imageInfo[1] = buffLen & 0xFF;         // Low byte of buffLen
-    imageInfo[2] = ' ';            // space
+    imageInfo[0] = (buffLen >> 8) & 0xFF;               // High byte of buffLen
+    imageInfo[1] = buffLen & 0xFF;                      // Low byte of buffLen
+    imageInfo[2] = ' ';                                 // space
 
-    imageInfo[3] = h;                      // Image height
-    imageInfo[4] = ' ';            // space
+    imageInfo[3] = h;                                   // Image height
+    imageInfo[4] = ' ';                                 // space
 
-    imageInfo[5] = w;                      // Image width
-    imageInfo[6] = ' ';            // space
+    imageInfo[5] = w;                                   // Image width
+    imageInfo[6] = ' ';                                 // space
 
-    memcpy(&imageInfo[7], name, strlen(name));  // Copy the name
-    imageInfo[6 + strlen(name)] = ' ';            // space
+    memcpy(&imageInfo[7], name, strlen(name));          // Copy the name
+    imageInfo[6 + strlen(name)] = ' ';                  // space
 
-    imageInfo[7 + strlen(name)] = (id >> 8) & 0xFF;  // High byte of ID
-    imageInfo[8 + strlen(name)] = id & 0xFF;         // Low byte of ID
-    imageInfo[9] = ' ';            // space
+    imageInfo[7 + strlen(name)] = (id >> 8) & 0xFF;     // High byte of ID
+    imageInfo[8 + strlen(name)] = id & 0xFF;            // Low byte of ID
+    imageInfo[9] = ' ';                                 // space
 
     imageInfo[10 + strlen(name)] = totalChunks & 0xFF;  // Total chunks
 
     // Send image info
-    size_t imageInfoLen = 7 + strlen(name);  // Calculate the length of imageInfo
+    size_t imageInfoLen = 7 + strlen(name);             // Calculate the length of imageInfo
     if (!sendToWss((uint8_t*)imageInfo, imageInfoLen)) {
         // printf("Image info send failed\n");
         return false;
     }
-
+//--------------------------- end of info sent--------------------------------------------------------------
     vTaskDelay(50);
    
     uint16_t currentIndex = 0;
@@ -333,11 +331,11 @@ void wssClientInt(void) {
     websocket_cfg.cert_pem = echo_org_ssl_ca_cert; 
     websocket_cfg.ping_interval_sec= 5; 
     websocket_cfg.pingpong_timeout_sec=10;
-    websocket_cfg.use_global_ca_store = true;// ok 
+    websocket_cfg.use_global_ca_store = true;
     websocket_cfg.skip_cert_common_name_check = true;
     websocket_cfg.disable_auto_reconnect = false;
-    websocket_cfg.task_stack = 1024*4;  // Increased stack size
-    websocket_cfg.task_prio =10;      // Set an appropriate task priorit
+    websocket_cfg.task_stack = 1024*4;  
+    websocket_cfg.task_prio =10;     
 
     // ESP_LOGI(TAG, "Initializing global CA store...");
     ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));

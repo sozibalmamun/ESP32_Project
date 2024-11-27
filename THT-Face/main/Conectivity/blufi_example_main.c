@@ -123,6 +123,23 @@ static bool example_wifi_reconnect(void)
     return ret;
 }
 
+
+static void send_custom_data_to_app(const char *data)
+{
+    if (ble_is_connected) {
+        esp_err_t ret = esp_blufi_send_custom_data((uint8_t *)data, strlen(data));
+        if (ret != ESP_OK) {
+            // BLUFI_ERROR("Failed to send custom data, error code: %d\n", ret);
+        } else {
+            BLUFI_INFO("Custom data sent: %s\n", data);
+        }
+    } else {
+        // BLUFI_INFO("BLUFI BLE is not connected, cannot send data\n");
+    }
+}
+
+
+
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
 {
@@ -141,8 +158,10 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
         printf("WiFi CONNECTED\n");
         networkStatus=WIFI_CONNECTED;
         gl_sta_is_connecting = false;
+        vTaskDelay(90);
+        send_custom_data_to_app("wcs");// wifi connection feedback to application over BLE
+        vTaskDelay(10);
 
-        vTaskDelay(100);
         wssClientInt();
         // networkStatus=WIFI_CONNECTED;
         // gl_sta_is_connecting = false;

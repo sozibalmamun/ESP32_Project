@@ -243,7 +243,7 @@ void plugIn(bool plugin){
 
     if(plugin){
         if(chargeState==CHARGE_IDLE || chargeState == UN_PLUGING){
-            sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
+            sleepTimeOut = xTaskGetTickCount();
             brightness(false);
             // printf("charging high lcd\n");
             chargeState=CHARGER_PLUGED;
@@ -257,7 +257,7 @@ void plugIn(bool plugin){
     }else{
 
         if(chargeState==CHARGEING || chargeState==CHARGER_PLUGED){
-            sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
+            sleepTimeOut = xTaskGetTickCount();
             // printf("CHARGER_UNPLUGING\n");
             brightness(false);
             chargeState=UN_PLUGING;

@@ -140,7 +140,7 @@ void facedataHandle(const QueueHandle_t input )
 {
     // ESP_LOGW("cloudHandel", "detection FaceProcesing creat");
     xQueueCloudI = input;
-    xTaskCreatePinnedToCore(cloudeHandlerTask, TAG, 4 * 1024, NULL, 5, detectionFaceProcesingTaskHandler, 1);
+    xTaskCreatePinnedToCore(cloudeHandlerTask, TAG, 4 * 1024, NULL, 5, &detectionFaceProcesingTaskHandler, 1);
 
 
 }

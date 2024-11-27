@@ -22,6 +22,9 @@ extern "C"
 #endif
 
 extern uint8_t networkStatus;
+extern void wssReset(void);
+
+
 typedef struct {
     uint8_t *buf;             /*!< Pointer to the copied pixel data */
     size_t len;               /*!< Length of the buffer in bytes */
@@ -32,30 +35,25 @@ typedef struct {
 } imageData_t;
 
 
-
 bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id);
-void stomp_client_connect(void);
-bool stompSend(char * buff, char* topic);
 void cloudHandel();
 void reconnect();
 void facedataHandle(const QueueHandle_t input);
-bool pendingData();
 
-bool syncFace(const camera_fb_t *src, imageData_t **person);
-bool delete_face_data(uint16_t person_id , const char * directory);
 
 //---------------fs system-------------------------------------------------------------------------------------------------------
+
 void  save_face_data(uint16_t person_id, const char* name, uint8_t image_width, uint8_t image_height, const uint8_t* image_data, const char* directory);
-// void read_face_data(uint32_t person_id);
 void write_log_attendance(uint16_t person_id,  uint8_t* timestamp);
-// bool process_and_send_faces(uint16_t id);
 void print_memory_status(void);
 void format_fatfs(void);
 void process_attendance_files(void);
+bool delete_face_data(uint16_t person_id , const char * directory);
+bool syncFace(const camera_fb_t *src, imageData_t **person);
+bool pendingData();
+
 //----------------event feedback--------------------------------------------------
 void eventFeedback(void);
-
-extern void wssReset(void);
 
 
 

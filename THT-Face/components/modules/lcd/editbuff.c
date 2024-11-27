@@ -505,6 +505,7 @@ void wrightChar(uint8_t letterSize, uint16_t x_offset, uint8_t y_offset, char c,
 
 
     for (uint8_t y = 0; y < tablehight[letterSize] ; y++) {
+        
         for (uint8_t x = 0; x <= letterWidth; x++) {
 
             uint32_t buff_index = ((y + y_offset) * buff->width + (x + x_offset)) * 2; // 2 bytes per pixel

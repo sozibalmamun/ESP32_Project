@@ -47,12 +47,11 @@ void app_main()
 
     while(true){
 
-        
         // // Log or print the CPU frequency
         // int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
         // ESP_LOGI("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
 
-        if(xTaskGetTickCount()-sleepTimeOut>3000 && /*xTaskGetTickCount()-sleepTimeOut< 3500 &&*/ sleepEnable == WAKEUP){
+        if(xTaskGetTickCount()-sleepTimeOut>3000 && sleepEnable == WAKEUP){
 
             sleepEnable=SLEEP;
             printf("\nsleepEnable"); 

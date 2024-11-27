@@ -20,23 +20,22 @@ extern "C"
 {
 #endif
 
-void qrencode(void);
 
+
+unsigned badruns(unsigned char length);
+unsigned char ismasked(unsigned char x, unsigned char y);
+unsigned modnn(unsigned x);
+int badcheck();
+
+
+void qrencode(void);
 void createQrcode(char *message ,camera_fb_t *buff);
 void render(int x, int y, int color ,camera_fb_t *buff);
-
-
-unsigned modnn(unsigned x);
 void initrspoly(unsigned char eclen, unsigned char *genpoly);
-void appendrs(unsigned char *data, unsigned char dlen, 
-              unsigned char *ecbuf, unsigned char eclen, unsigned char *genpoly);
-
+void appendrs(unsigned char *data, unsigned char dlen,unsigned char *ecbuf, unsigned char eclen, unsigned char *genpoly);
 void stringtoqr(void);
-unsigned char ismasked(unsigned char x, unsigned char y);
 void fillframe(void);
 void applymask(unsigned char m);
-unsigned badruns(unsigned char length);
-int badcheck();
 void addfmt(unsigned char masknum);
 void qrencode();
 

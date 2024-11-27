@@ -286,6 +286,30 @@ static esp_blufi_callbacks_t example_callbacks = {
     .checksum_func = blufi_crc_checksum,
 };
 
+
+
+
+static void send_custom_data_to_app(const char *data)
+{
+    if (ble_is_connected) {
+        esp_err_t ret = esp_blufi_send_custom_data((uint8_t *)data, strlen(data));
+        if (ret != ESP_OK) {
+            BLUFI_ERROR("Failed to send custom data, error code: %d\n", ret);
+        } else {
+            BLUFI_INFO("Custom data sent: %s\n", data);
+        }
+    } else {
+        BLUFI_INFO("BLUFI BLE is not connected, cannot send data\n");
+    }
+}
+
+
+
+
+
+
+
+
 static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_param_t *param)
 {
     /* actually, should post to blufi_task handle the procedure,
@@ -466,6 +490,8 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         received_data_str[param->custom_data.data_len] = '\0'; // Null-terminate the string
 
         printf("Received Custom Data: %s\n", received_data_str);
+
+        send_custom_data_to_app("hi");
 
 
         break;

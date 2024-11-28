@@ -3,6 +3,26 @@
 uint16_t batVoltage;
 uint8_t chargeState=0;
 
+union data {
+    struct PACKED_STRUCT bit {
+        uint8_t s0 : 1;
+        uint8_t s1 : 1;
+        uint8_t s2 : 1;
+        uint8_t s3 : 1;
+        uint8_t s4 : 1;
+        uint8_t s5 : 1;
+        uint8_t s6 : 1;
+        uint8_t s7 : 1;
+    } bit;
+    
+    // Alternative way to access the same 8-bit memory space
+    uint8_t shift;
+};
+
+union data shiftOutData;
+
+
+
 
 void gpioInt(void){
 
@@ -272,6 +292,51 @@ void plugIn(bool plugin){
     }
 
 }
+
+
+void shiftOut(){
+
+uint8_t c8;
+
+for(c8 = 0x01; c8; c8<<=1)
+{
+
+
+    // if(shiftOutData.shift&c8) //DATA_HIGH 
+    // else //DATA_LOW
+
+    // clk hight 
+    // clk low
+}
+// LATCH
+
+}
+
+
+
+static void sensor(void *arg)
+{
+   
+
+    while (1)
+    {
+      
+        shiftOut();
+
+
+    }
+}
+
+
+
+
+void sensorHandel()
+{
+    xTaskCreatePinnedToCore(sensor, "sensor", 1 * 1024, NULL, 2, NULL, 0);
+}
+
+
+
 
 
 // void list_all_tasks(void) {

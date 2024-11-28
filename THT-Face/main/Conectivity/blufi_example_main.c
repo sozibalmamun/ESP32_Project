@@ -113,7 +113,9 @@ static bool example_wifi_reconnect(void)
 {
     bool ret;
     if (gl_sta_is_connecting && example_wifi_retry++ < EXAMPLE_WIFI_CONNECTION_MAXIMUM_RETRY) {
+
         // BLUFI_INFO("BLUFI WiFi starts reconnection\n");
+        
         gl_sta_is_connecting = (esp_wifi_connect() == ESP_OK);
         example_record_wifi_conn_info(EXAMPLE_INVALID_RSSI, EXAMPLE_INVALID_REASON);
         ret = true;

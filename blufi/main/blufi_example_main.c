@@ -490,8 +490,8 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         received_data_str[param->custom_data.data_len] = '\0'; // Null-terminate the string
 
         printf("Received Custom Data: %s\n", received_data_str);
-
-        send_custom_data_to_app("hi");
+        send_custom_data_to_app("wcs");       
+    
 
 
         break;
@@ -554,4 +554,5 @@ void app_main(void)
     }
 
     BLUFI_INFO("BLUFI VERSION %04x\n", esp_blufi_get_version());
+
 }

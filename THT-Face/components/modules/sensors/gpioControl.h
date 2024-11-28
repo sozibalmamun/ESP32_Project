@@ -24,6 +24,25 @@
 extern  uint8_t sleepEnable;
 extern volatile TickType_t sleepTimeOut; 
 
+union shiftResistorBitfild {
+    struct PACKED_STRUCT bit {
+        uint8_t CAMEN   : 1;
+        uint8_t MSDA    : 1;
+        uint8_t MSCL    : 1;
+        uint8_t PEREN   : 1;
+        uint8_t LED     : 1;
+        uint8_t LCDEN   : 1;
+        uint8_t CAMPDWN : 1;
+        uint8_t IRLED   : 1;
+    } bitset;
+    
+    // Alternative way to access the same 8-bit memory space
+    uint8_t read;
+};
+union shiftResistorBitfild shiftOutData;
+
+
+
 
 extern TaskHandle_t cameraTaskHandler;
 extern TaskHandle_t eventTaskHandler;
@@ -51,8 +70,18 @@ extern TaskHandle_t cloudeTaskHandler;
 #define GPIO_WAKEUP_BUTTON GPIO_NUM_0
 #define BATTERY_CHARGE_STATE GPIO_NUM_20
 
-#define CAM_CONTROL GPIO_NUM_3 
+
+
+
+#define CAMP_DWN GPIO_NUM_3 
 #define LCE_BL GPIO_NUM_14
+// shift registor
+#define SER_SDI GPIO_NUM_3
+#define SER_CLK GPIO_NUM_45
+#define SER_LAT GPIO_NUM_14
+
+
+
 #define ESP_INTR_FLAG_DEFAULT 0
 #define SLEEP_LCD 5
 #define WAKE_LCD 70

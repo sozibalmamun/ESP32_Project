@@ -10,6 +10,12 @@ void app_main()
     // Initialize Conectivity----------------------------
     bluFiStart();
     //--------------------------------------------------
+    
+    shiftOutData.bitset.PEREN=1;
+    shiftOutData.bitset.CAMEN=1;
+    shiftOutData.bitset.CAMPDWN=0;
+    shiftOutData.bitset.LCDEN=1;
+
 
     xQueueAIFrame = xQueueCreate(2, sizeof(camera_fb_t *));
     xQueueLCDFrame = xQueueCreate(2, sizeof(camera_fb_t *));
@@ -55,7 +61,7 @@ void app_main()
 
             sleepEnable=SLEEP;
             printf("\nsleepEnable"); 
-            gpio_set_level((gpio_num_t)CAM_CONTROL, 1);
+            gpio_set_level((gpio_num_t)CAMP_DWN, 1);
             brightness(true);
             deinitBlufi();
 
@@ -90,7 +96,7 @@ void app_main()
 
 void reInt(void){
 
-    gpio_set_level((gpio_num_t)CAM_CONTROL, 0);
+    gpio_set_level((gpio_num_t)CAMP_DWN, 0);
     RtcInit();
     vTaskDelay(pdMS_TO_TICKS(10));  // Allow time for frequency update
     sleepEnable = WAKEUP;

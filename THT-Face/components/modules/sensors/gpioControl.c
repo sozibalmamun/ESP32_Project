@@ -1,40 +1,26 @@
 #include "gpioControl.h"
 
+
+
+
+
+
 uint16_t batVoltage;
 uint8_t chargeState=0;
-
-union data {
-    struct PACKED_STRUCT bit {
-        uint8_t s0 : 1;
-        uint8_t s1 : 1;
-        uint8_t s2 : 1;
-        uint8_t s3 : 1;
-        uint8_t s4 : 1;
-        uint8_t s5 : 1;
-        uint8_t s6 : 1;
-        uint8_t s7 : 1;
-    } bit;
-    
-    // Alternative way to access the same 8-bit memory space
-    uint8_t shift;
-};
-
-union data shiftOutData;
 
 
 
 
 void gpioInt(void){
 
-    // gpio_set_level((gpio_num_t)LCE_BL, 0);
-    // gpio_pad_select_gpio(LCE_BL);
-    // gpio_set_direction((gpio_num_t)LCE_BL, GPIO_MODE_OUTPUT);
-    // gpio_set_level((gpio_num_t)LCE_BL, 0);
+    gpio_set_level((gpio_num_t)LCE_BL, 0);
+    gpio_pad_select_gpio(LCE_BL);
+    gpio_set_direction((gpio_num_t)LCE_BL, GPIO_MODE_OUTPUT);
+    gpio_set_level((gpio_num_t)LCE_BL, 0);
 
-   
-    gpio_pad_select_gpio(CAM_CONTROL);
-    gpio_set_direction((gpio_num_t)CAM_CONTROL, GPIO_MODE_OUTPUT);
-    gpio_set_level((gpio_num_t)CAM_CONTROL, 0);
+    gpio_pad_select_gpio(CAMP_DWN);
+    gpio_set_direction((gpio_num_t)CAMP_DWN, GPIO_MODE_OUTPUT);
+    gpio_set_level((gpio_num_t)CAMP_DWN, 0);
 
     gpio_config_t io_conf = {
         .intr_type = GPIO_INTR_DISABLE,
@@ -78,17 +64,6 @@ void PwmInt( gpio_num_t pinNo ) {
         .hpoint     = 0,                          // Hpoint: 0
         .flags.output_invert = 0                 // Disable output inversion
     };
-
-    // // Configure LEDC channel for GPIO 14
-    // ledc_channel->gpio_num   = pinNo;                // GPIO pin for PWM output
-    // ledc_channel->speed_mode = LEDC_LOW_SPEED_MODE;        // Low-speed mode
-    // ledc_channel->channel    = LEDC_CHANNEL_0;             // Channel: 0
-    // ledc_channel->intr_type  = LEDC_INTR_DISABLE;          // Disable fade interrupt
-    // ledc_channel->timer_sel  = LEDC_TIMER_0;               // Select Timer 0
-    // ledc_channel->duty       = 0;                          // Initial duty cycle: 0
-    // ledc_channel->hpoint     = 0;                          // Hpoint: 0
-    // ledc_channel->flags.output_invert = 0;                 // Disable output inversion
-
     // Initialize the channel
     ledc_channel_config(&ledc_channel);
 
@@ -120,7 +95,6 @@ void brightness(bool sleep){
     ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
 
 }
-
 
 
 void configure_dynamic_frequency() {
@@ -175,6 +149,7 @@ void reduce_cpu_frequency() {
 
 }
 
+
 void restore_cpu_frequency() {
 
 
@@ -222,7 +197,7 @@ void enter_light_sleep(void) {
     configure_wakeup();
     vTaskDelay(200);
     ESP_LOGI("Sleep", "Entering light sleep...");
-    gpio_set_level((gpio_num_t)CAM_CONTROL, 1);  // Ensure peripherals are powered off or set to sleep state
+    gpio_set_level((gpio_num_t)CAMP_DWN, 1);  // Ensure peripherals are powered off or set to sleep state
 
     // Set the wake-up source to external (GPIO_BOOT, active low)
     // esp_sleep_enable_timer_wakeup(1000000 * 120); // Wake up every 120 seconds (in microseconds)
@@ -294,7 +269,7 @@ void plugIn(bool plugin){
 }
 
 
-void shiftOut(){
+void shiftOut( uint8_t val){
 
 uint8_t c8;
 
@@ -302,13 +277,16 @@ for(c8 = 0x01; c8; c8<<=1)
 {
 
 
-    // if(shiftOutData.shift&c8) //DATA_HIGH 
-    // else //DATA_LOW
+    if(val&c8) gpio_set_level((gpio_num_t)SER_SDI, 1);
+    else gpio_set_level((gpio_num_t)SER_SDI, 0);
 
-    // clk hight 
-    // clk low
+
+    gpio_set_level((gpio_num_t)SER_CLK, 1);
+    gpio_set_level((gpio_num_t)SER_CLK, 0);
+
 }
-// LATCH
+
+gpio_set_level((gpio_num_t)SER_LAT, 1);
 
 }
 
@@ -317,12 +295,30 @@ for(c8 = 0x01; c8; c8<<=1)
 static void sensor(void *arg)
 {
    
+    uint8_t tempOld=0;
+    gpio_set_level((gpio_num_t)SER_SDI, 0);
+    gpio_pad_select_gpio(SER_SDI);
+    gpio_set_direction((gpio_num_t)SER_SDI, GPIO_MODE_OUTPUT);
+
+    gpio_set_level((gpio_num_t)SER_CLK, 0);
+    gpio_pad_select_gpio(SER_CLK);
+    gpio_set_direction((gpio_num_t)SER_CLK, GPIO_MODE_OUTPUT);
+
+    gpio_set_level((gpio_num_t)SER_LAT, 0);
+    gpio_pad_select_gpio(SER_LAT);
+    gpio_set_direction((gpio_num_t)SER_LAT, GPIO_MODE_OUTPUT);
+
+
+
+
 
     while (1)
     {
       
-        shiftOut();
-
+        if(shiftOutData.read != tempOld){
+            tempOld=shiftOutData.read;
+            shiftOut(shiftOutData.read);
+        }
 
     }
 }

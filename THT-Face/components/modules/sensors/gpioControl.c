@@ -270,22 +270,14 @@ void plugIn(bool plugin){
 
 
 void shiftOut( uint8_t val){
-
 uint8_t c8;
-
 for(c8 = 0x01; c8; c8<<=1)
 {
-
-
     if(val&c8) gpio_set_level((gpio_num_t)SER_SDI, 1);
     else gpio_set_level((gpio_num_t)SER_SDI, 0);
-
-
     gpio_set_level((gpio_num_t)SER_CLK, 1);
     gpio_set_level((gpio_num_t)SER_CLK, 0);
-
 }
-
 gpio_set_level((gpio_num_t)SER_LAT, 1);
 
 }
@@ -294,7 +286,6 @@ gpio_set_level((gpio_num_t)SER_LAT, 1);
 
 static void sensor(void *arg)
 {
-   
     uint8_t tempOld=0;
     gpio_set_level((gpio_num_t)SER_SDI, 0);
     gpio_pad_select_gpio(SER_SDI);
@@ -307,9 +298,6 @@ static void sensor(void *arg)
     gpio_set_level((gpio_num_t)SER_LAT, 0);
     gpio_pad_select_gpio(SER_LAT);
     gpio_set_direction((gpio_num_t)SER_LAT, GPIO_MODE_OUTPUT);
-
-
-
 
 
     while (1)

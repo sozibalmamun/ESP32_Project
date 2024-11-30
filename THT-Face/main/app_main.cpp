@@ -7,10 +7,10 @@ void app_main()
     ESP_LOGE(TAG, "Starting app_main");
     gpioInt();
     configure_dynamic_frequency();
-    // Initialize Conectivity----------------------------
+    // Initialize Conectivity---------------------------
     bluFiStart();
     //--------------------------------------------------
-    
+    shiftOutData.write=0;
     shiftOutData.bitset.PEREN=1;
     shiftOutData.bitset.CAMEN=1;
     shiftOutData.bitset.CAMPDWN=0;
@@ -85,7 +85,7 @@ void app_main()
 
         }else {
             reconnect();
-            readBatteryVoltage();
+            // readBatteryVoltage();
             vTaskDelay(pdMS_TO_TICKS(100));  // Update every 1 second
 
         }

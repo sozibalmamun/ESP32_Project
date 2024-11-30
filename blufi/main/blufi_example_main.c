@@ -40,7 +40,7 @@
 static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_param_t *param);
 
 
-extern void btc_blufi_recv_handler(uint8_t *data, int len);
+// extern void btc_blufi_recv_handler(uint8_t *data, int len);
 
 #define WIFI_LIST_NUM   10
 

@@ -38,7 +38,10 @@ union shiftResistorBitfild {
     
     // Alternative way to access the same 8-bit memory space
     uint8_t read;
+    uint8_t write;
+
 };
+
 union shiftResistorBitfild shiftOutData;
 
 

@@ -85,7 +85,7 @@ void app_main()
 
         }else {
             reconnect();
-            // readBatteryVoltage();
+            readBatteryVoltage();
             vTaskDelay(pdMS_TO_TICKS(100));  // Update every 1 second
 
         }

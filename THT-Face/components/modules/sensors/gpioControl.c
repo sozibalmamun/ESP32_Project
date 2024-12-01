@@ -72,7 +72,7 @@ void PwmInt( gpio_num_t pinNo ) {
     // Optional: Use fading
     ledc_fade_func_install(0);  // Install the fade function
     ledc_set_fade_time_and_start(ledc_channel.speed_mode, ledc_channel.channel, 8192, 1000, LEDC_FADE_NO_WAIT);
-    for (int duty = 8192; duty >= 0; duty -= 64) {
+    for (int duty = 8192; duty >= 0; duty -= 512) {
         ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, duty);
         ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
         vTaskDelay(100 / portTICK_PERIOD_MS);     // Delay to see the dimming effect
@@ -284,42 +284,52 @@ gpio_set_level((gpio_num_t)SER_LAT, 1);
 
 static void sensor(void *arg)
 {
-    gpio_set_level((gpio_num_t)SER_SDI, 0);
-    gpio_pad_select_gpio(SER_SDI);
-    gpio_set_direction((gpio_num_t)SER_SDI, GPIO_MODE_OUTPUT);
+    // gpio_set_level((gpio_num_t)SER_SDI, 0);
+    // gpio_pad_select_gpio(SER_SDI);
+    // gpio_set_direction((gpio_num_t)SER_SDI, GPIO_MODE_OUTPUT);
 
-    gpio_set_level((gpio_num_t)SER_CLK, 0);
-    gpio_pad_select_gpio(SER_CLK);
-    gpio_set_direction((gpio_num_t)SER_CLK, GPIO_MODE_OUTPUT);
+    // gpio_set_level((gpio_num_t)SER_CLK, 0);
+    // gpio_pad_select_gpio(SER_CLK);
+    // gpio_set_direction((gpio_num_t)SER_CLK, GPIO_MODE_OUTPUT);
 
-    gpio_set_level((gpio_num_t)SER_LAT, 0);
-    gpio_pad_select_gpio(SER_LAT);
-    gpio_set_direction((gpio_num_t)SER_LAT, GPIO_MODE_OUTPUT);
+    // gpio_set_level((gpio_num_t)SER_LAT, 0);
+    // gpio_pad_select_gpio(SER_LAT);
+    // gpio_set_direction((gpio_num_t)SER_LAT, GPIO_MODE_OUTPUT);
+
+    // printf("in sensor\n");
+
 
     uint8_t tempOld=0;
     while (1)
     {
+
       
+        // printf("Music: %d Shift %d\n",music, shiftOutData.bitset.MSDA);
         if(music!=MUSIC_IDLE ){
             if(music!=MUSIC_STOPING)shiftOutData.bitset.MSDA=1;
         }
 
-        if(shiftOutData.read != tempOld){
+        if(shiftOutData.read != tempOld){// true if any bit change
             tempOld=shiftOutData.read;
-            shiftOut(shiftOutData.read);
+            // shiftOut(shiftOutData.read);
             musicPlayDuration = xTaskGetTickCount();
+            // printf("shift out\n");
         }
 
         switch (music)
         {
         case MUSIC_1:
 
+            printf("MUSIC_1 %d \n" ,shiftOutData.bitset.MSDA);
+
             vTaskDelay(pdMS_TO_TICKS(2));
-            shiftOutData.bitset.MSDA=0;
+            shiftOutData.bitset.MSDA=0; 
             music=MUSIC_STOPING;
+
             break;
         
         case MUSIC_2:
+            printf("MUSIC_2 %d \n" ,shiftOutData.bitset.MSDA);
             vTaskDelay(pdMS_TO_TICKS(3));
             music=MUSIC_STOPING;
             shiftOutData.bitset.MSDA=0;
@@ -327,11 +337,12 @@ static void sensor(void *arg)
         
         case MUSIC_STOPING:
 
+            // printf("MUSIC_STOPING\n");
+
             if( xTaskGetTickCount()-musicPlayDuration>TIMEOUT_5000_MS){
                 music=MUSIC_STOP;
                 shiftOutData.bitset.MSDA=1;
             }
-
 
             break;
 
@@ -340,6 +351,9 @@ static void sensor(void *arg)
             vTaskDelay(pdMS_TO_TICKS(2));
             music=MUSIC_IDLE;
             shiftOutData.bitset.MSDA=0;
+
+            printf("MUSIC_STOP %d \n",shiftOutData.bitset.MSDA);
+
             break;
 
         case MUSIC_IMMEDIATE_STOP:
@@ -349,10 +363,12 @@ static void sensor(void *arg)
             shiftOutData.bitset.MSDA=0;
             break;
 
-        
         default:
             break;
         }
+
+        ets_delay_us(50);
+
     }
 }
 
@@ -361,7 +377,9 @@ static void sensor(void *arg)
 
 void sensorHandel()
 {
-    xTaskCreatePinnedToCore(sensor, "sensor", 1 * 1024, NULL, 2, NULL, 0);
+
+    // ESP_LOGI("TAG", "SensorHandel");
+    xTaskCreatePinnedToCore(sensor, "sensor", 1 * 1024, NULL, 2, NULL, 1);
 }
 
 

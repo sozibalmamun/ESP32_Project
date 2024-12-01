@@ -118,6 +118,9 @@ extern "C"
     void readBatteryVoltage();
     void plugIn(bool plugin);
 
+
+    void sensorHandel();
+
 #ifdef __cplusplus
 }
 #endif

@@ -6,15 +6,28 @@ void app_main()
 
     ESP_LOGE(TAG, "Starting app_main");
     gpioInt();
+
     configure_dynamic_frequency();
+    shiftOutData.write=0;
+
+    sensorHandel();
+
     // Initialize Conectivity---------------------------
     bluFiStart();
     //--------------------------------------------------
-    shiftOutData.write=0;
+
     shiftOutData.bitset.PEREN=1;
+    vTaskDelay(pdMS_TO_TICKS(10));
+
     shiftOutData.bitset.CAMEN=1;
+    vTaskDelay(pdMS_TO_TICKS(10));
+
     shiftOutData.bitset.CAMPDWN=0;
+    vTaskDelay(pdMS_TO_TICKS(10));
+
     shiftOutData.bitset.LCDEN=1;
+    vTaskDelay(pdMS_TO_TICKS(10));
+
 
 
     xQueueAIFrame = xQueueCreate(2, sizeof(camera_fb_t *));

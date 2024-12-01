@@ -49,6 +49,7 @@ extern  uint8_t sleepEnable;
 extern volatile TickType_t sleepTimeOut; 
 TickType_t TimeOut,faceDetectTimeOut;
 TickType_t enrolTimeOut;
+extern uint8_t music;
 
 //---------------------------------------
 
@@ -448,7 +449,6 @@ static void task_process_handler(void *arg)
                             sleepEnable=WAKEUP;
 
                             recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
-                            
                             // print_detection_result(detect_results);
                             if (recognize_result.id > 0){
 
@@ -463,7 +463,11 @@ static void task_process_handler(void *arg)
                                    } 
                                 }
 
+
                                 if(validCount==ID_VALID){
+
+                                    music= MUSIC_IMMEDIATE_STOP;
+
 
                                     // printf("validCount: %d\n",validCount);
                                     CPUBgflag=1;
@@ -486,12 +490,16 @@ static void task_process_handler(void *arg)
                                         tempTimeFrame[5] = current_time.second;
                                         write_log_attendance(recognize_result.id, tempTimeFrame);
                                         TimeOut=xTaskGetTickCount();
+                                        music=  MUSIC_1;
 
                                         //----------------------------------------------------------------------------------------------
 
                                     }
                                     CPUBgflag=0;
                                     frame_show_state = SHOW_STATE_RECOGNIZE;
+
+                                    music=  MUSIC_2;
+
                                     break;
 
                                 }
@@ -501,6 +509,8 @@ static void task_process_handler(void *arg)
                             }else{
 
                                 frame_show_state = SHOW_STATE_RECOGNIZE;
+                                music=  MUSIC_2;
+
                                 break;
 
                             }

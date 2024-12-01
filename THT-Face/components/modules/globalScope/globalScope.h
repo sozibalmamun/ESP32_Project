@@ -8,6 +8,14 @@
 // #define DEFAULT_VREF 1100           // Default reference voltage in mV (you may need to adjust this)
 // #define NO_OF_SAMPLES 64            // Multisampling to improve accuracy
 
+#define MUSIC_IDLE           0x00
+#define MUSIC_1              0x01
+#define MUSIC_2              0x02
+#define MUSIC_STOPING        0x03
+#define MUSIC_STOP           0x04
+#define MUSIC_IMMEDIATE_STOP 0X05
+
+
 
 
 //------------------------------------------------------------------

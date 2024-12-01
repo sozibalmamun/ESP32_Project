@@ -2,12 +2,10 @@
 
 
 
-
-
-
 uint16_t batVoltage;
 uint8_t chargeState=0;
-
+uint8_t music=0;
+uint32_t musicPlayDuration = 0;
 
 
 
@@ -286,7 +284,6 @@ gpio_set_level((gpio_num_t)SER_LAT, 1);
 
 static void sensor(void *arg)
 {
-    uint8_t tempOld=0;
     gpio_set_level((gpio_num_t)SER_SDI, 0);
     gpio_pad_select_gpio(SER_SDI);
     gpio_set_direction((gpio_num_t)SER_SDI, GPIO_MODE_OUTPUT);
@@ -299,15 +296,63 @@ static void sensor(void *arg)
     gpio_pad_select_gpio(SER_LAT);
     gpio_set_direction((gpio_num_t)SER_LAT, GPIO_MODE_OUTPUT);
 
-
+    uint8_t tempOld=0;
     while (1)
     {
       
+        if(music!=MUSIC_IDLE ){
+            if(music!=MUSIC_STOPING)shiftOutData.bitset.MSDA=1;
+        }
+
         if(shiftOutData.read != tempOld){
             tempOld=shiftOutData.read;
             shiftOut(shiftOutData.read);
+            musicPlayDuration = xTaskGetTickCount();
         }
 
+        switch (music)
+        {
+        case MUSIC_1:
+
+            vTaskDelay(pdMS_TO_TICKS(2));
+            shiftOutData.bitset.MSDA=0;
+            music=MUSIC_STOPING;
+            break;
+        
+        case MUSIC_2:
+            vTaskDelay(pdMS_TO_TICKS(3));
+            music=MUSIC_STOPING;
+            shiftOutData.bitset.MSDA=0;
+            break;
+        
+        case MUSIC_STOPING:
+
+            if( xTaskGetTickCount()-musicPlayDuration>TIMEOUT_5000_MS){
+                music=MUSIC_STOP;
+                shiftOutData.bitset.MSDA=1;
+            }
+
+
+            break;
+
+        case MUSIC_STOP:
+
+            vTaskDelay(pdMS_TO_TICKS(2));
+            music=MUSIC_IDLE;
+            shiftOutData.bitset.MSDA=0;
+            break;
+
+        case MUSIC_IMMEDIATE_STOP:
+
+            vTaskDelay(pdMS_TO_TICKS(1));
+            music=MUSIC_IDLE;
+            shiftOutData.bitset.MSDA=0;
+            break;
+
+        
+        default:
+            break;
+        }
     }
 }
 

@@ -1,12 +1,12 @@
 #include "gpioControl.h"
 
 
-
+#define MUSIC_PLAY_TIME TIMEOUT_2000_MS
 uint16_t batVoltage;
 uint8_t chargeState=0;
 uint8_t music=0;
 uint32_t musicPlayDuration = 0;
-
+TaskHandle_t sensorsHandeler = NULL;
 
 
 void gpioInt(void){
@@ -117,6 +117,8 @@ void reduce_cpu_frequency() {
     if (recognitioneventTaskHandler) vTaskSuspend(recognitioneventTaskHandler);
     if (lcdTaskHandler) vTaskSuspend(lcdTaskHandler);
     if (cloudeTaskHandler) vTaskSuspend(cloudeTaskHandler);
+    if (sensorsHandeler) vTaskSuspend(sensorsHandeler);
+  
 
 
     // ESP_LOGE("Frequency", "delete all task");
@@ -175,6 +177,8 @@ void restore_cpu_frequency() {
     if (recognitioneventTaskHandler) vTaskResume(recognitioneventTaskHandler);
     if (lcdTaskHandler) vTaskResume(lcdTaskHandler);
     if (cloudeTaskHandler) vTaskResume(cloudeTaskHandler);
+    if (sensorsHandeler) vTaskResume(sensorsHandeler);
+
 
 }
 
@@ -320,7 +324,7 @@ static void sensor(void *arg)
         {
         case MUSIC_1:
 
-            printf("MUSIC_1 %d \n" ,shiftOutData.bitset.MSDA);
+            printf("MUSIC_1 \n");
 
             vTaskDelay(pdMS_TO_TICKS(2));
             shiftOutData.bitset.MSDA=0; 
@@ -329,7 +333,7 @@ static void sensor(void *arg)
             break;
         
         case MUSIC_2:
-            printf("MUSIC_2 %d \n" ,shiftOutData.bitset.MSDA);
+            printf("MUSIC_2 \n");
             vTaskDelay(pdMS_TO_TICKS(3));
             music=MUSIC_STOPING;
             shiftOutData.bitset.MSDA=0;
@@ -338,7 +342,7 @@ static void sensor(void *arg)
         case MUSIC_STOPING:
 
             // printf("MUSIC_STOPING\n");
-            if( xTaskGetTickCount()-musicPlayDuration>TIMEOUT_5000_MS){
+            if( xTaskGetTickCount()-musicPlayDuration>MUSIC_PLAY_TIME){
                 music=MUSIC_STOP;
                 shiftOutData.bitset.MSDA=1;
             }
@@ -379,7 +383,7 @@ void sensorHandel()
 {
 
     // ESP_LOGI("TAG", "SensorHandel");
-    xTaskCreatePinnedToCore(sensor, "sensor", 2 * 1024, NULL, 2, NULL, 1);
+    xTaskCreatePinnedToCore(sensor, "sensor", 2 * 1024, NULL, 2, &sensorsHandeler, 1);
 }
 
 

@@ -119,6 +119,11 @@ void RtcDataRead(uint8_t eRtcDataType);
 
 static const char *NVS_NAMESPACE = "Config";
 static const char *TIME_FORMAT_KEY = "Format";
+
+static const char *NVS_SUBCRIP_NAME_SPACE = "con";
+static const char *NVS_SUBCRIP_NAME_SPACE_FORMAT_KEY = "Sub";
+
+
 // Time structure
 typedef struct {
     uint16_t year;
@@ -148,6 +153,7 @@ void  time_library_set_time(time_library_time_t *time ,bool rtcUpdate);
 // Function to get the current time
 void time_library_get_time(time_library_time_t *time);
 void save_time_format(bool is_12_hour);
+void saveSubscription(bool enable);
 
 #ifdef __cplusplus
 }

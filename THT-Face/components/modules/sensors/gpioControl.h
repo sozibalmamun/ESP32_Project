@@ -54,6 +54,8 @@ extern TaskHandle_t recognitioneventTaskHandler;
 extern TaskHandle_t lcdTaskHandler;
 extern TaskHandle_t cloudeTaskHandler;
 
+  
+
 
 #define ADC_CHANNEL ADC2_CHANNEL_8   // GPIO19 for ADC2
 #define DEFAULT_VREF 1100           // Default reference voltage in mV (you may need to adjust this)

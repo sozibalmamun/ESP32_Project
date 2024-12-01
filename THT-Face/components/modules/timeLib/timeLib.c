@@ -6,6 +6,7 @@ static const char *TAG = "TimeLib";
 time_library_time_t reference_time;
 static uint32_t reference_tick_count;
 bool dspTimeFormet;
+bool lisence =false;
 
 static const uint8_t days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 const DATA_FLASH char* day_names[] = {
@@ -320,7 +321,21 @@ static void intTimeFormet(void){
         nvs_close(nvs_handle);
     }
 }
+static void checkSubscription(void){
 
+    nvs_handle_t nvs_handle;
+    esp_err_t  ret = nvs_open(NVS_SUBCRIP_NAME_SPACE, NVS_READWRITE, &nvs_handle);
+    if (ret == ESP_OK) {
+        int32_t saved_format = 0;
+        ret = nvs_get_i32(nvs_handle, NVS_SUBCRIP_NAME_SPACE_FORMAT_KEY, &saved_format);
+        if (ret == ESP_OK) {
+            lisence = saved_format;
+        } else {
+            lisence = false;
+        }
+        nvs_close(nvs_handle);
+    }
+}
 // RTC Initialization
 void RtcInit(void) {
 
@@ -365,8 +380,12 @@ void RtcInit(void) {
     } 
     intTimeFormet();
     RtcReadBuffer();
+    checkSubscription();
 
 }
+
+
+
 void save_time_format(bool is_12_hour) {
     nvs_handle_t nvs_handle;
     esp_err_t ret = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &nvs_handle);
@@ -375,6 +394,23 @@ void save_time_format(bool is_12_hour) {
         if (ret == ESP_OK) {
             nvs_commit(nvs_handle);
             // ESP_LOGI(TAG, "Time format saved as %s-hour", is_12_hour ? "12" : "24");
+        }
+        nvs_close(nvs_handle);
+    }
+}
+
+
+
+// static const char *NVS_SUBCRIP_NAME_SPACE = "con";
+// static const char *NVS_SUBCRIP_NAME_SPACE_FORMAT_KEY = "Sub";
+
+void saveSubscription(bool enable) {
+    nvs_handle_t nvs_handle;
+    esp_err_t ret = nvs_open(NVS_SUBCRIP_NAME_SPACE, NVS_READWRITE, &nvs_handle);
+    if (ret == ESP_OK) {
+        ret = nvs_set_i32(nvs_handle, NVS_SUBCRIP_NAME_SPACE_FORMAT_KEY, enable);
+        if (ret == ESP_OK) {
+            nvs_commit(nvs_handle);
         }
         nvs_close(nvs_handle);
     }

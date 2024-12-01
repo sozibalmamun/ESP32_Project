@@ -51,6 +51,8 @@
 #define IMAGE_DELETE_SUC    0x12
 #define IMAGE_DELETE_FAIL   0x13
 
+#define LISENCE_UPDATE      0x14
+
 
 
 

@@ -70,9 +70,11 @@ static void attendanceHandlerTask(void *arg)
         if(networkStatus==WSS_CONNECTED){
 
             if(CPUBgflag==0){
-            CPUBgflag=1;
-            process_attendance_files();
-            CPUBgflag=0;
+
+                CPUBgflag=1;
+                if(lisence)process_attendance_files();
+                CPUBgflag=0;
+                
             }
         }
         vTaskDelay(xDelay);

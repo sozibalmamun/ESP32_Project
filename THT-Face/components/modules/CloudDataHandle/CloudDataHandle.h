@@ -22,6 +22,8 @@ extern "C"
 #endif
 
 extern uint8_t networkStatus;
+extern bool lisence;
+
 extern void wssReset(void);
 
 

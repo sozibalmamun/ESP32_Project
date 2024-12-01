@@ -354,6 +354,14 @@ void process_command(const char* buffer ) {
         CmdEvent = TIME_FORMET_UPDATE;
         save_time_format(dspTimeFormet);
 
+    }else if(strncmp(buffer,"subcr", strlen("subcr"))==0){
+
+
+        lisence = buffer[6];// assign time formet 
+        CmdEvent = LISENCE_UPDATE;
+        saveSubscription(lisence);
+
+
     }
     CPUBgflag=0;
 
@@ -586,6 +594,23 @@ void eventFeedback(void){
 
         break;
     
+    case LISENCE_UPDATE:   // LISENCE_UPDATE;ASU
+
+        if (!sendToWss((uint8_t*)"ASU",4)) {
+
+            //ESP_LOGE(TAG_ENROL, "Error sending id: errno %d", errno);
+        } else {
+            // ESP_LOGI(TAG_ENROL, "back to idle mode\n");
+            CmdEvent = IDLE_EVENT;
+        }
+
+
+        break;
+
+
+
+
+
     default:
         break;
     }

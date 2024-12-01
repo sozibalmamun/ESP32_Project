@@ -476,6 +476,7 @@ static void task_process_handler(void *arg)
 
                                     if(StopMultipleAttaneId!=recognize_result.id){
 
+
                                         StopMultipleAttaneId=recognize_result.id;
 
                                         //--------------------------------here save the log file here----------------------------------
@@ -491,15 +492,14 @@ static void task_process_handler(void *arg)
                                         tempTimeFrame[5] = current_time.second;
                                         write_log_attendance(recognize_result.id, tempTimeFrame);
                                         TimeOut=xTaskGetTickCount();
-                                        music=  MUSIC_1;
+                                        // music =  MUSIC_1;
 
                                         //----------------------------------------------------------------------------------------------
 
                                     }
                                     CPUBgflag=0;
                                     frame_show_state = SHOW_STATE_RECOGNIZE;
-
-                                    music=  MUSIC_2;
+                                    music=  MUSIC_1;
 
                                     break;
 

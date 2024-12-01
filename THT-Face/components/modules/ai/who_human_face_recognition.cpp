@@ -458,6 +458,10 @@ static void task_process_handler(void *arg)
                                 recognitionCount[stateCounter>(ID_VALID-1)?stateCounter=0:stateCounter++]=recognize_result.id;// save id in array
 
                                 if(stateCounter>=ID_VALID){
+
+                                    if(music!=MUSIC_IDLE)music= MUSIC_IMMEDIATE_STOP;// stop music for play next recongnition  music
+                                    // printf("MUSIC_IMMEDIATE_STOP :in face \n");
+
                                    for(uint8_t i=0; i<ID_VALID;i++){
                                         if(recognitionCount[i]== recognize_result.id)validCount++;// check all array id is same or not
                                    } 
@@ -465,10 +469,7 @@ static void task_process_handler(void *arg)
 
 
                                 if(validCount==ID_VALID){
-
-                                    music= MUSIC_IMMEDIATE_STOP;
-
-
+                                    
                                     // printf("validCount: %d\n",validCount);
                                     CPUBgflag=1;
                                     if(xTaskGetTickCount()>TimeOut+TIMEOUT_5000_MS)StopMultipleAttaneId=0;

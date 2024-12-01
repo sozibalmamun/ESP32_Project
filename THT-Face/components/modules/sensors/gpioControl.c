@@ -338,7 +338,6 @@ static void sensor(void *arg)
         case MUSIC_STOPING:
 
             // printf("MUSIC_STOPING\n");
-
             if( xTaskGetTickCount()-musicPlayDuration>TIMEOUT_5000_MS){
                 music=MUSIC_STOP;
                 shiftOutData.bitset.MSDA=1;
@@ -358,6 +357,7 @@ static void sensor(void *arg)
 
         case MUSIC_IMMEDIATE_STOP:
 
+            printf("MUSIC_IMMEDIATE_STOP %d \n",shiftOutData.bitset.MSDA);
             vTaskDelay(pdMS_TO_TICKS(1));
             music=MUSIC_IDLE;
             shiftOutData.bitset.MSDA=0;
@@ -379,7 +379,7 @@ void sensorHandel()
 {
 
     // ESP_LOGI("TAG", "SensorHandel");
-    xTaskCreatePinnedToCore(sensor, "sensor", 1 * 1024, NULL, 2, NULL, 1);
+    xTaskCreatePinnedToCore(sensor, "sensor", 2 * 1024, NULL, 2, NULL, 1);
 }
 
 

@@ -22,8 +22,8 @@ void app_main()
     shiftOutData.bitset.CAMEN=1;
     vTaskDelay(pdMS_TO_TICKS(10));
 
-    shiftOutData.bitset.CAMPDWN=0;
-    vTaskDelay(pdMS_TO_TICKS(10));
+    // shiftOutData.bitset.CAMPDWN=0;
+    // vTaskDelay(pdMS_TO_TICKS(10));
 
     shiftOutData.bitset.LCDEN=1;
     vTaskDelay(pdMS_TO_TICKS(10));

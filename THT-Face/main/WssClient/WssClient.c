@@ -50,6 +50,13 @@ bool sendToWss(uint8_t *buff, size_t buffLen) {
 
         // ESP_LOGW(TAG_WSS, "wss pac: %s", sendingFrame);
 
+// debug protocall bin data
+        // for(uint16_t i=0; i< sendingFrameLen;i++){
+
+        //     printf("%02x ",sendingFrame[i]);
+
+        // }
+
         if (networkStatus != WSS_CONNECTED) {
             if (networkStatus > WIFI_DISS) networkStatus = WIFI_CONNECTED;
             heap_caps_free(sendingFrame);

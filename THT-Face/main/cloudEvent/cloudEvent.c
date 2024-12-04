@@ -356,8 +356,9 @@ void process_command(const char* buffer ) {
 
     }else if(strncmp(buffer,"subcr", strlen("subcr"))==0){
 
+        ESP_LOGI(TAG_ENROL, "lisence %d", buffer[6]);
 
-        lisence = buffer[6];// assign time formet 
+        lisence = buffer[6]==1 ? 1 : 0 ;
         CmdEvent = LISENCE_UPDATE;
         saveSubscription(lisence);
 

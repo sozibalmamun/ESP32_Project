@@ -307,7 +307,6 @@ static void sensor(void *arg)
     while (1)
     {
 
-      
         // printf("Music: %d Shift %d\n",music, shiftOutData.bitset.MSDA);
         if(music!=MUSIC_IDLE ){
             if(music!=MUSIC_STOPING)shiftOutData.bitset.MSDA=1;
@@ -316,8 +315,12 @@ static void sensor(void *arg)
         if(shiftOutData.read != tempOld){// true if any bit change
             tempOld=shiftOutData.read;
             // shiftOut(shiftOutData.read);
+
+            printf("CAMEN: %d, MSDA: %d, MSCL: %d, PEREN: %d, LED: %d, LCDEN: %d, CAMPDWN: %d, IRLED: %d\n",
+            shiftOutData.bitset.CAMEN, shiftOutData.bitset.MSDA, shiftOutData.bitset.MSCL, shiftOutData.bitset.PEREN,shiftOutData.bitset.LED, 
+            shiftOutData.bitset.LCDEN, shiftOutData.bitset.CAMPDWN, shiftOutData.bitset.IRLED);
             musicPlayDuration = xTaskGetTickCount();
-            // printf("shift out\n");
+            
         }
 
         switch (music)

@@ -20,7 +20,7 @@
 
 //------------------------------------------------------------------
 
-#define DEVICE_VERSION_ID "AA00"// device v
+#define DEVICE_VERSION_ID "iF11"// device v
 #define WL_FLASH_SIZE      6*1024*1024//2097152//FATFS size
 
 // CMD Enrol handle from server--------------------------------------

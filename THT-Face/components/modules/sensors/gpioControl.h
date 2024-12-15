@@ -77,8 +77,7 @@ extern TaskHandle_t cloudeTaskHandler;
 
 
 
-
-#define CAMP_DWN GPIO_NUM_3 
+#define MUSICPIN 46
 #define LCE_BL GPIO_NUM_2//
 // shift registor
 #define SER_SDI GPIO_NUM_3

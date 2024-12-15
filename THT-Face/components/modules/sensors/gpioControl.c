@@ -9,6 +9,7 @@ uint32_t musicPlayDuration = 0;
 TaskHandle_t sensorsHandeler = NULL;
 
 
+
 void gpioInt(void){
 
     gpio_set_level((gpio_num_t)LCE_BL, 0);
@@ -16,15 +17,16 @@ void gpioInt(void){
     gpio_set_direction((gpio_num_t)LCE_BL, GPIO_MODE_OUTPUT);
     gpio_set_level((gpio_num_t)LCE_BL, 0);
 
-    gpio_pad_select_gpio(CAMP_DWN);
-    gpio_set_direction((gpio_num_t)CAMP_DWN, GPIO_MODE_OUTPUT);
-    gpio_set_level((gpio_num_t)CAMP_DWN, 0);
+
+    // gpio_pad_select_gpio(46);
+    // gpio_set_direction((gpio_num_t)46, GPIO_MODE_OUTPUT);
+    // gpio_set_level((gpio_num_t)46, 0);
 
     gpio_config_t io_conf = {
         .intr_type = GPIO_INTR_DISABLE,
-        .pin_bit_mask = (1ULL << GPIO_WAKEUP_BUTTON), // Pin mask
-        .mode = GPIO_MODE_INPUT,                  // Set as input
-        .pull_up_en = GPIO_PULLUP_ENABLE,         // Enable pull-up resistor
+        .pin_bit_mask = (1ULL << MUSICPIN), // Pin mask
+        .mode = GPIO_MODE_OUTPUT,                  // Set as input
+        .pull_up_en = GPIO_PULLUP_DISABLE ,         // Enable pull-up resistor
         .pull_down_en = GPIO_PULLDOWN_DISABLE     // Disable pull-down resistor
     };
     gpio_config(&io_conf);
@@ -199,7 +201,7 @@ void enter_light_sleep(void) {
     configure_wakeup();
     vTaskDelay(200);
     ESP_LOGI("Sleep", "Entering light sleep...");
-    gpio_set_level((gpio_num_t)CAMP_DWN, 1);  // Ensure peripherals are powered off or set to sleep state
+    // gpio_set_level((gpio_num_t)CAMP_DWN, 1);  // Ensure peripherals are powered off or set to sleep state
 
     // Set the wake-up source to external (GPIO_BOOT, active low)
     // esp_sleep_enable_timer_wakeup(1000000 * 120); // Wake up every 120 seconds (in microseconds)
@@ -316,6 +318,9 @@ static void sensor(void *arg)
         // printf("Music: %d Shift %d\n",music, shiftOutData.bitset.MSDA);
         if(music!=MUSIC_IDLE ){
             if(music!=MUSIC_STOPING)shiftOutData.bitset.MSDA=1;
+                //------------------------------------
+                gpio_set_level((gpio_num_t)46, 1);
+
         }
 
         if(shiftOutData.read != tempOld){// true if any bit change
@@ -326,7 +331,7 @@ static void sensor(void *arg)
             shiftOutData.bitset.CAMEN, shiftOutData.bitset.MSDA, shiftOutData.bitset.MSCL, shiftOutData.bitset.PEREN,shiftOutData.bitset.LED, 
             shiftOutData.bitset.LCDEN, shiftOutData.bitset.CAMPDWN, shiftOutData.bitset.IRLED);
             musicPlayDuration = xTaskGetTickCount();
-            
+   
         }
 
         switch (music)
@@ -343,9 +348,13 @@ static void sensor(void *arg)
         
         case MUSIC_2:
             printf("MUSIC_2 \n");
-            vTaskDelay(pdMS_TO_TICKS(3));
+            // vTaskDelay(pdMS_TO_TICKS(3));
+            ets_delay_us(300);
             music=MUSIC_STOPING;
             shiftOutData.bitset.MSDA=0;
+            //------------------------------------
+            gpio_set_level((gpio_num_t)46, 0);
+
             break;
         
         case MUSIC_STOPING:
@@ -365,6 +374,8 @@ static void sensor(void *arg)
             shiftOutData.bitset.MSDA=0;
 
             printf("MUSIC_STOP %d \n",shiftOutData.bitset.MSDA);
+            //------------------------------------
+            gpio_set_level((gpio_num_t)46, 1);
 
             break;
 
@@ -374,6 +385,8 @@ static void sensor(void *arg)
             vTaskDelay(pdMS_TO_TICKS(1));
             music=MUSIC_IDLE;
             shiftOutData.bitset.MSDA=0;
+            //------------------------------------
+            gpio_set_level((gpio_num_t)46, 0);
             break;
 
         default:

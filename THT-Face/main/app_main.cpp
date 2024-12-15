@@ -16,7 +16,7 @@ void app_main()
     sensorHandel();
 
     // Initialize Conectivity---------------------------
-    bluFiStart();
+    // bluFiStart();
     //--------------------------------------------------
 //    
 
@@ -25,7 +25,7 @@ void app_main()
     shiftOutData.bitset.PEREN=1;  //q3
     vTaskDelay(pdMS_TO_TICKS(10));
 
-    shiftOutData.bitset.CAMEN=0;//q0
+    shiftOutData.bitset.CAMEN=1;//q0
     vTaskDelay(pdMS_TO_TICKS(10));
 
     shiftOutData.bitset.CAMPDWN=0;//q6
@@ -76,18 +76,19 @@ void app_main()
         // int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
         // ESP_LOGI("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
 
-        if(xTaskGetTickCount()-sleepTimeOut>3000 && sleepEnable == WAKEUP){
+        // if(xTaskGetTickCount()-sleepTimeOut>3000 && sleepEnable == WAKEUP){
 
-            sleepEnable=SLEEP;
-            printf("\nsleepEnable"); 
-            gpio_set_level((gpio_num_t)CAMP_DWN, 1);
-            brightness(true);
-            deinitBlufi();
+        //     sleepEnable=SLEEP;
+        //     printf("\nsleepEnable"); 
+        //     shiftOutData.bitset.CAMPDWN=1;//q6
+        //     vTaskDelay(pdMS_TO_TICKS(10));
+        //     brightness(true);
+        //     deinitBlufi();
 
-            vTaskDelay(pdMS_TO_TICKS(1000));
-            reduce_cpu_frequency();
-            vTaskDelay(pdMS_TO_TICKS(1000));
-        }
+        //     vTaskDelay(pdMS_TO_TICKS(1000));
+        //     reduce_cpu_frequency();
+        //     vTaskDelay(pdMS_TO_TICKS(1000));
+        // }
 
         if(sleepEnable == SLEEP){ 
             // enter_light_sleep();  // Enter light sleep mode
@@ -115,7 +116,10 @@ void app_main()
 
 void reInt(void){
 
-    gpio_set_level((gpio_num_t)CAMP_DWN, 0);
+
+
+    shiftOutData.bitset.CAMPDWN=0;//q6
+    vTaskDelay(pdMS_TO_TICKS(10));
     RtcInit();
     vTaskDelay(pdMS_TO_TICKS(10));  // Allow time for frequency update
     sleepEnable = WAKEUP;

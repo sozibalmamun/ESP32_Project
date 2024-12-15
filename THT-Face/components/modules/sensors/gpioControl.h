@@ -26,14 +26,14 @@ extern volatile TickType_t sleepTimeOut;
 
 union shiftResistorBitfild {
     struct PACKED_STRUCT bit {
-        uint8_t CAMEN   : 1;
+        uint8_t CAMEN   : 1;//q0
         uint8_t MSDA    : 1;
         uint8_t MSCL    : 1;
         uint8_t PEREN   : 1;
         uint8_t LED     : 1;
         uint8_t LCDEN   : 1;
         uint8_t CAMPDWN : 1;
-        uint8_t IRLED   : 1;
+        uint8_t IRLED   : 1;//q7
     } bitset;
     
     // Alternative way to access the same 8-bit memory space
@@ -79,7 +79,7 @@ extern TaskHandle_t cloudeTaskHandler;
 
 
 #define CAMP_DWN GPIO_NUM_3 
-#define LCE_BL GPIO_NUM_14
+#define LCE_BL GPIO_NUM_2//
 // shift registor
 #define SER_SDI GPIO_NUM_3
 #define SER_CLK GPIO_NUM_45

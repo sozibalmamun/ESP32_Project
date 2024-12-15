@@ -8,24 +8,30 @@ void app_main()
     gpioInt();
 
     configure_dynamic_frequency();
-    shiftOutData.write=0;
+    shiftOutData.write=0x00;// 10001001
+
+
+
 
     sensorHandel();
 
     // Initialize Conectivity---------------------------
     bluFiStart();
     //--------------------------------------------------
+//    
 
-    shiftOutData.bitset.PEREN=1;
+
+
+    shiftOutData.bitset.PEREN=1;  //q3
     vTaskDelay(pdMS_TO_TICKS(10));
 
-    shiftOutData.bitset.CAMEN=1;
+    shiftOutData.bitset.CAMEN=0;//q0
     vTaskDelay(pdMS_TO_TICKS(10));
 
-    // shiftOutData.bitset.CAMPDWN=0;
-    // vTaskDelay(pdMS_TO_TICKS(10));
+    shiftOutData.bitset.CAMPDWN=0;//q6
+    vTaskDelay(pdMS_TO_TICKS(10));
 
-    shiftOutData.bitset.LCDEN=1;
+    shiftOutData.bitset.LCDEN=1;//q5
     vTaskDelay(pdMS_TO_TICKS(10));
 
 

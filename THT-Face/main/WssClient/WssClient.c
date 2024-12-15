@@ -317,7 +317,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
 
 
-    }
+        }
 
         // ESP_LOGI(TAG, "WEBSOCKET_free");
 

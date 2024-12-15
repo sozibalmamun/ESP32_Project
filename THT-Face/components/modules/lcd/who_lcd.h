@@ -11,7 +11,7 @@
 #define BOARD_LCD_CS 42
 #define BOARD_LCD_DC 41
 #define BOARD_LCD_RST -1
-#define BOARD_LCD_BL 14
+#define BOARD_LCD_BL 2
 #define BOARD_LCD_PIXEL_CLOCK_HZ (40 * 1000 * 1000)
 
 #define BOARD_LCD_BK_LIGHT_ON_LEVEL 0

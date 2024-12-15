@@ -104,16 +104,18 @@ void reconnect(){
                 if (cloudeTaskHandler) vTaskResume(cloudeTaskHandler);
                 if (cloudeTaskHandler == NULL) cloudHandel();
 
-            } 
+            }
 
         }
     }
+
     // else if(networkStatus<WSS_CONNECTED && networkStatus>WIFI_DISS){
 
     //     vTaskDelay(250);
     //     if(networkStatus==WSS_CONNECTED)wssReset();
 
     // }
+                                                                                    
     else if(networkStatus==WIFI_DISS){
 
         CPUBgflag=0;

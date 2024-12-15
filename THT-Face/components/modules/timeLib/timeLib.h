@@ -40,7 +40,7 @@ extern "C" {
 ***/
 
 // Define delays
-#define testTime 5
+#define testTime 10
 #define DelayRST    testTime
 #define DelayIO     testTime
 #define CLK_DELAY   testTime

@@ -9,6 +9,7 @@
 
 
 extern uint16_t batVoltage;
+extern bool networkIntDone;
 uint8_t sleepEnable=WAKEUP;
 volatile TickType_t sleepTimeOut=0; 
 uint8_t bBar=1;
@@ -27,6 +28,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
     // }else {// wekup time display
 
+    if(networkIntDone){
 
         if(networkStatus==WIFI_DISS){
 
@@ -113,6 +115,7 @@ void editDisplayBuff(camera_fb_t **buff){
             }
             // animationTime = xTaskGetTickCount();
         }
+    }
         writedateTime(*buff , current_time, clockType);
 
 

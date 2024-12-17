@@ -52,6 +52,8 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
 static wifi_config_t sta_config;
 static wifi_config_t ap_config;
 esp_netif_t *sta_netif= NULL;
+bool  networkIntDone =false;
+
 
 /* FreeRTOS event group to signal when we are connected & ready to make a request */
 static EventGroupHandle_t wifi_event_group;
@@ -369,6 +371,8 @@ void bluFiStart(void)
         // BLUFI_ERROR("%s initialise failed: %s\n", __func__, esp_err_to_name(ret));
         return;
     }
+
+    networkIntDone =true;
 
 }
 

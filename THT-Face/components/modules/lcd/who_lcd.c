@@ -220,6 +220,7 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
         .mosi_io_num = BOARD_LCD_MOSI,
         .sclk_io_num = BOARD_LCD_SCK,
         .max_transfer_sz = 2 * 320 * 240 + 10,//WANG
+        
     };
     spi_bus_handle_t spi_bus = spi_bus_create(SPI2_HOST, &bus_conf);
 

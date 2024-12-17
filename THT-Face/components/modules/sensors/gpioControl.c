@@ -18,9 +18,9 @@ void gpioInt(void){
     gpio_set_level((gpio_num_t)LCE_BL, 0);
 
 
-    // gpio_pad_select_gpio(46);
-    // gpio_set_direction((gpio_num_t)46, GPIO_MODE_OUTPUT);
-    // gpio_set_level((gpio_num_t)46, 0);
+    gpio_pad_select_gpio(MUSIC_BUSY);
+    gpio_set_direction(MUSIC_BUSY, GPIO_MODE_INPUT);
+    gpio_pullup_en(MUSIC_BUSY);  // Enable pull-up for stable input
 
     gpio_config_t io_conf = {
         .intr_type = GPIO_INTR_DISABLE,
@@ -189,12 +189,12 @@ void restore_cpu_frequency() {
 
 void configure_wakeup() {
     // Configure the button GPIO for input with pull-up, active-low
-    gpio_pad_select_gpio(GPIO_WAKEUP_BUTTON);
-    gpio_set_direction(GPIO_WAKEUP_BUTTON, GPIO_MODE_INPUT);
-    gpio_pullup_en(GPIO_WAKEUP_BUTTON);  // Enable pull-up for stable input
+    // gpio_pad_select_gpio(GPIO_WAKEUP_BUTTON);
+    // gpio_set_direction(GPIO_WAKEUP_BUTTON, GPIO_MODE_INPUT);
+    // gpio_pullup_en(GPIO_WAKEUP_BUTTON);  // Enable pull-up for stable input
 
-    // Enable external wakeup on GPIO_WAKEUP_BUTTON, active low
-    esp_sleep_enable_ext0_wakeup(GPIO_WAKEUP_BUTTON, 0);  // Wake on falling edge (button press)
+    // // Enable external wakeup on GPIO_WAKEUP_BUTTON, active low
+    // esp_sleep_enable_ext0_wakeup(GPIO_WAKEUP_BUTTON, 0);  // Wake on falling edge (button press)
 }
 void enter_light_sleep(void) {
 
@@ -294,6 +294,115 @@ gpio_set_level((gpio_num_t)SER_LAT, 1);
 
 
 
+
+
+// static void sensor(void *arg)
+// {
+//     gpio_set_level((gpio_num_t)SER_SDI, 0);
+//     gpio_pad_select_gpio(SER_SDI);
+//     gpio_set_direction((gpio_num_t)SER_SDI, GPIO_MODE_OUTPUT);
+
+//     gpio_set_level((gpio_num_t)SER_CLK, 0);
+//     gpio_pad_select_gpio(SER_CLK);
+//     gpio_set_direction((gpio_num_t)SER_CLK, GPIO_MODE_OUTPUT);
+
+//     gpio_set_level((gpio_num_t)SER_LAT, 0);
+//     gpio_pad_select_gpio(SER_LAT);
+//     gpio_set_direction((gpio_num_t)SER_LAT, GPIO_MODE_OUTPUT);
+
+//     // printf("in sensor\n");
+
+
+//     uint8_t tempOld=0;
+//     while (1)
+//     {
+
+//         // printf("Music: %d Shift %d\n",music, shiftOutData.bitset.MSDA);
+//         if(music!=MUSIC_IDLE ){
+//             if(music!=MUSIC_STOPING)shiftOutData.bitset.MSDA=1;
+//                 //------------------------------------
+//                 gpio_set_level((gpio_num_t)46, 1);
+
+//         }
+
+//         if(shiftOutData.read != tempOld){// true if any bit change
+//             tempOld=shiftOutData.read;
+//             shiftOut(shiftOutData.read);
+
+//             printf("CAMEN: %d, MSDA: %d, MSCL: %d, PEREN: %d, LED: %d, LCDEN: %d, CAMPDWN: %d, IRLED: %d\n",
+//             shiftOutData.bitset.CAMEN, shiftOutData.bitset.MSDA, shiftOutData.bitset.MSCL, shiftOutData.bitset.PEREN,shiftOutData.bitset.LED, 
+//             shiftOutData.bitset.LCDEN, shiftOutData.bitset.CAMPDWN, shiftOutData.bitset.IRLED);
+//             musicPlayDuration = xTaskGetTickCount();
+   
+//         }
+
+//         switch (music)
+//         {
+//         case MUSIC_1:
+
+//             printf("MUSIC_1 \n");
+
+//             vTaskDelay(pdMS_TO_TICKS(2));
+//             shiftOutData.bitset.MSDA=0; 
+//             music=MUSIC_STOPING;
+
+//             break;
+        
+//         case MUSIC_2:
+//             printf("MUSIC_2 \n");
+//             // vTaskDelay(pdMS_TO_TICKS(3));
+//             ets_delay_us(300);
+//             music=MUSIC_STOPING;
+//             shiftOutData.bitset.MSDA=0;
+//             //------------------------------------
+//             gpio_set_level((gpio_num_t)46, 0);
+
+//             break;
+        
+//         case MUSIC_STOPING:
+
+//             // printf("MUSIC_STOPING\n");
+//             if( xTaskGetTickCount()-musicPlayDuration>MUSIC_PLAY_TIME){
+//                 music=MUSIC_STOP;
+//                 shiftOutData.bitset.MSDA=1;
+//             }
+
+//             break;
+
+//         case MUSIC_STOP:
+
+//             vTaskDelay(pdMS_TO_TICKS(2));
+//             music=MUSIC_IDLE;
+//             shiftOutData.bitset.MSDA=0;
+
+//             printf("MUSIC_STOP %d \n",shiftOutData.bitset.MSDA);
+//             //------------------------------------
+//             gpio_set_level((gpio_num_t)46, 1);
+
+//             break;
+
+//         case MUSIC_IMMEDIATE_STOP:
+
+//             printf("MUSIC_IMMEDIATE_STOP %d \n",shiftOutData.bitset.MSDA);
+//             vTaskDelay(pdMS_TO_TICKS(1));
+//             music=MUSIC_IDLE;
+//             shiftOutData.bitset.MSDA=0;
+//             //------------------------------------
+//             gpio_set_level((gpio_num_t)46, 0);
+//             break;
+
+//         default:
+//             break;
+//         }
+
+//         ets_delay_us(50);
+
+//     }
+// }
+
+
+
+
 static void sensor(void *arg)
 {
     gpio_set_level((gpio_num_t)SER_SDI, 0);
@@ -312,36 +421,35 @@ static void sensor(void *arg)
 
 
     uint8_t tempOld=0;
+
     while (1)
     {
 
-        // printf("Music: %d Shift %d\n",music, shiftOutData.bitset.MSDA);
-        if(music!=MUSIC_IDLE ){
-            if(music!=MUSIC_STOPING)shiftOutData.bitset.MSDA=1;
-                //------------------------------------
-                gpio_set_level((gpio_num_t)46, 1);
 
-        }
-
-        if(shiftOutData.read != tempOld){// true if any bit change
+        if(shiftOutData.read != tempOld   ){// true if any bit change
             tempOld=shiftOutData.read;
-            shiftOut(shiftOutData.read);
+            shiftOut(shiftOutData.write);
 
             printf("CAMEN: %d, MSDA: %d, MSCL: %d, PEREN: %d, LED: %d, LCDEN: %d, CAMPDWN: %d, IRLED: %d\n",
             shiftOutData.bitset.CAMEN, shiftOutData.bitset.MSDA, shiftOutData.bitset.MSCL, shiftOutData.bitset.PEREN,shiftOutData.bitset.LED, 
             shiftOutData.bitset.LCDEN, shiftOutData.bitset.CAMPDWN, shiftOutData.bitset.IRLED);
-            musicPlayDuration = xTaskGetTickCount();
    
         }
 
+
+
+        if(music==MUSIC_IDLE){
+            musicPlayDuration = xTaskGetTickCount();
+        }
+        
         switch (music)
         {
         case MUSIC_1:
 
             printf("MUSIC_1 \n");
 
-            vTaskDelay(pdMS_TO_TICKS(2));
-            shiftOutData.bitset.MSDA=0; 
+            // vTaskDelay(pdMS_TO_TICKS(2));
+            // shiftOutData.bitset.MSDA=0; 
             music=MUSIC_STOPING;
 
             break;
@@ -349,33 +457,31 @@ static void sensor(void *arg)
         case MUSIC_2:
             printf("MUSIC_2 \n");
             // vTaskDelay(pdMS_TO_TICKS(3));
-            ets_delay_us(300);
+            // ets_delay_us(300);
             music=MUSIC_STOPING;
-            shiftOutData.bitset.MSDA=0;
+            // shiftOutData.bitset.MSDA=0;
             //------------------------------------
-            gpio_set_level((gpio_num_t)46, 0);
-
+            musicPlay(1);
             break;
         
         case MUSIC_STOPING:
 
-            // printf("MUSIC_STOPING\n");
+            printf("MUSIC_STOPING\n");
             if( xTaskGetTickCount()-musicPlayDuration>MUSIC_PLAY_TIME){
                 music=MUSIC_STOP;
-                shiftOutData.bitset.MSDA=1;
+                // shiftOutData.bitset.MSDA=1;
             }
-
             break;
 
         case MUSIC_STOP:
 
-            vTaskDelay(pdMS_TO_TICKS(2));
+            // vTaskDelay(pdMS_TO_TICKS(2));
             music=MUSIC_IDLE;
-            shiftOutData.bitset.MSDA=0;
+            // shiftOutData.bitset.MSDA=0;
 
             printf("MUSIC_STOP %d \n",shiftOutData.bitset.MSDA);
             //------------------------------------
-            gpio_set_level((gpio_num_t)46, 1);
+            musicPlay(0);
 
             break;
 
@@ -384,9 +490,11 @@ static void sensor(void *arg)
             printf("MUSIC_IMMEDIATE_STOP %d \n",shiftOutData.bitset.MSDA);
             vTaskDelay(pdMS_TO_TICKS(1));
             music=MUSIC_IDLE;
-            shiftOutData.bitset.MSDA=0;
+            // shiftOutData.bitset.MSDA=0;
+            musicPlay(0);
+
             //------------------------------------
-            gpio_set_level((gpio_num_t)46, 0);
+            // gpio_set_level((gpio_num_t)46, 0);
             break;
 
         default:
@@ -398,14 +506,32 @@ static void sensor(void *arg)
     }
 }
 
+void musicPlay(uint8_t musicNo ){
 
+printf("music%s function \n",musicNo>0? "Play":"Stop");
+
+#define  M_DELAY_MS 3
+#define  M_DELAY_uS 300
+
+for (size_t i = 0; i <=musicNo; i++)
+{
+    gpio_set_level((gpio_num_t)MUSICPIN, 1);
+    ets_delay_us(M_DELAY_uS);
+    // vTaskDelay(pdMS_TO_TICKS(M_DELAY_MS));
+
+    gpio_set_level((gpio_num_t)MUSICPIN, 0);
+    ets_delay_us(M_DELAY_uS);
+    // vTaskDelay(pdMS_TO_TICKS(M_DELAY_MS));
+}
+
+
+
+}
 
 
 void sensorHandel()
 {
-
-    // ESP_LOGI("TAG", "SensorHandel");
-    xTaskCreatePinnedToCore(sensor, "sensor", 2 * 1024, NULL, 2, &sensorsHandeler, 1);
+    xTaskCreatePinnedToCore(sensor, "sensor", 2 * 1024, NULL, 5, &sensorsHandeler, 1);
 }
 
 

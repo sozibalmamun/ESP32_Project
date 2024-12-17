@@ -90,17 +90,27 @@ void app_main()
         //     vTaskDelay(pdMS_TO_TICKS(1000));
         // }
 
+        if(MUSINC_PLAYING==0){
+
+            printf("music play\n");
+            vTaskDelay(pdMS_TO_TICKS(500));
+
+            
+        }
+
         if(sleepEnable == SLEEP){ 
             // enter_light_sleep();  // Enter light sleep mode
-            if( WAKE_STATE ){
+            // if( WAKE_STATE ){
 
-                sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
-                restore_cpu_frequency();
-                reInt();
-                brightness(false);//sleep
-                printf("\nsleep disable");
+            //     sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
+            //     restore_cpu_frequency();
+            //     reInt();
+            //     brightness(false);//sleep
+            //     printf("\nsleep disable");
 
-            }else if(CHARGING_STATE)plugIn(true);
+            // }else 
+            
+            if(CHARGING_STATE)plugIn(true);
             else plugIn(false);
 
         }else {

@@ -28,6 +28,9 @@ extern key_state_t key_state;
 uint8_t boxPosition[5];
 static uint16_t StopMultipleAttaneId=0;
 static uint16_t recognitionCount[5];
+static volatile uint8_t unrecognitionCount=0;
+
+
 static uint8_t stateCounter=0;
 
 
@@ -331,7 +334,11 @@ static void task_process_handler(void *arg)
 
                             }                                  
                                     
-                        }else{ faceDetectTimeOut= xTaskGetTickCount(); }
+                        }else{ 
+
+                            unrecognitionCount=0;
+                            faceDetectTimeOut= xTaskGetTickCount(); 
+                        }
 
                     }else if(_gEvent==SYNCING){
 
@@ -343,7 +350,6 @@ static void task_process_handler(void *arg)
                             key_state= KEY_IDLE;
                             delete_face_data(enrolFrame->id,SYNC_DIR);               
                             vTaskDelay(10);
-
 
                         } 
 
@@ -466,8 +472,6 @@ static void task_process_handler(void *arg)
                                         if(recognitionCount[i]== recognize_result.id)validCount++;// check all array id is same or not
                                    } 
                                 }
-
-
                                 if(validCount==ID_VALID){
                                     
                                     // printf("validCount: %d\n",validCount);
@@ -509,8 +513,11 @@ static void task_process_handler(void *arg)
 
                             }else{
 
-                                frame_show_state = SHOW_STATE_RECOGNIZE;
-                                music=  MUSIC_2;
+                                if(unrecognitionCount>ID_VALID){
+                                    frame_show_state = SHOW_STATE_RECOGNIZE;
+                                    music=  MUSIC_2;
+                                    unrecognitionCount=0;
+                                }else unrecognitionCount++;
 
                                 break;
 

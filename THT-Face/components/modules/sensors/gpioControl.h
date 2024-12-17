@@ -72,12 +72,13 @@ extern TaskHandle_t cloudeTaskHandler;
 //Sleep config---------------------------------------------------
 #define MAX_FREQ   240    // Maximum frequency
 #define MIN_FREQ   40
-#define GPIO_WAKEUP_BUTTON GPIO_NUM_0
 #define BATTERY_CHARGE_STATE GPIO_NUM_20
 
 
 
-#define MUSICPIN 46
+#define MUSICPIN GPIO_NUM_46
+#define MUSIC_BUSY GPIO_NUM_0
+
 #define LCE_BL GPIO_NUM_2//
 // shift registor
 #define SER_SDI GPIO_NUM_3
@@ -92,7 +93,7 @@ extern TaskHandle_t cloudeTaskHandler;
 #define MIN_BRIGHTNESS (8191)
 #define BRIGHTNESS(x)  MIN_BRIGHTNESS-(((MIN_BRIGHTNESS/100)*x))
 
-#define WAKE_STATE (gpio_get_level(GPIO_WAKEUP_BUTTON)==0)
+#define MUSINC_PLAYING (gpio_get_level(MUSIC_BUSY))
 #define CHARGING_STATE (gpio_get_level(BATTERY_CHARGE_STATE)==0)
 //-------------sleep config file end------------------------------
 
@@ -119,6 +120,7 @@ extern "C"
     void readBatteryVoltage();
     void plugIn(bool plugin);
 
+    void musicPlay(uint8_t musicNo);
 
     void sensorHandel();
 

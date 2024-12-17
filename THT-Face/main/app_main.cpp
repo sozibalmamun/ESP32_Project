@@ -8,7 +8,7 @@ void app_main()
     gpioInt();
 
     configure_dynamic_frequency();
-    shiftOutData.write=0x00;// 10001001
+    shiftOutData.write=0x00;
 
 
 
@@ -18,9 +18,6 @@ void app_main()
     // Initialize Conectivity---------------------------
     // bluFiStart();
     //--------------------------------------------------
-//    
-
-
 
     shiftOutData.bitset.PEREN=1;  //q3
     vTaskDelay(pdMS_TO_TICKS(10));
@@ -33,7 +30,6 @@ void app_main()
 
     shiftOutData.bitset.LCDEN=1;//q5
     vTaskDelay(pdMS_TO_TICKS(10));
-
 
 
     xQueueAIFrame = xQueueCreate(2, sizeof(camera_fb_t *));
@@ -51,6 +47,7 @@ void app_main()
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false); //core 1+1
     register_lcd(xQueueLCDFrame, NULL, true);// core 0
     vTaskDelay(pdMS_TO_TICKS(10));
+
 
     //-------------------------
     // Initialize and mount FATFS
@@ -95,7 +92,7 @@ void app_main()
             printf("music play\n");
             vTaskDelay(pdMS_TO_TICKS(500));
 
-            
+        
         }
 
         if(sleepEnable == SLEEP){ 

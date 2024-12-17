@@ -94,7 +94,7 @@
 #define TIMEOUT_200_MS        20
 #define TIMEOUT_300_MS        30
 #define TIMEOUT_500_MS        50
-#define TIMEOUT_1000_MS       100
+#define TIMEOUT_1000_MS       (100)
 #define TIMEOUT_2000_MS       (200)
 #define TIMEOUT_3000_MS       (300)
 #define TIMEOUT_4000_MS       (400)

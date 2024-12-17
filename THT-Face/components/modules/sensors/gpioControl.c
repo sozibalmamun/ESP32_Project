@@ -1,7 +1,8 @@
 #include "gpioControl.h"
 
 
-#define MUSIC_PLAY_TIME TIMEOUT_2000_MS
+#define MUSIC_PLAY_TIME TIMEOUT_1000_MS
+
 uint16_t batVoltage;
 uint8_t chargeState=0;
 uint8_t music=0;
@@ -18,10 +19,6 @@ void gpioInt(void){
     gpio_set_level((gpio_num_t)LCE_BL, 0);
 
 
-    gpio_pad_select_gpio(MUSIC_BUSY);
-    gpio_set_direction(MUSIC_BUSY, GPIO_MODE_INPUT);
-    gpio_pullup_en(MUSIC_BUSY);  // Enable pull-up for stable input
-
     gpio_config_t io_conf = {
         .intr_type = GPIO_INTR_DISABLE,
         .pin_bit_mask = (1ULL << MUSICPIN), // Pin mask
@@ -36,7 +33,15 @@ void gpioInt(void){
     io_conf.mode = GPIO_MODE_INPUT;                  // Set as input
     io_conf.pull_up_en = GPIO_PULLUP_ENABLE;         // Enable pull-up resistor
     io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;   // Disable pull-down resistor
+    gpio_config(&io_conf);
 
+
+
+    io_conf.intr_type = GPIO_INTR_DISABLE;
+    io_conf.pin_bit_mask = (1ULL << MUSIC_BUSY); // Pin mask
+    io_conf.mode = GPIO_MODE_INPUT;                  // Set as input
+    io_conf.pull_up_en = GPIO_PULLUP_ENABLE;         // Enable pull-up resistor
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;   // Disable pull-down resistor
     gpio_config(&io_conf);
     
 }
@@ -421,6 +426,7 @@ static void sensor(void *arg)
 
 
     uint8_t tempOld=0;
+    uint16_t musicTime=0;
 
     while (1)
     {
@@ -441,7 +447,7 @@ static void sensor(void *arg)
         if(music==MUSIC_IDLE){
             musicPlayDuration = xTaskGetTickCount();
         }
-        
+
         switch (music)
         {
         case MUSIC_1:
@@ -462,39 +468,31 @@ static void sensor(void *arg)
             // shiftOutData.bitset.MSDA=0;
             //------------------------------------
             musicPlay(1);
+            musicTime=MUSIC_PLAY_TIME;
             break;
         
         case MUSIC_STOPING:
 
-            printf("MUSIC_STOPING\n");
-            if( xTaskGetTickCount()-musicPlayDuration>MUSIC_PLAY_TIME){
+            // printf("MUSIC_STOPING\n");
+            if( xTaskGetTickCount()-musicPlayDuration>musicTime){
                 music=MUSIC_STOP;
-                // shiftOutData.bitset.MSDA=1;
             }
             break;
 
         case MUSIC_STOP:
 
-            // vTaskDelay(pdMS_TO_TICKS(2));
             music=MUSIC_IDLE;
-            // shiftOutData.bitset.MSDA=0;
-
-            printf("MUSIC_STOP %d \n",shiftOutData.bitset.MSDA);
-            //------------------------------------
+            printf("MUSIC_STOP \n");
             musicPlay(0);
 
             break;
 
         case MUSIC_IMMEDIATE_STOP:
 
-            printf("MUSIC_IMMEDIATE_STOP %d \n",shiftOutData.bitset.MSDA);
+            printf("MUSIC_IMMEDIATE_STOP\n");
             vTaskDelay(pdMS_TO_TICKS(1));
             music=MUSIC_IDLE;
-            // shiftOutData.bitset.MSDA=0;
             musicPlay(0);
-
-            //------------------------------------
-            // gpio_set_level((gpio_num_t)46, 0);
             break;
 
         default:
@@ -508,7 +506,7 @@ static void sensor(void *arg)
 
 void musicPlay(uint8_t musicNo ){
 
-printf("music%s function \n",musicNo>0? "Play":"Stop");
+// printf("music%s function \n",musicNo>0? "Play":"Stop");
 
 #define  M_DELAY_MS 3
 #define  M_DELAY_uS 300
@@ -518,15 +516,29 @@ for (size_t i = 0; i <=musicNo; i++)
     gpio_set_level((gpio_num_t)MUSICPIN, 1);
     ets_delay_us(M_DELAY_uS);
     // vTaskDelay(pdMS_TO_TICKS(M_DELAY_MS));
-
     gpio_set_level((gpio_num_t)MUSICPIN, 0);
     ets_delay_us(M_DELAY_uS);
     // vTaskDelay(pdMS_TO_TICKS(M_DELAY_MS));
 }
 
-
-
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void sensorHandel()

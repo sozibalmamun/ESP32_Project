@@ -10,9 +10,7 @@ void app_main()
     configure_dynamic_frequency();
     shiftOutData.write=0x00;
 
-
-
-
+    shiftOutData.bitset.LED=1;  //q4
     sensorHandel();
 
     // Initialize Conectivity---------------------------
@@ -30,6 +28,7 @@ void app_main()
 
     shiftOutData.bitset.LCDEN=1;//q5
     vTaskDelay(pdMS_TO_TICKS(10));
+
 
 
     xQueueAIFrame = xQueueCreate(2, sizeof(camera_fb_t *));
@@ -66,6 +65,7 @@ void app_main()
     // Initialize PWM using the PwmInt function
     PwmInt((gpio_num_t)LCE_BL);
     ESP_LOGI(TAG, "app_main finished");
+    shiftOutData.bitset.LED=0;  //q4
 
     while(true){
 
@@ -87,14 +87,14 @@ void app_main()
         //     vTaskDelay(pdMS_TO_TICKS(1000));
         // }
 
-        if(MUSINC_PLAYING==0){
+        // if(MUSINC_PLAYING==0){
 
-            printf("music play\n");
-            vTaskDelay(pdMS_TO_TICKS(500));
+        //     printf("music play\n");
+        //     vTaskDelay(pdMS_TO_TICKS(500));
 
         
-        }
-
+        // }
+            
         if(sleepEnable == SLEEP){ 
             // enter_light_sleep();  // Enter light sleep mode
             // if( WAKE_STATE ){
@@ -107,8 +107,15 @@ void app_main()
 
             // }else 
             
-            if(CHARGING_STATE)plugIn(true);
-            else plugIn(false);
+            if(CHARGING_STATE){
+                plugIn(true);
+                printf("plugIn\n");
+
+            }else {
+                plugIn(false);
+                printf("plug out\n");
+
+            }
 
         }else {
             reconnect();

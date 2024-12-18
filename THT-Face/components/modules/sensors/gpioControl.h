@@ -42,9 +42,7 @@ union shiftResistorBitfild {
 
 };
 
-union shiftResistorBitfild shiftOutData;
-
-
+// union shiftResistorBitfild shiftOutData;
 
 
 extern TaskHandle_t cameraTaskHandler;
@@ -79,6 +77,7 @@ extern TaskHandle_t cloudeTaskHandler;
 #define MUSICPIN GPIO_NUM_46
 #define MUSIC_BUSY GPIO_NUM_0
 
+#define PIR GPIO_NUM_1
 #define LCE_BL GPIO_NUM_2//
 // shift registor
 #define SER_SDI GPIO_NUM_3
@@ -94,8 +93,14 @@ extern TaskHandle_t cloudeTaskHandler;
 #define BRIGHTNESS(x)  MIN_BRIGHTNESS-(((MIN_BRIGHTNESS/100)*x))
 
 #define MUSINC_PLAYING (gpio_get_level(MUSIC_BUSY))
-#define CHARGING_STATE (gpio_get_level(BATTERY_CHARGE_STATE)==0)
+#define CHARGING_STATE (gpio_get_level(BATTERY_CHARGE_STATE)==1)
+#define PIR_STATE (gpio_get_level(PIR))
+
+
+
 //-------------sleep config file end------------------------------
+
+// esp_adc_cal_characteristics_t *adc_chars;
 
 #ifdef __cplusplus
 extern "C"
@@ -104,8 +109,6 @@ extern "C"
 
 
     // ADC calibration characteristics
-    esp_adc_cal_characteristics_t *adc_chars;
-    // void PwmInt( ledc_channel_config_t *ledc_channel ,gpio_num_t pinNo );
     void PwmInt(gpio_num_t pinNo );
 
     void brightness(bool sleep);

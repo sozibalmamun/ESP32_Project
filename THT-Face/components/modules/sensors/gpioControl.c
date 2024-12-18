@@ -9,6 +9,9 @@ uint8_t music=0;
 uint32_t musicPlayDuration = 0;
 TaskHandle_t sensorsHandeler = NULL;
 
+esp_adc_cal_characteristics_t *adc_chars;
+union shiftResistorBitfild shiftOutData;
+
 
 
 void gpioInt(void){
@@ -31,7 +34,7 @@ void gpioInt(void){
     io_conf.intr_type = GPIO_INTR_DISABLE;
     io_conf.pin_bit_mask = (1ULL << BATTERY_CHARGE_STATE); // Pin mask
     io_conf.mode = GPIO_MODE_INPUT;                  // Set as input
-    io_conf.pull_up_en = GPIO_PULLUP_ENABLE;         // Enable pull-up resistor
+    io_conf.pull_up_en = GPIO_PULLUP_DISABLE;         // Enable pull-up resistor
     io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;   // Disable pull-down resistor
     gpio_config(&io_conf);
 
@@ -43,7 +46,16 @@ void gpioInt(void){
     io_conf.pull_up_en = GPIO_PULLUP_ENABLE;         // Enable pull-up resistor
     io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;   // Disable pull-down resistor
     gpio_config(&io_conf);
-    
+
+
+    io_conf.intr_type = GPIO_INTR_DISABLE;
+    io_conf.pin_bit_mask = (1ULL << PIR); // Pin mask
+    io_conf.mode = GPIO_MODE_INPUT;                  // Set as input
+    io_conf.pull_up_en = GPIO_PULLUP_DISABLE;         // Enable pull-up resistor
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;   // Disable pull-down resistor
+    gpio_config(&io_conf);
+
+
 }
 
 void PwmInt( gpio_num_t pinNo ) {
@@ -432,13 +444,22 @@ static void sensor(void *arg)
     {
 
 
+        // if(PIR_STATE==1){
+
+        //     printf("PIR_STATE 1\n");
+
+
+        // }else printf("PIR_STATE 0\n");
+
+
+
         if(shiftOutData.read != tempOld   ){// true if any bit change
             tempOld=shiftOutData.read;
             shiftOut(shiftOutData.write);
 
-            printf("CAMEN: %d, MSDA: %d, MSCL: %d, PEREN: %d, LED: %d, LCDEN: %d, CAMPDWN: %d, IRLED: %d\n",
-            shiftOutData.bitset.CAMEN, shiftOutData.bitset.MSDA, shiftOutData.bitset.MSCL, shiftOutData.bitset.PEREN,shiftOutData.bitset.LED, 
-            shiftOutData.bitset.LCDEN, shiftOutData.bitset.CAMPDWN, shiftOutData.bitset.IRLED);
+            // printf("CAMEN: %d, MSDA: %d, MSCL: %d, PEREN: %d, LED: %d, LCDEN: %d, CAMPDWN: %d, IRLED: %d\n",
+            // shiftOutData.bitset.CAMEN, shiftOutData.bitset.MSDA, shiftOutData.bitset.MSCL, shiftOutData.bitset.PEREN,shiftOutData.bitset.LED, 
+            // shiftOutData.bitset.LCDEN, shiftOutData.bitset.CAMPDWN, shiftOutData.bitset.IRLED);
    
         }
 
@@ -508,18 +529,15 @@ void musicPlay(uint8_t musicNo ){
 
 // printf("music%s function \n",musicNo>0? "Play":"Stop");
 
-#define  M_DELAY_MS 3
-#define  M_DELAY_uS 300
+    #define  M_DELAY_uS 300
 
-for (size_t i = 0; i <=musicNo; i++)
-{
-    gpio_set_level((gpio_num_t)MUSICPIN, 1);
-    ets_delay_us(M_DELAY_uS);
-    // vTaskDelay(pdMS_TO_TICKS(M_DELAY_MS));
-    gpio_set_level((gpio_num_t)MUSICPIN, 0);
-    ets_delay_us(M_DELAY_uS);
-    // vTaskDelay(pdMS_TO_TICKS(M_DELAY_MS));
-}
+    for (size_t i = 0; i <=musicNo; i++)
+    {
+        gpio_set_level((gpio_num_t)MUSICPIN, 1);
+        ets_delay_us(M_DELAY_uS);
+        gpio_set_level((gpio_num_t)MUSICPIN, 0);
+        ets_delay_us(M_DELAY_uS);
+    }
 
 }
 

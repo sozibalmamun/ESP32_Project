@@ -22,6 +22,11 @@
 #include "who_ai_utils.hpp"
 #include "CloudDataHandle.h"
 
+
+
+
+
+
 extern key_state_t key_state;
 
 
@@ -29,6 +34,7 @@ uint8_t boxPosition[5];
 static uint16_t StopMultipleAttaneId=0;
 static uint16_t recognitionCount[5];
 static volatile uint8_t unrecognitionCount=0;
+
 
 
 static uint8_t stateCounter=0;
@@ -53,6 +59,9 @@ extern volatile TickType_t sleepTimeOut;
 TickType_t TimeOut,faceDetectTimeOut;
 TickType_t enrolTimeOut;
 extern uint8_t music;
+
+// extern union shiftResistorBitfild shiftOutData;
+
 
 //---------------------------------------
 
@@ -289,8 +298,6 @@ static void task_process_handler(void *arg)
                                 key_state= KEY_IDLE;
                                 CmdEvent=ENROLING_EVENT;
 
-
-
                             }else { // loading
 
                                 float percentage_float = ((TIMEOUT_3000_MS-((TimeOut + TIMEOUT_3000_MS)- xTaskGetTickCount())) /(float)TIMEOUT_3000_MS) * 100;
@@ -308,11 +315,16 @@ static void task_process_handler(void *arg)
                                 CmdEvent = ENROLMENT_TIMEOUT;
                                 key_state= KEY_IDLE;
                                 vTaskDelay(10);
-
+                                shiftOutData.bitset.LED=0;  //q3
+                                shiftOutData.bitset.IRLED=0;  //q7
                             } 
                             rgb_printf(frame, RGB565_MASK_BLUE, "Start Enroling");// debug due to display name
                             sleepTimeOut = TimeOut;
                             sleepEnable=WAKEUP;// sleep out when enroll event is genareted
+                            shiftOutData.bitset.LED=1;  //q3
+                            shiftOutData.bitset.IRLED=1;  //q7
+
+
 
 
                         }
@@ -326,6 +338,11 @@ static void task_process_handler(void *arg)
                                 
                                 is_detected = true;
                                 _gEvent=RECOGNIZE;
+                                shiftOutData.bitset.LED=1;  //q3
+                                shiftOutData.bitset.IRLED=1;  //q7
+
+
+
 
                             }else {
 
@@ -336,8 +353,16 @@ static void task_process_handler(void *arg)
                                     
                         }else{ 
 
+
+
                             unrecognitionCount=0;
                             faceDetectTimeOut= xTaskGetTickCount(); 
+
+
+                            shiftOutData.bitset.LED=0;  //q3
+                            shiftOutData.bitset.IRLED=1;  //q7
+
+
                         }
 
                     }else if(_gEvent==SYNCING){
@@ -451,6 +476,7 @@ static void task_process_handler(void *arg)
                         }
                         case RECOGNIZE:{
 
+
                             sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
                             sleepEnable=WAKEUP;
 
@@ -513,7 +539,7 @@ static void task_process_handler(void *arg)
 
                             }else{
 
-                                if(unrecognitionCount>ID_VALID){
+                                if(unrecognitionCount>ID_VALID-1){
                                     frame_show_state = SHOW_STATE_RECOGNIZE;
                                     music=  MUSIC_2;
                                     unrecognitionCount=0;
@@ -611,6 +637,7 @@ static void task_process_handler(void *arg)
                                 rgb_print(frame, RGB565_MASK_RED, "Unregister");
                                 ESP_LOGI(TAG,"Not Recognize");
                             }
+
                             break;
 
                         case SHOW_STATE_ENROLL:{
@@ -619,11 +646,19 @@ static void task_process_handler(void *arg)
                             if(validCount==ID_VALID)rgb_printf(frame, RGB565_MASK_BLUE, "Welcome %s", personName); 
                             personId=recognizer->get_enrolled_ids().back().id;
                             // rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id);
+                            shiftOutData.bitset.LED=0;  //q3
+                            shiftOutData.bitset.IRLED=0;  //q7
+
+
                             break;
                         }
                         case SHOW_DUPLICATE_ENROLL:{
 
                             rgb_printf(frame, RGB565_MASK_RED, "Duplicate Enrol%s","!"); 
+                            shiftOutData.bitset.LED=0;  //q3
+                            shiftOutData.bitset.IRLED=0;  //q7
+
+
                             break;
                         }
                         case SHOW_DUPLICATE_SYNC:
@@ -636,7 +671,6 @@ static void task_process_handler(void *arg)
                             CmdEvent=SYNC_DONE;// 2 means enrol done
                             rgb_printf(frame, RGB565_MASK_BLUE, "Welcome %s", personName); 
                             personId=recognizer->get_enrolled_ids().back().id;
-
 
                             break;
                         case SHOW_ALINE:

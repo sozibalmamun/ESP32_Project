@@ -8,6 +8,8 @@
 
 #include "esp_camera.h"
 #include "CloudDataHandle.h"
+#include "gpioControl.h"
+
 
 #define   bytes_per_pixel 2
 
@@ -27,11 +29,12 @@ typedef enum
 
 
 extern uint8_t CPUBgflag;
+extern union shiftResistorBitfild shiftOutData;
 
-// bool copy_rectangle(const camera_fb_t *src,imageData_t** dst, int x_start, int x_end, int y_start, int y_end);
+
+
 bool copy_rectangle(const camera_fb_t *src, imageData_t **dst, int16_t x_start, int16_t x_end, int16_t y_start, int16_t y_end);
 
-// void editImage(imageData_t *buff );
 
 void register_human_face_recognition(const QueueHandle_t frame_i,
                                      const QueueHandle_t event,

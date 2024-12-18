@@ -91,7 +91,7 @@ void PwmInt( gpio_num_t pinNo ) {
     // Optional: Use fading
     ledc_fade_func_install(0);  // Install the fade function
     ledc_set_fade_time_and_start(ledc_channel.speed_mode, ledc_channel.channel, 8192, 1000, LEDC_FADE_NO_WAIT);
-    for (int duty = 8192; duty >= 0; duty -= 512) {
+    for (int duty = 8192; duty >= 0; duty -= 1024) {
         ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, duty);
         ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
         vTaskDelay(100 / portTICK_PERIOD_MS);     // Delay to see the dimming effect
@@ -540,24 +540,6 @@ void musicPlay(uint8_t musicNo ){
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 void sensorHandel()
 {

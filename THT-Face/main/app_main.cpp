@@ -8,9 +8,8 @@ void app_main()
     gpioInt();
 
     configure_dynamic_frequency();
-    shiftOutData.write=0x00;
+    shiftOutData.write=0x10;
 
-    shiftOutData.bitset.LED=1;  //q4
     sensorHandel();
 
     // Initialize Conectivity---------------------------
@@ -45,6 +44,8 @@ void app_main()
     register_event(xQueueEventLogic);//core 1
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false); //core 1+1
     register_lcd(xQueueLCDFrame, NULL, true);// core 0
+    // register_lcd( xQueueLCDFrame, xQueueAIFrame, NULL, true);// core 0
+
     vTaskDelay(pdMS_TO_TICKS(10));
 
 

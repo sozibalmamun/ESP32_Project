@@ -353,14 +353,10 @@ static void task_process_handler(void *arg)
                                     
                         }else{ 
 
-
-
                             unrecognitionCount=0;
                             faceDetectTimeOut= xTaskGetTickCount(); 
-
-
-                            shiftOutData.bitset.LED=0;  //q3
-                            shiftOutData.bitset.IRLED=1;  //q7
+                            shiftOutData.bitset.LED=0;      //q3
+                            shiftOutData.bitset.IRLED=1;    //q7
 
 
                         }
@@ -539,7 +535,7 @@ static void task_process_handler(void *arg)
 
                             }else{
 
-                                if(unrecognitionCount>ID_VALID-1){
+                                if(unrecognitionCount>=(ID_VALID-1)){
                                     frame_show_state = SHOW_STATE_RECOGNIZE;
                                     music=  MUSIC_2;
                                     unrecognitionCount=0;

@@ -342,7 +342,7 @@ void wssClientInt(void) {
     websocket_cfg.skip_cert_common_name_check = true;
     websocket_cfg.disable_auto_reconnect = false;
     websocket_cfg.task_stack = 1024*4;  
-    websocket_cfg.task_prio =10;     
+    websocket_cfg.task_prio =10; 
 
     // ESP_LOGI(TAG, "Initializing global CA store...");
     ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));

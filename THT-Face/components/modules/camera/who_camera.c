@@ -101,5 +101,5 @@ void register_camera(const pixformat_t pixel_fromat,
     }
 
     xQueueFrameO = frame_o;
-    xTaskCreatePinnedToCore(task_process_handler, TAG, 3 * 1024, NULL, 5,&cameraTaskHandler, 1);//2*1024
+    xTaskCreatePinnedToCore(task_process_handler, TAG, 3 * 1024, NULL, 5,&cameraTaskHandler, 1); //2*1024 //5
 }

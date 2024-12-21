@@ -433,7 +433,7 @@ static void sensor(void *arg)
 
     // printf("in sensor\n");
 
-    uint8_t welcome[12] = {1,2,1,2,1,2,1,2,1,2,1,2};
+    uint8_t welcome[12] = {1,2,1,2,0,2,1,2,0,2,1,2};
     uint8_t unregisterd[2] = {1,4};
 
 
@@ -456,7 +456,7 @@ static void sensor(void *arg)
                 // printf("PIR_STATE 1\n");
             }//else printf("PIR_STATE 0\n");
 
-            musicPlayDuration = xTaskGetTickCount();
+            // musicPlayDuration = xTaskGetTickCount();
         }
 
         if(shiftOutData.read != tempOld ){// true if any bit change
@@ -468,8 +468,6 @@ static void sensor(void *arg)
             // shiftOutData.bitset.LCDEN, shiftOutData.bitset.CAMPDWN, shiftOutData.bitset.IRLED);
    
         }
-
-
 
         // if(music==MUSIC_IDLE){
         //     musicPlayDuration = xTaskGetTickCount();
@@ -522,10 +520,7 @@ static void sensor(void *arg)
             break;
         case WELCOME_MUSIC:
             musicArrayPlay(welcome,12);
-            music=MUSIC_IDLE;
             break;
-
-
         default:
             break;
         }
@@ -548,6 +543,11 @@ void musicPlay(uint8_t musicNo ){
         ets_delay_us(M_DELAY_uS);
         gpio_set_level((gpio_num_t)MUSICPIN, 0);
         ets_delay_us(M_DELAY_uS);
+
+
+
+
+
     }
 
     musicPlayDuration = xTaskGetTickCount();
@@ -556,23 +556,31 @@ void musicPlay(uint8_t musicNo ){
 
 
 
-void musicArrayPlay(uint8_t *music ,uint8_t len){
+void musicArrayPlay(uint8_t *musicP ,uint8_t len){
 
     // uint8_t len = strlen(music);
 
     // printf("music sizeof %d \n" , len);
+    uint8_t tempMusic =music;
 
     for (uint8_t j = 0; j < len;j+=2)
     {
 
         // printf("loop no %d " ,j);
-        musicPlay(music[j]);
+        musicPlay(musicP[j]);
 
         // printf("music delay %d ms\n" , music[j+1] * 100);
-        while( xTaskGetTickCount()<musicPlayDuration+( music[j+1]*10));
+        while( xTaskGetTickCount()<musicPlayDuration+( musicP[j+1]*10)){
+            
+            if(music!=tempMusic){
+                // printf("next music\n");
+                musicPlay(0);
+                return;
+            }  
+        }
     }
     musicPlay(0);
-
+    music=MUSIC_IDLE;
 }
 
 

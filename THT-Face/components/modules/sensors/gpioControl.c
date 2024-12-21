@@ -432,8 +432,9 @@ static void sensor(void *arg)
     gpio_set_direction((gpio_num_t)SER_LAT, GPIO_MODE_OUTPUT);
 
     // printf("in sensor\n");
-    uint8_t welcome[12] = {1,1,1,1,1,1,1,1,1,1,1,1};
-    uint8_t unregisterd[2] = {1,20};
+
+    uint8_t welcome[12] = {1,2,1,2,1,2,1,2,1,2,1,2};
+    uint8_t unregisterd[2] = {1,4};
 
 
     uint8_t tempOld=0;
@@ -449,9 +450,16 @@ static void sensor(void *arg)
 
         // }else printf("PIR_STATE 0\n");
 
+        while(music==MUSIC_IDLE && shiftOutData.read == tempOld ){
+          
+            if(PIR_STATE==1){
+                // printf("PIR_STATE 1\n");
+            }//else printf("PIR_STATE 0\n");
 
+            musicPlayDuration = xTaskGetTickCount();
+        }
 
-        if(shiftOutData.read != tempOld   ){// true if any bit change
+        if(shiftOutData.read != tempOld ){// true if any bit change
             tempOld=shiftOutData.read;
             shiftOut(shiftOutData.write);
 
@@ -463,9 +471,9 @@ static void sensor(void *arg)
 
 
 
-        if(music==MUSIC_IDLE){
-            musicPlayDuration = xTaskGetTickCount();
-        }
+        // if(music==MUSIC_IDLE){
+        //     musicPlayDuration = xTaskGetTickCount();
+        // }
 
         switch (music)
         {
@@ -522,7 +530,7 @@ static void sensor(void *arg)
             break;
         }
 
-        ets_delay_us(50);
+        // ets_delay_us(50);
 
     }
 }
@@ -542,6 +550,7 @@ void musicPlay(uint8_t musicNo ){
         ets_delay_us(M_DELAY_uS);
     }
 
+    musicPlayDuration = xTaskGetTickCount();
 
 }
 
@@ -560,9 +569,7 @@ void musicArrayPlay(uint8_t *music ,uint8_t len){
         musicPlay(music[j]);
 
         // printf("music delay %d ms\n" , music[j+1] * 100);
-        vTaskDelay(pdMS_TO_TICKS( music[j]*100 ));
-
-
+        while( xTaskGetTickCount()<musicPlayDuration+( music[j+1]*10));
     }
     musicPlay(0);
 

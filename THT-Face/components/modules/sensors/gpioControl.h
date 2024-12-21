@@ -125,6 +125,9 @@ extern "C"
 
     void musicPlay(uint8_t musicNo);
 
+    void musicArrayPlay(uint8_t *music ,uint8_t len);
+
+
     void sensorHandel();
 
 #ifdef __cplusplus

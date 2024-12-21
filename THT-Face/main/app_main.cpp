@@ -40,7 +40,7 @@ void app_main()
         esp_restart();
     }
     
-    register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);//core 1    
+    register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);//core 1    //  FRAMESIZE_QVGA 320*240  //FRAMESIZE_VGA 640x480
     register_event(xQueueEventLogic);//core 1
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false); //core 1+1
     register_lcd(xQueueLCDFrame, NULL, true);// core 0
@@ -67,6 +67,8 @@ void app_main()
     PwmInt((gpio_num_t)LCE_BL);
     ESP_LOGI(TAG, "app_main finished");
     shiftOutData.bitset.LED=0;  //q4
+    music=WELCOME_MUSIC;
+
 
     while(true){
 

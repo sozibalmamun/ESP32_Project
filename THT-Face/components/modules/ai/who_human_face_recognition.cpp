@@ -355,8 +355,10 @@ static void task_process_handler(void *arg)
 
                             unrecognitionCount=0;
                             faceDetectTimeOut= xTaskGetTickCount(); 
-                            shiftOutData.bitset.LED=0;      //q3
-                            shiftOutData.bitset.IRLED=1;    //q7
+                            if(xTaskGetTickCount()>sleepEnable+TIMEOUT_3000_MS){
+                                shiftOutData.bitset.LED=0;      //q3
+                                shiftOutData.bitset.IRLED=0;    //q7
+                            }
 
 
                         }

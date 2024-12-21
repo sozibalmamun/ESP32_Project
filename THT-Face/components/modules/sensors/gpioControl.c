@@ -1,7 +1,7 @@
 #include "gpioControl.h"
+#include <string.h>
 
-
-#define MUSIC_PLAY_TIME TIMEOUT_1000_MS
+#define MUSIC_PLAY_TIME TIMEOUT_500_MS
 
 uint16_t batVoltage;
 uint8_t chargeState=0;
@@ -11,7 +11,6 @@ TaskHandle_t sensorsHandeler = NULL;
 
 esp_adc_cal_characteristics_t *adc_chars;
 union shiftResistorBitfild shiftOutData;
-
 
 
 void gpioInt(void){
@@ -291,21 +290,19 @@ void plugIn(bool plugin){
 
 
 void shiftOut( uint8_t val){
-uint8_t c8;
+    uint8_t c8;
 
-gpio_set_level((gpio_num_t)SER_LAT, 0);
+    gpio_set_level((gpio_num_t)SER_LAT, 0);
 
-for(c8 = 0x80; c8; c8>>=1)
-{
-    if(val&c8) gpio_set_level((gpio_num_t)SER_SDI, 1);
-    else gpio_set_level((gpio_num_t)SER_SDI, 0);
+    for(c8 = 0x80; c8; c8>>=1)
+    {
+        if(val&c8) gpio_set_level((gpio_num_t)SER_SDI, 1);
+        else gpio_set_level((gpio_num_t)SER_SDI, 0);
 
-    gpio_set_level((gpio_num_t)SER_CLK, 1);
-    gpio_set_level((gpio_num_t)SER_CLK, 0);
-}
-gpio_set_level((gpio_num_t)SER_LAT, 1);
-
-
+        gpio_set_level((gpio_num_t)SER_CLK, 1);
+        gpio_set_level((gpio_num_t)SER_CLK, 0);
+    }
+    gpio_set_level((gpio_num_t)SER_LAT, 1);
 
 }
 
@@ -435,6 +432,8 @@ static void sensor(void *arg)
     gpio_set_direction((gpio_num_t)SER_LAT, GPIO_MODE_OUTPUT);
 
     // printf("in sensor\n");
+    uint8_t welcome[12] = {1,1,1,1,1,1,1,1,1,1,1,1};
+    uint8_t unregisterd[2] = {1,20};
 
 
     uint8_t tempOld=0;
@@ -447,7 +446,6 @@ static void sensor(void *arg)
         // if(PIR_STATE==1){
 
         //     printf("PIR_STATE 1\n");
-
 
         // }else printf("PIR_STATE 0\n");
 
@@ -483,13 +481,13 @@ static void sensor(void *arg)
         
         case MUSIC_2:
             printf("MUSIC_2 \n");
-            // vTaskDelay(pdMS_TO_TICKS(3));
-            // ets_delay_us(300);
-            music=MUSIC_STOPING;
-            // shiftOutData.bitset.MSDA=0;
+            // music=MUSIC_STOPING;
+            // musicPlay(1);
+            // musicTime=MUSIC_PLAY_TIME;
             //------------------------------------
-            musicPlay(1);
-            musicTime=MUSIC_PLAY_TIME;
+            musicArrayPlay(&unregisterd,2);
+            music=MUSIC_IDLE;
+            
             break;
         
         case MUSIC_STOPING:
@@ -511,10 +509,14 @@ static void sensor(void *arg)
         case MUSIC_IMMEDIATE_STOP:
 
             printf("MUSIC_IMMEDIATE_STOP\n");
-            vTaskDelay(pdMS_TO_TICKS(1));
             music=MUSIC_IDLE;
             musicPlay(0);
             break;
+        case WELCOME_MUSIC:
+            musicArrayPlay(welcome,12);
+            music=MUSIC_IDLE;
+            break;
+
 
         default:
             break;
@@ -527,7 +529,8 @@ static void sensor(void *arg)
 
 void musicPlay(uint8_t musicNo ){
 
-// printf("music%s function \n",musicNo>0? "Play":"Stop");
+    // printf("music%s function \n",musicNo>0? "Play":"Stop");
+    printf("music No %d \n",musicNo);
 
     #define  M_DELAY_uS 300
 
@@ -539,7 +542,35 @@ void musicPlay(uint8_t musicNo ){
         ets_delay_us(M_DELAY_uS);
     }
 
+
 }
+
+
+
+void musicArrayPlay(uint8_t *music ,uint8_t len){
+
+    // uint8_t len = strlen(music);
+
+    // printf("music sizeof %d \n" , len);
+
+    for (uint8_t j = 0; j < len;j+=2)
+    {
+
+        // printf("loop no %d " ,j);
+        musicPlay(music[j]);
+
+        // printf("music delay %d ms\n" , music[j+1] * 100);
+        vTaskDelay(pdMS_TO_TICKS( music[j]*100 ));
+
+
+    }
+    musicPlay(0);
+
+}
+
+
+
+
 
 void sensorHandel()
 {

@@ -30,5 +30,7 @@ static QueueHandle_t xQueueLCDFrame = NULL;
 static QueueHandle_t xQueueEventLogic = NULL;
 static QueueHandle_t xQueueCloud = NULL;
 
+extern uint8_t music;
+
 void reInt(void);
 

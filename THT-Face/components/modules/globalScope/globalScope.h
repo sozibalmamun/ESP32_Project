@@ -15,6 +15,9 @@
 #define MUSIC_STOP           0x04
 #define MUSIC_IMMEDIATE_STOP 0X05
 
+#define WELCOME_MUSIC 0X06
+
+
 
 
 

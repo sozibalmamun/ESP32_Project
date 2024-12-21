@@ -37,6 +37,7 @@ extern "C"
     void app_lcd_set_color(int color);
     void app_lcd_draw_wallpaper_try();
     void scaleImageTo320x240(camera_fb_t *src, camera_fb_t *dst);
+    void scaleImageTo320x240_on_the_fly(camera_fb_t *src, camera_fb_t *dst);
 
 
 

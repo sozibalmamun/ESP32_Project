@@ -6,10 +6,12 @@
 uint16_t batVoltage;
 uint8_t chargeState=0;
 uint8_t music=0;
-uint32_t musicPlayDuration = 0;
+// uint32_t musicPlayDuration = 0;
 TaskHandle_t sensorsHandeler = NULL;
 
-esp_adc_cal_characteristics_t *adc_chars;
+esp_adc_cal_characteristics_t *adc_chars_battery = NULL;
+esp_adc_cal_characteristics_t *adc_chars_pir = NULL;
+
 union shiftResistorBitfild shiftOutData;
 
 
@@ -231,27 +233,60 @@ void enter_light_sleep(void) {
 
 void init_adc() {
     // Configure ADC width and attenuation for ADC2
-    adc2_config_channel_atten(ADC_CHANNEL, ADC_ATTEN_DB_11);  // 0-3.6V range
-    adc_chars = (esp_adc_cal_characteristics_t*) calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    esp_adc_cal_characterize(ADC_UNIT_2, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars);
+    adc2_config_channel_atten(BATTERY_ADC_CHANNEL, ADC_ATTEN_DB_11);  // 0-3.6V range
+    adc_chars_battery = (esp_adc_cal_characteristics_t*) calloc(1, sizeof(esp_adc_cal_characteristics_t));
+    esp_adc_cal_characterize(ADC_UNIT_2, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars_battery);
+
+    // // Configure ADC for PIR sensor (ADC1)
+    adc1_config_width(ADC_WIDTH_BIT_12);                             // 12-bit resolution
+    adc1_config_channel_atten(PIR_ADC_CHANNEL, ADC_ATTEN_DB_11);     // 0-3.6V range
+    adc_chars_pir = (esp_adc_cal_characteristics_t*) calloc(1, sizeof(esp_adc_cal_characteristics_t));
+    esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars_pir);
+
+
 }
 
 
 // Function to read ADC and calculate voltage
 void readBatteryVoltage() {
-    uint32_t adc_reading = 0;
-    int raw;
-    for (int i = 0; i < NO_OF_SAMPLES; i++) {
-        // Read ADC2 channel (this call returns the raw value directly)
-        if (adc2_get_raw(ADC_CHANNEL, ADC_WIDTH_BIT_12, &raw) == ESP_OK) {
-            adc_reading += raw;
+
+
+    if (adc_chars_battery != NULL) {
+
+        uint32_t adc_reading = 0;
+        int raw;
+        for (int i = 0; i < NO_OF_SAMPLES; i++) {
+            // Read ADC2 channel (this call returns the raw value directly)
+            if (adc2_get_raw(BATTERY_ADC_CHANNEL, ADC_WIDTH_BIT_12, &raw) == ESP_OK) {
+                adc_reading += raw;
+            }
         }
+        adc_reading /= NO_OF_SAMPLES;
+        batVoltage=esp_adc_cal_raw_to_voltage(adc_reading, adc_chars_battery);
+        printf("Battery Voltage: %d mV\n", batVoltage);
     }
-    adc_reading /= NO_OF_SAMPLES;
-    batVoltage=esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
-    printf("Battery Voltage: %d mV\n", batVoltage);
 
 }
+//----------------------------------------pir adc
+
+// Function to read ADC and calculate voltage
+void pirRead() {
+
+    if (adc_chars_pir != NULL) {
+
+        uint32_t adc_reading = 0;
+        for (int i = 0; i < NO_OF_SAMPLES; i++) {
+            adc_reading += adc1_get_raw(PIR_ADC_CHANNEL);
+        }
+        adc_reading /= NO_OF_SAMPLES;
+
+        uint16_t pirVal = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars_pir); // Return voltage in mV
+        // printf("pirVal : %d mV\n", pirVal);
+    }
+
+}
+//----------------------------------------
+
 
 
 void plugIn(bool plugin){
@@ -287,6 +322,11 @@ void plugIn(bool plugin){
     }
 
 }
+
+
+
+
+
 
 
 void shiftOut( uint8_t val){
@@ -352,9 +392,9 @@ void shiftOut( uint8_t val){
 
 //         switch (music)
 //         {
-//         case MUSIC_1:
+//         case WELCOME:
 
-//             printf("MUSIC_1 \n");
+//             printf("WELCOME \n");
 
 //             vTaskDelay(pdMS_TO_TICKS(2));
 //             shiftOutData.bitset.MSDA=0; 
@@ -362,8 +402,8 @@ void shiftOut( uint8_t val){
 
 //             break;
         
-//         case MUSIC_2:
-//             printf("MUSIC_2 \n");
+//         case UNREGISTERD:
+//             printf("UNREGISTERD \n");
 //             // vTaskDelay(pdMS_TO_TICKS(3));
 //             ets_delay_us(300);
 //             music=MUSIC_STOPING;
@@ -397,7 +437,7 @@ void shiftOut( uint8_t val){
 
 //         case MUSIC_IMMEDIATE_STOP:
 
-//             printf("MUSIC_IMMEDIATE_STOP %d \n",shiftOutData.bitset.MSDA);
+//             printf(" %d \n",shiftOutData.bitset.MSDA);
 //             vTaskDelay(pdMS_TO_TICKS(1));
 //             music=MUSIC_IDLE;
 //             shiftOutData.bitset.MSDA=0;
@@ -433,13 +473,13 @@ static void sensor(void *arg)
 
     // printf("in sensor\n");
 
-    uint8_t welcome[12] = {1,2,1,2,0,2,1,2,0,2,1,2};
+    uint8_t welcomeMusic[12] = {1,2,1,2,0,2,1,2,0,2,1,2};
     uint8_t unregisterd[2] = {1,4};
 
+    // init_pir();
 
     uint8_t tempOld=0;
     uint16_t musicTime=0;
-
     while (1)
     {
 
@@ -452,41 +492,33 @@ static void sensor(void *arg)
 
         while(music==MUSIC_IDLE && shiftOutData.read == tempOld ){
           
-            if(PIR_STATE==1){
-                // printf("PIR_STATE 1\n");
-            }//else printf("PIR_STATE 0\n");
 
-            // musicPlayDuration = xTaskGetTickCount();
+            // if(PIR_STATE==1){
+            //      printf("PIR_STATE 1\n");
+            // }else printf("PIR_STATE 0\n");
+
+            ets_delay_us(1000);//10
+            pirRead();
+
         }
 
         if(shiftOutData.read != tempOld ){// true if any bit change
-            tempOld=shiftOutData.read;
+            tempOld = shiftOutData.read;
             shiftOut(shiftOutData.write);
-
-            // printf("CAMEN: %d, MSDA: %d, MSCL: %d, PEREN: %d, LED: %d, LCDEN: %d, CAMPDWN: %d, IRLED: %d\n",
-            // shiftOutData.bitset.CAMEN, shiftOutData.bitset.MSDA, shiftOutData.bitset.MSCL, shiftOutData.bitset.PEREN,shiftOutData.bitset.LED, 
-            // shiftOutData.bitset.LCDEN, shiftOutData.bitset.CAMPDWN, shiftOutData.bitset.IRLED);
-   
         }
-
-        // if(music==MUSIC_IDLE){
-        //     musicPlayDuration = xTaskGetTickCount();
-        // }
 
         switch (music)
         {
-        case MUSIC_1:
+        case WELCOME:
 
-            printf("MUSIC_1 \n");
-
+            printf("WELCOME \n");
             // vTaskDelay(pdMS_TO_TICKS(2));
-            // shiftOutData.bitset.MSDA=0; 
-            music=MUSIC_STOPING;
+            // music=MUSIC_STOPING;
 
             break;
         
-        case MUSIC_2:
-            printf("MUSIC_2 \n");
+        case UNREGISTERD:
+            printf("UNREGISTERD \n");
             // music=MUSIC_STOPING;
             // musicPlay(1);
             // musicTime=MUSIC_PLAY_TIME;
@@ -496,36 +528,37 @@ static void sensor(void *arg)
             
             break;
         
-        case MUSIC_STOPING:
+        // case MUSIC_STOPING:
 
-            // printf("MUSIC_STOPING\n");
-            if( xTaskGetTickCount()-musicPlayDuration>musicTime){
-                music=MUSIC_STOP;
-            }
-            break;
+        //     // printf("MUSIC_STOPING\n");
+        //     if( xTaskGetTickCount()-musicPlayDuration>musicTime){
+        //         music=MUSIC_STOP;
+        //     }
+        //     break;
 
-        case MUSIC_STOP:
+        // case MUSIC_STOP:
 
-            music=MUSIC_IDLE;
-            printf("MUSIC_STOP \n");
-            musicPlay(0);
+        //     music=MUSIC_IDLE;
+        //     printf("MUSIC_STOP \n");
+        //     musicPlay(0);
 
-            break;
+        //     break;
 
-        case MUSIC_IMMEDIATE_STOP:
+        // case MUSIC_IMMEDIATE_STOP:
 
-            printf("MUSIC_IMMEDIATE_STOP\n");
-            music=MUSIC_IDLE;
-            musicPlay(0);
-            break;
-        case WELCOME_MUSIC:
-            musicArrayPlay(welcome,12);
+        //     printf("MUSIC_IMMEDIATE_STOP\n");
+        //     music=MUSIC_IDLE;
+        //     musicPlay(0);
+        //     break;
+        
+        case TURN_ON_MUSIC:
+            printf("TURN_ON_MUSIC \n");
+            musicArrayPlay(welcomeMusic,12);
             break;
         default:
             break;
         }
-
-        // ets_delay_us(50);
+        // ets_delay_us(1);
 
     }
 }
@@ -550,7 +583,7 @@ void musicPlay(uint8_t musicNo ){
 
     }
 
-    musicPlayDuration = xTaskGetTickCount();
+    // musicPlayDuration = xTaskGetTickCount();
 
 }
 
@@ -562,13 +595,23 @@ void musicArrayPlay(uint8_t *musicP ,uint8_t len){
 
     // printf("music sizeof %d \n" , len);
     uint8_t tempMusic =music;
+    uint32_t musicPlayDuration = 0;
 
-    for (uint8_t j = 0; j < len;j+=2)
+    for (size_t j = 0; j < len;j+=2)
     {
 
         // printf("loop no %d " ,j);
-        musicPlay(musicP[j]);
+        // musicPlay(musicP[j]);
 
+
+        for (size_t i = 0; i <=musicP[j]; i++)
+        {
+            gpio_set_level((gpio_num_t)MUSICPIN, 1);
+            ets_delay_us(300);
+            gpio_set_level((gpio_num_t)MUSICPIN, 0);
+            ets_delay_us(300);
+        }
+        musicPlayDuration = xTaskGetTickCount();
         // printf("music delay %d ms\n" , music[j+1] * 100);
         while( xTaskGetTickCount()<musicPlayDuration+( musicP[j+1]*10)){
             

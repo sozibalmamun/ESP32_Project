@@ -67,7 +67,7 @@ void app_main()
     PwmInt((gpio_num_t)LCE_BL);
     ESP_LOGI(TAG, "app_main finished");
     shiftOutData.bitset.LED=0;  //q4
-    music=WELCOME_MUSIC;
+    music=TURN_ON_MUSIC;
 
 
     while(true){

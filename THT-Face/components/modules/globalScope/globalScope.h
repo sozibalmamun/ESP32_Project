@@ -9,13 +9,16 @@
 // #define NO_OF_SAMPLES 64            // Multisampling to improve accuracy
 
 #define MUSIC_IDLE           0x00
-#define MUSIC_1              0x01
-#define MUSIC_2              0x02
-#define MUSIC_STOPING        0x03
-#define MUSIC_STOP           0x04
-#define MUSIC_IMMEDIATE_STOP 0X05
+#define WELCOME              0x01
+#define UNREGISTERD          0x02
+#define TURN_ON_MUSIC        0X03
 
-#define WELCOME_MUSIC 0X06
+
+
+
+#define MUSIC_STOPING        0xFF
+#define MUSIC_STOP           0xFE
+#define MUSIC_IMMEDIATE_STOP 0xFD
 
 
 

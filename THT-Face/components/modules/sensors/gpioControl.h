@@ -54,10 +54,14 @@ extern TaskHandle_t cloudeTaskHandler;
 
   
 
-
-#define ADC_CHANNEL ADC2_CHANNEL_8   // GPIO19 for ADC2
+// battery 
+#define BATTERY_ADC_CHANNEL ADC2_CHANNEL_8   // GPIO19 for ADC2
 #define DEFAULT_VREF 1100           // Default reference voltage in mV (you may need to adjust this)
 #define NO_OF_SAMPLES 64            // Multisampling to improve accuracy
+// pir
+#define PIR_ADC_CHANNEL ADC1_CHANNEL_0       // GPIO1 for ADC1
+
+
 
 #define CHARGE_IDLE         0   
 #define CHARGER_PLUGED      1  
@@ -120,6 +124,7 @@ extern "C"
     // void list_all_tasks(void);
     void enter_light_sleep(void);
     void init_adc();
+    void init_pir() ;
     void readBatteryVoltage();
     void plugIn(bool plugin);
 

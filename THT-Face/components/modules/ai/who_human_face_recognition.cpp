@@ -489,7 +489,7 @@ static void task_process_handler(void *arg)
 
                                 if(stateCounter>=ID_VALID){
 
-                                    if(music!=MUSIC_IDLE)music= MUSIC_IMMEDIATE_STOP;// stop music for play next recongnition  music
+                                    // if(music!=MUSIC_IDLE)music= MUSIC_IMMEDIATE_STOP;// stop music for play next recongnition  music
                                     // printf("MUSIC_IMMEDIATE_STOP :in face \n");
 
                                    for(uint8_t i=0; i<ID_VALID;i++){
@@ -520,14 +520,14 @@ static void task_process_handler(void *arg)
                                         tempTimeFrame[5] = current_time.second;
                                         write_log_attendance(recognize_result.id, tempTimeFrame);
                                         TimeOut=xTaskGetTickCount();
-                                        // music =  MUSIC_1;
+                                        // music =  WELCOME;
 
                                         //----------------------------------------------------------------------------------------------
 
                                     }
                                     CPUBgflag=0;
                                     frame_show_state = SHOW_STATE_RECOGNIZE;
-                                    music=  MUSIC_1;
+                                    music=  WELCOME;
 
                                     break;
 
@@ -539,7 +539,7 @@ static void task_process_handler(void *arg)
 
                                 if(unrecognitionCount>=(ID_VALID-1)){
                                     frame_show_state = SHOW_STATE_RECOGNIZE;
-                                    music=  MUSIC_2;
+                                    music=  UNREGISTERD;
                                     unrecognitionCount=0;
                                 }else unrecognitionCount++;
 

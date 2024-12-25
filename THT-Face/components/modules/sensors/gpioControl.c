@@ -238,10 +238,10 @@ void init_adc() {
     esp_adc_cal_characterize(ADC_UNIT_2, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars_battery);
 
     // // Configure ADC for PIR sensor (ADC1)
-    adc1_config_width(ADC_WIDTH_BIT_12);                             // 12-bit resolution
-    adc1_config_channel_atten(PIR_ADC_CHANNEL, ADC_ATTEN_DB_11);     // 0-3.6V range
-    adc_chars_pir = (esp_adc_cal_characteristics_t*) calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars_pir);
+    // adc1_config_width(ADC_WIDTH_BIT_12);                             // 12-bit resolution
+    // adc1_config_channel_atten(PIR_ADC_CHANNEL, ADC_ATTEN_DB_11);     // 0-3.6V range
+    // adc_chars_pir = (esp_adc_cal_characteristics_t*) calloc(1, sizeof(esp_adc_cal_characteristics_t));
+    // esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars_pir);
 
 
 }
@@ -498,7 +498,6 @@ static void sensor(void *arg)
             // }else printf("PIR_STATE 0\n");
 
             ets_delay_us(1000);//10
-            pirRead();
 
         }
 
@@ -576,11 +575,6 @@ void musicPlay(uint8_t musicNo ){
         ets_delay_us(M_DELAY_uS);
         gpio_set_level((gpio_num_t)MUSICPIN, 0);
         ets_delay_us(M_DELAY_uS);
-
-
-
-
-
     }
 
     // musicPlayDuration = xTaskGetTickCount();

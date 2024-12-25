@@ -315,16 +315,16 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
  
     }
 
-        case ESP_BLUFI_EVENT_RECV_CUSTOM_DATA:{
+    case ESP_BLUFI_EVENT_RECV_CUSTOM_DATA:{
         // BLUFI_INFO("Recv Custom Data %d\n", param->custom_data.data_len);
         esp_log_buffer_hex("Custom Data", param->custom_data.data, param->custom_data.data_len);
 
         // Print the received data as a string
-        // char received_data_str[param->custom_data.data_len + 1];
-        // memcpy(received_data_str, param->custom_data.data, param->custom_data.data_len);
-        // received_data_str[param->custom_data.data_len] = '\0'; // Null-terminate the string
+        char received_data_str[param->custom_data.data_len + 1];
+        memcpy(received_data_str, param->custom_data.data, param->custom_data.data_len);
+        received_data_str[param->custom_data.data_len] = '\0'; // Null-terminate the string
 
-        // BLUFI_INFO("Custom Data %s\n", received_data_str);
+        BLUFI_INFO("Custom Data %s\n", received_data_str);
 
         break;
     }

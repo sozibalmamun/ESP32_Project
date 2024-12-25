@@ -8,7 +8,7 @@ void app_main()
     gpioInt();
 
     configure_dynamic_frequency();
-    shiftOutData.write=0x10;
+    shiftOutData.write=0x10;// LED ON at inttial value
 
     sensorHandel();
 
@@ -17,16 +17,16 @@ void app_main()
     //--------------------------------------------------
 
     shiftOutData.bitset.PEREN=1;  //q3
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(5));
 
     shiftOutData.bitset.CAMEN=1;//q0
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(5));
 
     shiftOutData.bitset.CAMPDWN=0;//q6
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(5));
 
     shiftOutData.bitset.LCDEN=1;//q5
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(5));
 
 
 
@@ -46,7 +46,7 @@ void app_main()
     register_lcd(xQueueLCDFrame, NULL, true);// core 0
     // register_lcd( xQueueLCDFrame, xQueueAIFrame, NULL, true);// core 0
 
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(5));
 
 
     //-------------------------
@@ -65,11 +65,9 @@ void app_main()
     //-------------------------
     // Initialize PWM using the PwmInt function
     PwmInt((gpio_num_t)LCE_BL);
-    ESP_LOGI(TAG, "app_main finished");
     shiftOutData.bitset.LED=0;  //q4
     music=TURN_ON_MUSIC;
-
-
+    ESP_LOGI(TAG, "app_main finished");
     while(true){
 
         // // Log or print the CPU frequency

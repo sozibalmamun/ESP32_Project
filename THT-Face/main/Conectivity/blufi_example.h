@@ -6,6 +6,14 @@
 #include "esp_blufi_api.h"
 #include "esp_websocket_client.h"
 
+
+
+
+static const char *NVS_BLE_NAME_SPACE = "BLE_PASS_CONFIG";
+static const char *BLE_PASSKEY = "BLE_PASS";
+
+
+
 extern uint8_t sleepEnable;
 extern volatile TickType_t sleepTimeOut; 
 esp_websocket_client_handle_t client;
@@ -13,6 +21,11 @@ esp_websocket_client_handle_t client;
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+
+
+
 
 
 

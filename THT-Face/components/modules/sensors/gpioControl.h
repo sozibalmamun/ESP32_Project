@@ -59,7 +59,7 @@ extern TaskHandle_t cloudeTaskHandler;
 #define DEFAULT_VREF 1100           // Default reference voltage in mV (you may need to adjust this)
 #define NO_OF_SAMPLES 64            // Multisampling to improve accuracy
 // pir
-#define PIR_ADC_CHANNEL ADC1_CHANNEL_0       // GPIO1 for ADC1
+#define PIR_ADC_CHANNEL ADC1_CHANNEL_0       // GPIO1 for ADC1 
 
 
 
@@ -124,15 +124,11 @@ extern "C"
     // void list_all_tasks(void);
     void enter_light_sleep(void);
     void init_adc();
-    void init_pir() ;
+    void init_pir();
     void readBatteryVoltage();
     void plugIn(bool plugin);
-
     void musicPlay(uint8_t musicNo);
-
     void musicArrayPlay(uint8_t *music ,uint8_t len);
-
-
     void sensorHandel();
 
 #ifdef __cplusplus

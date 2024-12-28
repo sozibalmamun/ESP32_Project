@@ -52,7 +52,9 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
 static wifi_config_t sta_config;
 static wifi_config_t ap_config;
 esp_netif_t *sta_netif= NULL;
-bool  networkIntDone =false;
+
+bool  networkIntDone = false;
+static bool valid_password = false;
 
 
 /* FreeRTOS event group to signal when we are connected & ready to make a request */
@@ -143,6 +145,93 @@ static void send_custom_data_to_app(const char *data)
 }
 
 
+// BLE PASSKEY STORAGE---------------------------------------------------
+static  void savePass(uint8_t *pass, size_t pass_len) {
+    nvs_handle_t nvs_handle;
+    esp_err_t ret = nvs_open(NVS_BLE_NAME_SPACE, NVS_READWRITE, &nvs_handle);
+    if (ret == ESP_OK) {
+        ret = nvs_set_blob(nvs_handle, BLE_PASSKEY, pass, pass_len);
+        if (ret == ESP_OK) {
+            nvs_commit(nvs_handle);
+            ESP_LOGI("NVS", "Passkey saved successfully.");
+        } else {
+            ESP_LOGE("NVS", "Failed to save passkey, error: %d", ret);
+        }
+        nvs_close(nvs_handle);
+    } else {
+        ESP_LOGE("NVS", "Failed to open NVS namespace, error: %d", ret);
+    }
+}
+
+static void checkDevicePass(uint8_t *pass, size_t pass_len) {
+    nvs_handle_t nvs_handle;
+    esp_err_t ret = nvs_open(NVS_BLE_NAME_SPACE, NVS_READWRITE, &nvs_handle);
+    if (ret == ESP_OK) {
+        size_t required_size = pass_len; // Length of the pass buffer
+        ret = nvs_get_blob(nvs_handle, BLE_PASSKEY, pass, &required_size);
+        if (ret == ESP_OK) {
+            ESP_LOGI("NVS", "Passkey loaded successfully.");
+        } else if (ret == ESP_ERR_NVS_NOT_FOUND) {
+            ESP_LOGI("NVS", "Passkey not found. Using default passkey.");
+            // Set default passkey
+            uint8_t default_pass[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
+            memcpy(pass, default_pass, pass_len); // Copy default pass to output
+        } else {
+            ESP_LOGE("NVS", "Failed to load passkey, error: %d", ret);
+        }
+        nvs_close(nvs_handle);
+    } else {
+        ESP_LOGE("NVS", "Failed to open NVS namespace, error: %d", ret);
+    }
+}
+
+static bool validatePasskey(uint8_t *received_pass, size_t pass_len) {
+    
+    uint8_t stored_pass[pass_len];
+    nvs_handle_t nvs_handle;
+
+    // Open NVS namespace
+    esp_err_t ret = nvs_open(NVS_BLE_NAME_SPACE, NVS_READWRITE, &nvs_handle);
+    if (ret == ESP_OK) {
+        size_t required_size = pass_len;
+        ret = nvs_get_blob(nvs_handle, BLE_PASSKEY, stored_pass, &required_size);
+
+        if (ret == ESP_OK) {
+            ESP_LOGI("NVS", "Passkey loaded successfully.");
+
+            // Compare received passkey with stored passkey
+            if (memcmp(received_pass, stored_pass, pass_len) == 0) {
+                ESP_LOGI("AUTH", "Passkey matches with stored passkey!");
+                nvs_close(nvs_handle);
+                return true; // Passkey matches
+            } else {
+                ESP_LOGE("AUTH", "Passkey does not match with stored passkey!");
+            }
+        } else if (ret == ESP_ERR_NVS_NOT_FOUND) {
+            ESP_LOGW("NVS", "Passkey not found in NVS. Using default passkey.");
+        } else {
+            ESP_LOGE("NVS", "Error loading passkey from NVS: %d", ret);
+        }
+        nvs_close(nvs_handle);
+    } else {
+        ESP_LOGE("NVS", "Failed to open NVS namespace, error: %d", ret);
+    }
+
+    // Compare received passkey with default passkey
+    uint8_t default_pass[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09}; // Default passkey
+    if (memcmp(received_pass, default_pass, pass_len) == 0) {
+        ESP_LOGI("AUTH", "Passkey matches with default passkey!");
+        return true; // Passkey matches with default
+    } else {
+        ESP_LOGE("AUTH", "Passkey does not match with default passkey!");
+    }
+
+    return false; // If any error occurs or passkey does not match
+}
+
+
+
+// BLE PASSKEY STORAGE ---------------------------------------------------
 
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
@@ -275,6 +364,8 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         ble_is_connected = false;
         blufi_security_deinit();
         blufiAddStart();
+        valid_password = false;
+
 
         break;
 
@@ -286,6 +377,15 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
 
 	case ESP_BLUFI_EVENT_RECV_STA_SSID:{//ok
 
+        if(!valid_password){
+
+            BLUFI_INFO("no pass match\n");
+
+            break;
+
+        }
+        
+        
         strncpy((char *)sta_config.sta.ssid, (char *)param->sta_ssid.ssid, param->sta_ssid.ssid_len);
         sta_config.sta.ssid[param->sta_ssid.ssid_len] = '\0';
         esp_wifi_set_config(WIFI_IF_STA, &sta_config);
@@ -296,10 +396,19 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         ssid[param->sta_ssid.ssid_len] = '\0'; // Null-terminate the SSID string
 
         BLUFI_INFO("SSID: %s\n", ssid);
+
         break;
     }
 	case ESP_BLUFI_EVENT_RECV_STA_PASSWD:{//ok
 
+        if(!valid_password){
+
+            BLUFI_INFO("no pass match\n");
+
+            break;
+
+        }
+        
         strncpy((char *)sta_config.sta.password, (char *)param->sta_passwd.passwd, param->sta_passwd.passwd_len);
         sta_config.sta.password[param->sta_passwd.passwd_len] = '\0';
         esp_wifi_set_config(WIFI_IF_STA, &sta_config);
@@ -325,6 +434,41 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         received_data_str[param->custom_data.data_len] = '\0'; // Null-terminate the string
 
         BLUFI_INFO("Custom Data %s\n", received_data_str);
+
+
+        // Process the received data
+        #define PASSKEY_LENGTH 9
+
+        if ((uint8_t)received_data_str[0] == 0x50) { // Validate passkey
+            // ESP_LOGI("Custom Data", "Received Passkey for Validation");
+
+            // Pass the address of the passkey starting from received_data_str[1]
+            if (validatePasskey((uint8_t*)&received_data_str[1], PASSKEY_LENGTH)) {
+                ESP_LOGI("CONN", "Passkey is valid. Proceeding with connection...");
+                send_custom_data_to_app("AP"); // Send feedback to application over BLE
+                valid_password = true;
+            } else {
+                ESP_LOGE("CONN", "Passkey is invalid. Connection denied.");
+                esp_blufi_disconnect();
+            }
+        } else if ((uint8_t)received_data_str[0] == 0x53 && valid_password ) { // Save passkey
+            ESP_LOGI("Custom Data", "Received Passkey for Saving");
+
+            // Pass the address of the passkey starting from received_data_str[1]
+            savePass((uint8_t*)&received_data_str[1], PASSKEY_LENGTH);
+            ESP_LOGI("CONN", "Passkey saved successfully.");
+            send_custom_data_to_app("APSS"); // Send feedback to application over BLE
+            esp_blufi_disconnect();
+        }
+
+
+        // if(!valid_password)break;
+
+
+
+
+
+
 
         break;
     }
@@ -426,3 +570,8 @@ uint8_t wifi_rssi_to_percentage(int32_t rssi) {
     }
 
 }
+
+
+
+
+

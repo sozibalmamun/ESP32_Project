@@ -78,10 +78,10 @@ void register_camera(const pixformat_t pixel_fromat,
     sensor_t *s = esp_camera_sensor_get();
 
     // s->set_vflip(s, 1);      //  flip it back//change by sozib due to camera flip  int value was 1 for 2640 camera module
-    // s->set_vflip(s, 1);         //  flip it back//change by sozib due to camera flip  int value was 0 for 5640 camera module
+    // s->set_vflip(s, 1);         //  flip it back//change by sozib due to camera flip  int value was 1 for 5640 camera module
     
     // s->set_vflip(s, 0);         //  flip it back//change by sozib due to camera flip  int value was 0 for GC0308 camera module
-    s->set_vflip(s, 1);         //  flip it back//change by sozib due to camera flip  int value was 0 for XR-3660-A4 camera module
+    s->set_vflip(s, 1);         //  flip it back//change by sozib due to camera flip  int value was 1 for XR-3660-A4 camera module
     s->set_hmirror(s, 1);       //  miror camera change by sozib 
 
     // s->set_contrast(s, -1);     //  contrast    -2 - 2

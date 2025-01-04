@@ -460,13 +460,7 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
             send_custom_data_to_app("APSS"); // Send feedback to application over BLE
             esp_blufi_disconnect();
         }
-
-
         // if(!valid_password)break;
-
-
-
-
 
 
 

@@ -237,11 +237,11 @@ void init_adc() {
     adc_chars_battery = (esp_adc_cal_characteristics_t*) calloc(1, sizeof(esp_adc_cal_characteristics_t));
     esp_adc_cal_characterize(ADC_UNIT_2, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars_battery);
 
-    // // Configure ADC for PIR sensor (ADC1)
-    // adc1_config_width(ADC_WIDTH_BIT_12);                             // 12-bit resolution
-    // adc1_config_channel_atten(PIR_ADC_CHANNEL, ADC_ATTEN_DB_11);     // 0-3.6V range
-    // adc_chars_pir = (esp_adc_cal_characteristics_t*) calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    // esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars_pir);
+    // Configure ADC for PIR sensor (ADC1)
+    adc1_config_width(ADC_WIDTH_BIT_12);                             // 12-bit resolution
+    adc1_config_channel_atten(PIR_ADC_CHANNEL, ADC_ATTEN_DB_11);     // 0-3.6V range
+    adc_chars_pir = (esp_adc_cal_characteristics_t*) calloc(1, sizeof(esp_adc_cal_characteristics_t));
+    esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars_pir);
 
 
 }
@@ -281,7 +281,7 @@ void pirRead() {
         adc_reading /= NO_OF_SAMPLES;
 
         uint16_t pirVal = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars_pir); // Return voltage in mV
-        // printf("pirVal : %d mV\n", pirVal);
+        printf("pirVal : %d mV\n", pirVal);
     }
 
 }
@@ -496,7 +496,7 @@ static void sensor(void *arg)
             // if(PIR_STATE==1){
             //      printf("PIR_STATE 1\n");
             // }else printf("PIR_STATE 0\n");
-
+            // pirRead();
             ets_delay_us(1000);//10
 
         }

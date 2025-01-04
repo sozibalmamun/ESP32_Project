@@ -13,7 +13,7 @@ void app_main()
     sensorHandel();
 
     // Initialize Conectivity---------------------------
-    bluFiStart();
+    // bluFiStart();
     //--------------------------------------------------
 
     shiftOutData.bitset.PEREN=1;  //q3

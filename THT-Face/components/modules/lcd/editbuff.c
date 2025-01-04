@@ -835,21 +835,41 @@ void drawImage_u16(uint16_t x_offset, uint8_t y_offset, uint8_t width, uint8_t h
 uint8_t calculate_battery_level(uint32_t voltage) {
 
 
-    if (voltage < 1500) return 0;  // Level 0 (below 1500 mV)
+    // if (voltage < 1500) return 0;  // Level 0 (below 1500 mV)
 
-    else if (voltage < 1600) return 1;  // Level 1
+    // else if (voltage < 1600) return 1;  // Level 1
 
-    else if (voltage < 1700) return 2;  // Level 2
+    // else if (voltage < 1700) return 2;  // Level 2
 
-    else if (voltage < 1800) return 3;  // Level 3
+    // else if (voltage < 1800) return 3;  // Level 3
 
-    else if (voltage < 1900) return 4;  // Level 4
+    // else if (voltage < 1900) return 4;  // Level 4
 
-    else if (voltage < 2000) return 5;  // Level 5
+    // else if (voltage < 2000) return 5;  // Level 5
 
-    else if (voltage <= 2200) return 6;  // Level 6 (up to 2200 mV)
+    // else if (voltage <= 2200) return 6;  // Level 6 (up to 2200 mV)
+
+    // else return 0;  // Out of range, return Level 0
+
+
+    if (voltage < 1240) return 0;  // Level 0// 3.1 voltage 
+
+    else if (voltage < 1313) return 1;  // Level 1
+
+    else if (voltage < 1380) return 2;  // Level 2
+
+    else if (voltage < 1459) return 3;  // Level 3
+
+    else if (voltage < 1532) return 4;  // Level 4
+
+    else if (voltage < 1605) return 5;  // Level 5
+
+    else if (voltage <= 1680) return 6;  // Level 6 //4.2 voltage
 
     else return 0;  // Out of range, return Level 0
+
+
+
 
 }
 

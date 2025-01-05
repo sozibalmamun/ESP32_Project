@@ -47,7 +47,9 @@ extern "C" {
 // Define RTC pin connections
 #define DS1302_SCLK_PIN 39
 #define DS1302_IO_PIN 40
-#define DS1302_CE_PIN 38
+// #define DS1302_CE_PIN 38
+#define DS1302_CE_PIN GPIO_NUM_0
+
 
 #define  RTC_WR_SEC_ADDR        0x80
 #define  RTC_RD_SEC_ADDR        0x81

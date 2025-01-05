@@ -1,0 +1,7 @@
+Added Component: Designator=U8(SOT23-5)
+Added Pin To Net: NetName=GND Pin=Q4-1
+Added Pin To Net: NetName=VBATO Pin=U8-1
+Added Pin To Net: NetName=GND Pin=U8-2
+Added Pin To Net: NetName=PEREN Pin=U8-3
+Added Pin To Net: NetName=PVDD Pin=U8-5
+Added Member To Class: ClassName=U_Regulators Member=Component U8 ME6211C28M5G-N

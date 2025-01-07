@@ -48,7 +48,7 @@ extern "C" {
 #define DS1302_SCLK_PIN 39
 #define DS1302_IO_PIN 40
 // #define DS1302_CE_PIN 38
-#define DS1302_CE_PIN GPIO_NUM_0
+#define DS1302_CE_PIN GPIO_NUM_0// use for test purpose no enought pin
 
 
 #define  RTC_WR_SEC_ADDR        0x80
@@ -72,6 +72,7 @@ extern "C" {
 #define  RTC_WR_YEAR_ADDR       0x8C
 #define  RTC_RD_YEAR_ADDR       0x8D
 
+ 
 #define  RTC_WR_WP_ADDR         0x8E	// Write Protection Register
 #define  RTC_RD_WP_ADDR         0x8F
 

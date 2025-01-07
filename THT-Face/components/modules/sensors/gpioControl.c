@@ -17,10 +17,10 @@ union shiftResistorBitfild shiftOutData;
 
 void gpioInt(void){
 
-    gpio_set_level((gpio_num_t)LCE_BL, 0);
+    gpio_set_level((gpio_num_t)LCE_BL, 1);
     gpio_pad_select_gpio(LCE_BL);
     gpio_set_direction((gpio_num_t)LCE_BL, GPIO_MODE_OUTPUT);
-    gpio_set_level((gpio_num_t)LCE_BL, 0);
+    gpio_set_level((gpio_num_t)LCE_BL, 1);
 
 
     gpio_config_t io_conf = {
@@ -95,8 +95,11 @@ void PwmInt( gpio_num_t pinNo ) {
     for (int duty = 8192; duty >= 0; duty -= 1024) {
         ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, duty);
         ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
-        vTaskDelay(100 / portTICK_PERIOD_MS);     // Delay to see the dimming effect
+        vTaskDelay(pdMS_TO_TICKS(70));
     }
+    ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, 0);
+    ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
+
 }
 
 
@@ -496,8 +499,9 @@ static void sensor(void *arg)
             // if(PIR_STATE==1){
             //      printf("PIR_STATE 1\n");
             // }else printf("PIR_STATE 0\n");
-            // pirRead();
-            ets_delay_us(1000);//10
+            pirRead();
+            // ets_delay_us(1000);//10
+            vTaskDelay(pdMS_TO_TICKS(500));
 
         }
 

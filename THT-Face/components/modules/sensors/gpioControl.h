@@ -92,7 +92,7 @@ extern TaskHandle_t cloudeTaskHandler;
 
 #define ESP_INTR_FLAG_DEFAULT 0
 #define SLEEP_LCD 5
-#define WAKE_LCD 70
+#define WAKE_LCD 100
 #define MIN_BRIGHTNESS (8191)
 #define BRIGHTNESS(x)  MIN_BRIGHTNESS-(((MIN_BRIGHTNESS/100)*x))
 

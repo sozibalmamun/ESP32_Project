@@ -345,10 +345,17 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
     // g_lcd.get_info(&g_lcd_info);
     // ESP_LOGI(TAG, "Screen name:%s | width:%d | height:%d", g_lcd_info.name, g_lcd_info.width, g_lcd_info.height);
 
-    app_lcd_set_color(0x000000);
-    //vTaskDelay(pdMS_TO_TICKS(200));
-    //app_lcd_draw_wallpaper();
-    //vTaskDelay(pdMS_TO_TICKS(200));
+    app_lcd_set_color(0x0000);
+    app_lcd_draw_wallpaper();
+    vTaskDelay(pdMS_TO_TICKS(5));
+    PwmInt((gpio_num_t)LCE_BL);
+    // app_lcd_set_color(0x0000);
+
+    // // gpio_set_level((gpio_num_t)LCE_BL, 1);
+    // vTaskDelay(pdMS_TO_TICKS(100));
+    // gpio_set_level((gpio_num_t)LCE_BL, 0);
+
+
 
     xQueueFrameI = frame_i;
     xQueueFrameO = frame_o;
@@ -360,21 +367,39 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
     return ESP_OK;
 }
 
-// void app_lcd_draw_wallpaper()
-// {
-//     scr_info_t lcd_info;
-//     g_lcd.get_info(&lcd_info);
+void app_lcd_draw_wallpaper()
+{
+    scr_info_t lcd_info;
+    g_lcd.get_info(&lcd_info);
 
-//     uint16_t *pixels = (uint16_t *)heap_caps_malloc((logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-//     if (NULL == pixels)
-//     {
-//         ESP_LOGE(TAG, "Memory for bitmap is not enough");
-//         return;
-//     }
-//     memcpy(pixels, logo_en_240x240_lcd, (logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t));
-//     g_lcd.draw_bitmap(0, 0, logo_en_240x240_lcd_width, logo_en_240x240_lcd_height, (uint16_t *)pixels);
-//     heap_caps_free(pixels);
-// }
+    // uint16_t *pixels = (uint16_t *)heap_caps_malloc((logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    // if (NULL == pixels)
+    // {
+    //     ESP_LOGE(TAG, "Memory for bitmap is not enough");
+    //     return;
+    // }
+    // memcpy(pixels, logo_en_240x240_lcd, (logo_en_240x240_lcd_width * logo_en_240x240_lcd_height) * sizeof(uint16_t));
+    // g_lcd.draw_bitmap(0, 0, logo_en_240x240_lcd_width, logo_en_240x240_lcd_height, (uint16_t *)pixels);
+    // heap_caps_free(pixels);
+
+
+    uint16_t *pixels = (uint16_t *)heap_caps_malloc((GROZZIIE_LOGO_WIDTH * GROZZIIE_LOGO_HEIGHT) * sizeof(uint16_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    if (NULL == pixels)
+    {
+        ESP_LOGE(TAG, "Memory for bitmap is not enough");
+        return;
+    }
+    memcpy(pixels, Grozziie_logo, (GROZZIIE_LOGO_WIDTH * GROZZIIE_LOGO_HEIGHT) * sizeof(uint16_t));
+    g_lcd.draw_bitmap(42, 80, GROZZIIE_LOGO_WIDTH, GROZZIIE_LOGO_HEIGHT, (uint16_t *)pixels);
+    heap_caps_free(pixels);
+
+
+
+
+
+
+
+}
 
 void app_lcd_set_color(int color)
 {

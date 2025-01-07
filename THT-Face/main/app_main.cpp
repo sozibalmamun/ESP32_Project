@@ -10,24 +10,23 @@ void app_main()
     configure_dynamic_frequency();
     shiftOutData.write=0x10;// LED ON at inttial value
 
-    sensorHandel();
+    sensorHandel(); 
 
     // Initialize Conectivity---------------------------
     // bluFiStart();
     //--------------------------------------------------
 
     shiftOutData.bitset.PEREN=1;  //q3
-    vTaskDelay(pdMS_TO_TICKS(5));
+    // vTaskDelay(pdMS_TO_TICKS(1));//5
 
     shiftOutData.bitset.CAMEN=1;//q0
-    vTaskDelay(pdMS_TO_TICKS(5));
+    // vTaskDelay(pdMS_TO_TICKS(1));//5
 
     shiftOutData.bitset.CAMPDWN=0;//q6
-    vTaskDelay(pdMS_TO_TICKS(5));
+    // vTaskDelay(pdMS_TO_TICKS(1));//5
 
     shiftOutData.bitset.LCDEN=1;//q5
-    vTaskDelay(pdMS_TO_TICKS(5));
-
+    // vTaskDelay(pdMS_TO_TICKS(1));//5
 
 
     xQueueAIFrame = xQueueCreate(2, sizeof(camera_fb_t *));
@@ -44,9 +43,8 @@ void app_main()
     register_event(xQueueEventLogic);//core 1
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false); //core 1+1
     register_lcd(xQueueLCDFrame, NULL, true);// core 0
-    // register_lcd( xQueueLCDFrame, xQueueAIFrame, NULL, true);// core 0
 
-    vTaskDelay(pdMS_TO_TICKS(5));
+    // vTaskDelay(pdMS_TO_TICKS(5));
 
 
     //-------------------------
@@ -63,10 +61,12 @@ void app_main()
     init_adc();
     //-------------------------
     // Initialize PWM using the PwmInt function
-    PwmInt((gpio_num_t)LCE_BL);
+    // PwmInt((gpio_num_t)LCE_BL);
     shiftOutData.bitset.LED=0;  //q4
     music=TURN_ON_MUSIC;
+
     ESP_LOGI(TAG, "app_main finished");
+
     while(true){
 
         // // Log or print the CPU frequency

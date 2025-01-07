@@ -309,7 +309,7 @@ LCD_WRITE_DATA(0x30);
 
 //------------------------------------end gamma setting------------------------------------------//
 LCD_WRITE_CMD(0x11);
-vTaskDelay(120 / portTICK_RATE_MS);
+// vTaskDelay(120 / portTICK_RATE_MS);//120
 LCD_WRITE_CMD(0x29);
 LCD_WRITE_CMD(0x2c);
 
@@ -318,7 +318,7 @@ LCD_WRITE_CMD(0x2c);
 LCD_WRITE_CMD(0xfe);
 LCD_WRITE_CMD(0xef);
 LCD_WRITE_CMD(0x11);
-vTaskDelay(120 / portTICK_RATE_MS);
+// vTaskDelay(120 / portTICK_RATE_MS);//120
 LCD_WRITE_CMD(0x29);
 
 #endif
@@ -345,9 +345,9 @@ esp_err_t lcd_st7789_init(const scr_controller_config_t *lcd_conf)
         gpio_pad_select_gpio(lcd_conf->pin_num_rst);
         gpio_set_direction(lcd_conf->pin_num_rst, GPIO_MODE_OUTPUT);
         gpio_set_level(lcd_conf->pin_num_rst, (lcd_conf->rst_active_level) & 0x1);
-        vTaskDelay(100 / portTICK_RATE_MS);
+        // vTaskDelay(100 / portTICK_RATE_MS);//100
         gpio_set_level(lcd_conf->pin_num_rst, (~(lcd_conf->rst_active_level)) & 0x1);
-        vTaskDelay(100 / portTICK_RATE_MS);
+        // vTaskDelay(100 / portTICK_RATE_MS);//100
     }
 
     g_lcd_handle.interface_drv = lcd_conf->interface_drv;

@@ -382,7 +382,7 @@ void app_lcd_draw_wallpaper()
     uint16_t *pixels = (uint16_t *)heap_caps_malloc((GROZZIIE_LOGO_WIDTH * GROZZIIE_LOGO_HEIGHT) * sizeof(uint16_t), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     if (NULL == pixels)
     {
-        ESP_LOGE(TAG, "Memory for bitmap is not enough");
+        // ESP_LOGE(TAG, "Memory for bitmap is not enough");
         return;
     }
     memcpy(pixels, Grozziie_logo, (GROZZIIE_LOGO_WIDTH * GROZZIIE_LOGO_HEIGHT) * sizeof(uint16_t));

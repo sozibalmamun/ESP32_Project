@@ -116,6 +116,8 @@ extern "C"
     void PwmInt(gpio_num_t pinNo );
 
     void brightness(bool sleep);
+
+    void dispON(bool dspOn);
     void interruptInt(void);
     void gpioInt(void);
     void reduce_cpu_frequency();

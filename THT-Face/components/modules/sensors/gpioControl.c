@@ -117,6 +117,23 @@ void brightness(bool sleep){
 
 }
 
+void dispON(bool dspOn){
+    
+    ledc_channel_config_t ledc_channel={
+
+        .speed_mode = LEDC_LOW_SPEED_MODE,        // Low-speed mode
+        .channel    = LEDC_CHANNEL_0,             // Channel: 0
+
+    };
+    ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, dspOn?0:8192 );//8192
+    ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
+
+}
+
+
+
+
+
 
 void configure_dynamic_frequency() {
     esp_pm_config_esp32s3_t pm_config = {

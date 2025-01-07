@@ -349,12 +349,7 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
     app_lcd_draw_wallpaper();
     vTaskDelay(pdMS_TO_TICKS(5));
     PwmInt((gpio_num_t)LCE_BL);
-    // app_lcd_set_color(0x0000);
-
-    // // gpio_set_level((gpio_num_t)LCE_BL, 1);
-    // vTaskDelay(pdMS_TO_TICKS(100));
-    // gpio_set_level((gpio_num_t)LCE_BL, 0);
-
+    dispON(false);
 
 
     xQueueFrameI = frame_i;
@@ -363,6 +358,7 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
     xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, &lcdTaskHandler, 0);//4*1024
         // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
 
+    dispON(true);
 
     return ESP_OK;
 }

@@ -87,7 +87,7 @@ void register_camera(const pixformat_t pixel_fromat,
     // s->set_contrast(s, -1);     //  contrast    -2 - 2
     // s->set_brightness(s,-2);    //  brightness  -2 - 2
     // s->set_saturation(s, 2);    //  saturation  -2 - 2
-    // s->set_sharpness(s, 2);     //  sharpness   -2 - 2
+    // s->set_sharpness(s, 2);     //  sharpness   -2 - 2 
     // s->set_wb_mode(s, 2);       //  white balance mode    0 - 4
     // s->set_whitebal(s, 1);
     // s->set_wpc(s, 1);
@@ -103,5 +103,5 @@ void register_camera(const pixformat_t pixel_fromat,
     }
 
     xQueueFrameO = frame_o;
-    xTaskCreatePinnedToCore(task_process_handler, TAG, 3 * 1024, NULL, 5,&cameraTaskHandler, 1); //2*1024 //5
+    xTaskCreatePinnedToCore(task_process_handler, TAG, 3 * 1024, NULL,5 ,&cameraTaskHandler, 1); //2*1024 //5
 }

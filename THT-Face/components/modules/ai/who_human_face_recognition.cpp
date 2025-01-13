@@ -34,6 +34,7 @@ uint8_t boxPosition[5];
 static uint16_t StopMultipleAttaneId=0;
 static uint16_t recognitionCount[5];
 static volatile uint8_t unrecognitionCount=0;
+const TickType_t queueTimeout = pdMS_TO_TICKS(200);  // Queue receive timeout ms
 
 
 
@@ -242,9 +243,12 @@ static void task_process_handler(void *arg)
     recognizer->set_partition(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "fr");
     int partition_result = recognizer->set_ids_from_flash();
 
+
+
+
     while (true)
     {
-        xSemaphoreTake(xMutex, portMAX_DELAY);
+        xSemaphoreTake(xMutex, queueTimeout);//portMAX_DELAY
         _gEvent = gEvent;
         gEvent = DETECT;
         xSemaphoreGive(xMutex);
@@ -253,7 +257,7 @@ static void task_process_handler(void *arg)
         {
             bool is_detected = false;
 
-            if (xQueueReceive(xQueueFrameI, &(frame), portMAX_DELAY))
+            if (xQueueReceive(xQueueFrameI, &(frame), queueTimeout))//portMAX_DELAY
             {
 
                 if(sleepEnable==WAKEUP){
@@ -797,8 +801,8 @@ static void task_event_handler(void *arg)
     recognizer_state_t _gEvent;
     while (true)
     {
-        xQueueReceive(xQueueEvent, &(_gEvent), portMAX_DELAY);
-        xSemaphoreTake(xMutex, portMAX_DELAY);
+        xQueueReceive(xQueueEvent, &(_gEvent), queueTimeout);//portMAX_DELAY
+        xSemaphoreTake(xMutex, queueTimeout);
         gEvent = _gEvent;
         xSemaphoreGive(xMutex);
     }

@@ -57,7 +57,7 @@ static void task_process_handler(void *arg)
     camera_fb_t *frame = NULL;
 
     const TickType_t xDelay = pdMS_TO_TICKS(50);  // Run every 100 ms
-    const TickType_t queueTimeout = pdMS_TO_TICKS(100);  // Queue receive timeout 500 ms
+    const TickType_t queueTimeout = pdMS_TO_TICKS(100);  // Queue receive timeout ms
 
     while (true)
     {
@@ -128,16 +128,16 @@ static void task_process_handler(void *arg)
         else
         {
             // If no frame received, log and delay
-            vTaskDelay(xDelay);  // Delay task execution if no frame was received
+            // vTaskDelay(xDelay);  // Delay task execution if no frame was received
 
-            if(sleepEnable!=WAKEUP){
+            // if(sleepEnable!=WAKEUP){
 
-                // printf("dsp sleep\n");
-                time_library_time_t current_time;
-                sleepTimeDate(frame,current_time);
-                g_lcd.draw_bitmap(0, 0, frame->width, frame->height, (uint16_t *)frame->buf);
+            //     // printf("dsp sleep\n");
+            //     time_library_time_t current_time;
+            //     sleepTimeDate(frame,current_time);
+            //     g_lcd.draw_bitmap(0, 0, frame->width, frame->height, (uint16_t *)frame->buf);
 
-            }
+            // }
 
         }
 

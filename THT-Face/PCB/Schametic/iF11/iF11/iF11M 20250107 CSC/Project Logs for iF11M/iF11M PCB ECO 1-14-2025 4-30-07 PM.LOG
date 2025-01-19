@@ -1,0 +1,2 @@
+Change Component Footprint: Designator=SW1 Old Footprint=SMDtactswitch-5x5 New Footprint=Button 6mm SMD
+Added Pin To Net: NetName=NetQ4_1 Pin=Q4-1

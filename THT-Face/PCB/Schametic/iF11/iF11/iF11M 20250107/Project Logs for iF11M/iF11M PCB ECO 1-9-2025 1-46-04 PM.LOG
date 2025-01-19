@@ -1,0 +1,3 @@
+Removed Pin From Net: NetName=CAMPDWN Pin=U1-6
+Added Pin To Net: NetName=GND Pin=Q4-1
+Added Pin To Net: NetName=CAMPDWN Pin=U1-15

@@ -1,0 +1,14 @@
+Removed Pin From Net: NetName=DO Pin=R25-1
+Removed Pin From Net: NetName=DO Pin=U9-7
+Added Component: Designator=D2(SOD-323)
+Add component (AddParameter): Name = "Material Name"; Value = "?????/4148-SOD123"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-DE-1N4148-SOD123"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0002828"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=DO Pin=D2-2
+Added Pin To Net: NetName=NetQ4_1 Pin=Q4-1
+Added Pin To Net: NetName=NetD2_1 Pin=D2-1
+Added Pin To Net: NetName=NetD2_1 Pin=R25-1
+Added Pin To Net: NetName=NetD2_1 Pin=U9-7
+Added Net: Name=NetD2_1
+Added Member To Class: ClassName=U_sensor Member=Component D2 1N4148

@@ -1,0 +1,54 @@
+Removed Pin From Net: NetName=BAT Pin=J2-12
+Added Component: Designator=C3(C0805)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0805 10UF/25V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "WP0005368"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0005368"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=Q8(SOT23)
+Added Component: Designator=Q9(SOT23)
+Added Component: Designator=R47(R0603-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = "??D541V11??1???"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 10K 5%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-RE-RS03K103JT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0002708"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=R48(R0603-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = "LAGEO"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 1K  5%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-RE-RS03K102JT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0002703"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=R50(R0603-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = "LAGEO"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 100K 5%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-RE-RS03K104JT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0002713"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=GND Pin=C3-1
+Added Pin To Net: NetName=GND Pin=Q4-1
+Added Pin To Net: NetName=BAT Pin=Q8-3
+Added Pin To Net: NetName=GND Pin=Q9-2
+Added Pin To Net: NetName=BAT Pin=R47-1
+Added Pin To Net: NetName=GND Pin=R50-1
+Added Pin To Net: NetName=BATO Pin=J2-12
+Added Pin To Net: NetName=BATO Pin=Q8-2
+Added Net: Name=BATO
+Added Pin To Net: NetName=NetC3_2 Pin=C3-2
+Added Pin To Net: NetName=NetC3_2 Pin=Q9-1
+Added Pin To Net: NetName=NetC3_2 Pin=R48-2
+Added Pin To Net: NetName=NetC3_2 Pin=R50-2
+Added Net: Name=NetC3_2
+Added Pin To Net: NetName=NetQ8_1 Pin=Q8-1
+Added Pin To Net: NetName=NetQ8_1 Pin=Q9-3
+Added Pin To Net: NetName=NetQ8_1 Pin=R47-2
+Added Net: Name=NetQ8_1
+Added Pin To Net: NetName=UVOFF Pin=R48-1
+Added Pin To Net: NetName=UVOFF Pin=U1-1
+Added Net: Name=UVOFF
+Added Member To Class: ClassName=iF11M Member=Component C3 10uF
+Added Member To Class: ClassName=iF11M Member=Component Q8 NPN-SOT-23
+Added Member To Class: ClassName=iF11M Member=Component Q9 NPN-SOT-23
+Added Member To Class: ClassName=iF11M Member=Component R47 10K
+Added Member To Class: ClassName=iF11M Member=Component R48 1K
+Added Member To Class: ClassName=iF11M Member=Component R50 100K

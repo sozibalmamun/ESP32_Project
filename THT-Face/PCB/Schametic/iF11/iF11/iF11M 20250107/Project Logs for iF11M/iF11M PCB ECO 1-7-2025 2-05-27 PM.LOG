@@ -1,0 +1,236 @@
+Removed Pin From Net: NetName=VBUS Pin=C15-2
+Removed Pin From Net: NetName=VBUS Pin=U11-1
+Added Component: Designator=C33(C0603)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 10NF/50V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-CA-X703N10K50VNT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0003409"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=C37(C0603)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 10NF/50V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-CA-X703N10K50VNT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0003409"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=C38(C0603)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 10NF/50V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-CA-X703N10K50VNT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0003409"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=C40(C0603)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 10NF/50V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-CA-X703N10K50VNT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0003409"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=C41(C0603)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 10NF/50V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-CA-X703N10K50VNT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0003409"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=C43(C0603)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 2.2nF/50V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "WP0005364"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0005364"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=C44(C0603)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 10NF/50V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-CA-X703N10K50VNT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0003409"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=C45(C0603)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 10NF/50V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-CA-X703N10K50VNT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0003409"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=C49(C0805)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0805 10UF/25V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "WP0005368"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0005368"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=C50(C0805)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0805 10UF/25V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "WP0005368"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0005368"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=C51(C0603)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 10NF/50V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-CA-X703N10K50VNT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0003409"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=C52(C0603)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 10NF/50V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-CA-X703N10K50VNT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0003409"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=L1(SMD PAD 1x2)
+Added Component: Designator=LD1(LED-0603-RED)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Suppliers"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=Q3(PMOS-SOT23)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Suppliers"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=R34(R0805-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0805 120O 5%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-RE-RS05K121JT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0003450"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=R35(R0603-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = "??D541V11??1???"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 10K 5%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-RE-RS03K103JT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0002708"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=R36(R0603-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 2.7K 5%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-RE-RS03K272JT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0002877"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=R39(R0805-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0805 120O 5%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-RE-RS05K121JT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0003450"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=R40(R0603-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 51K 1%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "WP0005360"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0005360"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=R41(R0603-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 2K 1%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-RE-RS03K202FT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0002768"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=R43(R0603-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 2K 1%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-RE-RS03K202FT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0002768"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=R46(R0603-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 2K 1%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-RE-RS03K202FT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0002768"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=RT2(RT0603)
+Added Component: Designator=U13(QFN-24-4x4-0.5P)
+Added Pin To Net: NetName=GND Pin=C49-2
+Added Pin To Net: NetName=GND Pin=C50-2
+Added Pin To Net: NetName=GND Pin=C51-2
+Added Pin To Net: NetName=GND Pin=C52-2
+Added Pin To Net: NetName=VBUS Pin=Q3-2
+Added Pin To Net: NetName=NetQ4_1 Pin=Q4-1
+Added Pin To Net: NetName=GND Pin=R40-1
+Added Pin To Net: NetName=GND Pin=R41-1
+Added Pin To Net: NetName=GND Pin=R43-1
+Added Pin To Net: NetName=GND Pin=R46-1
+Added Pin To Net: NetName=GND Pin=RT2-1
+Added Pin To Net: NetName=VBUS Pin=U13-1
+Added Pin To Net: NetName=GND Pin=U13-25
+Added Pin To Net: NetName=CHGD Pin=U13-19
+Added Net: Name=CHGD
+Added Pin To Net: NetName=IRQ Pin=R46-2
+Added Pin To Net: NetName=IRQ Pin=U13-23
+Added Net: Name=IRQ
+Added Pin To Net: NetName=NetC33_1 Pin=C33-1
+Added Pin To Net: NetName=NetC33_1 Pin=C38-1
+Added Pin To Net: NetName=NetC33_1 Pin=C41-1
+Added Pin To Net: NetName=NetC33_1 Pin=L1-2
+Added Net: Name=NetC33_1
+Added Pin To Net: NetName=NetC33_2 Pin=C33-2
+Added Pin To Net: NetName=NetC33_2 Pin=C37-1
+Added Pin To Net: NetName=NetC33_2 Pin=C38-2
+Added Pin To Net: NetName=NetC33_2 Pin=C40-1
+Added Pin To Net: NetName=NetC33_2 Pin=C41-2
+Added Pin To Net: NetName=NetC33_2 Pin=C43-2
+Added Pin To Net: NetName=NetC33_2 Pin=U13-8
+Added Pin To Net: NetName=NetC33_2 Pin=U13-9
+Added Net: Name=NetC33_2
+Added Pin To Net: NetName=NetC37_2 Pin=C37-2
+Added Pin To Net: NetName=NetC37_2 Pin=U13-6
+Added Net: Name=NetC37_2
+Added Pin To Net: NetName=NetC40_2 Pin=C40-2
+Added Pin To Net: NetName=NetC40_2 Pin=U13-7
+Added Net: Name=NetC40_2
+Added Pin To Net: NetName=NetC43_1 Pin=C43-1
+Added Pin To Net: NetName=NetC43_1 Pin=C44-1
+Added Pin To Net: NetName=NetC43_1 Pin=C45-1
+Added Pin To Net: NetName=NetC43_1 Pin=L1-1
+Added Pin To Net: NetName=NetC43_1 Pin=U13-10
+Added Pin To Net: NetName=NetC43_1 Pin=U13-11
+Added Net: Name=NetC43_1
+Added Pin To Net: NetName=NetC44_2 Pin=C44-2
+Added Pin To Net: NetName=NetC44_2 Pin=U13-12
+Added Net: Name=NetC44_2
+Added Pin To Net: NetName=NetC45_2 Pin=C45-2
+Added Pin To Net: NetName=NetC45_2 Pin=U13-13
+Added Net: Name=NetC45_2
+Added Pin To Net: NetName=NetLD1_2 Pin=LD1-2
+Added Pin To Net: NetName=NetLD1_2 Pin=R36-2
+Added Net: Name=NetLD1_2
+Added Pin To Net: NetName=NetQ3_1 Pin=Q3-1
+Added Pin To Net: NetName=NetQ3_1 Pin=R35-1
+Added Pin To Net: NetName=NetQ3_1 Pin=U13-3
+Added Net: Name=NetQ3_1
+Added Pin To Net: NetName=NetR34_2 Pin=R34-2
+Added Pin To Net: NetName=NetR34_2 Pin=U13-5
+Added Net: Name=NetR34_2
+Added Pin To Net: NetName=NetR36_1 Pin=R36-1
+Added Pin To Net: NetName=NetR36_1 Pin=U13-20
+Added Net: Name=NetR36_1
+Added Pin To Net: NetName=NetR39_2 Pin=R39-2
+Added Pin To Net: NetName=NetR39_2 Pin=U13-14
+Added Net: Name=NetR39_2
+Added Pin To Net: NetName=NetR40_2 Pin=R40-2
+Added Pin To Net: NetName=NetR40_2 Pin=U13-17
+Added Net: Name=NetR40_2
+Added Pin To Net: NetName=NetRT2_2 Pin=RT2-2
+Added Pin To Net: NetName=NetRT2_2 Pin=U13-18
+Added Net: Name=NetRT2_2
+Added Pin To Net: NetName=SCK Pin=R41-2
+Added Pin To Net: NetName=SCK Pin=U13-21
+Added Net: Name=SCK
+Added Pin To Net: NetName=SDA Pin=R43-2
+Added Pin To Net: NetName=SDA Pin=U13-22
+Added Net: Name=SDA
+Added Pin To Net: NetName=VOUT Pin=C15-2
+Added Pin To Net: NetName=VOUT Pin=Q3-3
+Added Pin To Net: NetName=VOUT Pin=R35-2
+Added Pin To Net: NetName=VOUT Pin=U11-1
+Added Pin To Net: NetName=VOUT Pin=U13-2
+Added Pin To Net: NetName=VOUT Pin=U13-16
+Added Net: Name=VOUT
+Added Pin To Net: NetName=VRECT Pin=C49-1
+Added Pin To Net: NetName=VRECT Pin=C50-1
+Added Pin To Net: NetName=VRECT Pin=C51-1
+Added Pin To Net: NetName=VRECT Pin=C52-1
+Added Pin To Net: NetName=VRECT Pin=R34-1
+Added Pin To Net: NetName=VRECT Pin=R39-1
+Added Pin To Net: NetName=VRECT Pin=U13-4
+Added Pin To Net: NetName=VRECT Pin=U13-15
+Added Net: Name=VRECT
+Added Pin To Net: NetName=WVDD Pin=LD1-1
+Added Pin To Net: NetName=WVDD Pin=U13-24
+Added Net: Name=WVDD
+Added Class: Name=U_Wireless Charging
+Added Rule: Name=Schematic Supply Nets
+Added Rule: Name=Schematic Supply Nets_2

@@ -1,0 +1,5 @@
+Removed Pin From Net: NetName=SER_SDI Pin=U10-15
+Removed Pin From Net: NetName=SER_LAT Pin=U10-22
+Added Pin To Net: NetName=GND Pin=Q4-1
+Added Pin To Net: NetName=SER_LAT Pin=U10-15
+Added Pin To Net: NetName=SER_SDI Pin=U10-22

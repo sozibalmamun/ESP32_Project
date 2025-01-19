@@ -305,7 +305,7 @@ esp_err_t esp_camera_deinit()
     return ret;
 }
 
-#define FB_GET_TIMEOUT (600 / portTICK_PERIOD_MS)//4000 init value     (test 600 )
+#define FB_GET_TIMEOUT (700 / portTICK_PERIOD_MS)//4000 init value     (test 600 )
 
 camera_fb_t *esp_camera_fb_get()
 {

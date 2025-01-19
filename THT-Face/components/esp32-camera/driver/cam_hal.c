@@ -109,6 +109,8 @@ void IRAM_ATTR ll_cam_send_event(cam_obj_t *cam, cam_event_t cam_event, BaseType
     }
 }
 
+const TickType_t queueTimeout = pdMS_TO_TICKS(200);  // Queue receive timeout ms
+
 //Copy fram from DMA dma_buffer to fram dma_buffer
 static void cam_task(void *arg)
 {
@@ -120,7 +122,7 @@ static void cam_task(void *arg)
     xQueueReset(cam_obj->event_queue);
 
     while (1) {
-        xQueueReceive(cam_obj->event_queue, (void *)&cam_event, portMAX_DELAY);
+        xQueueReceive(cam_obj->event_queue, (void *)&cam_event, portMAX_DELAY);//portMAX_DELAY
         DBG_PIN_SET(1);
         switch (cam_obj->state) {
 

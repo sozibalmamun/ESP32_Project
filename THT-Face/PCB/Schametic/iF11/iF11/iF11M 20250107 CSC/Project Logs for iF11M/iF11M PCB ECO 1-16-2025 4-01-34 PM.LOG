@@ -1,0 +1,20 @@
+Removed Pin From Net: NetName=GND Pin=C3-1
+Removed Pin From Net: NetName=VBUS Pin=J2-9
+Removed Pin From Net: NetName=EN/RST Pin=J2-10
+Removed Pin From Net: NetName=BAT Pin=Q8-3
+Removed Pin From Net: NetName=BAT Pin=R47-1
+Removed Pin From Net: NetName=GND Pin=R50-1
+Removed Member From Class: ClassName=iF11M Member=C3
+Removed Member From Class: ClassName=iF11M Member=Q8
+Removed Member From Class: ClassName=iF11M Member=R47
+Removed Member From Class: ClassName=iF11M Member=R50
+Added Pin To Net: NetName=VBUS Pin=J2-5
+Added Pin To Net: NetName=EN/RST Pin=J2-9
+Added Pin To Net: NetName=BAT Pin=J2-12
+Added Pin To Net: NetName=GND Pin=Q4-1
+Added Pin To Net: NetName=KEY Pin=J2-10
+Added Pin To Net: NetName=KEY Pin=Q9-3
+Added Net: Name=KEY
+Added Pin To Net: NetName=NetQ9_1 Pin=Q9-1
+Added Pin To Net: NetName=NetQ9_1 Pin=R48-2
+Added Net: Name=NetQ9_1

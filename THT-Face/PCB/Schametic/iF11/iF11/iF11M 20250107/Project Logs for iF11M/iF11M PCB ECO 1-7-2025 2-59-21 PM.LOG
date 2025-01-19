@@ -1,0 +1,5 @@
+Added Component: Designator=J5(B2B-PH-2mm)
+Added Pin To Net: NetName=BAT Pin=J5-1
+Added Pin To Net: NetName=B- Pin=J5-2
+Added Pin To Net: NetName=NetQ4_1 Pin=Q4-1
+Added Member To Class: ClassName=U_Power Member=Component J5 B2B PH 1X2

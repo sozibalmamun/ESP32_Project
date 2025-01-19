@@ -1,0 +1,5 @@
+Removed Pin From Net: NetName=LEN Pin=U1-4
+Removed Pin From Net: NetName=IRLED Pin=U1-5
+Added Pin To Net: NetName=GND Pin=Q4-1
+Added Pin To Net: NetName=IRLED Pin=U1-4
+Added Pin To Net: NetName=LEN Pin=U1-5

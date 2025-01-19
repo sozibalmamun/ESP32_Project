@@ -1,0 +1,15 @@
+Removed Pin From Net: NetName=NetLD4_2 Pin=LD5-2
+Removed Pin From Net: NetName=NetLD4_2 Pin=Q7-2
+Removed Pin From Net: NetName=BAT Pin=R77-2
+Removed Pin From Net: NetName=BAT Pin=R78-2
+Added Pin To Net: NetName=BAT Pin=LD4-1
+Added Pin To Net: NetName=BAT Pin=LD5-1
+Added Pin To Net: NetName=NetQ4_1 Pin=Q4-1
+Added Pin To Net: NetName=NetLD4_2 Pin=R77-2
+Added Pin To Net: NetName=NetLD5_2 Pin=LD5-2
+Added Pin To Net: NetName=NetLD5_2 Pin=R78-2
+Added Net: Name=NetLD5_2
+Added Pin To Net: NetName=NetQ7_2 Pin=Q7-2
+Added Pin To Net: NetName=NetQ7_2 Pin=R77-1
+Added Pin To Net: NetName=NetQ7_2 Pin=R78-1
+Added Net: Name=NetQ7_2

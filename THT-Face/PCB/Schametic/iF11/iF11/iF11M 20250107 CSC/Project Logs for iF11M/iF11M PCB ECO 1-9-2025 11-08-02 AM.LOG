@@ -1,0 +1,2 @@
+Change Component Footprint: Designator=RT1 Old Footprint=RT0603 New Footprint=SMD PAD 1x2
+Added Pin To Net: NetName=GND Pin=Q4-1

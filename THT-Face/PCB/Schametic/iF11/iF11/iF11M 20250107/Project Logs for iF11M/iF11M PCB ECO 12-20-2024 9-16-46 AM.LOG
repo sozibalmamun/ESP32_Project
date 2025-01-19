@@ -1,0 +1,5 @@
+Removed Pin From Net: NetName=VBATO Pin=U8-1
+Removed Pin From Net: NetName=GND Pin=U8-2
+Removed Pin From Net: NetName=PVDD Pin=U8-5
+Removed Member From Class: ClassName=U_Regulators Member=U8
+Added Pin To Net: NetName=NetQ4_1 Pin=Q4-1

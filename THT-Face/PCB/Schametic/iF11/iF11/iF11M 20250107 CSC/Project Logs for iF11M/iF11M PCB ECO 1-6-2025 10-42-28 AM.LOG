@@ -1,0 +1,15 @@
+Added Component: Designator=J5(FPC10-1mm-SMT  BOTTOM)
+Added Pin To Net: NetName=GND Pin=J5-0
+Added Pin To Net: NetName=GND Pin=J5-0
+Added Pin To Net: NetName=GND Pin=J5-1
+Added Pin To Net: NetName=TFT_RS Pin=J5-2
+Added Pin To Net: NetName=TFT_CS Pin=J5-3
+Added Pin To Net: NetName=TFT_SCK Pin=J5-4
+Added Pin To Net: NetName=TFT_SDI Pin=J5-5
+Added Pin To Net: NetName=EN/RST Pin=J5-6
+Added Pin To Net: NetName=TFT3V3 Pin=J5-7
+Added Pin To Net: NetName=GND Pin=J5-8
+Added Pin To Net: NetName=BL Pin=J5-9
+Added Pin To Net: NetName=GND Pin=J5-10
+Added Pin To Net: NetName=GND Pin=Q4-1
+Added Member To Class: ClassName=U_microcontroller Member=Component J5 Female Header 1x10

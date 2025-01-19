@@ -1,0 +1,2 @@
+Change Component Footprint: Designator=LD2 Old Footprint=LED 3mm RED New Footprint=LED-0603-RED
+Added Pin To Net: NetName=GND Pin=Q4-1

@@ -1,0 +1,8 @@
+Removed Pin From Net: NetName=GND Pin=S1-1
+Removed Pin From Net: NetName=BAT Pin=S1-3
+Removed Pin From Net: NetName=PWEN Pin=U1-1
+Removed Pin From Net: NetName=NetSW1_2 Pin=U1-4
+Removed Member From Class: ClassName=iF11K Member=S1
+Change Component Comment : Designator=U1 Old Comment=HK015T.1 New Comment=CS2130
+Added Pin To Net: NetName=NetSW1_2 Pin=U1-1
+Added Pin To Net: NetName=PWEN Pin=U1-3

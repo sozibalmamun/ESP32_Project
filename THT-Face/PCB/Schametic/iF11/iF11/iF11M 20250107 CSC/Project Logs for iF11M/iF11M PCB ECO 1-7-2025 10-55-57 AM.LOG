@@ -1,0 +1,9 @@
+Removed Pin From Net: NetName=VBUS Pin=J32-1
+Removed Pin From Net: NetName=GND Pin=J35-1
+Removed Pin From Net: NetName=GND Pin=J38-1
+Removed Pin From Net: NetName=GND Pin=J41-1
+Removed Member From Class: ClassName=U_microcontroller Member=J32
+Removed Member From Class: ClassName=U_microcontroller Member=J35
+Removed Member From Class: ClassName=U_microcontroller Member=J38
+Removed Member From Class: ClassName=U_microcontroller Member=J41
+Added Pin To Net: NetName=GND Pin=Q4-1

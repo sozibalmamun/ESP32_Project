@@ -1,0 +1,182 @@
+Removed Pin From Net: NetName=VBATO Pin=C28-2
+Removed Pin From Net: NetName=GND Pin=C45-1
+Removed Pin From Net: NetName=VBATO Pin=C45-2
+Removed Pin From Net: NetName=UC3V3 Pin=C55-1
+Removed Pin From Net: NetName=GND Pin=C57-1
+Removed Pin From Net: NetName=UC3V3 Pin=C57-2
+Removed Pin From Net: NetName=GND Pin=C58-1
+Removed Pin From Net: NetName=NetC58_2 Pin=C58-2
+Removed Pin From Net: NetName=NetC58_2 Pin=C59-1
+Removed Pin From Net: NetName=GND Pin=C59-2
+Removed Pin From Net: NetName=GND Pin=C63-1
+Removed Pin From Net: NetName=SPIVDD Pin=C63-2
+Removed Pin From Net: NetName=GND Pin=C65-1
+Removed Pin From Net: NetName=GND Pin=C66-1
+Removed Pin From Net: NetName=VBUS Pin=J6-1
+Removed Pin From Net: NetName=VBATO Pin=L7-1
+Removed Pin From Net: NetName=BAT Pin=L8-2
+Removed Pin From Net: NetName=PEREN Pin=R16-2
+Removed Pin From Net: NetName=GND Pin=R33-1
+Removed Pin From Net: NetName=GND Pin=R47-1
+Removed Pin From Net: NetName=GND Pin=R48-1
+Removed Pin From Net: NetName=VBATO Pin=U8-1
+Removed Pin From Net: NetName=PEREN Pin=U8-3
+Removed Pin From Net: NetName=GND Pin=U10-1
+Removed Pin From Net: NetName=VBATO Pin=U10-8
+Removed Pin From Net: NetName=ANT Pin=U14-1
+Change Component Footprint: Designator=C54 Old Footprint=C0603 New Footprint=C0805
+Change Component Footprint: Designator=C55 Old Footprint=C0603 New Footprint=C0805
+Change Component Footprint: Designator=C45 Old Footprint=C0805 New Footprint=C0603
+Change Component Footprint: Designator=C53 Old Footprint=C0805 New Footprint=C0603
+Change Component Footprint: Designator=C9 Old Footprint=CPOL-6.3X11-2.5-RA New Footprint=C0603
+Change Footprint: Footprint Not Found VSOP8-8-1.27-EPAD
+Change Component Comment : Designator=C45 Old Comment=4.7uF New Comment=12pF
+Change Component Comment : Designator=C53 Old Comment=10n New Comment=100nF
+Change Component Comment : Designator=C55 Old Comment=10nF New Comment=10uF
+Change Component Comment : Designator=C58 Old Comment=10uF New Comment=100nF
+Change Component Comment : Designator=C9 Old Comment=100uF New Comment=1pF
+Change Component Comment : Designator=R38 Old Comment=260R New Comment=920R
+Change Component Comment : Designator=D2 Old Comment=SMD Diode New Comment=1N4148
+Change Component Comment : Designator=D3 Old Comment=SMD Diode New Comment=1N4148
+Change Component Designator: OldDesignator=C64 NewDesignator=C46
+Change Component Designator: OldDesignator=L9 NewDesignator=L3
+Change component parameters: Designator = "C9" ("C9"); Footprint = "CPOL-6.3X11-2.5-RA"; UniqueID = "\GDRSUDNJ\ZBLGRVZW" ("\GDRSUDNJ\ZBLGRVZW")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "??WP0002897"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Material Name"; Value = "????0603 12PF/25V 5%"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Part No"; Value = "W-T-CA-CG03P012J25VNT"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Product Code"; Value = "WP0004683"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Change component parameters: Designator = "C45" ("C45"); Footprint = "C0805"; UniqueID = "\GDRSUDNJ\SZBFSRGA" ("\GDRSUDNJ\SZBFSRGA")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "??WP0002897"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Material Name"; Value = "????0603 12PF/25V 5%"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Part No"; Value = "W-T-CA-CG03P012J25VNT"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Product Code"; Value = "WP0004683"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Change component parameters: Designator = "C53" ("C53"); Footprint = "C0805"; UniqueID = "\GDRSUDNJ\NXJWJSDP" ("\GDRSUDNJ\NXJWJSDP")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "FENGHUA"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Material Name"; Value = "????0603 100NF/50V 10%"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Part No"; Value = "W-T-CA-X703N100K50VNT"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Product Code"; Value = "WP0002721"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Change component parameters: Designator = "C54" ("C54"); Footprint = "C0603"; UniqueID = "\GDRSUDNJ\SQXLGBXY" ("\GDRSUDNJ\SQXLGBXY")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Material Name"; Value = "????0805 10UF/25V 10%"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Part No"; Value = "WP0005368"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Product Code"; Value = "WP0005368"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Change component parameters: Designator = "C55" ("C55"); Footprint = "C0603"; UniqueID = "\GDRSUDNJ\KUJZAEKM" ("\GDRSUDNJ\KUJZAEKM")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Material Name"; Value = "????0805 10UF/25V 10%"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Part No"; Value = "WP0005368"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Product Code"; Value = "WP0005368"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Change component parameters: Designator = "C58" ("C58"); Footprint = "C0603"; UniqueID = "\GDRSUDNJ\OUJLENNZ" ("\GDRSUDNJ\OUJLENNZ")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "FENGHUA"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Material Name"; Value = "????0603 100NF/50V 10%"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Part No"; Value = "W-T-CA-X703N100K50VNT"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Product Code"; Value = "WP0002721"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Change component parameters: Designator = "C59" ("C59"); Footprint = "C0603"; UniqueID = "\GDRSUDNJ\LTBNAPSD" ("\GDRSUDNJ\LTBNAPSD")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "FENGHUA"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Material Name"; Value = "????0603 100NF/50V 10%"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Part No"; Value = "W-T-CA-X703N100K50VNT"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Product Code"; Value = "WP0002721"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=C13(C0603)
+Add component (AddParameter): Name = "Manufacturer"; Value = "??WP0002897"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 12PF/25V 5%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-CA-CG03P012J25VNT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0004683"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=C15(C0603)
+Add component (AddParameter): Name = "Manufacturer"; Value = "??WP0002897"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 12PF/25V 5%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-CA-CG03P012J25VNT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0004683"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=L2(0805)
+Added Component: Designator=L9(CD54)
+Added Component: Designator=Q1(NMOS-SOT23)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Suppliers"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=R1(R0603-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = "??D541V11??1???"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 10K 5%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-RE-RS03K103JT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0002708"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=R3(R0603-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = "??D541V11??1???"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 10K 5%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-RE-RS03K103JT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0002708"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=R4(R0603-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = "??D541V11??1???"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 10K 5%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-RE-RS03K103JT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0002708"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=ANT Pin=C9-1
+Added Pin To Net: NetName=GND Pin=C13-2
+Added Pin To Net: NetName=GND Pin=C15-2
+Added Pin To Net: NetName=BAT Pin=C28-2
+Added Pin To Net: NetName=GND Pin=C45-2
+Added Pin To Net: NetName=NetC58_2 Pin=C55-1
+Added Pin To Net: NetName=NetC58_2 Pin=C57-1
+Added Pin To Net: NetName=GND Pin=C57-2
+Added Pin To Net: NetName=UC3V3 Pin=C58-1
+Added Pin To Net: NetName=GND Pin=C58-2
+Added Pin To Net: NetName=GND Pin=C59-1
+Added Pin To Net: NetName=UC3V3 Pin=C59-2
+Added Pin To Net: NetName=SPIVDD Pin=C63-1
+Added Pin To Net: NetName=GND Pin=C63-2
+Added Pin To Net: NetName=VBATO Pin=J3-1
+Added Pin To Net: NetName=VBATO Pin=J6-1
+Added Pin To Net: NetName=ANT Pin=L2-1
+Added Pin To Net: NetName=BAT Pin=L9-2
+Added Pin To Net: NetName=GND Pin=Q1-3
+Added Pin To Net: NetName=NetQ4_1 Pin=Q4-1
+Added Pin To Net: NetName=VBUS Pin=R3-1
+Added Pin To Net: NetName=GND Pin=R4-1
+Added Pin To Net: NetName=NetQ7_1 Pin=R16-2
+Added Pin To Net: NetName=BAT Pin=U8-1
+Added Pin To Net: NetName=BAT Pin=U8-3
+Change Net Name : Old Net Name=NetC58_2 New Net Name=NetC55_1
+Change Net Name : Old Net Name=NetL12_2 New Net Name=XTALP
+Added Pin To Net: NetName=LED Pin=R1-1
+Added Pin To Net: NetName=LED Pin=U1-4
+Added Net: Name=LED
+Added Pin To Net: NetName=NetC13_1 Pin=C13-1
+Added Pin To Net: NetName=NetC13_1 Pin=L2-2
+Added Pin To Net: NetName=NetC13_1 Pin=U14-1
+Added Net: Name=NetC13_1
+Added Pin To Net: NetName=NetC15_1 Pin=C15-1
+Added Pin To Net: NetName=NetC15_1 Pin=L12-1
+Added Pin To Net: NetName=NetC15_1 Pin=X2-1
+Added Net: Name=NetC15_1
+Added Pin To Net: NetName=NetJ3_2 Pin=J3-2
+Added Pin To Net: NetName=NetJ3_2 Pin=Q1-2
+Added Net: Name=NetJ3_2
+Added Pin To Net: NetName=NetL9_1 Pin=L9-1
+Added Pin To Net: NetName=NetL9_1 Pin=U11-8
+Added Net: Name=NetL9_1
+Added Pin To Net: NetName=NetQ1_1 Pin=Q1-1
+Added Pin To Net: NetName=NetQ1_1 Pin=R1-2
+Added Pin To Net: NetName=NetQ1_1 Pin=R4-2
+Added Net: Name=NetQ1_1
+Added Pin To Net: NetName=NetR3_2 Pin=R3-2
+Added Pin To Net: NetName=NetR3_2 Pin=RT1-2
+Added Pin To Net: NetName=NetR3_2 Pin=U11-5
+Added Net: Name=NetR3_2
+Added Pin To Net: NetName=XTALN Pin=C45-1
+Added Pin To Net: NetName=XTALN Pin=U14-53
+Added Pin To Net: NetName=XTALN Pin=X2-3
+Added Net: Name=XTALN
+Added Class: Name=iF11M
+Added Class: Name=U_microcontroller
+Added Class: Name=U_Power
+Added Class: Name=U_Regulators
+Added Class: Name=U_sensor

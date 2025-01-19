@@ -34,7 +34,7 @@ uint8_t boxPosition[5];
 static uint16_t StopMultipleAttaneId=0;
 static uint16_t recognitionCount[5];
 static volatile uint8_t unrecognitionCount=0;
-const TickType_t queueTimeout = pdMS_TO_TICKS(200);  // Queue receive timeout ms
+const TickType_t queueTimeout = pdMS_TO_TICKS(300);  // Queue receive timeout ms
 
 
 

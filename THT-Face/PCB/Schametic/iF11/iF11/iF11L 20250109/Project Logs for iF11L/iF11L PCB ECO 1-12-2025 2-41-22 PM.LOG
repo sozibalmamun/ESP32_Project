@@ -1,0 +1,183 @@
+Removed Pin From Net: NetName=GND Pin=J2-1
+Removed Pin From Net: NetName=VCC Pin=J2-2
+Removed Pin From Net: NetName=VCC Pin=J3-1
+Removed Pin From Net: NetName=GND Pin=J3-2
+Removed Member From Class: ClassName=iF11_L Member=J2
+Removed Member From Class: ClassName=iF11_L Member=J3
+Change Component Comment : Designator=R1 Old Comment=1.1R New Comment=51R
+Change Component Comment : Designator=LD1 Old Comment=LED WS New Comment=HQ19-2101UWCE2 0603
+Change Component Comment : Designator=LD2 Old Comment=LED WS New Comment=HQ19-2101UWCE2 0603
+Change Component Comment : Designator=LD3 Old Comment=LED WS New Comment=HQ19-2101UWCE2 0603
+Change Component Comment : Designator=LD4 Old Comment=LED WS New Comment=HQ19-2101UWCE2 0603
+Change Component Comment : Designator=LD5 Old Comment=LED WS New Comment=HQ19-2101UWCE2 0603
+Change Component Comment : Designator=LD6 Old Comment=LED WS New Comment=HQ19-2101UWCE2 0603
+Change Component Comment : Designator=LD7 Old Comment=LED WS New Comment=HQ19-2101UWCE2 0603
+Added Component: Designator=LD8(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD9(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD10(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD11(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD12(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD13(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD14(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD15(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD16(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD17(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD18(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD19(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD20(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD21(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD22(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD23(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD24(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD25(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD26(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD27(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=LD28(LED-0603-WS)
+Add component (AddParameter): Name = "Supplier"; Value = "????????????"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "WPCODE"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=R2(R1206-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????1206 1.1O 1%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "WP0004723"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0004723"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=R3(R1206-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????1206 1.1O 1%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "WP0004723"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0004723"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=R4(R1206-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????1206 1.1O 1%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "WP0004723"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0004723"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=GND Pin=LD1-2
+Added Pin To Net: NetName=NetLD1_1 Pin=LD2-1
+Added Pin To Net: NetName=GND Pin=LD2-2
+Added Pin To Net: NetName=NetLD1_1 Pin=LD3-1
+Added Pin To Net: NetName=GND Pin=LD3-2
+Added Pin To Net: NetName=NetLD1_1 Pin=LD4-1
+Added Pin To Net: NetName=GND Pin=LD4-2
+Added Pin To Net: NetName=NetLD1_1 Pin=LD5-1
+Added Pin To Net: NetName=GND Pin=LD5-2
+Added Pin To Net: NetName=NetLD1_1 Pin=LD6-1
+Added Pin To Net: NetName=GND Pin=LD6-2
+Added Pin To Net: NetName=NetLD1_1 Pin=LD7-1
+Added Pin To Net: NetName=GND Pin=LD8-2
+Added Pin To Net: NetName=GND Pin=LD9-2
+Added Pin To Net: NetName=GND Pin=LD10-2
+Added Pin To Net: NetName=GND Pin=LD11-2
+Added Pin To Net: NetName=GND Pin=LD12-2
+Added Pin To Net: NetName=GND Pin=LD13-2
+Added Pin To Net: NetName=GND Pin=LD14-2
+Added Pin To Net: NetName=GND Pin=LD15-2
+Added Pin To Net: NetName=GND Pin=LD16-2
+Added Pin To Net: NetName=GND Pin=LD17-2
+Added Pin To Net: NetName=GND Pin=LD18-2
+Added Pin To Net: NetName=GND Pin=LD19-2
+Added Pin To Net: NetName=GND Pin=LD20-2
+Added Pin To Net: NetName=GND Pin=LD21-2
+Added Pin To Net: NetName=GND Pin=LD22-2
+Added Pin To Net: NetName=GND Pin=LD23-2
+Added Pin To Net: NetName=GND Pin=LD24-2
+Added Pin To Net: NetName=GND Pin=LD25-2
+Added Pin To Net: NetName=GND Pin=LD26-2
+Added Pin To Net: NetName=GND Pin=LD27-2
+Added Pin To Net: NetName=GND Pin=LD28-2
+Added Pin To Net: NetName=VCC Pin=R2-1
+Added Pin To Net: NetName=VCC Pin=R3-1
+Added Pin To Net: NetName=VCC Pin=R4-1
+Added Pin To Net: NetName=NetLD8_1 Pin=LD8-1
+Added Pin To Net: NetName=NetLD8_1 Pin=LD9-1
+Added Pin To Net: NetName=NetLD8_1 Pin=LD10-1
+Added Pin To Net: NetName=NetLD8_1 Pin=LD11-1
+Added Pin To Net: NetName=NetLD8_1 Pin=LD12-1
+Added Pin To Net: NetName=NetLD8_1 Pin=LD13-1
+Added Pin To Net: NetName=NetLD8_1 Pin=LD14-1
+Added Pin To Net: NetName=NetLD8_1 Pin=R2-2
+Added Net: Name=NetLD8_1
+Added Pin To Net: NetName=NetLD15_1 Pin=LD15-1
+Added Pin To Net: NetName=NetLD15_1 Pin=LD16-1
+Added Pin To Net: NetName=NetLD15_1 Pin=LD17-1
+Added Pin To Net: NetName=NetLD15_1 Pin=LD18-1
+Added Pin To Net: NetName=NetLD15_1 Pin=LD19-1
+Added Pin To Net: NetName=NetLD15_1 Pin=LD20-1
+Added Pin To Net: NetName=NetLD15_1 Pin=LD21-1
+Added Pin To Net: NetName=NetLD15_1 Pin=R3-2
+Added Net: Name=NetLD15_1
+Added Pin To Net: NetName=NetLD22_1 Pin=LD22-1
+Added Pin To Net: NetName=NetLD22_1 Pin=LD23-1
+Added Pin To Net: NetName=NetLD22_1 Pin=LD24-1
+Added Pin To Net: NetName=NetLD22_1 Pin=LD25-1
+Added Pin To Net: NetName=NetLD22_1 Pin=LD26-1
+Added Pin To Net: NetName=NetLD22_1 Pin=LD27-1
+Added Pin To Net: NetName=NetLD22_1 Pin=LD28-1
+Added Pin To Net: NetName=NetLD22_1 Pin=R4-2
+Added Net: Name=NetLD22_1
+Change Class Name : Old Net Name=iF11_L New Net Name=iF11L
+Added Member To Class: ClassName=iF11L Member=Component LD8 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD9 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD10 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD11 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD12 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD13 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD14 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD15 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD16 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD17 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD18 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD19 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD20 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD21 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD22 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD23 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD24 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD25 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD26 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD27 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component LD28 HQ19-2101UWCE2 0603
+Added Member To Class: ClassName=iF11L Member=Component R2 51R
+Added Member To Class: ClassName=iF11L Member=Component R3 51R
+Added Member To Class: ClassName=iF11L Member=Component R4 51R

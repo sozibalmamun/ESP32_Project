@@ -21,6 +21,7 @@ static recognizer_state_t recognizer_state;
 
 extern uint8_t sleepEnable;
 extern volatile TickType_t sleepTimeOut; 
+
 // extern uint8_t volatile eventState;
 
 void event_generate(void *arg) {

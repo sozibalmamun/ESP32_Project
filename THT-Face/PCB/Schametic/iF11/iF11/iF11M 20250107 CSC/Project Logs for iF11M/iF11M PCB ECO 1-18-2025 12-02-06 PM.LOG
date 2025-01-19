@@ -1,0 +1,23 @@
+Change Component Comment : Designator=C13 Old Comment=22uF New Comment=10uF
+Change Component Comment : Designator=C47 Old Comment=22uF New Comment=10uF
+Change Component Comment : Designator=C48 Old Comment=22uF New Comment=10uF
+Change Component Comment : Designator=R22 Old Comment=47k New Comment=2.7M
+Added Component: Designator=C3(C0805)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0805 22UF/16V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "WP0005367"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0005367"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=C12(C0805)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0805 22UF/16V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "WP0005367"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0005367"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=BAT Pin=C3-1
+Added Pin To Net: NetName=GND Pin=C3-2
+Added Pin To Net: NetName=BAT Pin=C12-1
+Added Pin To Net: NetName=GND Pin=C12-2
+Added Pin To Net: NetName=NetQ4_1 Pin=Q4-1
+Added Member To Class: ClassName=U_Power Member=Component C3 10uF
+Added Member To Class: ClassName=U_Power Member=Component C12 10uF

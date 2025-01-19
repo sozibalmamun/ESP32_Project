@@ -1,0 +1,4 @@
+Removed Pin From Net: NetName=GND Pin=U15-0
+Change Component Footprint: Designator=U15 Old Footprint=SOP8-5.6-1.27-EPAD New Footprint=VSOP8-8-1.27-EPAD
+Change Component Library : Designator=U15 Old Library=ICs.IntLib New Library=ICs.SchLib
+Added Pin To Net: NetName=GND Pin=Q4-1

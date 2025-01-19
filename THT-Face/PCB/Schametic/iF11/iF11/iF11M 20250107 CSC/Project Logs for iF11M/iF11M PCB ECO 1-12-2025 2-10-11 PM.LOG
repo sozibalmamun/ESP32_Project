@@ -1,0 +1,14 @@
+Removed Pin From Net: NetName=CH Pin=J10-1
+Removed Pin From Net: NetName=FCH Pin=J10-2
+Removed Pin From Net: NetName=BAT Pin=J10-3
+Removed Pin From Net: NetName=PWEN Pin=J10-4
+Removed Pin From Net: NetName=EN/RST Pin=J10-5
+Removed Pin From Net: NetName=VBUS Pin=J10-6
+Removed Pin From Net: NetName=VBUS Pin=J10-7
+Removed Pin From Net: NetName=VBUS Pin=J10-8
+Removed Pin From Net: NetName=GND Pin=J10-10
+Removed Pin From Net: NetName=GND Pin=J10-11
+Removed Pin From Net: NetName=GND Pin=J10-12
+Removed Member From Class: ClassName=iF11M Member=J10
+Change Component Footprint: Designator=J2 Old Footprint=FPC14-1MM-SMT New Footprint=FFC14P-1.25mm
+Added Pin To Net: NetName=NetQ4_1 Pin=Q4-1

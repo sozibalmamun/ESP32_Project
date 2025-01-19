@@ -1,0 +1,16 @@
+Change Component Designator: OldDesignator=L4 NewDesignator=L5
+Added Component: Designator=C60(C0603)
+Add component (AddParameter): Name = "Manufacturer"; Value = "??WP0002897"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 12PF/25V 5%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-CA-CG03P012J25VNT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0004683"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Component: Designator=L4(0603)
+Added Pin To Net: NetName=GND Pin=C60-2
+Added Pin To Net: NetName=ANT Pin=L4-2
+Added Pin To Net: NetName=NetQ4_1 Pin=Q4-1
+Added Pin To Net: NetName=NetC60_1 Pin=C60-1
+Added Pin To Net: NetName=NetC60_1 Pin=L4-1
+Added Net: Name=NetC60_1
+Added Member To Class: ClassName=U_microcontroller Member=Component C60 1pF
+Added Member To Class: ClassName=U_microcontroller Member=Component L5 24nH

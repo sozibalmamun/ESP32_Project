@@ -1,0 +1,5 @@
+Removed Pin From Net: NetName=CEN Pin=U1-1
+Removed Pin From Net: NetName=PEN Pin=U1-7
+Added Pin To Net: NetName=NetQ4_1 Pin=Q4-1
+Added Pin To Net: NetName=PEN Pin=U1-1
+Added Pin To Net: NetName=CEN Pin=U1-7

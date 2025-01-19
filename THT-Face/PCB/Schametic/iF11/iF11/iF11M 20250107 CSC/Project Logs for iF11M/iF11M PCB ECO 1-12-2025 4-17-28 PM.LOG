@@ -1,0 +1,2 @@
+Change Component Footprint: Designator=SEN1 Old Footprint=TO-5 BENT New Footprint=TO-5-Lbent
+Added Pin To Net: NetName=GND Pin=Q4-1

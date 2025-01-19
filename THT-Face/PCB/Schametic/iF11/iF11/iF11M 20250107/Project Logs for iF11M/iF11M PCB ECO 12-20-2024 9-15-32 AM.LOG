@@ -1,0 +1,11 @@
+Added Component: Designator=R32(R0603-LD)
+Add component (AddParameter): Name = "Manufacturer"; Value = "??D541V11??1???"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 10K 5%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-RE-RS03K103JT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0002708"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=NetQ4_1 Pin=Q4-1
+Added Pin To Net: NetName=GND Pin=R32-1
+Added Pin To Net: NetName=PEREN Pin=R32-2
+Add Pin To Net: Unknown Pin: Pin U8-3
+Added Member To Class: ClassName=U_Regulators Member=Component R32 10k

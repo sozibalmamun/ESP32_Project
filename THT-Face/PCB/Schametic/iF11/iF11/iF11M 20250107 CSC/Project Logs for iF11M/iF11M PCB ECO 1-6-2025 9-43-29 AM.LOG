@@ -1,0 +1,38 @@
+Removed Pin From Net: NetName=GND Pin=C49-1
+Removed Pin From Net: NetName=GND Pin=C50-2
+Removed Pin From Net: NetName=GND Pin=C51-2
+Removed Pin From Net: NetName=VBUS Pin=C52-1
+Removed Pin From Net: NetName=GND Pin=C52-2
+Removed Pin From Net: NetName=VBUS Pin=C68-1
+Removed Pin From Net: NetName=GND Pin=C68-2
+Removed Pin From Net: NetName=GND Pin=D5-1
+Removed Pin From Net: NetName=VBUS Pin=D7-2
+Removed Pin From Net: NetName=GND Pin=L10-1
+Removed Pin From Net: NetName=GND Pin=R39-1
+Removed Pin From Net: NetName=GND Pin=U13-4
+Removed Member From Class: ClassName=U_Power Member=C49
+Removed Member From Class: ClassName=U_Power Member=C50
+Removed Member From Class: ClassName=U_Power Member=C51
+Removed Member From Class: ClassName=U_Power Member=C52
+Removed Member From Class: ClassName=U_Power Member=C68
+Removed Member From Class: ClassName=U_Power Member=D5
+Removed Member From Class: ClassName=U_Power Member=D6
+Removed Member From Class: ClassName=U_Power Member=D7
+Removed Member From Class: ClassName=U_Power Member=L3
+Removed Member From Class: ClassName=U_Power Member=L10
+Removed Member From Class: ClassName=U_Power Member=R35
+Removed Member From Class: ClassName=U_Power Member=R36
+Removed Member From Class: ClassName=U_Power Member=R39
+Removed Member From Class: ClassName=U_Power Member=U13
+Added Component: Designator=C9(C0603)
+Add component (AddParameter): Name = "Manufacturer"; Value = "FENGHUA"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0603 100NF/50V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "W-T-CA-X703N100K50VNT"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0002721"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=BATLVL Pin=C9-1
+Added Pin To Net: NetName=NetC9_2 Pin=C9-2
+Added Pin To Net: NetName=GND Pin=Q4-1
+Added Member To Class: ClassName=U_microcontroller Member=Component C9 100nF
+Added Member To Class: ClassName=iF11M Member=Component R9 10K
+Added Member To Class: ClassName=iF11M Member=Component R18 10k

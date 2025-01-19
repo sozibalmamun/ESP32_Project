@@ -1,0 +1,14 @@
+Change Component Footprint: Designator=J10 Old Footprint=FFC-14-1.25mm New Footprint=FFC-12-1.25mm - duplicate
+Change Component Comment : Designator=J10 Old Comment=FFC Cable 14 Pin New Comment=FFC Cable 12 Pin
+Added Pin To Net: NetName=CH Pin=J10-1
+Added Pin To Net: NetName=FCH Pin=J10-2
+Added Pin To Net: NetName=BAT Pin=J10-3
+Added Pin To Net: NetName=PWEN Pin=J10-4
+Added Pin To Net: NetName=EN/RST Pin=J10-5
+Added Pin To Net: NetName=VBUS Pin=J10-6
+Added Pin To Net: NetName=VBUS Pin=J10-7
+Added Pin To Net: NetName=VBUS Pin=J10-8
+Added Pin To Net: NetName=GND Pin=J10-10
+Added Pin To Net: NetName=GND Pin=J10-11
+Added Pin To Net: NetName=GND Pin=J10-12
+Added Pin To Net: NetName=GND Pin=Q4-1

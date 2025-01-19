@@ -1,0 +1,10 @@
+Added Component: Designator=C54(C0805)
+Add component (AddParameter): Name = "Manufacturer"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Material Name"; Value = "????0805 10UF/25V 10%"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Part No"; Value = "WP0005368"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Product Code"; Value = "WP0005368"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "???????????"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=WVDD Pin=C54-1
+Added Pin To Net: NetName=GND Pin=C54-2
+Added Pin To Net: NetName=NetQ4_1 Pin=Q4-1
+Added Member To Class: ClassName=U_Wireless Charging Member=Component C54 10uF

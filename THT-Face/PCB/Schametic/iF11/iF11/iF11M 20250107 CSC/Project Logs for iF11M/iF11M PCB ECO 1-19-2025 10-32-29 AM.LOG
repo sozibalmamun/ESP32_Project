@@ -1,0 +1,6 @@
+Change Component Footprint: Designator=LD4 Old Footprint=LED 5MM RED BENT New Footprint=LED 5mm RED Bent2
+Change Component Footprint: Designator=LD5 Old Footprint=LED 5MM RED BENT New Footprint=LED 5mm RED Bent2 Flipped
+Change Component Footprint: Designator=LD1 Old Footprint=LED-0603-RED New Footprint=LED 3mm RED
+Change Component Footprint: Designator=LD2 Old Footprint=LED-0603-RED New Footprint=LED 3mm RED
+Change Component Library : Designator=LD1 Old Library=Optoelectronics.IntLib New Library=Optoelectronics.SchLib
+Added Pin To Net: NetName=NetQ4_1 Pin=Q4-1

@@ -1,0 +1,6 @@
+Change Component Footprint: Designator=J2 Old Footprint=FFC14P New Footprint=FFC-14-1.25mm
+Change component parameters: Designator = "J1" ("J1"); Footprint = "USBC-16P"; UniqueID = "\OTOKFWFR" ("\OTOKFWFR")
+Change component parameters (AddParameter): Name = "Material Name"; Value = "USB??/TYPE-C 16P"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Part No"; Value = "W-T-CN-TYPE-C 16P"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Product Code"; Value = "WP0003709"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Supplier"; Value = "?????????"; VariantName = "[No Variations]"

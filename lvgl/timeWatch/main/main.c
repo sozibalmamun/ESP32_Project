@@ -25,17 +25,18 @@ TaskHandle_t timeTask = NULL;
 TaskHandle_t lvglTask = NULL;
 extern uint8_t wifiStatus;
 
-
-
-
 void app_main(void)
 {
-
-    gpio_set_level((gpio_num_t)LCE_BL, 1);
+    //LCD Backlight
+    gpio_set_level((gpio_num_t)LCE_BL, 0);
     gpio_pad_select_gpio(LCE_BL);
     gpio_set_direction((gpio_num_t)LCE_BL, GPIO_MODE_OUTPUT);
-    gpio_set_level((gpio_num_t)LCE_BL, 1);
-
+    gpio_set_level((gpio_num_t)LCE_BL, 0);
+    
+    //BUZZER
+    gpio_pad_select_gpio(GPIO_NUM_8);
+    gpio_set_direction((gpio_num_t)GPIO_NUM_8, GPIO_MODE_OUTPUT);
+    gpio_set_level((gpio_num_t)GPIO_NUM_8, 0);
 
 
     bluFiStart();
@@ -51,13 +52,16 @@ void app_main(void)
     PwmInt((gpio_num_t)LCE_BL);
     brightness(false);//sleep
 
+    buzzer_init();
 
+    while (1) {
 
-    // while(1){
-    //     int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
-    //     ESP_LOGW("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
-    // }
+        // Play the buzzer for 1 second
+        buzzer_play( 500);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        buzzer_play(0);
 
+    }
 
 }
 

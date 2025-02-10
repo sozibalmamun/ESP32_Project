@@ -1,0 +1,24 @@
+Project Outputs Generation Report
+---------------------------------
+Start Output Generation At 2:56:40 PM On 1/20/2025
+
+Output: Gerber Files
+Type  : Gerber
+From  : Variant [[No Variations]] of PCB Document [iF11All.PcbDoc]
+   Generated File[iF11All.GTO]
+   Generated File[iF11All.GTP]
+   Generated File[iF11All.GTS]
+   Generated File[iF11All.GTL]
+   Generated File[iF11All.GBL]
+   Generated File[iF11All.GBS]
+   Generated File[iF11All.GBP]
+   Generated File[iF11All.GBO]
+   Generated File[iF11All.GKO]
+   Generated File[iF11All.EXTREP]
+   Generated File[iF11All.REP]
+
+
+Files Generated   : 11
+Documents Printed : 0
+
+Finished Output Generation At 2:56:51 PM On 1/20/2025

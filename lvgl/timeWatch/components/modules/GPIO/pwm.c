@@ -30,12 +30,12 @@ void PwmInt( gpio_num_t pinNo ) {
     ledc_channel_config(&ledc_channel);
 
     // Set initial duty cycle to 50% (for 13-bit resolution, this is 4096 out of 8192)
-    ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, 8192);
+    ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, 0);
     ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
 
     // Optional: Use fading
     ledc_fade_func_install(0);  // Install the fade function
-    ledc_set_fade_time_and_start(ledc_channel.speed_mode, ledc_channel.channel, 8192, 1000, LEDC_FADE_NO_WAIT);
+    ledc_set_fade_time_and_start(ledc_channel.speed_mode, ledc_channel.channel, 0, 1000, LEDC_FADE_NO_WAIT);
     // for (int duty = 8192; duty >= 0; duty -= 64) {
     //     ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, duty);
     //     ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
@@ -60,4 +60,51 @@ void brightness(bool sleep){
     ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, sleep?BRIGHTNESS(SLEEP_LCD): BRIGHTNESS(WAKE_LCD));//8192
     ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
 
+}
+
+
+
+
+#define BUZZER_GPIO 8         // GPIO 8 for the buzzer
+#define BUZZER_FREQ 1000      // Frequency in Hz (lower frequency for testing)
+#define BUZZER_DUTY 4096      // Duty cycle (50% of 8192, 13-bit resolution)
+#define LEDC_TIMER LEDC_TIMER_0
+#define LEDC_MODE LEDC_LOW_SPEED_MODE
+#define LEDC_CHANNEL LEDC_CHANNEL_7
+
+
+void buzzer_init() {
+    // Configure LEDC timer
+    ledc_timer_config_t timer_conf = {
+        .speed_mode = LEDC_MODE,
+        .timer_num = LEDC_TIMER,
+        .duty_resolution = LEDC_TIMER_13_BIT,  // 13-bit resolution (8192 steps)
+        .freq_hz = BUZZER_FREQ,
+        .clk_cfg = LEDC_USE_APB_CLK,           // Use the APB clock
+    };
+    esp_err_t res = ledc_timer_config(&timer_conf);
+    if (res != ESP_OK) {
+        ESP_LOGE("BUZZER", "Failed to configure LEDC timer: %s", esp_err_to_name(res));
+    }
+
+    // Configure LEDC channel
+    ledc_channel_config_t channel_conf = {
+        .speed_mode = LEDC_MODE,
+        .channel = LEDC_CHANNEL,
+        .gpio_num = BUZZER_GPIO,
+        .intr_type = LEDC_INTR_DISABLE,
+        .timer_sel = LEDC_TIMER,
+        .duty = BUZZER_DUTY,  // 50% duty cycle
+        .hpoint = 0,
+    };
+    res = ledc_channel_config(&channel_conf);
+    if (res != ESP_OK) {
+        ESP_LOGE("BUZZER", "Failed to configure LEDC channel: %s", esp_err_to_name(res));
+    }
+}
+
+void buzzer_play(uint16_t freq) {
+    ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, freq);  // Set duty to 0 (stop)
+    ledc_update_duty(LEDC_MODE, LEDC_CHANNEL);
+    ESP_LOGI("BUZZER", "Buzzer ON");
 }

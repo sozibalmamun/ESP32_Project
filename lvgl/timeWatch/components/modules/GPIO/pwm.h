@@ -22,9 +22,25 @@
 #include "driver/mcpwm.h"
 //------------------------
 
-#define LCE_BL GPIO_NUM_13
+#define LCE_BL GPIO_NUM_14
+
+
+#define BUZZER_GPIO GPIO_NUM_8   // GPIO 8 for passive buzzer
+#define BUZZER_CHANNEL LEDC_CHANNEL_0
+#define BUZZER_TIMER LEDC_TIMER_0
+
+// Define the GPIO and LEDC settings
+#define LEDC_TIMER LEDC_TIMER_0
+#define LEDC_MODE LEDC_LOW_SPEED_MODE
+#define LEDC_CHANNEL LEDC_CHANNEL_0
+#define LEDC_DUTY_RES LEDC_TIMER_13_BIT // 13-bit resolution
+#define LEDC_FREQUENCY 2000 // Frequency in Hz (2 kHz)
+
+
+
+
 #define SLEEP_LCD 5
-#define WAKE_LCD 10
+#define WAKE_LCD 50
 #define MIN_BRIGHTNESS (8191)
 #define BRIGHTNESS(x)  MIN_BRIGHTNESS-(((MIN_BRIGHTNESS/100)*x))
 
@@ -39,6 +55,11 @@ extern "C"
 
     void PwmInt(gpio_num_t pinNo);
     void brightness(bool sleep);
+    void buzzer_init(void);
+    void buzzer_play(uint16_t freq);
+
+
+    
 
 
 #ifdef __cplusplus

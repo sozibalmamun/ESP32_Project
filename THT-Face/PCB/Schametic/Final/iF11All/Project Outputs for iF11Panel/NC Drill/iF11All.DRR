@@ -1,0 +1,25 @@
+----------------------------------------------------------------------------------------------------------------------------------
+NCDrill File Report For: iF11All.PcbDoc   1/20/2025  2:36:06 PM
+----------------------------------------------------------------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : iF11All-RoundHoles.TXT
+ASCII SlotHoles File : iF11All-SlotHoles.TXT
+
+Tool       Hole Size               Hole Tolerance               Hole Type       Hole Count   Plated         Tool Travel
+----------------------------------------------------------------------------------------------------------------------------------
+T1      0.3mm (12mil)                                             Round             1249      PTH        2945.01mm (115.95inch)
+T2      0.4mm (16mil)                                             Round             2         PTH        1.00mm (0.04inch)
+T3      0.5mm (20mil)                                             Slot              4         PTH        37.61mm (1.48inch)
+T4      0.7mm (28mil)                                             Round             8         PTH        149.59mm (5.89inch)
+T5      0.8mm (31mil)                                             Round             10        PTH        222.04mm (8.74inch)
+T6      0.9mm (35mil)                                             Round             6         PTH        12.70mm (0.50inch)
+T7      1.2mm (47mil)                                             Round             1         PTH        0.00mm (0.00inch)
+T8      1.5mm (59mil)                                             Round             1         PTH        0.00mm (0.00inch)
+T9      2mm (79mil)                                               Round             2         PTH        25.16mm (0.99inch)
+T10     0.6mm (24mil)                                             Round             4         NPTH       30.31mm (1.19inch)
+T11     0.8mm (31mil)                                             Round             13        NPTH       30.30mm (1.19inch)
+----------------------------------------------------------------------------------------------------------------------------------
+Totals                                                                              1300
+
+Total Processing Time (hh:mm:ss) : 00:00:00

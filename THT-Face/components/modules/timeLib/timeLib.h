@@ -44,10 +44,10 @@ extern "C" {
 #define DelayRST    testTime
 #define DelayIO     testTime
 #define CLK_DELAY   testTime
+
 // Define RTC pin connections
 #define DS1302_SCLK_PIN 39
 #define DS1302_IO_PIN 40
-// #define DS1302_CE_PIN 38
 #define DS1302_CE_PIN GPIO_NUM_0// use for test purpose no enought pin
 
 

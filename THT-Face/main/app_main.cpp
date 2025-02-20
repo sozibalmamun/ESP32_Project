@@ -8,25 +8,19 @@ void app_main()
     gpioInt();
 
     configure_dynamic_frequency();
-    shiftOutData.write=0x10;// LED ON at inttial value
+    // shiftOutData.write=0b00000100;// LED ON at inttial value
+    // shiftOutData.bitset.LED=1;
 
     sensorHandel(); 
 
     // Initialize Conectivity---------------------------
-    // bluFiStart();
+    bluFiStart();
     //--------------------------------------------------
-
-    shiftOutData.bitset.PEREN=1;  //q3
-    // vTaskDelay(pdMS_TO_TICKS(1));//5
-
-    shiftOutData.bitset.CAMEN=1;//q0
-    // vTaskDelay(pdMS_TO_TICKS(1));//5
-
-    shiftOutData.bitset.CAMPDWN=0;//q6
-    // vTaskDelay(pdMS_TO_TICKS(1));//5
-
-    shiftOutData.bitset.LCDEN=1;//q5
-    // vTaskDelay(pdMS_TO_TICKS(1));//5
+    shiftOutData.bitset.LED=1;
+    shiftOutData.bitset.PEREN=1;  
+    shiftOutData.bitset.CAMPDWN=0;
+    shiftOutData.bitset.CAMEN=1;
+    shiftOutData.bitset.LCDEN=1;
 
 
     xQueueAIFrame = xQueueCreate(2, sizeof(camera_fb_t *));

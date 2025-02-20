@@ -57,6 +57,8 @@ extern "C"
     void brightness(bool sleep);
     void buzzer_init(void);
     void buzzer_play(uint16_t freq);
+    void play_music(uint16_t *sequence, size_t length);
+
 
 
     

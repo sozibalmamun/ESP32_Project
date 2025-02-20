@@ -24,16 +24,34 @@
 extern  uint8_t sleepEnable;
 extern volatile TickType_t sleepTimeOut; 
 
+// union shiftResistorBitfild {
+//     struct PACKED_STRUCT bit {
+//         uint8_t CAMEN   : 1;//q0 
+//         uint8_t MSDA    : 1;
+//         uint8_t MSCL    : 1;
+//         uint8_t PEREN   : 1;
+//         uint8_t LED     : 1;
+//         uint8_t LCDEN   : 1;
+//         uint8_t CAMPDWN : 1;
+//         uint8_t IRLED   : 1;//q7
+//     } bitset;
+    
+//     // Alternative way to access the same 8-bit memory space
+//     uint8_t read;
+//     uint8_t write;
+
+// };
+
 union shiftResistorBitfild {
     struct PACKED_STRUCT bit {
-        uint8_t CAMEN   : 1;//q0
-        uint8_t MSDA    : 1;
-        uint8_t MSCL    : 1;
-        uint8_t PEREN   : 1;
-        uint8_t LED     : 1;
-        uint8_t LCDEN   : 1;
-        uint8_t CAMPDWN : 1;
-        uint8_t IRLED   : 1;//q7
+        uint8_t CAMPDWN     : 1;//Q0 
+        uint8_t UVOFF       : 1;//Q1
+        uint8_t LED         : 1;//Q2
+        uint8_t IRLED       : 1;//Q3
+        uint8_t CAMEN       : 1;//Q4
+        uint8_t LCDEN       : 1;//Q5
+        uint8_t ADC_EN      : 1;//Q6
+        uint8_t PEREN       : 1;//Q7
     } bitset;
     
     // Alternative way to access the same 8-bit memory space
@@ -41,6 +59,9 @@ union shiftResistorBitfild {
     uint8_t write;
 
 };
+
+
+
 
 // union shiftResistorBitfild shiftOutData;
 
@@ -84,8 +105,11 @@ extern TaskHandle_t cloudeTaskHandler;
 #define PIR GPIO_NUM_1
 #define LCE_BL GPIO_NUM_2//
 // shift registor
-#define SER_SDI GPIO_NUM_3
-#define SER_CLK GPIO_NUM_45
+// #define SER_SDI GPIO_NUM_3
+// #define SER_CLK GPIO_NUM_45
+// #define SER_LAT GPIO_NUM_14
+#define SER_SDI GPIO_NUM_45
+#define SER_CLK GPIO_NUM_3
 #define SER_LAT GPIO_NUM_14
 
 

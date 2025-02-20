@@ -34,9 +34,9 @@ void app_main(void)
     gpio_set_level((gpio_num_t)LCE_BL, 0);
     
     //BUZZER
-    gpio_pad_select_gpio(GPIO_NUM_8);
-    gpio_set_direction((gpio_num_t)GPIO_NUM_8, GPIO_MODE_OUTPUT);
-    gpio_set_level((gpio_num_t)GPIO_NUM_8, 0);
+    // gpio_pad_select_gpio(GPIO_NUM_8);
+    // gpio_set_direction((gpio_num_t)GPIO_NUM_8, GPIO_MODE_OUTPUT);
+    // gpio_set_level((gpio_num_t)GPIO_NUM_8, 0);
 
 
     bluFiStart();
@@ -52,16 +52,35 @@ void app_main(void)
     PwmInt((gpio_num_t)LCE_BL);
     brightness(false);//sleep
 
-    buzzer_init();
+    // buzzer_init();
 
-    while (1) {
+    // while (1) {
 
-        // Play the buzzer for 1 second
-        buzzer_play( 500);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        buzzer_play(0);
+    // // Nokia ringtone frequencies and delays in ms
+    // uint16_t nokia_tone[] = {
+    //     440, 200,  // A4, 200ms
+    //     440, 200,  // A4, 200ms
+    //     440, 200,  // A4, 200ms
+    //     440, 200,  // A4, 200ms
+    //     349, 200,  // F4, 200ms
+    //     523, 200,  // C5, 200ms
+    //     440, 200,  // A4, 200ms
+    //     349, 200,  // F4, 200ms
+    //     523, 200,  // C5, 200ms
+    //     440, 200,  // A4, 200ms
+    //     349, 200,  // F4, 200ms
+    //     523, 200,  // C5, 200ms
+    //     440, 200,  // A4, 200ms
+    //     349, 200,  // F4, 200ms
+    //     523, 200,  // C5, 200ms
+    //     440, 200   // A4, 200ms
+    // };
 
-    }
+    // play_music(nokia_tone, sizeof(nokia_tone) / sizeof(nokia_tone[0]));
+    // vTaskDelay(1000 / portTICK_PERIOD_MS); // Convert to ms
+
+
+    // }
 
 }
 

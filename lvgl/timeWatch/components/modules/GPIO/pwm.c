@@ -108,3 +108,15 @@ void buzzer_play(uint16_t freq) {
     ledc_update_duty(LEDC_MODE, LEDC_CHANNEL);
     ESP_LOGI("BUZZER", "Buzzer ON");
 }
+
+void play_music(uint16_t *sequence, size_t length) {
+    for (size_t i = 0; i < length; i++) {
+        if (i % 2 == 0) {
+            // Even index: frequency
+            buzzer_play(sequence[i]*3);
+        } else {
+            // Odd index: delay
+            vTaskDelay(sequence[i] / portTICK_PERIOD_MS); // Convert to ms
+        }
+    }
+}

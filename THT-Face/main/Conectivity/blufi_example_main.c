@@ -391,11 +391,11 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         esp_wifi_set_config(WIFI_IF_STA, &sta_config);
 
 
-        char ssid[param->sta_ssid.ssid_len + 1];
-        strncpy(ssid, (char *)param->sta_ssid.ssid, param->sta_ssid.ssid_len);
-        ssid[param->sta_ssid.ssid_len] = '\0'; // Null-terminate the SSID string
+        // char ssid[param->sta_ssid.ssid_len + 1];
+        // strncpy(ssid, (char *)param->sta_ssid.ssid, param->sta_ssid.ssid_len);
+        // ssid[param->sta_ssid.ssid_len] = '\0'; // Null-terminate the SSID string
 
-        BLUFI_INFO("SSID: %s\n", ssid);
+        // BLUFI_INFO("SSID: %s\n", ssid);
 
         break;
     }
@@ -413,11 +413,11 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         sta_config.sta.password[param->sta_passwd.passwd_len] = '\0';
         esp_wifi_set_config(WIFI_IF_STA, &sta_config);
 
-        char password[param->sta_passwd.passwd_len + 1];
-        strncpy(password, (char *)param->sta_passwd.passwd, param->sta_passwd.passwd_len);
-        password[param->sta_passwd.passwd_len] = '\0'; // Null-terminate the password string
+        // char password[param->sta_passwd.passwd_len + 1];
+        // strncpy(password, (char *)param->sta_passwd.passwd, param->sta_passwd.passwd_len);
+        // password[param->sta_passwd.passwd_len] = '\0'; // Null-terminate the password string
 
-        BLUFI_INFO("PASSWORD: %s\n", password);
+        // BLUFI_INFO("PASSWORD: %s\n", password);
         example_wifi_connect();
 
         break;
@@ -436,21 +436,24 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         BLUFI_INFO("Custom Data %s\n", received_data_str);
 
 
-        // Process the received data
+        // // Process the received data
         #define PASSKEY_LENGTH 9
 
         if ((uint8_t)received_data_str[0] == 0x50) { // Validate passkey
-            // ESP_LOGI("Custom Data", "Received Passkey for Validation");
+            ESP_LOGI("Custom Data", "Received Passkey for Validation");
 
             // Pass the address of the passkey starting from received_data_str[1]
             if (validatePasskey((uint8_t*)&received_data_str[1], PASSKEY_LENGTH)) {
                 ESP_LOGI("CONN", "Passkey is valid. Proceeding with connection...");
                 send_custom_data_to_app("AP"); // Send feedback to application over BLE
                 valid_password = true;
+                break;
+
             } else {
                 ESP_LOGE("CONN", "Passkey is invalid. Connection denied.");
                 esp_blufi_disconnect();
             }
+
         } else if ((uint8_t)received_data_str[0] == 0x53 && valid_password ) { // Save passkey
             ESP_LOGI("Custom Data", "Received Passkey for Saving");
 
@@ -460,7 +463,7 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
             send_custom_data_to_app("APSS"); // Send feedback to application over BLE
             esp_blufi_disconnect();
         }
-        // if(!valid_password)break;
+        if(!valid_password)break;
 
 
 

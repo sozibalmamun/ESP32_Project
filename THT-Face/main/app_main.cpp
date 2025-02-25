@@ -31,15 +31,12 @@ void app_main()
     if (xQueueAIFrame == NULL || xQueueLCDFrame == NULL || xQueueEventLogic == NULL) {
         // ESP_LOGE(TAG, "Failed to create queues");
         esp_restart();
-    }
+    } 
     
     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);//core 1    //  FRAMESIZE_QVGA 320*240  //FRAMESIZE_VGA 640x480
     register_event(xQueueEventLogic);//core 1
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false); //core 1+1
     register_lcd(xQueueLCDFrame, NULL, true);// core 0
-
-    // vTaskDelay(pdMS_TO_TICKS(5));
-
 
     //-------------------------
     // Initialize and mount FATFS
@@ -54,8 +51,6 @@ void app_main()
     //--------------------------------------------------------------
     init_adc();
     //-------------------------
-    // Initialize PWM using the PwmInt function
-    // PwmInt((gpio_num_t)LCE_BL);
     shiftOutData.bitset.LED=0;  //q4
     music=TURN_ON_MUSIC;
 
@@ -67,49 +62,22 @@ void app_main()
         // int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
         // ESP_LOGI("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
 
-        // if(xTaskGetTickCount()-sleepTimeOut>3000 && sleepEnable == WAKEUP){
+        if(xTaskGetTickCount()-sleepTimeOut>3000  && sleepEnable == WAKEUP){
+            
+            sleepEnable=SLEEP;
+            printf("\nsleepEnable"); 
+            vTaskDelay(pdMS_TO_TICKS(10));
+            dispON(false);
+            deinitBlufi();
+            shiftOutData.write=0x00;
+            vTaskDelay(pdMS_TO_TICKS(10));
+            reduce_cpu_frequency();
+        }
 
-        //     sleepEnable=SLEEP;
-        //     printf("\nsleepEnable"); 
-        //     shiftOutData.bitset.CAMPDWN=1;//q6
-        //     vTaskDelay(pdMS_TO_TICKS(10));
-        //     brightness(true);
-        //     deinitBlufi();
-
-        //     vTaskDelay(pdMS_TO_TICKS(1000));
-        //     reduce_cpu_frequency();
-        //     vTaskDelay(pdMS_TO_TICKS(1000));
-        // }
-
-        // if(MUSINC_PLAYING==0){
-
-        //     printf("music play\n");
-        //     vTaskDelay(pdMS_TO_TICKS(500));
-
-        
-        // }
             
         if(sleepEnable == SLEEP){ 
             // enter_light_sleep();  // Enter light sleep mode
-            // if( WAKE_STATE ){
-
-            //     sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
-            //     restore_cpu_frequency();
-            //     reInt();
-            //     brightness(false);//sleep
-            //     printf("\nsleep disable");
-
-            // }else 
-            
-            if(CHARGING_STATE){
-                plugIn(true);
-                printf("plugIn\n");
-
-            }else {
-                plugIn(false);
-                printf("plug out\n");
-
-            }
+            enter_deep_sleep();
 
         }else {
             reconnect();
@@ -122,16 +90,41 @@ void app_main()
 }
 
 
-void reInt(void){
+// void reInt(void){
 
 
 
-    shiftOutData.bitset.CAMPDWN=0;//q6
-    vTaskDelay(pdMS_TO_TICKS(10));
-    RtcInit();
-    vTaskDelay(pdMS_TO_TICKS(10));  // Allow time for frequency update
-    sleepEnable = WAKEUP;
-    bluFiStart();
+//     shiftOutData.bitset.CAMPDWN=0;//q6
+//     vTaskDelay(pdMS_TO_TICKS(10));
+//     RtcInit();
+//     vTaskDelay(pdMS_TO_TICKS(10));  // Allow time for frequency update
+//     sleepEnable = WAKEUP;
+//     bluFiStart();
 
-}
+// }
 
+
+
+// if(sleepEnable == SLEEP){ 
+//     enter_light_sleep();  // Enter light sleep mode
+//     // if( WAKE_STATE ){
+
+//     //     sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
+//     //     restore_cpu_frequency();
+//     //     reInt();
+//     //     brightness(false);//sleep
+//     //     printf("\nsleep disable");
+
+//     // } 
+    
+//     // if(CHARGING_STATE){
+//     //     plugIn(true);
+//     //     printf("plugIn\n");
+
+//     // }else {
+//     //     plugIn(false);
+//     //     printf("plug out\n");
+
+//     // }
+
+// }

@@ -95,7 +95,7 @@ void PwmInt( gpio_num_t pinNo ) {
     for (int duty = 8192; duty >= 0; duty -= 1024) {
         ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, duty);
         ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
-        vTaskDelay(pdMS_TO_TICKS(70));
+        vTaskDelay(pdMS_TO_TICKS(50));
     }
     ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, 0);
     ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
@@ -162,7 +162,7 @@ void reduce_cpu_frequency() {
 
 
     // ESP_LOGE("Frequency", "delete all task");
-    // esp_pm_dump_locks(stdout);
+    esp_pm_dump_locks(stdout);
 
     esp_pm_config_esp32s3_t pm_config = {
         .max_freq_mhz = MIN_FREQ,   // Set both min and max to 80 MHz to reduce power
@@ -178,7 +178,7 @@ void reduce_cpu_frequency() {
         // ESP_LOGE("Frequency", "Failed to configure CPU frequency: %s", esp_err_to_name(ret));
     }    
 
-    if (lcdTaskHandler) vTaskResume(lcdTaskHandler);
+    // if (lcdTaskHandler) vTaskResume(lcdTaskHandler); // uncomment if turn on display task
 
     // esp_pm_dump_locks(stdout);
 
@@ -227,17 +227,17 @@ void restore_cpu_frequency() {
 
 void configure_wakeup() {
     // Configure the button GPIO for input with pull-up, active-low
-    // gpio_pad_select_gpio(GPIO_WAKEUP_BUTTON);
-    // gpio_set_direction(GPIO_WAKEUP_BUTTON, GPIO_MODE_INPUT);
-    // gpio_pullup_en(GPIO_WAKEUP_BUTTON);  // Enable pull-up for stable input
+    // gpio_pad_select_gpio(PIR);
+    // gpio_set_direction(PIR, GPIO_MODE_INPUT);
+    // gpio_pullup_en(PIR);  // Enable pull-up for stable input
 
-    // // Enable external wakeup on GPIO_WAKEUP_BUTTON, active low
-    // esp_sleep_enable_ext0_wakeup(GPIO_WAKEUP_BUTTON, 0);  // Wake on falling edge (button press)
+    // Enable external wakeup on GPIO_WAKEUP_BUTTON, active low
+    esp_sleep_enable_ext0_wakeup(PIR, 0);  // Wake on falling edge (button press)
 }
 void enter_light_sleep(void) {
 
     configure_wakeup();
-    vTaskDelay(200);
+    vTaskDelay(pdMS_TO_TICKS(10));
     ESP_LOGI("Sleep", "Entering light sleep...");
     // gpio_set_level((gpio_num_t)CAMP_DWN, 1);  // Ensure peripherals are powered off or set to sleep state
 
@@ -247,6 +247,19 @@ void enter_light_sleep(void) {
     esp_light_sleep_start();
     ESP_LOGI("Sleep", "Woke up from light sleep!");
     sleepEnable = WAKEUP;  // Disable sleep mode after waking up
+}
+
+
+void enter_deep_sleep(void){
+
+    ESP_LOGI("DEEP_SLEEP", "Going to deep sleep...");
+    // Enable wake-up on button press (when GPIO is LOW)
+    gpio_pullup_en(PIR);  // Enable pull-up resistor
+    esp_sleep_enable_ext0_wakeup(PIR, 0); // Wake-up when button is pressed (LOW)
+    // Enter deep sleep
+    esp_deep_sleep_start();
+    // This line will **never execute** because ESP restarts after wake-up
+    ESP_LOGI("DEEP_SLEEP", "Woke up!");
 }
 //------------------------------------------------------------------------------
 
@@ -258,10 +271,10 @@ void init_adc() {
     esp_adc_cal_characterize(ADC_UNIT_2, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars_battery);
 
     // Configure ADC for PIR sensor (ADC1)
-    adc1_config_width(ADC_WIDTH_BIT_12);                             // 12-bit resolution
-    adc1_config_channel_atten(PIR_ADC_CHANNEL, ADC_ATTEN_DB_11);     // 0-3.6V range
-    adc_chars_pir = (esp_adc_cal_characteristics_t*) calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars_pir);
+    // adc1_config_width(ADC_WIDTH_BIT_12);                             // 12-bit resolution
+    // adc1_config_channel_atten(PIR_ADC_CHANNEL, ADC_ATTEN_DB_11);     // 0-3.6V range
+    // adc_chars_pir = (esp_adc_cal_characteristics_t*) calloc(1, sizeof(esp_adc_cal_characteristics_t));
+    // esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars_pir);
 
 
 }
@@ -283,7 +296,7 @@ void readBatteryVoltage() {
         }
         adc_reading /= NO_OF_SAMPLES;
         batVoltage=esp_adc_cal_raw_to_voltage(adc_reading, adc_chars_battery);
-        printf("Battery Voltage: %d mV\n", batVoltage);
+        // printf("Battery Voltage: %d mV\n", batVoltage);
     }
 
 }
@@ -513,12 +526,12 @@ static void sensor(void *arg)
         while(music==MUSIC_IDLE && shiftOutData.read == tempOld ){
           
 
-            // if(PIR_STATE==1){
-            //      printf("PIR_STATE 1\n");
-            // }else printf("PIR_STATE 0\n");
-            pirRead();
+            if(PIR_STATE==1){
+                 printf("PIR_STATE 1\n");
+            }else printf("PIR_STATE 0\n");                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+            // pirRead();
             // ets_delay_us(1000);//10
-            vTaskDelay(pdMS_TO_TICKS(500));
+            vTaskDelay(pdMS_TO_TICKS(100));
 
         }
 

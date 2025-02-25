@@ -149,6 +149,7 @@ extern "C"
     void configure_dynamic_frequency();
     // void list_all_tasks(void);
     void enter_light_sleep(void);
+    void enter_deep_sleep(void);
     void init_adc();
     void init_pir();
     void readBatteryVoltage();

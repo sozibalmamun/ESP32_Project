@@ -284,8 +284,11 @@ void RtcReadBuffer(void) // 800us
 	year =  BCD2Dec(RTCReadByte());	// year
 	RTCStop();
 
+
+    ESP_LOGI(TAG, "initialized time from rtc: %d-%d-%d %d %d:%d:%d",year, month, day,week,hour, min, sec);
+
 	time_library_time_t initial_time = {(year==165?-1:year)+2000, month, day, week, hour>129?12:hour, min>110?0:min, sec};//     year, month, day, hour, minute, second;
-    time_library_set_time(&initial_time, 0);
+    time_library_set_time(&initial_time,0);  //0  
 
 }
 
@@ -361,7 +364,7 @@ void RtcInit(void) {
 
     if (ramData1 != 'O' || ramData2 != 'K') {
 
-        // printf("RTC not configured.\n");
+        printf("RTC not configured.\n");
 
 		RTCStart();
 		RTCWriteByte(RTC_WR_TCS_ADDR);

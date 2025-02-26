@@ -4,12 +4,12 @@ extern "C"
 void app_main()
 {
 
-
+    sleepEnable=START;
     ESP_LOGE(TAG, "Starting app_main");
     gpioInt();
 
     configure_dynamic_frequency();
-    sensorHandel(); 
+    sensorHandel(); //1
 
     // Initialize Conectivity---------------------------
     bluFiStart();
@@ -18,7 +18,10 @@ void app_main()
     shiftOutData.bitset.PEREN=1;
     shiftOutData.bitset.CAMEN=1;  
     shiftOutData.bitset.CAMPDWN=0;
+    vTaskDelay(pdMS_TO_TICKS(5));
     shiftOutData.bitset.LCDEN=1;
+
+
 
 
     xQueueAIFrame = xQueueCreate(2, sizeof(camera_fb_t *));
@@ -54,6 +57,7 @@ void app_main()
     else welcomeMusic(true);
 
     ESP_LOGI(TAG, "app_main finished");
+    sleepEnable=WAKEUP;
 
     while(true){
 
@@ -61,24 +65,24 @@ void app_main()
         // int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
         // ESP_LOGI("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
 
-        if(xTaskGetTickCount()-sleepTimeOut>3000  && sleepEnable == WAKEUP){
+        // if(xTaskGetTickCount()-sleepTimeOut>3000  && sleepEnable == WAKEUP){
             
-            sleepEnable=SLEEP;
-            welcomeMusic(false);
-            printf("\nsleepEnable"); 
-            vTaskDelay(pdMS_TO_TICKS(10));
-            dispON(false);
-            deinitBlufi();
-            shiftOutData.write=0x00;
-            vTaskDelay(pdMS_TO_TICKS(10));
-            reduce_cpu_frequency();
-        }
+        //     sleepEnable=SLEEP;
+        //     welcomeMusic(false);
+        //     printf("\nsleepEnable"); 
+        //     vTaskDelay(pdMS_TO_TICKS(10));
+        //     shiftOutData.write=0x00;
+        //     dispON(false);
+        //     deinitBlufi();
+        //     vTaskDelay(pdMS_TO_TICKS(10));
+        //     reduce_cpu_frequency();
+        // }
 
             
         if(sleepEnable == SLEEP){ 
            
     
-            #if 1
+            #if 0
             enter_light_sleep();  // Enter light sleep mode
             #else
             enter_deep_sleep();
@@ -89,6 +93,8 @@ void app_main()
             reconnect();
             readBatteryVoltage();
             vTaskDelay(pdMS_TO_TICKS(100));  // Update every 1 second
+
+
 
         }
 

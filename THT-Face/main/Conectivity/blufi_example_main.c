@@ -379,7 +379,7 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
 
         if(!valid_password){
 
-            BLUFI_INFO("no pass match\n");
+            // BLUFI_INFO("no pass match\n");
 
             break;
 
@@ -403,7 +403,7 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
 
         if(!valid_password){
 
-            BLUFI_INFO("no pass match\n");
+            // BLUFI_INFO("no pass match\n");
 
             break;
 
@@ -425,6 +425,7 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
     }
 
     case ESP_BLUFI_EVENT_RECV_CUSTOM_DATA:{
+
         // BLUFI_INFO("Recv Custom Data %d\n", param->custom_data.data_len);
         esp_log_buffer_hex("Custom Data", param->custom_data.data, param->custom_data.data_len);
 
@@ -433,35 +434,35 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
         memcpy(received_data_str, param->custom_data.data, param->custom_data.data_len);
         received_data_str[param->custom_data.data_len] = '\0'; // Null-terminate the string
 
-        BLUFI_INFO("Custom Data %s\n", received_data_str);
+        // BLUFI_INFO("Custom Data %s\n", received_data_str);
 
 
         // // Process the received data
         #define PASSKEY_LENGTH 9
 
         if ((uint8_t)received_data_str[0] == 0x50) { // Validate passkey
-            ESP_LOGI("Custom Data", "Received Passkey for Validation");
+            // ESP_LOGI("Custom Data", "Received Passkey for Validation");
 
             // Pass the address of the passkey starting from received_data_str[1]
             if (validatePasskey((uint8_t*)&received_data_str[1], PASSKEY_LENGTH)) {
-                ESP_LOGI("CONN", "Passkey is valid. Proceeding with connection...");
+                // ESP_LOGI("CONN", "Passkey is valid. Proceeding with connection...");
                 send_custom_data_to_app("AP"); // Send feedback to application over BLE
                 valid_password = true;
                 break;
 
             } else {
-                ESP_LOGE("CONN", "Passkey is invalid. Connection denied.");
-                esp_blufi_disconnect();
+                // ESP_LOGE("CONN", "Passkey is invalid. Connection denied.");
+                // esp_blufi_disconnect();
             }
 
         } else if ((uint8_t)received_data_str[0] == 0x53 && valid_password ) { // Save passkey
-            ESP_LOGI("Custom Data", "Received Passkey for Saving");
+            // ESP_LOGI("Custom Data", "Received Passkey for Saving");
 
             // Pass the address of the passkey starting from received_data_str[1]
             savePass((uint8_t*)&received_data_str[1], PASSKEY_LENGTH);
-            ESP_LOGI("CONN", "Passkey saved successfully.");
+            // ESP_LOGI("CONN", "Passkey saved successfully.");
             send_custom_data_to_app("APSS"); // Send feedback to application over BLE
-            esp_blufi_disconnect();
+            // esp_blufi_disconnect();
         }
         if(!valid_password)break;
 

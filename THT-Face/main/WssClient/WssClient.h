@@ -43,6 +43,7 @@ typedef struct {
 
 esp_websocket_client_handle_t client;
 
+
 const DATA_FLASH char echo_org_ssl_ca_cert[]  = \
 "-----BEGIN CERTIFICATE-----\n" \
 "MIIFBzCCA++gAwIBAgIRALIM7VUuMaC/NDp1KHQ76aswDQYJKoZIhvcNAQELBQAw\n" \

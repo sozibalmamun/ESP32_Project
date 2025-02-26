@@ -94,7 +94,7 @@ extern TaskHandle_t cloudeTaskHandler;
 
 //Sleep config---------------------------------------------------
 #define MAX_FREQ   240    // Maximum frequency
-#define MIN_FREQ   40
+#define MIN_FREQ   8
 #define BATTERY_CHARGE_STATE GPIO_NUM_20
 
 

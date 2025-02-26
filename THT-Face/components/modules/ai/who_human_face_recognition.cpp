@@ -624,6 +624,7 @@ static void task_process_handler(void *arg)
                         static int frame_count = 0;
                         switch (frame_show_state)
                         {
+
                         case SHOW_STATE_DELETE:
 
                             // ESP_LOGI(TAG,"Deleted");
@@ -776,6 +777,8 @@ static void task_process_handler(void *arg)
 
 
             }
+
+
             //---------------------------------------------------------
             // if(xQueueResult){
 

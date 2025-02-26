@@ -52,7 +52,7 @@ void gpioInt(void){
     io_conf.intr_type = GPIO_INTR_DISABLE;
     io_conf.pin_bit_mask = (1ULL << PIR); // Pin mask
     io_conf.mode = GPIO_MODE_INPUT;                  // Set as input
-    io_conf.pull_up_en = GPIO_PULLUP_DISABLE;         // Enable pull-up resistor
+    io_conf.pull_up_en = GPIO_PULLUP_ENABLE;         // Enable pull-up resistor
     io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;   // Disable pull-down resistor
     gpio_config(&io_conf);
 
@@ -170,7 +170,7 @@ void reduce_cpu_frequency() {
         .light_sleep_enable = false
     };
     esp_err_t ret = esp_pm_configure(&pm_config);
-    // vTaskDelay(pdMS_TO_TICKS(10));  // Allow time for frequency update
+    vTaskDelay(pdMS_TO_TICKS(5));  // Allow time for frequency update
 
     // if (ret == ESP_OK) {
     //     // ESP_LOGI("Frequency", "Dynamic CPU frequency scaling configured.");
@@ -236,7 +236,7 @@ void configure_wakeup() {
 }
 void enter_light_sleep(void) {
 
-    configure_wakeup();
+    // configure_wakeup();
     vTaskDelay(pdMS_TO_TICKS(10));
     ESP_LOGI("Sleep", "Entering light sleep...");
     // gpio_set_level((gpio_num_t)CAMP_DWN, 1);  // Ensure peripherals are powered off or set to sleep state
@@ -256,13 +256,13 @@ void enter_deep_sleep(void){
 
     ESP_LOGI("DEEP_SLEEP", "Going to deep sleep...");
     // Enable wake-up on button press (when GPIO is LOW)
-    gpio_pullup_en(PIR);  // Enable pull-up resistor
+    // gpio_pullup_en(PIR);  // Enable pull-up resistor
     esp_sleep_enable_ext0_wakeup(PIR, 0); // Wake-up when button is pressed (LOW)
     // Enter deep sleep
     esp_deep_sleep_start();
     // This line will **never execute** because ESP restarts after wake-up
     // ESP_LOGI("DEEP_SLEEP", "Woke up!");
-    sleepEnable = WAKEUP;  // Disable sleep mode after waking up
+    // sleepEnable = WAKEUP;  // Disable sleep mode after waking up
 }
 //------------------------------------------------------------------------------
 
@@ -511,26 +511,23 @@ static void sensor(void *arg)
     uint8_t unregisterd[2] = {1,6};
 
     // init_pir();
-    uint32_t pirCheckInterval = xTaskGetTickCount();
     uint8_t tempOld=0;
     uint16_t musicTime=0;
 
     while (1)
     {
 
-        while(music==MUSIC_IDLE && shiftOutData.read == tempOld ){
+        while(music==MUSIC_IDLE && shiftOutData.read == tempOld  ){
           
-            // if(sleepEnable == WAKEUP && xTaskGetTickCount()> pirCheckInterval+600){
 
-                if(PIR_STATE==0){
+                if(PIR_STATE==1){
+                    // printf("PIR 1\n");
+                }else{
                     // printf("PIR 0\n");
-                }else// printf("PIR 1\n");
 
-                // pirCheckInterval = xTaskGetTickCount();
- 
-            // }
-            vTaskDelay(pdMS_TO_TICKS(600));
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+                } 
+                if( sleepEnable==WAKEUP)vTaskDelay(pdMS_TO_TICKS(700));//300
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
 
         }
 
@@ -590,7 +587,7 @@ static void sensor(void *arg)
         default:
             break;
         }
-        ets_delay_us(10);
+        // ets_delay_us(10);
 
     }
 }

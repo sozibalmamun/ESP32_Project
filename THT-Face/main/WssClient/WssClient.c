@@ -250,7 +250,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
         break;
     case WEBSOCKET_EVENT_DISCONNECTED:
-        ESP_LOGI(TAG, "WSS_DISCONNECTED");
+        ESP_LOGE(TAG, "WSS_DISCONNECTED");
 
         networkStatus=WIFI_CONNECTED;
 
@@ -323,7 +323,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
         break;
     case WEBSOCKET_EVENT_ERROR:
-        ESP_LOGI(TAG, "WEBSOCKET_EVENT_ERROR");
+        ESP_LOGE(TAG, "WEBSOCKET_EVENT_ERROR");
         break;
     }
 }
@@ -360,7 +360,7 @@ void wssReset(void){
     if (client != NULL) {
     esp_websocket_client_stop(client);
     esp_websocket_client_destroy(client);
-    ESP_LOGI(TAG, "esp_websocket_client_stop");
+    ESP_LOGE(TAG, "esp_websocket_client_stop");
     client = NULL;
     
     }            

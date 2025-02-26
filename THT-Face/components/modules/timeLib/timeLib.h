@@ -127,6 +127,15 @@ static const char *NVS_SUBCRIP_NAME_SPACE = "con";
 static const char *NVS_SUBCRIP_NAME_SPACE_FORMAT_KEY = "Sub";
 
 
+
+static const char *NVS_MUSIC_NAME_SPACE = "mcon";
+static const char *NVS_MUSIC_NAME_SPACE_FORMAT_KEY = "mSub";
+
+
+
+
+
+
 // Time structure
 typedef struct {
     uint16_t year;
@@ -157,6 +166,9 @@ void  time_library_set_time(time_library_time_t *time ,bool rtcUpdate);
 void time_library_get_time(time_library_time_t *time);
 void save_time_format(bool is_12_hour);
 void saveSubscription(bool enable);
+
+void welcomeMusic(bool enable);
+bool checkMusicEnable();
 
 #ifdef __cplusplus
 }

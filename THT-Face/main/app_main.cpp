@@ -4,22 +4,20 @@ extern "C"
 void app_main()
 {
 
+
     ESP_LOGE(TAG, "Starting app_main");
     gpioInt();
 
     configure_dynamic_frequency();
-    // shiftOutData.write=0b00000100;// LED ON at inttial value
-    // shiftOutData.bitset.LED=1;
-
     sensorHandel(); 
 
     // Initialize Conectivity---------------------------
     bluFiStart();
     //--------------------------------------------------
     shiftOutData.bitset.LED=1;
-    shiftOutData.bitset.PEREN=1;  
+    shiftOutData.bitset.PEREN=1;
+    shiftOutData.bitset.CAMEN=1;  
     shiftOutData.bitset.CAMPDWN=0;
-    shiftOutData.bitset.CAMEN=1;
     shiftOutData.bitset.LCDEN=1;
 
 
@@ -52,7 +50,8 @@ void app_main()
     init_adc();
     //-------------------------
     shiftOutData.bitset.LED=0;  //q4
-    music=TURN_ON_MUSIC;
+    if(checkMusicEnable())music=TURN_ON_MUSIC;
+    else welcomeMusic(true);
 
     ESP_LOGI(TAG, "app_main finished");
 
@@ -65,6 +64,7 @@ void app_main()
         if(xTaskGetTickCount()-sleepTimeOut>3000  && sleepEnable == WAKEUP){
             
             sleepEnable=SLEEP;
+            welcomeMusic(false);
             printf("\nsleepEnable"); 
             vTaskDelay(pdMS_TO_TICKS(10));
             dispON(false);
@@ -76,8 +76,14 @@ void app_main()
 
             
         if(sleepEnable == SLEEP){ 
-            // enter_light_sleep();  // Enter light sleep mode
+           
+    
+            #if 1
+            enter_light_sleep();  // Enter light sleep mode
+            #else
             enter_deep_sleep();
+            #endif
+
 
         }else {
             reconnect();

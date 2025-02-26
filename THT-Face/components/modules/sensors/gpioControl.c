@@ -162,7 +162,7 @@ void reduce_cpu_frequency() {
 
 
     // ESP_LOGE("Frequency", "delete all task");
-    esp_pm_dump_locks(stdout);
+    // esp_pm_dump_locks(stdout);
 
     esp_pm_config_esp32s3_t pm_config = {
         .max_freq_mhz = MIN_FREQ,   // Set both min and max to 80 MHz to reduce power
@@ -170,20 +170,20 @@ void reduce_cpu_frequency() {
         .light_sleep_enable = false
     };
     esp_err_t ret = esp_pm_configure(&pm_config);
-    vTaskDelay(pdMS_TO_TICKS(10));  // Allow time for frequency update
+    // vTaskDelay(pdMS_TO_TICKS(10));  // Allow time for frequency update
 
-    if (ret == ESP_OK) {
-        // ESP_LOGI("Frequency", "Dynamic CPU frequency scaling configured.");
-    } else {
-        // ESP_LOGE("Frequency", "Failed to configure CPU frequency: %s", esp_err_to_name(ret));
-    }    
+    // if (ret == ESP_OK) {
+    //     // ESP_LOGI("Frequency", "Dynamic CPU frequency scaling configured.");
+    // } else {
+    //     // ESP_LOGE("Frequency", "Failed to configure CPU frequency: %s", esp_err_to_name(ret));
+    // }    
 
     // if (lcdTaskHandler) vTaskResume(lcdTaskHandler); // uncomment if turn on display task
 
     // esp_pm_dump_locks(stdout);
 
-    int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
-    ESP_LOGI("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
+    // int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
+    // ESP_LOGI("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
 
     // HALT
 
@@ -245,7 +245,9 @@ void enter_light_sleep(void) {
     // esp_sleep_enable_timer_wakeup(1000000 * 120); // Wake up every 120 seconds (in microseconds)
     // Enter light sleep
     esp_light_sleep_start();
-    ESP_LOGI("Sleep", "Woke up from light sleep!");
+    ESP_LOGI("Sleep", "Woke up from sleep!");
+    esp_restart();
+    // ESP_LOGI("Sleep", "Woke up from light sleep!");
     sleepEnable = WAKEUP;  // Disable sleep mode after waking up
 }
 
@@ -259,7 +261,8 @@ void enter_deep_sleep(void){
     // Enter deep sleep
     esp_deep_sleep_start();
     // This line will **never execute** because ESP restarts after wake-up
-    ESP_LOGI("DEEP_SLEEP", "Woke up!");
+    // ESP_LOGI("DEEP_SLEEP", "Woke up!");
+    sleepEnable = WAKEUP;  // Disable sleep mode after waking up
 }
 //------------------------------------------------------------------------------
 
@@ -504,34 +507,30 @@ static void sensor(void *arg)
     gpio_pad_select_gpio(SER_LAT);
     gpio_set_direction((gpio_num_t)SER_LAT, GPIO_MODE_OUTPUT);
 
-    // printf("in sensor\n");
-
     uint8_t welcomeMusic[12] = {1,2,1,2,0,2,1,2,0,2,1,2};
-    uint8_t unregisterd[2] = {1,4};
+    uint8_t unregisterd[2] = {1,6};
 
     // init_pir();
-
+    uint32_t pirCheckInterval = xTaskGetTickCount();
     uint8_t tempOld=0;
     uint16_t musicTime=0;
+
     while (1)
     {
 
-
-        // if(PIR_STATE==1){
-
-        //     printf("PIR_STATE 1\n");
-
-        // }else printf("PIR_STATE 0\n");
-
         while(music==MUSIC_IDLE && shiftOutData.read == tempOld ){
           
+            // if(sleepEnable == WAKEUP && xTaskGetTickCount()> pirCheckInterval+600){
 
-            if(PIR_STATE==1){
-                 printf("PIR_STATE 1\n");
-            }else printf("PIR_STATE 0\n");                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-            // pirRead();
-            // ets_delay_us(1000);//10
-            vTaskDelay(pdMS_TO_TICKS(100));
+                if(PIR_STATE==0){
+                    // printf("PIR 0\n");
+                }else// printf("PIR 1\n");
+
+                // pirCheckInterval = xTaskGetTickCount();
+ 
+            // }
+            vTaskDelay(pdMS_TO_TICKS(600));
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 
         }
 
@@ -591,7 +590,7 @@ static void sensor(void *arg)
         default:
             break;
         }
-        // ets_delay_us(1);
+        ets_delay_us(10);
 
     }
 }
@@ -599,7 +598,7 @@ static void sensor(void *arg)
 void musicPlay(uint8_t musicNo ){
 
     // printf("music%s function \n",musicNo>0? "Play":"Stop");
-    printf("music No %d \n",musicNo);
+    // printf("music No %d \n",musicNo);
 
     #define  M_DELAY_uS 300
 

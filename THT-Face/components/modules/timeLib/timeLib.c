@@ -418,3 +418,39 @@ void saveSubscription(bool enable) {
         nvs_close(nvs_handle);
     }
 }
+
+
+
+void welcomeMusic(bool enable) {
+
+    if(checkMusicEnable()==enable) return;
+
+    nvs_handle_t nvs_handle;
+    esp_err_t ret = nvs_open(NVS_MUSIC_NAME_SPACE, NVS_READWRITE, &nvs_handle);
+    if (ret == ESP_OK) {
+        ret = nvs_set_i32(nvs_handle, NVS_MUSIC_NAME_SPACE_FORMAT_KEY, enable);
+        if (ret == ESP_OK) {
+            nvs_commit(nvs_handle);
+        }
+        nvs_close(nvs_handle);
+    }
+}
+
+
+ bool checkMusicEnable(){
+
+    nvs_handle_t nvs_handle;
+    esp_err_t  ret = nvs_open(NVS_MUSIC_NAME_SPACE, NVS_READWRITE, &nvs_handle);
+    int32_t musicPlay = 0;
+
+    if (ret == ESP_OK) {
+        ret = nvs_get_i32(nvs_handle, NVS_MUSIC_NAME_SPACE_FORMAT_KEY, &musicPlay);
+        if (ret == ESP_OK) {
+            // lisence = saved_format;
+        } else {
+            // lisence = false;
+        }
+        nvs_close(nvs_handle);
+    }
+    return musicPlay;
+}

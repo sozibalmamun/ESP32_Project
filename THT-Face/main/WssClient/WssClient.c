@@ -2,6 +2,17 @@
 #include "timeLib.h"
 #include <math.h>
 #include "esp_wifi.h"
+
+#include "esp_log.h"
+#include "esp_tls.h"
+#include "esp_system.h"
+
+
+#define TAG "SSL_FETCHER"
+#define SERVER_HOST "grozziieget.zjweiting.com"
+#define SERVER_PORT 3091  // Your WebSocket server port
+
+
 #define     TAG             "WSS"
 #define     TAG_WSS        "WSS_CLIENT"
 
@@ -329,9 +340,65 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 }
 
 
+
+static void fetch_ssl_certificate() {
+    ESP_LOGI(TAG, "Connecting to %s:%d", SERVER_HOST, SERVER_PORT);
+
+    esp_tls_cfg_t cfg = {
+        .skip_common_name = true,  // Skip CN check
+        .use_global_ca_store = false,  // Do not use built-in CA
+    };
+
+    ESP_LOGI(TAG, "Connecting tls");
+
+    esp_tls_t *tls = esp_tls_conn_new(SERVER_HOST, strlen(SERVER_HOST), SERVER_PORT, &cfg);
+    if (!tls) {
+        ESP_LOGE(TAG, "Failed to connect and fetch SSL certificate");
+        return;
+    }
+
+    ESP_LOGI(TAG, "Connected! Fetching SSL certificate...");
+
+    // Get the server certificate using mbedTLS
+    const mbedtls_x509_crt *server_cert = mbedtls_ssl_get_peer_cert(&tls->ssl);
+    if (server_cert) {
+        ESP_LOGI(TAG, "SSL Certificate Retrieved Successfully");
+
+        // Convert the certificate to PEM format
+        char cert_pem[2048];  // Use a smaller buffer
+         // Buffer to hold the certificate
+        size_t cert_len = 0;
+        int ret = mbedtls_x509_crt_info(cert_pem, sizeof(cert_pem), "", server_cert);
+
+        if (ret > 0) {
+            ESP_LOGI(TAG, "Certificate in PEM format:\n%s", cert_pem);
+            cert_len = ret;
+            
+            // TODO: Save the certificate to SPIFFS or NVS
+
+
+        } else {
+            ESP_LOGE(TAG, "Failed to convert certificate to PEM format");
+        }
+    } else {
+        ESP_LOGE(TAG, "Failed to retrieve SSL certificate");
+    }
+
+    // Close connection
+    esp_tls_conn_delete(tls);
+}
+
+
+
+
+
 void wssClientInt(void) {
    
+
+    fetch_ssl_certificate();    
+
     esp_websocket_client_config_t websocket_cfg = {};
+
 
 
     websocket_cfg.uri = (const char*)THT;
@@ -341,17 +408,60 @@ void wssClientInt(void) {
     websocket_cfg.use_global_ca_store = true;
     websocket_cfg.skip_cert_common_name_check = true;
     websocket_cfg.disable_auto_reconnect = false;
-    websocket_cfg.task_stack = 1024*4;  
+    websocket_cfg.task_stack = 1024*8;//4
     websocket_cfg.task_prio =10; 
 
     // ESP_LOGI(TAG, "Initializing global CA store...");
     ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));
 
+    
 
     client = esp_websocket_client_init(&websocket_cfg);
     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
     esp_websocket_client_start(client);
+
 }
+
+
+
+// void wssClientInt(void) {
+
+
+//     esp_websocket_client_config_t websocket_cfg = {
+//         .uri = "wss://grozziieget.zjweiting.com:3091/WebSocket-Binary/ws",
+//         .disable_auto_reconnect = false,
+//         .transport = WEBSOCKET_TRANSPORT_OVER_SSL, // Use WSS
+//         .skip_cert_common_name_check = true,  // Bypass hostname validation
+//         .use_global_ca_store = false,  // Do not use CA store
+//         .cert_pem = NULL, // No certificate validation
+//         .client_cert = NULL, // No client certificate
+//         .client_key = NULL,  // No client key
+//     };
+    
+//     // Set up TLS options to fully disable SSL verification
+//     esp_tls_cfg_t tls_cfg = {
+//         .cacert_buf = NULL,
+//         .cacert_bytes = 0,
+//         .clientcert_buf = NULL,
+//         .clientcert_bytes = 0,
+//         .clientkey_buf = NULL,
+//         .clientkey_bytes = 0,
+//         .use_global_ca_store = false,
+//         .skip_common_name = true,  // Forcefully disable CN check
+//     };
+
+//     websocket_cfg.customadd=tls_cfg;
+//     // Initialize WebSocket client with the custom TLS settings
+//     client = esp_websocket_client_init(&websocket_cfg);
+//     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
+//     esp_websocket_client_start(client);
+    
+
+
+// }
+
+
+
 
 void wssReset(void){
 

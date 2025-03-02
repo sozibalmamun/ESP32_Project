@@ -8,6 +8,7 @@ uint8_t chargeState=0;
 uint8_t music=0;
 // uint32_t musicPlayDuration = 0;
 TaskHandle_t sensorsHandeler = NULL;
+extern SemaphoreHandle_t sensorSemaphore;
 
 esp_adc_cal_characteristics_t *adc_chars_battery = NULL;
 esp_adc_cal_characteristics_t *adc_chars_pir = NULL;
@@ -493,6 +494,125 @@ void shiftOut( uint8_t val){
 
 
 
+// static void sensor(void *arg)
+// {
+//     gpio_set_level((gpio_num_t)SER_SDI, 0);
+//     gpio_pad_select_gpio(SER_SDI);
+//     gpio_set_direction((gpio_num_t)SER_SDI, GPIO_MODE_OUTPUT);
+
+//     gpio_set_level((gpio_num_t)SER_CLK, 0);
+//     gpio_pad_select_gpio(SER_CLK);
+//     gpio_set_direction((gpio_num_t)SER_CLK, GPIO_MODE_OUTPUT);
+
+//     gpio_set_level((gpio_num_t)SER_LAT, 0);
+//     gpio_pad_select_gpio(SER_LAT);
+//     gpio_set_direction((gpio_num_t)SER_LAT, GPIO_MODE_OUTPUT);
+
+//     uint8_t welcomeMusic[12] = {1,2,1,2,0,2,1,2,0,2,1,2};
+//     uint8_t unregisterd[2] = {1,6};
+
+//     // init_pir();
+//     uint8_t tempOld=0;
+//     uint16_t musicTime=0;
+
+//     while (1)
+//     {
+
+//         // while(music==MUSIC_IDLE && shiftOutData.read == tempOld  ){
+          
+
+//         //         if(PIR_STATE==1){
+//         //             // printf("PIR 1\n");
+//         //         }else{
+//         //             // printf("PIR 0\n");
+
+//         //         } 
+//         //         if( sleepEnable==WAKEUP)vTaskDelay(pdMS_TO_TICKS(700));//300
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+
+//         // }
+
+//         // TickType_t xLastWakeTime = xTaskGetTickCount();
+//         // while (music == MUSIC_IDLE && shiftOutData.read == tempOld) {
+
+//         //    if(PIR_STATE==1){
+//         //             // printf("PIR 1\n");
+//         //     }else{
+//         //             // printf("PIR 0\n");
+//         //     } 
+
+
+//         //     vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(10)); // Ensure periodic execution
+//         // }
+        
+
+
+
+
+
+//         if(shiftOutData.read != tempOld ){// true if any bit change
+//             tempOld = shiftOutData.read;
+//             shiftOut(shiftOutData.write);
+//         }
+
+//         switch (music)
+//         {
+//         case WELCOME:
+
+//             printf("WELCOME \n");
+//             // vTaskDelay(pdMS_TO_TICKS(2));
+//             // music=MUSIC_STOPING;
+
+//             break;
+        
+//         case UNREGISTERD:
+//             printf("UNREGISTERD \n");
+//             // music=MUSIC_STOPING;
+//             // musicPlay(1);
+//             // musicTime=MUSIC_PLAY_TIME;
+//             //------------------------------------
+//             musicArrayPlay(&unregisterd,2);
+//             music=MUSIC_IDLE;
+            
+//             break;
+        
+//         // case MUSIC_STOPING:
+
+//         //     // printf("MUSIC_STOPING\n");
+//         //     if( xTaskGetTickCount()-musicPlayDuration>musicTime){
+//         //         music=MUSIC_STOP;
+//         //     }
+//         //     break;
+
+//         // case MUSIC_STOP:
+
+//         //     music=MUSIC_IDLE;
+//         //     printf("MUSIC_STOP \n");
+//         //     musicPlay(0);
+
+//         //     break;
+
+//         // case MUSIC_IMMEDIATE_STOP:
+
+//         //     printf("MUSIC_IMMEDIATE_STOP\n");
+//         //     music=MUSIC_IDLE;
+//         //     musicPlay(0);
+//         //     break;
+        
+//         case TURN_ON_MUSIC:
+//             printf("TURN_ON_MUSIC \n");
+//             musicArrayPlay(welcomeMusic,12);
+//             break;
+//         default:
+//             break;
+//         }
+//         // ets_delay_us(10);
+
+//     }
+// }
+
+
+
 static void sensor(void *arg)
 {
     gpio_set_level((gpio_num_t)SER_SDI, 0);
@@ -507,90 +627,62 @@ static void sensor(void *arg)
     gpio_pad_select_gpio(SER_LAT);
     gpio_set_direction((gpio_num_t)SER_LAT, GPIO_MODE_OUTPUT);
 
-    uint8_t welcomeMusic[12] = {1,2,1,2,0,2,1,2,0,2,1,2};
-    uint8_t unregisterd[2] = {1,6};
+    uint8_t welcomeMusic[12] = {1, 2, 1, 2, 0, 2, 1, 2, 0, 2, 1, 2};
+    uint8_t unregisterd[2] = {1, 5};
+    #define TAG_MUSIC "MUSIC"
 
-    // init_pir();
-    uint8_t tempOld=0;
-    uint16_t musicTime=0;
+    uint8_t tempOld = 0;
+    const TickType_t queueTimeout = pdMS_TO_TICKS(50);  // Queue receive timeout ms
+    const TickType_t xDelay = pdMS_TO_TICKS(50);  // Run every 100 ms
+
 
     while (1)
     {
-
-        while(music==MUSIC_IDLE && shiftOutData.read == tempOld  ){
-          
-
-                if(PIR_STATE==1){
-                    // printf("PIR 1\n");
-                }else{
-                    // printf("PIR 0\n");
-
-                } 
-                if( sleepEnable==WAKEUP)vTaskDelay(pdMS_TO_TICKS(700));//300
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
-
-        }
-
-        if(shiftOutData.read != tempOld ){// true if any bit change
-            tempOld = shiftOutData.read;
-            shiftOut(shiftOutData.write);
-        }
-
-        switch (music)
+        // Wait indefinitely for the semaphore to be given
+        if (xSemaphoreTake(sensorSemaphore, queueTimeout) == pdTRUE)
         {
-        case WELCOME:
+            // Run only when new data is available
+            if (shiftOutData.read != tempOld)
+            {
+                tempOld = shiftOutData.read;
+                shiftOut(shiftOutData.write);
+            }
 
-            printf("WELCOME \n");
-            // vTaskDelay(pdMS_TO_TICKS(2));
-            // music=MUSIC_STOPING;
+            switch (music)
+            {
+            case WELCOME:
+                ESP_LOGI(TAG_MUSIC, "✅WELCOME");
+                break;
 
-            break;
-        
-        case UNREGISTERD:
-            printf("UNREGISTERD \n");
-            // music=MUSIC_STOPING;
-            // musicPlay(1);
-            // musicTime=MUSIC_PLAY_TIME;
-            //------------------------------------
-            musicArrayPlay(&unregisterd,2);
-            music=MUSIC_IDLE;
-            
-            break;
-        
-        // case MUSIC_STOPING:
+            case UNREGISTERD:
+                ESP_LOGI(TAG_MUSIC, "❌UNREGISTERD");
+                musicArrayPlay(&unregisterd, 2);
+                music = MUSIC_IDLE;
+                break;
 
-        //     // printf("MUSIC_STOPING\n");
-        //     if( xTaskGetTickCount()-musicPlayDuration>musicTime){
-        //         music=MUSIC_STOP;
-        //     }
-        //     break;
+            case TURN_ON_MUSIC:
+                printf("TURN_ON_MUSIC \n");
+                musicArrayPlay(welcomeMusic, 12);
+                break;
 
-        // case MUSIC_STOP:
+            default:
+                break;
+            }
+        }else{
 
-        //     music=MUSIC_IDLE;
-        //     printf("MUSIC_STOP \n");
-        //     musicPlay(0);
+           if(PIR_STATE==1){
+                    // printf("PIR 1\n");
+            }else{
+                    // printf("PIR 0\n");
+            } 
+            vTaskDelay(xDelay);  // Delay task execution if no frame was received
 
-        //     break;
-
-        // case MUSIC_IMMEDIATE_STOP:
-
-        //     printf("MUSIC_IMMEDIATE_STOP\n");
-        //     music=MUSIC_IDLE;
-        //     musicPlay(0);
-        //     break;
-        
-        case TURN_ON_MUSIC:
-            printf("TURN_ON_MUSIC \n");
-            musicArrayPlay(welcomeMusic,12);
-            break;
-        default:
-            break;
         }
-        // ets_delay_us(10);
-
     }
 }
+
+
+
 
 void musicPlay(uint8_t musicNo ){
 
@@ -656,7 +748,7 @@ void musicArrayPlay(uint8_t *musicP ,uint8_t len){
 
 void sensorHandel()
 {
-    xTaskCreatePinnedToCore(sensor, "sensor", 2 * 1024, NULL, 5, &sensorsHandeler, 1);
+    xTaskCreatePinnedToCore(sensor, "sensor", 2 * 1024, NULL, 5, &sensorsHandeler, 1);//priority 5
 }
 
 

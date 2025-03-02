@@ -30,6 +30,8 @@ typedef enum
 
 extern uint8_t CPUBgflag;
 extern union shiftResistorBitfild shiftOutData;
+extern SemaphoreHandle_t sensorSemaphore;
+
 
 
 

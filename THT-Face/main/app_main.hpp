@@ -29,6 +29,7 @@ static QueueHandle_t xQueueAIFrame = NULL;
 static QueueHandle_t xQueueLCDFrame = NULL;
 static QueueHandle_t xQueueEventLogic = NULL;
 static QueueHandle_t xQueueCloud = NULL;
+SemaphoreHandle_t sensorSemaphore= NULL;
 
 extern uint8_t music;
 

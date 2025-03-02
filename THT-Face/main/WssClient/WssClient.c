@@ -344,7 +344,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
 
 
-
+// old setup
 // void wssClientInt(void) {
    
 
@@ -375,53 +375,6 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
 
 
-// void wssClientInt(void) {
-
-
-//     if (perform_mbedtls_handshake() != 0) {
-//         ESP_LOGE(TAG, "Failed to perform SSL handshake!");
-//         return;
-//     }
-
-
-
-
-//     esp_websocket_client_config_t websocket_cfg = {
-//         .uri = "wss://grozziieget.zjweiting.com:3091/WebSocket-Binary/ws",
-//         .disable_auto_reconnect = false,
-//         .transport = WEBSOCKET_TRANSPORT_OVER_SSL, // Use WSS
-//         .skip_cert_common_name_check = true,  // Bypass hostname validation
-//         .use_global_ca_store = false,  // Do not use CA store
-//         .cert_pem = NULL, // No certificate validation
-//         .client_cert = NULL, // No client certificate
-//         .client_key = NULL,  // No client key
-//     };
-    
-//     // Set up TLS options to fully disable SSL verification
-//     esp_tls_cfg_t tls_cfg = {
-//         .cacert_buf = NULL,
-//         .cacert_bytes = 0,
-//         .clientcert_buf = NULL,
-//         .clientcert_bytes = 0,
-//         .clientkey_buf = NULL,
-//         .clientkey_bytes = 0,
-//         .use_global_ca_store = false,
-//         .skip_common_name = true,  // Forcefully disable CN check
-//     };
-
-//     websocket_cfg.customadd=tls_cfg;
-//     // Initialize WebSocket client with the custom TLS settings
-//     client = esp_websocket_client_init(&websocket_cfg);
-//     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
-//     esp_websocket_client_start(client);
-    
-
-
-// }
-
-
-
-
 void wssReset(void){
 
 
@@ -429,13 +382,13 @@ void wssReset(void){
     if (client != NULL) {
     esp_websocket_client_stop(client);
     esp_websocket_client_destroy(client);
-    ESP_LOGI(TAG, "esp_websocket_client_stop");
+    ESP_LOGI(TAG, "❌ esp_websocket_client_stop");
     client = NULL;
     
     }            
     vTaskDelay(50);
     wssClientInt();
-    ESP_LOGI(TAG, "wssAppStart");
+    // ESP_LOGI(TAG, "wssAppStart");
 
 }
 
@@ -518,7 +471,7 @@ void wssReset(void){
 
 
 
-// 🟢 **Step 1: Perform SSL Handshake with mbedTLS**
+// 🟢 Perform SSL Handshake with mbedTLS**
 static int perform_mbedtls_handshake() {
     int ret;
 
@@ -562,7 +515,7 @@ static int perform_mbedtls_handshake() {
     mbedtls_ssl_conf_rng(&wss_client.conf, mbedtls_ctr_drbg_random, &wss_client.ctr_drbg);
 
     if ((ret = mbedtls_ssl_setup(&wss_client.ssl, &wss_client.conf)) != 0) {
-        ESP_LOGE(TAG, "mbedtls_ssl_setup failed: -0x%x", -ret);
+        // ESP_LOGE(TAG, "mbedtls_ssl_setup failed: -0x%x", -ret);
         return;
     }
 
@@ -638,29 +591,29 @@ static int perform_mbedtls_handshake() {
     // ESP_LOGI(TAG, "Extracted SSL Certificate (PEM Format):\n%s", ssl_cert_pem);
 
 
-    // 🟢 Step 1: Get the first certificate (server certificate)
+    // 🟢  Get the first certificate (server certificate)
     const mbedtls_x509_crt *server_cert = mbedtls_ssl_get_peer_cert(&wss_client.ssl);
     if (!server_cert) {
         // ESP_LOGE(TAG, "Failed to retrieve SSL certificate!");
         return -1;
     }
 
-    // 🟢 Step 2: Get the Root CA (last certificate in the chain)
+    // 🟢  Get the Root CA (last certificate in the chain)
     const mbedtls_x509_crt *root_cert = server_cert;
     while (root_cert->next != NULL) {  // Traverse the certificate chain
         root_cert = root_cert->next;
     }
 
-    ESP_LOGI(TAG, "Extracting Root CA Certificate...");
+    // ESP_LOGI(TAG, "Extracting Root CA Certificate...");
 
-    // 🟢 Step 3: Get the certificate length
+    // 🟢  Get the certificate length
     size_t cert_len = root_cert->raw.len;
     if (cert_len <= 0 || cert_len > 4096) {
         // ESP_LOGE(TAG, "Invalid Root CA certificate length: %d", cert_len);
         return -1;
     }
 
-    // 🟢 Step 4: Allocate memory dynamically in SPI RAM
+    // 🟢  Allocate memory dynamically in SPI RAM
     size_t pem_cert_len = cert_len * 2;  // Base64 encoding increases size
     ssl_cert_pem = (uint8_t *)heap_caps_malloc(pem_cert_len, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     if (!ssl_cert_pem) {
@@ -668,7 +621,7 @@ static int perform_mbedtls_handshake() {
         return -1;
     }
 
-    // 🟢 Step 5: Convert DER to PEM format
+    // 🟢  Convert DER to PEM format
     size_t olen = 0;
     ret = mbedtls_base64_encode(ssl_cert_pem, pem_cert_len, &olen, root_cert->raw.p, cert_len);
     if (ret != 0) {
@@ -677,7 +630,7 @@ static int perform_mbedtls_handshake() {
         return -1;
     }
 
-    // 🟢 Step 6: Add PEM headers
+    // 🟢  Add PEM headers
     char *final_cert = (char *)heap_caps_malloc(olen + 64, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     if (!final_cert) {
         // ESP_LOGE(TAG, "Failed to allocate memory for Root CA PEM certificate!");
@@ -715,7 +668,7 @@ void wssClientInt(void) {
         // ESP_LOGE(TAG, "❌ SSL Certificate is NULL! Cannot proceed with WebSocket connection.");
         return;
     }
-
+    ESP_LOGI(TAG, "🔗 Initializing WebSocket client...");
     esp_websocket_client_config_t websocket_cfg = {};
     websocket_cfg.uri = (const char*)THT;
     websocket_cfg.cert_pem = (const char *)ssl_cert_pem;
@@ -731,7 +684,7 @@ void wssClientInt(void) {
     ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));
 
     
-
+    ESP_LOGI(TAG, "📡 Connecting to WebSocket server...");
     client = esp_websocket_client_init(&websocket_cfg);
     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
     esp_websocket_client_start(client);

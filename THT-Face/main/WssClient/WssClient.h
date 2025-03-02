@@ -27,6 +27,45 @@
 #include "globalScope.h"
 
 
+
+#include "mbedtls/net_sockets.h"
+#include "mbedtls/ssl.h"
+#include "mbedtls/entropy.h"
+#include "mbedtls/ctr_drbg.h"
+#include "mbedtls/error.h"
+#include "esp_crt_bundle.h"
+#include "esp_websocket_client.h"
+#include "esp_log.h"
+#include "esp_heap_caps.h"  // Required for heap_caps_malloc()
+
+#include "mbedtls/base64.h"  // Required for PEM conversion
+
+#define TAG "WSS_CLIENT"
+
+#define WEB_SERVER "grozziieget.zjweiting.com"
+#define WEB_PORT "3091"
+#define WEB_PATH "/WebSocket-Binary/ws"
+
+
+
+// WebSocket client context
+typedef struct {
+    mbedtls_entropy_context entropy;
+    mbedtls_ctr_drbg_context ctr_drbg;
+    mbedtls_ssl_context ssl;
+    mbedtls_ssl_config conf;
+    mbedtls_net_context server_fd;
+} wss_client_t;
+
+wss_client_t wss_client;
+
+uint8_t *ssl_cert_pem = NULL;  // Dynamic allocation for SSL certificate
+
+
+
+
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -133,6 +172,7 @@ extern uint16_t crc16(const char *buf, size_t len);
 uint8_t wifi_rssi_to_percentage(int32_t rssi);
 
 // void wss_client_int( stompInfo_cfg_t stompSetup );
+// int perform_mbedtls_handshake();
 void wssClientInt(void);
 void wssReset(void);
 bool sendToWss(uint8_t *buff, size_t buffLen);

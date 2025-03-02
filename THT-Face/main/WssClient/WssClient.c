@@ -20,7 +20,6 @@ int8_t percentage=0;
 int8_t maxTry=0;
 
 
-
 bool sendToWss(uint8_t *buff, size_t buffLen) {
     uint8_t tempFrame[CHANK_SIZE];  // Buffer for each chunk
     uint16_t currentIndex = 0;
@@ -341,90 +340,50 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
 
 
-static void fetch_ssl_certificate() {
-    ESP_LOGI(TAG, "Connecting to %s:%d", SERVER_HOST, SERVER_PORT);
-
-    esp_tls_cfg_t cfg = {
-        .skip_common_name = true,  // Skip CN check
-        .use_global_ca_store = false,  // Do not use built-in CA
-    };
-
-    ESP_LOGI(TAG, "Connecting tls");
-
-    esp_tls_t *tls = esp_tls_conn_new(SERVER_HOST, strlen(SERVER_HOST), SERVER_PORT, &cfg);
-    if (!tls) {
-        ESP_LOGE(TAG, "Failed to connect and fetch SSL certificate");
-        return;
-    }
-
-    ESP_LOGI(TAG, "Connected! Fetching SSL certificate...");
-
-    // Get the server certificate using mbedTLS
-    const mbedtls_x509_crt *server_cert = mbedtls_ssl_get_peer_cert(&tls->ssl);
-    if (server_cert) {
-        ESP_LOGI(TAG, "SSL Certificate Retrieved Successfully");
-
-        // Convert the certificate to PEM format
-        char cert_pem[2048];  // Use a smaller buffer
-         // Buffer to hold the certificate
-        size_t cert_len = 0;
-        int ret = mbedtls_x509_crt_info(cert_pem, sizeof(cert_pem), "", server_cert);
-
-        if (ret > 0) {
-            ESP_LOGI(TAG, "Certificate in PEM format:\n%s", cert_pem);
-            cert_len = ret;
-            
-            // TODO: Save the certificate to SPIFFS or NVS
 
 
-        } else {
-            ESP_LOGE(TAG, "Failed to convert certificate to PEM format");
-        }
-    } else {
-        ESP_LOGE(TAG, "Failed to retrieve SSL certificate");
-    }
-
-    // Close connection
-    esp_tls_conn_delete(tls);
-}
-
-
-
-
-
-void wssClientInt(void) {
-   
-
-    fetch_ssl_certificate();    
-
-    esp_websocket_client_config_t websocket_cfg = {};
-
-
-
-    websocket_cfg.uri = (const char*)THT;
-    websocket_cfg.cert_pem = echo_org_ssl_ca_cert; 
-    websocket_cfg.ping_interval_sec= 5; 
-    websocket_cfg.pingpong_timeout_sec=10;
-    websocket_cfg.use_global_ca_store = true;
-    websocket_cfg.skip_cert_common_name_check = true;
-    websocket_cfg.disable_auto_reconnect = false;
-    websocket_cfg.task_stack = 1024*8;//4
-    websocket_cfg.task_prio =10; 
-
-    // ESP_LOGI(TAG, "Initializing global CA store...");
-    ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));
-
-    
-
-    client = esp_websocket_client_init(&websocket_cfg);
-    esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
-    esp_websocket_client_start(client);
-
-}
 
 
 
 // void wssClientInt(void) {
+   
+
+
+//     esp_websocket_client_config_t websocket_cfg = {};
+
+
+//     websocket_cfg.uri = (const char*)THT;
+//     websocket_cfg.cert_pem = echo_org_ssl_ca_cert; 
+//     websocket_cfg.ping_interval_sec= 5; 
+//     websocket_cfg.pingpong_timeout_sec=10;
+//     websocket_cfg.use_global_ca_store = true;
+//     websocket_cfg.skip_cert_common_name_check = true;
+//     websocket_cfg.disable_auto_reconnect = false;
+//     websocket_cfg.task_stack = 1024*8;//4
+//     websocket_cfg.task_prio =10; 
+
+//     // ESP_LOGI(TAG, "Initializing global CA store...");
+//     ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));
+
+    
+
+//     client = esp_websocket_client_init(&websocket_cfg);
+//     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
+//     esp_websocket_client_start(client);
+
+// }
+
+
+
+// void wssClientInt(void) {
+
+
+//     if (perform_mbedtls_handshake() != 0) {
+//         ESP_LOGE(TAG, "Failed to perform SSL handshake!");
+//         return;
+//     }
+
+
 
 
 //     esp_websocket_client_config_t websocket_cfg = {
@@ -552,5 +511,237 @@ void wssReset(void){
 //     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
 //     esp_websocket_client_start(client);
 // }
+
+
+
+
+
+
+
+// 🟢 **Step 1: Perform SSL Handshake with mbedTLS**
+static int perform_mbedtls_handshake() {
+    int ret;
+
+
+    // ESP_LOGI(TAG, "Initializing WebSocket Secure Client...");
+
+    mbedtls_ssl_init(&wss_client.ssl);
+    mbedtls_ctr_drbg_init(&wss_client.ctr_drbg);
+    mbedtls_ssl_config_init(&wss_client.conf);
+    mbedtls_entropy_init(&wss_client.entropy);
+
+    // ESP_LOGI(TAG, "Seeding the random number generator...");
+    if ((ret = mbedtls_ctr_drbg_seed(&wss_client.ctr_drbg, mbedtls_entropy_func, &wss_client.entropy, NULL, 0)) != 0) {
+        // ESP_LOGE(TAG, "mbedtls_ctr_drbg_seed failed: %d", ret);
+        return;
+    }
+
+    // ESP_LOGI(TAG, "Setting up SSL/TLS structure...");
+    if ((ret = mbedtls_ssl_config_defaults(&wss_client.conf,
+                                           MBEDTLS_SSL_IS_CLIENT,
+                                           MBEDTLS_SSL_TRANSPORT_STREAM,
+                                           MBEDTLS_SSL_PRESET_DEFAULT)) != 0) {
+        // ESP_LOGE(TAG, "mbedtls_ssl_config_defaults failed: %d", ret);
+        return;
+    }
+
+    // Attach certificate bundle
+    ret = esp_crt_bundle_attach(&wss_client.conf);
+    if (ret < 0) {
+        // ESP_LOGE(TAG, "esp_crt_bundle_attach failed: -0x%x", -ret);
+        return;
+    }
+
+    // Set hostname for TLS verification
+    if ((ret = mbedtls_ssl_set_hostname(&wss_client.ssl, WEB_SERVER)) != 0) {
+        ESP_LOGE(TAG, "mbedtls_ssl_set_hostname failed: -0x%x", -ret);
+        return;
+    }
+
+    mbedtls_ssl_conf_authmode(&wss_client.conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
+    mbedtls_ssl_conf_rng(&wss_client.conf, mbedtls_ctr_drbg_random, &wss_client.ctr_drbg);
+
+    if ((ret = mbedtls_ssl_setup(&wss_client.ssl, &wss_client.conf)) != 0) {
+        ESP_LOGE(TAG, "mbedtls_ssl_setup failed: -0x%x", -ret);
+        return;
+    }
+
+    // Connect to WebSocket Server
+    mbedtls_net_init(&wss_client.server_fd);
+    // ESP_LOGI(TAG, "Connecting to WebSocket server: %s:%s...", WEB_SERVER, WEB_PORT);
+    if ((ret = mbedtls_net_connect(&wss_client.server_fd, WEB_SERVER, WEB_PORT, MBEDTLS_NET_PROTO_TCP)) != 0) {
+        // ESP_LOGE(TAG, "mbedtls_net_connect failed: -0x%x", -ret);
+        return;
+    }
+
+    ESP_LOGI(TAG, "Connected to WebSocket server.");
+
+    mbedtls_ssl_set_bio(&wss_client.ssl, &wss_client.server_fd, mbedtls_net_send, mbedtls_net_recv, NULL);
+
+    ESP_LOGI(TAG, "Performing SSL/TLS handshake...");
+    while ((ret = mbedtls_ssl_handshake(&wss_client.ssl)) != 0) {
+        if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+            // ESP_LOGE(TAG, "mbedtls_ssl_handshake failed: -0x%x", -ret);
+            return;
+        }
+    }
+
+
+
+    // ESP_LOGI(TAG, "TLS handshake successful! Extracting SSL certificate...");
+
+    //  **Step 2: Extract the SSL Certificate**
+
+    // // 🟢 Extract and Convert SSL Certificate to PEM
+    // const mbedtls_x509_crt *server_cert = mbedtls_ssl_get_peer_cert(&wss_client.ssl);
+    // if (!server_cert) {
+    //     ESP_LOGE(TAG, "Failed to retrieve SSL certificate!");
+    //     return -1;
+    // }
+
+    // // Get the certificate length
+    // size_t cert_len = server_cert->raw.len;
+    // if (cert_len <= 0 || cert_len > 4096) {
+    //     ESP_LOGE(TAG, "Invalid certificate length: %d", cert_len);
+    //     return -1;
+    // }
+
+    // // Allocate memory for Base64 PEM certificate
+    // size_t pem_cert_len = cert_len * 2;
+    // ssl_cert_pem = (uint8_t *)heap_caps_malloc(pem_cert_len, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    // if (!ssl_cert_pem) {
+    //     ESP_LOGE(TAG, "Failed to allocate memory for SSL certificate!");
+    //     return -1;
+    // }
+
+    // // Convert DER to PEM (Base64 encoding)
+    // size_t olen = 0;
+    // ret = mbedtls_base64_encode(ssl_cert_pem, pem_cert_len, &olen, server_cert->raw.p, cert_len);
+    // if (ret != 0) {
+    //     ESP_LOGE(TAG, "Failed to convert certificate to PEM format! Error: -0x%x", -ret);
+    //     heap_caps_free(ssl_cert_pem);
+    //     return -1;
+    // }
+
+    // // Add PEM headers
+    // char *final_cert = (char *)heap_caps_malloc(olen + 64, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    // if (!final_cert) {
+    //     ESP_LOGE(TAG, "Failed to allocate memory for PEM certificate!");
+    //     heap_caps_free(ssl_cert_pem);
+    //     return -1;
+    // }
+
+    // sprintf(final_cert, "-----BEGIN CERTIFICATE-----\n%s\n-----END CERTIFICATE-----\n", ssl_cert_pem);
+    // heap_caps_free(ssl_cert_pem);
+    // ssl_cert_pem = (uint8_t *)final_cert;  // Assign the properly formatted PEM certificate
+
+    // ESP_LOGI(TAG, "Extracted SSL Certificate (PEM Format):\n%s", ssl_cert_pem);
+
+
+    // 🟢 Step 1: Get the first certificate (server certificate)
+    const mbedtls_x509_crt *server_cert = mbedtls_ssl_get_peer_cert(&wss_client.ssl);
+    if (!server_cert) {
+        // ESP_LOGE(TAG, "Failed to retrieve SSL certificate!");
+        return -1;
+    }
+
+    // 🟢 Step 2: Get the Root CA (last certificate in the chain)
+    const mbedtls_x509_crt *root_cert = server_cert;
+    while (root_cert->next != NULL) {  // Traverse the certificate chain
+        root_cert = root_cert->next;
+    }
+
+    ESP_LOGI(TAG, "Extracting Root CA Certificate...");
+
+    // 🟢 Step 3: Get the certificate length
+    size_t cert_len = root_cert->raw.len;
+    if (cert_len <= 0 || cert_len > 4096) {
+        // ESP_LOGE(TAG, "Invalid Root CA certificate length: %d", cert_len);
+        return -1;
+    }
+
+    // 🟢 Step 4: Allocate memory dynamically in SPI RAM
+    size_t pem_cert_len = cert_len * 2;  // Base64 encoding increases size
+    ssl_cert_pem = (uint8_t *)heap_caps_malloc(pem_cert_len, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    if (!ssl_cert_pem) {
+        // ESP_LOGE(TAG, "Failed to allocate memory for Root CA certificate!");
+        return -1;
+    }
+
+    // 🟢 Step 5: Convert DER to PEM format
+    size_t olen = 0;
+    ret = mbedtls_base64_encode(ssl_cert_pem, pem_cert_len, &olen, root_cert->raw.p, cert_len);
+    if (ret != 0) {
+        // ESP_LOGE(TAG, "Failed to convert Root CA to PEM format! Error: -0x%x", -ret);
+        heap_caps_free(ssl_cert_pem);
+        return -1;
+    }
+
+    // 🟢 Step 6: Add PEM headers
+    char *final_cert = (char *)heap_caps_malloc(olen + 64, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    if (!final_cert) {
+        // ESP_LOGE(TAG, "Failed to allocate memory for Root CA PEM certificate!");
+        heap_caps_free(ssl_cert_pem);
+        return -1;
+    }
+
+    sprintf(final_cert, "-----BEGIN CERTIFICATE-----\n%s\n-----END CERTIFICATE-----\n", ssl_cert_pem);
+    heap_caps_free(ssl_cert_pem);
+    ssl_cert_pem = (uint8_t *)final_cert;  // Assign the properly formatted PEM certificate
+
+    // ESP_LOGI(TAG, "✅ Extracted Root CA Certificate (PEM Format):\n%s", ssl_cert_pem);
+
+
+    // Cleanup
+    mbedtls_ssl_free(&wss_client.ssl);
+    mbedtls_ssl_config_free(&wss_client.conf);
+    mbedtls_ctr_drbg_free(&wss_client.ctr_drbg);
+    mbedtls_entropy_free(&wss_client.entropy);
+    mbedtls_net_free(&wss_client.server_fd);
+
+    return 0;  // Success
+}
+
+// 🟢 **Step 3: Use Extracted Certificate in WebSocket Client**
+void wssClientInt(void) {
+    // First, perform SSL handshake using mbedTLS
+    if (perform_mbedtls_handshake() != 0) {
+        // ESP_LOGE(TAG, "❌ Failed to perform SSL handshake!");
+        return;
+    }
+
+    // Ensure SSL certificate is valid
+    if (ssl_cert_pem == NULL) {
+        // ESP_LOGE(TAG, "❌ SSL Certificate is NULL! Cannot proceed with WebSocket connection.");
+        return;
+    }
+
+    esp_websocket_client_config_t websocket_cfg = {};
+    websocket_cfg.uri = (const char*)THT;
+    websocket_cfg.cert_pem = (const char *)ssl_cert_pem;
+    websocket_cfg.ping_interval_sec= 5; 
+    websocket_cfg.pingpong_timeout_sec=10;
+    websocket_cfg.use_global_ca_store = true;
+    websocket_cfg.skip_cert_common_name_check = true;
+    websocket_cfg.disable_auto_reconnect = false;
+    websocket_cfg.task_stack = 1024*4;//4
+    websocket_cfg.task_prio =10; 
+
+    // ESP_LOGI(TAG, "Initializing global CA store...");
+    ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));
+
+    
+
+    client = esp_websocket_client_init(&websocket_cfg);
+    esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
+    esp_websocket_client_start(client);
+
+    // ESP_LOGI(TAG, "✅ WebSocket connection established!");
+    if (ssl_cert_pem) {
+        heap_caps_free(ssl_cert_pem);
+        ssl_cert_pem = NULL;
+    }
+}
+
 
 

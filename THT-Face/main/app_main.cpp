@@ -33,7 +33,7 @@ void app_main()
     shiftOutData.bitset.PEREN=1;
     shiftOutData.bitset.CAMEN=1;  
     shiftOutData.bitset.CAMPDWN=0;
-    // xSemaphoreGive(sensorSemaphore); // Notify the sensor task
+    shiftOutData.bitset.ADC_EN=1;
     shiftOutData.bitset.LCDEN=1;
     if(sensorSemaphore)xSemaphoreGive(sensorSemaphore); // Notify the sensor task
 
@@ -98,10 +98,7 @@ void app_main()
         }else {
             reconnect();
             readBatteryVoltage();
-            vTaskDelay(pdMS_TO_TICKS(100));  // Update every 1 second
-
-
-
+            vTaskDelay(pdMS_TO_TICKS(100));
         }
 
     }

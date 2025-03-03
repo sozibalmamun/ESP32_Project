@@ -83,7 +83,7 @@ static esp_blufi_extra_info_t gl_sta_conn_info;
 uint64_t generate_unique_id(void)
 {
     uint8_t mac[6];
-    esp_read_mac(mac, ESP_MAC_WIFI_STA);
+    esp_read_mac(mac, ESP_MAC_WIFI_STA);//ESP_MAC_BLE
     uint64_t uniqueId = ((uint64_t)mac[0] << 40) | ((uint64_t)mac[1] << 32) | ((uint64_t)mac[2] << 24) |
                          ((uint64_t)mac[3] << 16) | ((uint64_t)mac[4] << 8) | mac[5];
 
@@ -153,13 +153,13 @@ static  void savePass(uint8_t *pass, size_t pass_len) {
         ret = nvs_set_blob(nvs_handle, BLE_PASSKEY, pass, pass_len);
         if (ret == ESP_OK) {
             nvs_commit(nvs_handle);
-            ESP_LOGI("NVS", "Passkey saved successfully.");
+            // ESP_LOGI("NVS", "Passkey saved successfully.");
         } else {
-            ESP_LOGE("NVS", "Failed to save passkey, error: %d", ret);
+            // ESP_LOGE("NVS", "Failed to save passkey, error: %d", ret);
         }
         nvs_close(nvs_handle);
     } else {
-        ESP_LOGE("NVS", "Failed to open NVS namespace, error: %d", ret);
+        // ESP_LOGE("NVS", "Failed to open NVS namespace, error: %d", ret);
     }
 }
 
@@ -170,18 +170,18 @@ static void checkDevicePass(uint8_t *pass, size_t pass_len) {
         size_t required_size = pass_len; // Length of the pass buffer
         ret = nvs_get_blob(nvs_handle, BLE_PASSKEY, pass, &required_size);
         if (ret == ESP_OK) {
-            ESP_LOGI("NVS", "Passkey loaded successfully.");
+            // ESP_LOGI("NVS", "Passkey loaded successfully.");
         } else if (ret == ESP_ERR_NVS_NOT_FOUND) {
             ESP_LOGI("NVS", "Passkey not found. Using default passkey.");
             // Set default passkey
             uint8_t default_pass[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
             memcpy(pass, default_pass, pass_len); // Copy default pass to output
         } else {
-            ESP_LOGE("NVS", "Failed to load passkey, error: %d", ret);
+            // ESP_LOGE("NVS", "Failed to load passkey, error: %d", ret);
         }
         nvs_close(nvs_handle);
     } else {
-        ESP_LOGE("NVS", "Failed to open NVS namespace, error: %d", ret);
+        // ESP_LOGE("NVS", "Failed to open NVS namespace, error: %d", ret);
     }
 }
 
@@ -205,16 +205,16 @@ static bool validatePasskey(uint8_t *received_pass, size_t pass_len) {
                 nvs_close(nvs_handle);
                 return true; // Passkey matches
             } else {
-                ESP_LOGE("AUTH", "Passkey does not match with stored passkey!");
+                // ESP_LOGE("AUTH", "Passkey does not match with stored passkey!");
             }
         } else if (ret == ESP_ERR_NVS_NOT_FOUND) {
-            ESP_LOGW("NVS", "Passkey not found in NVS. Using default passkey.");
+            // ESP_LOGW("NVS", "Passkey not found in NVS. Using default passkey.");
         } else {
             ESP_LOGE("NVS", "Error loading passkey from NVS: %d", ret);
         }
         nvs_close(nvs_handle);
     } else {
-        ESP_LOGE("NVS", "Failed to open NVS namespace, error: %d", ret);
+        // ESP_LOGE("NVS", "Failed to open NVS namespace, error: %d", ret);
     }
 
     // Compare received passkey with default passkey
@@ -223,7 +223,7 @@ static bool validatePasskey(uint8_t *received_pass, size_t pass_len) {
         ESP_LOGI("AUTH", "Passkey matches with default passkey!");
         return true; // Passkey matches with default
     } else {
-        ESP_LOGE("AUTH", "Passkey does not match with default passkey!");
+        // ESP_LOGE("AUTH", "Passkey does not match with default passkey!");
     }
 
     return false; // If any error occurs or passkey does not match
@@ -249,16 +249,16 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
         break;
 
     case WIFI_EVENT_STA_CONNECTED:{
-        // printf("WiFi CONNECTED\n");
+
+        printf("WiFi CONNECTED\n");
         networkStatus=WIFI_CONNECTED;
         gl_sta_is_connecting = false;
-        vTaskDelay(90);
+        vTaskDelay(pdMS_TO_TICKS(500));
         send_custom_data_to_app("wcs");// wifi connection feedback to application over BLE( wifi connect success)
-        vTaskDelay(10);
+        vTaskDelay(pdMS_TO_TICKS(50));
 
         wssClientInt();
-        // networkStatus=WIFI_CONNECTED;
-        // gl_sta_is_connecting = false;
+
         event = (wifi_event_sta_connected_t*) event_data;
         memcpy(gl_sta_bssid, event->bssid, 6);
         memcpy(gl_sta_ssid, event->ssid, event->ssid_len);
@@ -475,8 +475,12 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
     }
 }
 void blufiAddStart(void){
-    char tempFrame[14] ;
-    snprintf(tempFrame, sizeof(tempFrame), "%s%9llu",DEVICE_VERSION_ID, generate_unique_id());//uniqueId
+    char tempFrame[20] ;
+
+    uint8_t mac[6];
+    esp_read_mac(mac, ESP_MAC_BT);
+    snprintf(tempFrame, sizeof(tempFrame), "%s-%02x%02x%02x",DEVICE_VERSION_ID, mac[0],mac[1],mac[2]);//uniqueId
+
     esp_ble_gap_set_device_name(tempFrame);
     esp_blufi_adv_start();
 }

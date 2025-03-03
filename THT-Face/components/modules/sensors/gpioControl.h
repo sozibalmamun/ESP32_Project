@@ -72,6 +72,8 @@ extern TaskHandle_t recognitionTaskHandler;
 extern TaskHandle_t recognitioneventTaskHandler;
 extern TaskHandle_t lcdTaskHandler;
 extern TaskHandle_t cloudeTaskHandler;
+extern SemaphoreHandle_t sensorSemaphore;
+
 
   
 
@@ -79,6 +81,7 @@ extern TaskHandle_t cloudeTaskHandler;
 #define BATTERY_ADC_CHANNEL ADC2_CHANNEL_8   // GPIO19 for ADC2
 #define DEFAULT_VREF 1100           // Default reference voltage in mV (you may need to adjust this)
 #define NO_OF_SAMPLES 64            // Multisampling to improve accuracy
+#define MIN_VOLTAGE 1600
 // pir
 #define PIR_ADC_CHANNEL ADC1_CHANNEL_0       // GPIO1 for ADC1 
 

@@ -135,7 +135,7 @@ void cloudHandel()
 
     // ESP_LOGI("cloudHandel", "AttendanceTask creat");
 
-    xTaskCreatePinnedToCore(attendanceHandlerTask, "AttendanceTask", 4 * 1024, NULL,15, &cloudeTaskHandler, 1);
+    xTaskCreatePinnedToCore(attendanceHandlerTask, "AttendanceTask", 4 * 1024, NULL,1, &cloudeTaskHandler, 1);
 
 }
 

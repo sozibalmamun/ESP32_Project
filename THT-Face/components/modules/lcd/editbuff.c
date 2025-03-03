@@ -80,10 +80,14 @@ void editDisplayBuff(camera_fb_t **buff){
             // writeSn(*buff);
             // uint64_t Id= generate_unique_id();
 
-            char tempFrame[14] ;
-            snprintf(tempFrame, sizeof(tempFrame), "%s%9llu",DEVICE_VERSION_ID, generate_unique_id());//uniqueId
+            char tempFrame[30] ;
+
+            uint8_t mac[6];
+            esp_read_mac(mac, ESP_MAC_BT);
+
+            snprintf(tempFrame, sizeof(tempFrame), "%s-%02x:%02x:%02x:%02x:%02x:%02x",DEVICE_VERSION_ID,mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);//uniqueId
             createQrcode(tempFrame , *buff);
-            writeSn(*buff, generate_unique_id());
+            // writeSn(*buff, generate_unique_id());
 
         }else 
         {
@@ -854,19 +858,19 @@ uint8_t calculate_battery_level(uint32_t voltage) {
     // else return 0;  // Out of range, return Level 0
 
 
-    if (voltage < 1240) return 0;  // Level 0// 3.1 voltage 
+    if (voltage < 1650) return 0;  // Level 0// 3.3 voltage 
 
-    else if (voltage < 1313) return 1;  // Level 1
+    else if (voltage < 1733) return 1;  // Level 1
 
-    else if (voltage < 1380) return 2;  // Level 2
+    else if (voltage < 1816) return 2;  // Level 2
 
-    else if (voltage < 1459) return 3;  // Level 3
+    else if (voltage < 1899) return 3;  // Level 3
 
-    else if (voltage < 1532) return 4;  // Level 4
+    else if (voltage < 1982) return 4;  // Level 4
 
-    else if (voltage < 1605) return 5;  // Level 5
+    else if (voltage < 2056) return 5;  // Level 5
 
-    else if (voltage <= 1680) return 6;  // Level 6 //4.2 voltage
+    else if (voltage <= 2148) return 6;  // Level 6 //4.2 voltage
 
     else return 0;  // Out of range, return Level 0
 

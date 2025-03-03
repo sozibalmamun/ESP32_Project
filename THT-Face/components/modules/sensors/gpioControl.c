@@ -6,9 +6,7 @@
 uint16_t batVoltage;
 uint8_t chargeState=0;
 uint8_t music=0;
-// uint32_t musicPlayDuration = 0;
 TaskHandle_t sensorsHandeler = NULL;
-extern SemaphoreHandle_t sensorSemaphore;
 
 esp_adc_cal_characteristics_t *adc_chars_battery = NULL;
 esp_adc_cal_characteristics_t *adc_chars_pir = NULL;
@@ -287,6 +285,7 @@ void init_adc() {
 // Function to read ADC and calculate voltage
 void readBatteryVoltage() {
 
+    
 
     if (adc_chars_battery != NULL) {
 
@@ -300,7 +299,15 @@ void readBatteryVoltage() {
         }
         adc_reading /= NO_OF_SAMPLES;
         batVoltage=esp_adc_cal_raw_to_voltage(adc_reading, adc_chars_battery);
-        // printf("Battery Voltage: %d mV\n", batVoltage);
+        if(batVoltage<MIN_VOLTAGE){
+            shiftOutData.bitset.CAMEN=0;  
+            shiftOutData.bitset.CAMPDWN=1;
+            shiftOutData.bitset.UVOFF=1;
+            if(sensorSemaphore)xSemaphoreGive(sensorSemaphore); // Notify the sensor task
+            ESP_LOGI("BATTERY", "LOW VOLTAGE");
+        }
+        printf("Battery Voltage: %d mV\n", batVoltage);
+
     }
 
 }

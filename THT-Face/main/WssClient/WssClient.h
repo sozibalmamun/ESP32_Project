@@ -45,9 +45,6 @@
 #define WEB_SERVER "grozziieget.zjweiting.com"
 #define WEB_PORT "3091"
 #define WEB_PATH "/WebSocket-Binary/ws"
-
-
-
 // WebSocket client context
 typedef struct {
     mbedtls_entropy_context entropy;
@@ -56,9 +53,6 @@ typedef struct {
     mbedtls_ssl_config conf;
     mbedtls_net_context server_fd;
 } wss_client_t;
-
-wss_client_t wss_client;
-
 uint8_t *ssl_cert_pem = NULL;  // Dynamic allocation for SSL certificate
 
 

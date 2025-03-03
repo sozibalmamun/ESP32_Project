@@ -586,7 +586,7 @@ void wssClientInt(void) {
     ESP_LOGI(TAG, "📡 Connecting to WebSocket server...");
     client = esp_websocket_client_init(&websocket_cfg);
     if (client == NULL) {
-        ESP_LOGE(TAG, "❌ Failed to initialize WebSocket client!");
+        // ESP_LOGE(TAG, "❌ Failed to initialize WebSocket client!");
         return;
     }
 

@@ -119,14 +119,15 @@
 #define TIMEOUT_5_MIN         (30000)
 //--------------------------------------------------------------
 #define HALT while(1);
+#define DEBUG_GPIO
 //-------------------topic--------------------------------------
 
 // #define     PUBLISH_TOPIC         "/app/cloud"
 // #define     SUBCRIBE_TOPIC        "/topic/cloud"
 
 
-#define     PUBLISH_TOPIC         "/app/messages"
-#define     SUBCRIBE_TOPIC        "/topic/AA00242829068"
+// #define     PUBLISH_TOPIC         "/app/messages"
+// #define     SUBCRIBE_TOPIC        "/topic/AA00242829068"
 //--------------------------------------------------------------
 #define ID_VALID 3
 //-----------network status code--------------------------------
@@ -142,13 +143,19 @@
 #define     MAXTRY                30
 
 //-----------------WSS addr------------------------------------------------------------------
+// old
 // #define     THT             "wss://grozziieget.zjweiting.com:3091/CloudSocket-Dev/websocket/"
-
-#define     THT             "wss://grozziieget.zjweiting.com:3091/WebSocket-Binary/ws"
-
 // #define     HOST            "grozziieget.zjweiting.com" 
 // #define     PORT            3091
 // #define     PATH            "/CloudSocket-Dev/websocket/"
+
+
+#define THT             "wss://grozziieget.zjweiting.com:3091/WebSocket-Binary/ws"
+#define WEB_SERVER      "grozziieget.zjweiting.com"
+#define WEB_PORT        "3091"
+#define WEB_PATH        "/WebSocket-Binary/ws"
+
+
 //-------------------------------------------------------------------------------------------
 
 //--------------flash addr for store big array-----------------------------------------------

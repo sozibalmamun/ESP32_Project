@@ -36,15 +36,12 @@
 #include "esp_crt_bundle.h"
 #include "esp_websocket_client.h"
 #include "esp_log.h"
-#include "esp_heap_caps.h"  // Required for heap_caps_malloc()
+#include "esp_heap_caps.h" 
 
-#include "mbedtls/base64.h"  // Required for PEM conversion
+#include "mbedtls/base64.h"  
 
 #define TAG "WSS_CLIENT"
 
-#define WEB_SERVER "grozziieget.zjweiting.com"
-#define WEB_PORT "3091"
-#define WEB_PATH "/WebSocket-Binary/ws"
 // WebSocket client context
 typedef struct {
     mbedtls_entropy_context entropy;
@@ -66,17 +63,16 @@ extern "C" {
 
 
 
-typedef struct {
-    const char                  *uri;                       /*!< Websocket URI, the information on the URI can be overrides the other fields below, if any */
-    const char                  *host;                      /*!< Domain or IP as string */
-    int                         port;                       /*!< Port to connect, default depend on esp_websocket_transport_t (80 or 443) */
-    const char                  *path;                       /*!< Websocket URI, the information on the URI can be overrides the other fields below, if any */
-} stompInfo_cfg_t;
-
+// typedef struct {
+//     const char                  *uri;                       /*!< Websocket URI, the information on the URI can be overrides the other fields below, if any */
+//     const char                  *host;                      /*!< Domain or IP as string */
+//     int                         port;                       /*!< Port to connect, default depend on esp_websocket_transport_t (80 or 443) */
+//     const char                  *path;                       /*!< Websocket URI, the information on the URI can be overrides the other fields below, if any */
+// } stompInfo_cfg_t;
 
 esp_websocket_client_handle_t client;
 
-
+/*
 const DATA_FLASH char echo_org_ssl_ca_cert[] =\
 
 "-----BEGIN CERTIFICATE-----\n" \
@@ -108,7 +104,7 @@ const DATA_FLASH char echo_org_ssl_ca_cert[] =\
 "RmE=\n" \
 "-----END CERTIFICATE-----\n" \
 "---\n";
-
+*/
 
 
 //////old---------------

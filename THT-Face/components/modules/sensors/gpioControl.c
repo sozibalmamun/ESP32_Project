@@ -168,7 +168,7 @@ void reduce_cpu_frequency() {
         .light_sleep_enable = false
     };
     esp_err_t ret = esp_pm_configure(&pm_config);
-    vTaskDelay(pdMS_TO_TICKS(5));  // Allow time for frequency update
+    // vTaskDelay(pdMS_TO_TICKS(5));  // Allow time for frequency update
 
     // if (ret == ESP_OK) {
     //     // ESP_LOGI("Frequency", "Dynamic CPU frequency scaling configured.");
@@ -281,9 +281,14 @@ void init_adc() {
 
 
 // Function to read ADC and calculate voltage
-void readBatteryVoltage() {
+void fetchBatteryPirStatus() {
 
 
+
+    if(PIR_STATE==0){
+        printf("PIR 0\n");
+        // sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
+    }
 
     if (adc_chars_battery != NULL) {
 
@@ -301,11 +306,10 @@ void readBatteryVoltage() {
             shiftOutData.bitset.CAMEN=0;  
             shiftOutData.bitset.CAMPDWN=1;
             shiftOutData.bitset.UVOFF=1;
-            if(sensorSemaphore)xSemaphoreGive(sensorSemaphore); // Notify the sensor task
+            if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
             ESP_LOGI("BATTERY", "LOW VOLTAGE");
         }
         printf("Battery Voltage: %d mV\n", batVoltage);
-
     }
 
 }
@@ -444,7 +448,7 @@ void musicArrayPlay(uint8_t *musicP ,uint8_t len){
     music=MUSIC_IDLE;
 }
 
-static void sensor(void *arg)
+static void musicShiftreg(void *arg)
 {
     gpio_set_level((gpio_num_t)SER_SDI, 0);
     gpio_pad_select_gpio(SER_SDI);
@@ -470,7 +474,7 @@ static void sensor(void *arg)
     while (1)
     {
         // Wait indefinitely for the semaphore to be given
-        if (xSemaphoreTake(sensorSemaphore, queueTimeout) == pdTRUE)
+        if (xSemaphoreTake(musicShiftSemaphore, queueTimeout) == pdTRUE)
         {
             // Run only when new data is available
             if (shiftOutData.read != tempOld)
@@ -500,22 +504,24 @@ static void sensor(void *arg)
             default:
                 break;
             }
-        }else{
-
-           if(PIR_STATE==1){
-                    // printf("PIR 1\n");
-            }else{
-                    // printf("PIR 0\n");
-            } 
-            vTaskDelay(xDelay);  // Delay task execution if no frame was received
-
         }
+
+        // else{
+
+        //    if(PIR_STATE==1){
+        //             // printf("PIR 1\n");
+        //     }else{
+        //             // printf("PIR 0\n");
+        //     } 
+        //     vTaskDelay(xDelay);  // Delay task execution if no frame was received
+
+        // }
     }
 }
 
-void sensorHandel()
+void manageMusicShiftreg()
 {
-    xTaskCreatePinnedToCore(sensor, "sensor", 4 * 1024, NULL, 5, &sensorsHandeler, 1);//priority 5
+    xTaskCreatePinnedToCore(musicShiftreg, "sensor", 4 * 1024, NULL, 5, &sensorsHandeler, 1);//priority 5
 }
 
 

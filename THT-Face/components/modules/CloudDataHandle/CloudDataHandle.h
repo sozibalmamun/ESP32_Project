@@ -38,8 +38,7 @@ typedef struct {
 
 
 bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,char* name,uint16_t id);
-void cloudHandel();
-void reconnect();
+void ensureLogDelivery();
 void facedataHandle(const QueueHandle_t input);
 
 

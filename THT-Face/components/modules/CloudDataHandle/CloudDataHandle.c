@@ -13,7 +13,7 @@ extern  volatile uint8_t CmdEvent;
 static QueueHandle_t xQueueCloudI = NULL;
 TaskHandle_t detectionFaceProcesingTaskHandler=NULL;
 
-void reconnect(){
+void ensureLogDelivery(){
 
     if(networkStatus==WSS_CONNECTED){
 
@@ -26,7 +26,7 @@ void reconnect(){
                 dataAvailable = false;
 
             }else {
-                vTaskDelay(1000 / portTICK_PERIOD_MS); // 
+                vTaskDelay(100 / portTICK_PERIOD_MS);
                 printf("pending data\n");
                 if(networkStatus==WSS_CONNECTED){
 
@@ -93,7 +93,6 @@ void facedataHandle(const QueueHandle_t input )
 {
     xQueueCloudI = input;
     xTaskCreatePinnedToCore(cloudeHandlerTask, TAG, 4 * 1024, NULL, 5, &detectionFaceProcesingTaskHandler, 1);
-
 
 }
 

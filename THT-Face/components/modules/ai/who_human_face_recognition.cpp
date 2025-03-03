@@ -321,7 +321,7 @@ static void task_process_handler(void *arg)
                                 vTaskDelay(10);
                                 shiftOutData.bitset.LED=0;  //q3
                                 shiftOutData.bitset.IRLED=0;  //q7
-                                if(sensorSemaphore)xSemaphoreGive(sensorSemaphore); // Notify the sensor task
+                                if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
 
                             } 
                             rgb_printf(frame, RGB565_MASK_BLUE, "Start Enroling");// debug due to display name
@@ -329,7 +329,7 @@ static void task_process_handler(void *arg)
                             sleepEnable=WAKEUP;// sleep out when enroll event is genareted
                             shiftOutData.bitset.LED=1;  //q3
                             shiftOutData.bitset.IRLED=1;  //q7
-                            if(sensorSemaphore)xSemaphoreGive(sensorSemaphore); // Notify the sensor task
+                            if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
 
 
 
@@ -348,7 +348,7 @@ static void task_process_handler(void *arg)
                                 _gEvent=RECOGNIZE;
                                 shiftOutData.bitset.LED=1;  //q3
                                 shiftOutData.bitset.IRLED=1;  //q7
-                                if(sensorSemaphore)xSemaphoreGive(sensorSemaphore); // Notify the sensor task
+                                if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
 
 
 
@@ -368,7 +368,7 @@ static void task_process_handler(void *arg)
                             if(xTaskGetTickCount()>sleepEnable+TIMEOUT_3000_MS){
                                 shiftOutData.bitset.LED=0;      //q3
                                 shiftOutData.bitset.IRLED=0;    //q7
-                                if(sensorSemaphore)xSemaphoreGive(sensorSemaphore); // Notify the sensor task
+                                if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
 
                             }
 
@@ -659,7 +659,7 @@ static void task_process_handler(void *arg)
                             // rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id);
                             shiftOutData.bitset.LED=0;  //q3
                             shiftOutData.bitset.IRLED=0;  //q7
-                            if(sensorSemaphore)xSemaphoreGive(sensorSemaphore); // Notify the sensor task
+                            if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
 
 
 
@@ -670,7 +670,7 @@ static void task_process_handler(void *arg)
                             rgb_printf(frame, RGB565_MASK_RED, "Duplicate Enrol%s","!"); 
                             shiftOutData.bitset.LED=0;  //q3
                             shiftOutData.bitset.IRLED=0;  //q7
-                            if(sensorSemaphore)xSemaphoreGive(sensorSemaphore); // Notify the sensor task
+                            if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
 
                             break;
                         }

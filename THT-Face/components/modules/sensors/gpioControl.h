@@ -71,7 +71,7 @@ extern TaskHandle_t eventTaskHandler;
 extern TaskHandle_t recognitionTaskHandler;
 extern TaskHandle_t recognitioneventTaskHandler;
 extern TaskHandle_t lcdTaskHandler;
-extern SemaphoreHandle_t sensorSemaphore;
+extern SemaphoreHandle_t  musicShiftSemaphore;
 
 
   
@@ -154,11 +154,11 @@ extern "C"
     void enter_deep_sleep(void);
     void init_adc();
     void init_pir();
-    void readBatteryVoltage();
+    void fetchBatteryPirStatus();
     void plugIn(bool plugin);
     void musicPlay(uint8_t musicNo);
     void musicArrayPlay(uint8_t *music ,uint8_t len);
-    void sensorHandel();
+    void manageMusicShiftreg();
 
 #ifdef __cplusplus
 }

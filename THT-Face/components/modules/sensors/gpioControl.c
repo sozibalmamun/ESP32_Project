@@ -155,7 +155,6 @@ void reduce_cpu_frequency() {
     if (recognitionTaskHandler) vTaskSuspend(recognitionTaskHandler);
     if (recognitioneventTaskHandler) vTaskSuspend(recognitioneventTaskHandler);
     if (lcdTaskHandler) vTaskSuspend(lcdTaskHandler);
-    if (cloudeTaskHandler) vTaskSuspend(cloudeTaskHandler);
     if (sensorsHandeler) vTaskSuspend(sensorsHandeler);
   
 
@@ -215,7 +214,6 @@ void restore_cpu_frequency() {
     if (recognitionTaskHandler) vTaskResume(recognitionTaskHandler);
     if (recognitioneventTaskHandler) vTaskResume(recognitioneventTaskHandler);
     if (lcdTaskHandler) vTaskResume(lcdTaskHandler);
-    if (cloudeTaskHandler) vTaskResume(cloudeTaskHandler);
     if (sensorsHandeler) vTaskResume(sensorsHandeler);
 
 

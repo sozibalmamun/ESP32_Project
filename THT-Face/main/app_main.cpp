@@ -87,7 +87,6 @@ void app_main()
             
         if(sleepEnable == SLEEP){ 
            
-    
             #if 0
             enter_light_sleep();  // Enter light sleep mode
             #else
@@ -99,6 +98,7 @@ void app_main()
             reconnect();
             readBatteryVoltage();
             vTaskDelay(pdMS_TO_TICKS(100));
+
         }
 
     }

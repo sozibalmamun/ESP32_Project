@@ -479,7 +479,7 @@ void blufiAddStart(void){
 
     uint8_t mac[6];
     esp_read_mac(mac, ESP_MAC_BT);
-    snprintf(tempFrame, sizeof(tempFrame), "%s-%02x%02x%02x",DEVICE_VERSION_ID, mac[0],mac[1],mac[2]);//uniqueId
+    snprintf(tempFrame, sizeof(tempFrame), "%s(BLE)-%02x%02x%02x",DEVICE_VERSION_ID, mac[0],mac[1],mac[2]);//uniqueId
 
     esp_ble_gap_set_device_name(tempFrame);
     esp_blufi_adv_start();

@@ -71,7 +71,6 @@ extern TaskHandle_t eventTaskHandler;
 extern TaskHandle_t recognitionTaskHandler;
 extern TaskHandle_t recognitioneventTaskHandler;
 extern TaskHandle_t lcdTaskHandler;
-extern TaskHandle_t cloudeTaskHandler;
 extern SemaphoreHandle_t sensorSemaphore;
 
 

@@ -72,7 +72,6 @@ void app_main()
             welcomeMusic(false);
             printf("\nsleepEnable"); 
             deinitBlufi();
-            // vTaskDelay(pdMS_TO_TICKS(10));
             shiftOutData.write=0x00;
             dispON(false);
 

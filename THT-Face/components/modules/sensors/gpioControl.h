@@ -96,7 +96,7 @@ extern SemaphoreHandle_t  musicShiftSemaphore;
 
 //Sleep config---------------------------------------------------
 #define MAX_FREQ   240    // Maximum frequency
-#define MIN_FREQ   8
+#define MIN_FREQ   2
 #define BATTERY_CHARGE_STATE GPIO_NUM_20
 
 

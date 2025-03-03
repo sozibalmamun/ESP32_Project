@@ -313,7 +313,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
             }else{
 
-                // ESP_LOGE(TAG, "Received: ");
+                ESP_LOGE(TAG, "Received: ");
                 vTaskDelay(50);
 
                 // for(uint16_t i=0; i< data->data_len;i++){
@@ -391,7 +391,7 @@ static int perform_mbedtls_handshake() {
 
     // Set hostname for TLS verification
     if ((ret = mbedtls_ssl_set_hostname(&wss_client.ssl, WEB_SERVER)) != 0) {
-        ESP_LOGE(TAG, "mbedtls_ssl_set_hostname failed: -0x%x", -ret);
+        // ESP_LOGE(TAG, "mbedtls_ssl_set_hostname failed: -0x%x", -ret);
         return;
     }
 

@@ -285,7 +285,7 @@ void init_adc() {
 // Function to read ADC and calculate voltage
 void readBatteryVoltage() {
 
-    
+
 
     if (adc_chars_battery != NULL) {
 
@@ -389,6 +389,242 @@ void shiftOut( uint8_t val){
     gpio_set_level((gpio_num_t)SER_LAT, 1);
 
 }
+
+void musicPlay(uint8_t musicNo ){
+
+    // printf("music%s function \n",musicNo>0? "Play":"Stop");
+    // printf("music No %d \n",musicNo);
+
+    #define  M_DELAY_uS 300
+
+    for (size_t i = 0; i <=musicNo; i++)
+    {
+        gpio_set_level((gpio_num_t)MUSICPIN, 1);
+        ets_delay_us(M_DELAY_uS);
+        gpio_set_level((gpio_num_t)MUSICPIN, 0);
+        ets_delay_us(M_DELAY_uS);
+    }
+
+    // musicPlayDuration = xTaskGetTickCount();
+
+}
+
+void musicArrayPlay(uint8_t *musicP ,uint8_t len){
+
+    // uint8_t len = strlen(music);
+
+    // printf("music sizeof %d \n" , len);
+    uint8_t tempMusic =music;
+    uint32_t musicPlayDuration = 0;
+
+    for (size_t j = 0; j < len;j+=2)
+    {
+
+        // printf("loop no %d " ,j);
+        // musicPlay(musicP[j]);
+
+
+        for (size_t i = 0; i <=musicP[j]; i++)
+        {
+            gpio_set_level((gpio_num_t)MUSICPIN, 1);
+            ets_delay_us(300);
+            gpio_set_level((gpio_num_t)MUSICPIN, 0);
+            ets_delay_us(300);
+        }
+        musicPlayDuration = xTaskGetTickCount();
+        // printf("music delay %d ms\n" , music[j+1] * 100);
+        while( xTaskGetTickCount()<musicPlayDuration+( musicP[j+1]*10)){
+            
+            if(music!=tempMusic){
+                // printf("next music\n");
+                musicPlay(0);
+                return;
+            }  
+        }
+    }
+    musicPlay(0);
+    music=MUSIC_IDLE;
+}
+
+static void sensor(void *arg)
+{
+    gpio_set_level((gpio_num_t)SER_SDI, 0);
+    gpio_pad_select_gpio(SER_SDI);
+    gpio_set_direction((gpio_num_t)SER_SDI, GPIO_MODE_OUTPUT);
+
+    gpio_set_level((gpio_num_t)SER_CLK, 0);
+    gpio_pad_select_gpio(SER_CLK);
+    gpio_set_direction((gpio_num_t)SER_CLK, GPIO_MODE_OUTPUT);
+
+    gpio_set_level((gpio_num_t)SER_LAT, 0);
+    gpio_pad_select_gpio(SER_LAT);
+    gpio_set_direction((gpio_num_t)SER_LAT, GPIO_MODE_OUTPUT);
+
+    uint8_t welcomeMusic[12] = {1, 2, 1, 2, 0, 2, 1, 2, 0, 2, 1, 2};
+    uint8_t unregisterd[2] = {1, 5};
+    #define TAG_MUSIC "MUSIC"
+
+    uint8_t tempOld = 0;
+    const TickType_t queueTimeout = pdMS_TO_TICKS(50);  // Queue receive timeout ms
+    const TickType_t xDelay = pdMS_TO_TICKS(50);  // Run every 100 ms
+
+
+    while (1)
+    {
+        // Wait indefinitely for the semaphore to be given
+        if (xSemaphoreTake(sensorSemaphore, queueTimeout) == pdTRUE)
+        {
+            // Run only when new data is available
+            if (shiftOutData.read != tempOld)
+            {
+                tempOld = shiftOutData.read;
+                shiftOut(shiftOutData.write);
+            }
+
+            switch (music)
+            {
+            case WELCOME:
+                ESP_LOGI(TAG_MUSIC, "✅ WELCOME");
+                music = MUSIC_IDLE;
+                break;
+
+            case UNREGISTERD:
+                ESP_LOGI(TAG_MUSIC, "❌ UNREGISTERD");
+                musicArrayPlay(&unregisterd, 2);
+                music = MUSIC_IDLE;
+                break;
+
+            case TURN_ON_MUSIC:
+                ESP_LOGI(TAG_MUSIC,"TURN_ON_MUSIC");
+                musicArrayPlay(welcomeMusic, 12);
+                break;
+
+            default:
+                break;
+            }
+        }else{
+
+           if(PIR_STATE==1){
+                    // printf("PIR 1\n");
+            }else{
+                    // printf("PIR 0\n");
+            } 
+            vTaskDelay(xDelay);  // Delay task execution if no frame was received
+
+        }
+    }
+}
+
+void sensorHandel()
+{
+    xTaskCreatePinnedToCore(sensor, "sensor", 4 * 1024, NULL, 5, &sensorsHandeler, 1);//priority 5
+}
+
+
+
+
+
+// void list_all_tasks(void) {
+//     // Get the number of tasks currently running
+//     UBaseType_t numTasks = uxTaskGetNumberOfTasks();
+//     // Allocate memory to hold task information
+//     TaskStatus_t *taskStatusArray = (TaskStatus_t *) pvPortMalloc(numTasks * sizeof(TaskStatus_t));
+    
+//     if (taskStatusArray != NULL) {
+//         // Get task details
+//         UBaseType_t taskCount = uxTaskGetSystemState(taskStatusArray, numTasks, NULL);
+
+//         ESP_LOGI(TAG, "Number of tasks: %d", taskCount);
+//         ESP_LOGI(TAG, "Listing all tasks:");
+
+//         // Loop through all tasks and print their names and other info
+//         for (UBaseType_t i = 0; i < taskCount; i++) {
+//             ESP_LOGI(TAG, "Task Name: %s, Task State: %d, Priority: %d, Stack High Water Mark: %d",
+//                      taskStatusArray[i].pcTaskName,
+//                      taskStatusArray[i].eCurrentState,
+//                      taskStatusArray[i].uxCurrentPriority,
+//                      taskStatusArray[i].usStackHighWaterMark);
+//         }
+
+//         // Free the allocated memory after use
+//         vPortFree(taskStatusArray);
+//     } else {
+//         ESP_LOGE(TAG, "Failed to allocate memory for task status array.");
+//     }
+// }
+
+
+
+// void disable_core1() {
+//     UBaseType_t numTasks = uxTaskGetNumberOfTasks();
+//     TaskStatus_t *taskStatusArray = (TaskStatus_t *) pvPortMalloc(numTasks * sizeof(TaskStatus_t));
+
+//     if (taskStatusArray != NULL) {
+//         UBaseType_t taskCount = uxTaskGetSystemState(taskStatusArray, numTasks, NULL);
+//         ESP_LOGI("disable_core1", "Disabling tasks on core 1:");
+
+//         for (UBaseType_t i = 0; i < taskCount; i++) {
+//             // Check if task is assigned to core 1 and is not an idle task
+//             if (xTaskGetAffinity(taskStatusArray[i].xHandle) == 1 &&
+//                 strcmp(taskStatusArray[i].pcTaskName, "IDLE1") != 0) {
+//                 ESP_LOGI("disable_core1", "Suspending task: %s", taskStatusArray[i].pcTaskName);
+//                 vTaskSuspend(taskStatusArray[i].xHandle);
+//             }
+//         }
+//         vPortFree(taskStatusArray);  // Free allocated memory after use
+//     } else {
+//         ESP_LOGE("disable_core1", "Failed to allocate memory for task status array.");
+//     }
+// }
+
+// void wake_up_core1() {
+//     UBaseType_t numTasks = uxTaskGetNumberOfTasks();
+//     TaskStatus_t *taskStatusArray = (TaskStatus_t *) pvPortMalloc(numTasks * sizeof(TaskStatus_t));
+
+//     if (taskStatusArray != NULL) {
+//         UBaseType_t taskCount = uxTaskGetSystemState(taskStatusArray, numTasks, NULL);
+//         ESP_LOGI("wake_up_core1", "Waking up tasks on core 1:");
+
+//         for (UBaseType_t i = 0; i < taskCount; i++) {
+//             // Check if task is assigned to core 1 and is not an idle task
+//             if (xTaskGetAffinity(taskStatusArray[i].xHandle) == 1 &&
+//                 strcmp(taskStatusArray[i].pcTaskName, "IDLE1") != 0) {
+//                 ESP_LOGI("wake_up_core1", "Resuming task: %s", taskStatusArray[i].pcTaskName);
+//                 vTaskResume(taskStatusArray[i].xHandle);
+//             }
+//         }
+//         vPortFree(taskStatusArray);  // Free allocated memory after use
+//     } else {
+//         ESP_LOGE("wake_up_core1", "Failed to allocate memory for task status array.");
+//     }
+// }
+
+
+
+// #define MAX_TASKS 20  // Define a limit for the number of tasks you want to handle
+
+// void list_and_control_tasks() {
+//     TaskStatus_t taskStatusArray[MAX_TASKS];
+//     UBaseType_t taskCount = uxTaskGetSystemState(taskStatusArray, MAX_TASKS, NULL);
+
+//     ESP_LOGI("TaskList", "Total tasks: %d", taskCount);
+
+//     for (int i = 0; i < taskCount; i++) {
+//         ESP_LOGI("TaskList", "Task Name: %s, Task Handle: %p", taskStatusArray[i].pcTaskName, taskStatusArray[i].xHandle);
+
+//         // Example: Suspend a task by name if it matches "exampleTaskName"
+//         if (strcmp(taskStatusArray[i].pcTaskName, "exampleTaskName") == 0) {
+//             ESP_LOGI("TaskControl", "Suspending task: %s", taskStatusArray[i].pcTaskName);
+//             vTaskSuspend(taskStatusArray[i].xHandle);
+
+//             // Optionally resume the task after a delay
+//             vTaskDelay(pdMS_TO_TICKS(1000));
+//             ESP_LOGI("TaskControl", "Resuming task: %s", taskStatusArray[i].pcTaskName);
+//             vTaskResume(taskStatusArray[i].xHandle);
+//         }
+//     }
+// }
+
 
 
 
@@ -615,250 +851,5 @@ void shiftOut( uint8_t val){
 //         }
 //         // ets_delay_us(10);
 
-//     }
-// }
-
-
-
-static void sensor(void *arg)
-{
-    gpio_set_level((gpio_num_t)SER_SDI, 0);
-    gpio_pad_select_gpio(SER_SDI);
-    gpio_set_direction((gpio_num_t)SER_SDI, GPIO_MODE_OUTPUT);
-
-    gpio_set_level((gpio_num_t)SER_CLK, 0);
-    gpio_pad_select_gpio(SER_CLK);
-    gpio_set_direction((gpio_num_t)SER_CLK, GPIO_MODE_OUTPUT);
-
-    gpio_set_level((gpio_num_t)SER_LAT, 0);
-    gpio_pad_select_gpio(SER_LAT);
-    gpio_set_direction((gpio_num_t)SER_LAT, GPIO_MODE_OUTPUT);
-
-    uint8_t welcomeMusic[12] = {1, 2, 1, 2, 0, 2, 1, 2, 0, 2, 1, 2};
-    uint8_t unregisterd[2] = {1, 5};
-    #define TAG_MUSIC "MUSIC"
-
-    uint8_t tempOld = 0;
-    const TickType_t queueTimeout = pdMS_TO_TICKS(50);  // Queue receive timeout ms
-    const TickType_t xDelay = pdMS_TO_TICKS(50);  // Run every 100 ms
-
-
-    while (1)
-    {
-        // Wait indefinitely for the semaphore to be given
-        if (xSemaphoreTake(sensorSemaphore, queueTimeout) == pdTRUE)
-        {
-            // Run only when new data is available
-            if (shiftOutData.read != tempOld)
-            {
-                tempOld = shiftOutData.read;
-                shiftOut(shiftOutData.write);
-            }
-
-            switch (music)
-            {
-            case WELCOME:
-                ESP_LOGI(TAG_MUSIC, "✅WELCOME");
-                break;
-
-            case UNREGISTERD:
-                ESP_LOGI(TAG_MUSIC, "❌UNREGISTERD");
-                musicArrayPlay(&unregisterd, 2);
-                music = MUSIC_IDLE;
-                break;
-
-            case TURN_ON_MUSIC:
-                printf("TURN_ON_MUSIC \n");
-                musicArrayPlay(welcomeMusic, 12);
-                break;
-
-            default:
-                break;
-            }
-        }else{
-
-           if(PIR_STATE==1){
-                    // printf("PIR 1\n");
-            }else{
-                    // printf("PIR 0\n");
-            } 
-            vTaskDelay(xDelay);  // Delay task execution if no frame was received
-
-        }
-    }
-}
-
-
-
-
-void musicPlay(uint8_t musicNo ){
-
-    // printf("music%s function \n",musicNo>0? "Play":"Stop");
-    // printf("music No %d \n",musicNo);
-
-    #define  M_DELAY_uS 300
-
-    for (size_t i = 0; i <=musicNo; i++)
-    {
-        gpio_set_level((gpio_num_t)MUSICPIN, 1);
-        ets_delay_us(M_DELAY_uS);
-        gpio_set_level((gpio_num_t)MUSICPIN, 0);
-        ets_delay_us(M_DELAY_uS);
-    }
-
-    // musicPlayDuration = xTaskGetTickCount();
-
-}
-
-
-
-void musicArrayPlay(uint8_t *musicP ,uint8_t len){
-
-    // uint8_t len = strlen(music);
-
-    // printf("music sizeof %d \n" , len);
-    uint8_t tempMusic =music;
-    uint32_t musicPlayDuration = 0;
-
-    for (size_t j = 0; j < len;j+=2)
-    {
-
-        // printf("loop no %d " ,j);
-        // musicPlay(musicP[j]);
-
-
-        for (size_t i = 0; i <=musicP[j]; i++)
-        {
-            gpio_set_level((gpio_num_t)MUSICPIN, 1);
-            ets_delay_us(300);
-            gpio_set_level((gpio_num_t)MUSICPIN, 0);
-            ets_delay_us(300);
-        }
-        musicPlayDuration = xTaskGetTickCount();
-        // printf("music delay %d ms\n" , music[j+1] * 100);
-        while( xTaskGetTickCount()<musicPlayDuration+( musicP[j+1]*10)){
-            
-            if(music!=tempMusic){
-                // printf("next music\n");
-                musicPlay(0);
-                return;
-            }  
-        }
-    }
-    musicPlay(0);
-    music=MUSIC_IDLE;
-}
-
-
-
-
-
-void sensorHandel()
-{
-    xTaskCreatePinnedToCore(sensor, "sensor", 2 * 1024, NULL, 5, &sensorsHandeler, 1);//priority 5
-}
-
-
-
-
-
-// void list_all_tasks(void) {
-//     // Get the number of tasks currently running
-//     UBaseType_t numTasks = uxTaskGetNumberOfTasks();
-//     // Allocate memory to hold task information
-//     TaskStatus_t *taskStatusArray = (TaskStatus_t *) pvPortMalloc(numTasks * sizeof(TaskStatus_t));
-    
-//     if (taskStatusArray != NULL) {
-//         // Get task details
-//         UBaseType_t taskCount = uxTaskGetSystemState(taskStatusArray, numTasks, NULL);
-
-//         ESP_LOGI(TAG, "Number of tasks: %d", taskCount);
-//         ESP_LOGI(TAG, "Listing all tasks:");
-
-//         // Loop through all tasks and print their names and other info
-//         for (UBaseType_t i = 0; i < taskCount; i++) {
-//             ESP_LOGI(TAG, "Task Name: %s, Task State: %d, Priority: %d, Stack High Water Mark: %d",
-//                      taskStatusArray[i].pcTaskName,
-//                      taskStatusArray[i].eCurrentState,
-//                      taskStatusArray[i].uxCurrentPriority,
-//                      taskStatusArray[i].usStackHighWaterMark);
-//         }
-
-//         // Free the allocated memory after use
-//         vPortFree(taskStatusArray);
-//     } else {
-//         ESP_LOGE(TAG, "Failed to allocate memory for task status array.");
-//     }
-// }
-
-
-
-// void disable_core1() {
-//     UBaseType_t numTasks = uxTaskGetNumberOfTasks();
-//     TaskStatus_t *taskStatusArray = (TaskStatus_t *) pvPortMalloc(numTasks * sizeof(TaskStatus_t));
-
-//     if (taskStatusArray != NULL) {
-//         UBaseType_t taskCount = uxTaskGetSystemState(taskStatusArray, numTasks, NULL);
-//         ESP_LOGI("disable_core1", "Disabling tasks on core 1:");
-
-//         for (UBaseType_t i = 0; i < taskCount; i++) {
-//             // Check if task is assigned to core 1 and is not an idle task
-//             if (xTaskGetAffinity(taskStatusArray[i].xHandle) == 1 &&
-//                 strcmp(taskStatusArray[i].pcTaskName, "IDLE1") != 0) {
-//                 ESP_LOGI("disable_core1", "Suspending task: %s", taskStatusArray[i].pcTaskName);
-//                 vTaskSuspend(taskStatusArray[i].xHandle);
-//             }
-//         }
-//         vPortFree(taskStatusArray);  // Free allocated memory after use
-//     } else {
-//         ESP_LOGE("disable_core1", "Failed to allocate memory for task status array.");
-//     }
-// }
-
-// void wake_up_core1() {
-//     UBaseType_t numTasks = uxTaskGetNumberOfTasks();
-//     TaskStatus_t *taskStatusArray = (TaskStatus_t *) pvPortMalloc(numTasks * sizeof(TaskStatus_t));
-
-//     if (taskStatusArray != NULL) {
-//         UBaseType_t taskCount = uxTaskGetSystemState(taskStatusArray, numTasks, NULL);
-//         ESP_LOGI("wake_up_core1", "Waking up tasks on core 1:");
-
-//         for (UBaseType_t i = 0; i < taskCount; i++) {
-//             // Check if task is assigned to core 1 and is not an idle task
-//             if (xTaskGetAffinity(taskStatusArray[i].xHandle) == 1 &&
-//                 strcmp(taskStatusArray[i].pcTaskName, "IDLE1") != 0) {
-//                 ESP_LOGI("wake_up_core1", "Resuming task: %s", taskStatusArray[i].pcTaskName);
-//                 vTaskResume(taskStatusArray[i].xHandle);
-//             }
-//         }
-//         vPortFree(taskStatusArray);  // Free allocated memory after use
-//     } else {
-//         ESP_LOGE("wake_up_core1", "Failed to allocate memory for task status array.");
-//     }
-// }
-
-
-
-// #define MAX_TASKS 20  // Define a limit for the number of tasks you want to handle
-
-// void list_and_control_tasks() {
-//     TaskStatus_t taskStatusArray[MAX_TASKS];
-//     UBaseType_t taskCount = uxTaskGetSystemState(taskStatusArray, MAX_TASKS, NULL);
-
-//     ESP_LOGI("TaskList", "Total tasks: %d", taskCount);
-
-//     for (int i = 0; i < taskCount; i++) {
-//         ESP_LOGI("TaskList", "Task Name: %s, Task Handle: %p", taskStatusArray[i].pcTaskName, taskStatusArray[i].xHandle);
-
-//         // Example: Suspend a task by name if it matches "exampleTaskName"
-//         if (strcmp(taskStatusArray[i].pcTaskName, "exampleTaskName") == 0) {
-//             ESP_LOGI("TaskControl", "Suspending task: %s", taskStatusArray[i].pcTaskName);
-//             vTaskSuspend(taskStatusArray[i].xHandle);
-
-//             // Optionally resume the task after a delay
-//             vTaskDelay(pdMS_TO_TICKS(1000));
-//             ESP_LOGI("TaskControl", "Resuming task: %s", taskStatusArray[i].pcTaskName);
-//             vTaskResume(taskStatusArray[i].xHandle);
-//         }
 //     }
 // }

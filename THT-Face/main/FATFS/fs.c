@@ -116,7 +116,7 @@ void print_memory_status() {
 
     // Get the FATFS file system object (fs)
     if (f_getfree("0:", &fre_clust, &fs) != FR_OK) {
-        ESP_LOGE(TAG, "Failed to get FATFS free space information");
+        // ESP_LOGE(TAG, "Failed to get FATFS free space information");
         return;
     }
 

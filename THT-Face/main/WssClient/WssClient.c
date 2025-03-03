@@ -542,12 +542,10 @@ static int perform_mbedtls_handshake() {
 
     return 0;
 }
-
-// 🟢 **Step 3: Use Extracted Certificate in WebSocket Client**
 void wssClientInt(void) {
+    ESP_LOGI(TAG, "🔗 Initializing WebSocket...");
 
-    if(ssl_cert_pem == NULL){
-
+    if (ssl_cert_pem == NULL) {
         // First, perform SSL handshake using mbedTLS
         if (perform_mbedtls_handshake() != 0) {
             // ESP_LOGE(TAG, "❌ Failed to perform SSL handshake!");
@@ -560,35 +558,42 @@ void wssClientInt(void) {
             return;
         }
 
+        // 🟢 Set Global CA Store (Only Once)
+        size_t cert_len = strlen((const char *)ssl_cert_pem) + 1;  // Get actual length
+        // ESP_LOGI(TAG, "🔐 Setting global CA store...");
+
+        esp_err_t ret = esp_tls_set_global_ca_store((const unsigned char *)ssl_cert_pem, cert_len);
+        if (ret != ESP_OK) {
+            // ESP_LOGE(TAG, "❌ Failed to set global CA store! Error: %d", ret);
+            return;
+        }
     }
 
-    // ESP_LOGI(TAG, "🔗 Initializing WebSocket client...");
-    esp_websocket_client_config_t websocket_cfg = {};
-    websocket_cfg.uri = (const char*)THT;
-    websocket_cfg.cert_pem = (const char *)ssl_cert_pem;
-    websocket_cfg.ping_interval_sec= 5; 
-    websocket_cfg.pingpong_timeout_sec=10;
-    websocket_cfg.use_global_ca_store = true;
-    websocket_cfg.skip_cert_common_name_check = true;
-    websocket_cfg.disable_auto_reconnect = false;
-    websocket_cfg.task_stack = 1024*5;//4
-    websocket_cfg.task_prio =10; 
+    // 🟢 Configure WebSocket Client
+    esp_websocket_client_config_t websocket_cfg = {
+        .uri = (const char*)THT,
+        .cert_pem = (const char *)ssl_cert_pem,
+        .ping_interval_sec = 5,
+        .pingpong_timeout_sec = 10,
+        .use_global_ca_store = true,  // Now we correctly set the CA store
+        .skip_cert_common_name_check = true,
+        .disable_auto_reconnect = false,
+        .task_stack = 1024 * 5,  // Increase if needed
+        .task_prio = 15,
+    };
 
-    // ESP_LOGI(TAG, "Initializing global CA store...");
-    ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));
-
-    
+    // 🟢 Initialize WebSocket
     ESP_LOGI(TAG, "📡 Connecting to WebSocket server...");
     client = esp_websocket_client_init(&websocket_cfg);
+    if (client == NULL) {
+        ESP_LOGE(TAG, "❌ Failed to initialize WebSocket client!");
+        return;
+    }
+
     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
     esp_websocket_client_start(client);
-
-    // ESP_LOGI(TAG, "✅ WebSocket connection established!");
-    // if (ssl_cert_pem) {
-    //     heap_caps_free(ssl_cert_pem);
-    //     ssl_cert_pem = NULL;
-    // }
 }
+
 
 // old setup
 // void wssClientInt(void) {

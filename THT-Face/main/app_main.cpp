@@ -4,9 +4,13 @@ extern "C"
 void app_main()
 {
 
-    sleepEnable=START;
     ESP_LOGE(TAG, "Starting app_main");
     gpioInt();
+    //-----------time int here-------------------------------------
+    RtcInit();
+    //--------------------------------------------------------------
+    init_adc();
+    //-------------------------
 
     configure_dynamic_frequency();
     manageMusicShiftreg();
@@ -29,8 +33,8 @@ void app_main()
     shiftOutData.bitset.ADC_EN=1;
     shiftOutData.bitset.LCDEN=1;
     if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
-
     vTaskDelay(pdMS_TO_TICKS(10));
+
     // Initialize Conectivity---------------------------
     bluFiStart();
     //--------------------------------------------------
@@ -43,51 +47,35 @@ void app_main()
     // Initialize and mount FATFS
     if (init_fatfs()== ESP_OK) {
         
-        // print_memory_status();
         create_directories();
         
     }
-    //-----------time int here-------------------------------------
-    RtcInit();
-    //--------------------------------------------------------------
-    init_adc();
-    //-------------------------
+
     shiftOutData.bitset.LED=0;  //q4
     if(checkMusicEnable())music=TURN_ON_MUSIC;
     else welcomeMusic(true);
     if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
 
     ESP_LOGI(TAG, "app_main finished");
-    sleepEnable=WAKEUP;
 
     while(true){
-
-        // // Log or print the CPU frequency
-        // int cpu_freq_mhz = esp_clk_cpu_freq() / 1000000;
-        // ESP_LOGI("CPU Monitor", "Current CPU frequency: %d MHz", cpu_freq_mhz);
 
         if(xTaskGetTickCount()-sleepTimeOut>TIMEOUT_30_S  && sleepEnable == WAKEUP){
             
             sleepEnable=SLEEP;
             welcomeMusic(false);
-            printf("\nsleepEnable"); 
             deinitBlufi();
             shiftOutData.write=0x00;
             dispON(false);
-
             if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
             reduce_cpu_frequency();
+        
         }
 
             
         if(sleepEnable == SLEEP){ 
-           
-            #if 0
-            enter_light_sleep();  // Enter light sleep mode
-            #else
+        
             enter_deep_sleep();
-            #endif
-
 
         }else {
             ensureLogDelivery();
@@ -97,6 +85,25 @@ void app_main()
 
     }
 }
+
+
+
+void enter_deep_sleep(void){
+
+    ESP_LOGI("DEEP_SLEEP", "Going to deep sleep...");
+    // Enable wake-up on button press (when GPIO is LOW)
+    // gpio_pullup_en(PIR);  // Enable pull-up resistor
+    esp_sleep_enable_ext0_wakeup(PIR, 0); // Wake-up when button is pressed (LOW)
+    // Enter deep sleep
+    esp_deep_sleep_start();
+    // This line will **never execute** because ESP restarts after wake-up
+    // ESP_LOGI("DEEP_SLEEP", "Woke up!");
+    // sleepEnable = WAKEUP;  // Disable sleep mode after waking up
+}
+
+
+
+
 
 
 // void reInt(void){

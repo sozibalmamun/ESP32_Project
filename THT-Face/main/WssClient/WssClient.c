@@ -18,6 +18,7 @@
 
 int8_t percentage=0;
 int8_t maxTry=0;
+uint8_t DataupDoun=0;
 
 
 bool sendToWss(uint8_t *buff, size_t buffLen) {
@@ -25,7 +26,7 @@ bool sendToWss(uint8_t *buff, size_t buffLen) {
     uint16_t currentIndex = 0;
 
     // ESP_LOGW(TAG_WSS, "Total stompS length: %d", buffLen);
-
+    DataupDoun |= 1<<0;
     while (buffLen > 0) {
         // Prepare the chunk data
         memset(tempFrame, 0, sizeof(tempFrame));
@@ -108,8 +109,8 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
 
     uint16_t totalChunks = (buffLen + IMAGE_CHANK_SIZE - 1) / IMAGE_CHANK_SIZE;  // Total number of chunks
 
-    printf("totalChunks : %d h %d w %d image len:  %d\n\n",totalChunks, h  , w ,buffLen);
-
+    ESP_LOGI(TAG_WSS , "📡 Sending Total Chunks : %d h %d w %d len:  %d\n\n",totalChunks, h  , w ,buffLen);
+    
 
     // for(uint16_t i=0; i< buffLen;i++){
 
@@ -117,7 +118,7 @@ bool imagesent(uint8_t* buff, uint16_t buffLen, uint8_t h, uint8_t w, char* name
 
     // }
 
-    printf("\n\n");
+    // printf("\n\n");
 
 //--------------------------- start of info sent--------------------------------------------------------------
 
@@ -224,7 +225,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     esp_websocket_event_data_t *data = (esp_websocket_event_data_t *)event_data;
     switch (event_id) {
     case WEBSOCKET_EVENT_CONNECTED:
-        ESP_LOGI(TAG, "WSS_CONNECTED");
+        ESP_LOGW(TAG, "WSS_CONNECTED");
         networkStatus=WSS_CONNECTED;
 
 
@@ -261,7 +262,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
         break;
     case WEBSOCKET_EVENT_DISCONNECTED:
-        ESP_LOGI(TAG, "WSS_DISCONNECTED");
+        // ESP_LOGI(TAG, "WSS_DISCONNECTED");
 
         networkStatus=WIFI_CONNECTED;
 
@@ -271,7 +272,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
         if (data->op_code == 0x08 && data->data_len == 2) {
 
-            ESP_LOGW(TAG, "Received closed message with code=%d", 256*data->data_ptr[0] + data->data_ptr[1]);
+            // ESP_LOGW(TAG, "Received closed message with code=%d", 256*data->data_ptr[0] + data->data_ptr[1]);
             networkStatus=WIFI_CONNECTED;
             memset(data->data_ptr,0,data->data_len);
             wssReset();
@@ -280,7 +281,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
             if (data->op_code == 0x0A) {
 
-                ESP_LOGI(TAG, "Ping code: %d", data->op_code);
+                // ESP_LOGI(TAG, "Ping code: %d", data->op_code);
                 time_library_time_t current_time;
                 get_time(&current_time, dspTimeFormet);
                 wifi_ap_record_t ap_info;
@@ -306,14 +307,16 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
                 time[11]=batVoltage & 0xFF;
                 time[12]='\0';
 
-                printf(" D len: %d  Y%d M %d D %d W %d H %d MIN %d SEC %d FORMET %dH RSSI %d BATTRY %d \n",
+                ESP_LOGI(TAG_WSS," D len: %d  Y%d M %d D %d W %d H %d MIN %d SEC %d FORMET %dH RSSI %d BATTRY %d \n",
                 sizeof(time),time[1],time[2],time[3],time[4],time[5],time[6] ,time[7] ,time[8],time[9],batVoltage);
 
                 sendToWss(time, sizeof(time));
 
             }else{
 
-                ESP_LOGE(TAG, "Received: ");
+                ESP_LOGI(TAG, "Received: ");
+                DataupDoun |= 1<<1;
+
                 vTaskDelay(50);
 
                 // for(uint16_t i=0; i< data->data_len;i++){
@@ -346,7 +349,7 @@ void wssReset(void){
     if (client != NULL) {
     esp_websocket_client_stop(client);
     esp_websocket_client_destroy(client);
-    ESP_LOGI(TAG, "❌ esp_websocket_client_stop");
+    // ESP_LOGI(TAG, "❌ esp_websocket_client_stop");
     client = NULL;
     
     }            
@@ -530,8 +533,8 @@ static int perform_mbedtls_handshake() {
     heap_caps_free(ssl_cert_pem);
     ssl_cert_pem = (uint8_t *)final_cert;  // Assign the properly formatted PEM certificate
 
-    // ESP_LOGI(TAG, "✅ Extracted Root CA Certificate (PEM Format):\n%s", ssl_cert_pem);
 
+    // ESP_LOGI(TAG, "✅ Extracted Root CA Certificate (PEM Format):\n%s", ssl_cert_pem);
 
     // Cleanup
     mbedtls_ssl_free(&wss_client.ssl);
@@ -539,11 +542,15 @@ static int perform_mbedtls_handshake() {
     mbedtls_ctr_drbg_free(&wss_client.ctr_drbg);
     mbedtls_entropy_free(&wss_client.entropy);
     mbedtls_net_free(&wss_client.server_fd);
+    // heap_caps_free(final_cert);
+
 
     return 0;
 }
+
 void wssClientInt(void) {
     ESP_LOGI(TAG, "🔗 Initializing WebSocket...");
+
 
     if (ssl_cert_pem == NULL) {
         // First, perform SSL handshake using mbedTLS
@@ -592,7 +599,16 @@ void wssClientInt(void) {
 
     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
     esp_websocket_client_start(client);
+
+
+
+
+
+
+
+
 }
+
 
 
 // old setup

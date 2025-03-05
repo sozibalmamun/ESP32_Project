@@ -77,6 +77,7 @@ static int gl_sta_ssid_len;
 // static wifi_sta_list_t gl_sta_list;
 static bool gl_sta_is_connecting = false;
 static esp_blufi_extra_info_t gl_sta_conn_info;
+// uint8_t mac[6]={0x00,0x00,0x00,0x00,0x00,0x00};
 
 
 

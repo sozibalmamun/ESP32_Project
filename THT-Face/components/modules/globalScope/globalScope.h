@@ -14,8 +14,6 @@
 #define TURN_ON_MUSIC        0X03
 
 
-
-
 #define MUSIC_STOPING        0xFF
 #define MUSIC_STOP           0xFE
 #define MUSIC_IMMEDIATE_STOP 0xFD
@@ -100,18 +98,18 @@
 #define TIMEOUT_200_MS        (20)
 #define TIMEOUT_300_MS        (30)
 #define TIMEOUT_500_MS        (50)
-#define TIMEOUT_1000_MS       (100)
-#define TIMEOUT_2000_MS       (200)
-#define TIMEOUT_3000_MS       (300)
-#define TIMEOUT_4000_MS       (400)
-#define TIMEOUT_5000_MS       (500)
-#define TIMEOUT_6000_MS       (600)
-#define TIMEOUT_7000_MS       (700)
-#define TIMEOUT_9000_MS       (900)
-#define TIMEOUT_10000_MS      (1000)
-#define TIMEOUT_12000_MS      (1200)
-#define TIMEOUT_20000_MS      (2000)
+#define TIMEOUT_1_S       (100)
+#define TIMEOUT_2_S       (200)
+#define TIMEOUT_3_S       (300)
+#define TIMEOUT_4_S       (400)
+#define TIMEOUT_5_S       (500)
+#define TIMEOUT_6_S       (600)
+#define TIMEOUT_7_S       (700)
+#define TIMEOUT_9_S           (900)
+#define TIMEOUT_10_S          (1000)
+#define TIMEOUT_12_S          (1200)
 #define TIMEOUT_15_S          (1500)
+#define TIMEOUT_20_S          (2000)
 #define TIMEOUT_30_S          (3000)
 #define TIMEOUT_45_S          (4500)
 #define TIMEOUT_1_MIN         (6000)

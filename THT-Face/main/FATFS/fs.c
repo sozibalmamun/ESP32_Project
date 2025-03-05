@@ -129,8 +129,8 @@ void print_memory_status() {
     uint64_t free_space = fre_sect * fs->ssize;
 
     // Log the available and total space
-    ESP_LOGW(TAG, "Total space: %llu bytes", total_space);
-    ESP_LOGE(TAG, "free space : %llu bytes\n", free_space);
+    ESP_LOGE(TAG, "Total space: %llu bytes", total_space);
+    ESP_LOGE(TAG, "Free space : %llu bytes\n", free_space);
 
 }
 
@@ -140,7 +140,7 @@ void delete_all_directories(const char* path) {
     DIR *dir = opendir(path);
 
     if (dir == NULL) {
-        ESP_LOGE("FAT", "Failed to open directory: %s", path);
+        // ESP_LOGE("FAT", "Failed to open directory: %s", path);
         return;
     }
 
@@ -154,11 +154,11 @@ void delete_all_directories(const char* path) {
                 if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
                     delete_all_directories(full_path); // Recursively delete subdirectories
                     rmdir(full_path); // Delete the directory
-                    ESP_LOGI("FAT", "Deleted directory: %s", full_path);
+                    // ESP_LOGI("FAT", "Deleted directory: %s", full_path);
                 }
             } else {
                 unlink(full_path); // Delete the file
-                ESP_LOGI("FAT", "Deleted file: %s", full_path);
+                // ESP_LOGI("FAT", "Deleted file: %s", full_path);
             }
         }
     }
@@ -167,7 +167,7 @@ void delete_all_directories(const char* path) {
 }
 
 void format_fatfs() {
-    ESP_LOGI("FAT", "Formatting FATFS partition...");
+    // ESP_LOGI("FAT", "Formatting FATFS partition...");
     // Erase the entire partition
     // esp_err_t ret = wl_erase_range(s_wl_handle, 0, WL_FLASH_SIZE);
     // if (ret != ESP_OK) {
@@ -179,7 +179,7 @@ void format_fatfs() {
 
     // Start the format process
     if (formatfatfs() == ESP_OK) {
-        ESP_LOGI(TAG, "Format complete, proceeding...");
+        // ESP_LOGI(TAG, "Format complete, proceeding...");
         vTaskDelay(100);
 
         // Mount the filesystem after formatting
@@ -190,36 +190,36 @@ void format_fatfs() {
     }
 
     } else {
-        ESP_LOGE(TAG, "Format failed");
+        // ESP_LOGE(TAG, "Format failed");
     }
 
 }
 
  esp_err_t formatfatfs() {
-      ESP_LOGI(TAG, "Formatting FATFS...");
+    //   ESP_LOGI(TAG, "Formatting FATFS...");
 
     // Unmount the filesystem
     esp_err_t unmount_err = esp_vfs_fat_spiflash_unmount("/fatfs", NULL);
     if (unmount_err != ESP_OK) {
-        ESP_LOGW(TAG, "Unmount failed, filesystem may not be mounted");
+        // ESP_LOGW(TAG, "Unmount failed, filesystem may not be mounted");
     }
 
     // Find the partition
     const esp_partition_t* partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, PARTITION_LABEL);
     if (partition == NULL) {
-        ESP_LOGE(TAG, "Failed to find partition with label: %s", PARTITION_LABEL);
+        // ESP_LOGE(TAG, "Failed to find partition with label: %s", PARTITION_LABEL);
         return ESP_ERR_NOT_FOUND;
     }
 
     // Erase the partition (format)
-    ESP_LOGI(TAG, "Erasing partition: %s", partition->label);
+    // ESP_LOGI(TAG, "Erasing partition: %s", partition->label);
     esp_err_t erase_err = esp_partition_erase_range(partition, 0, partition->size);
     if (erase_err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to erase partition: %s", partition->label);
+        // ESP_LOGE(TAG, "Failed to erase partition: %s", partition->label);
         return erase_err;
     }
 
-    ESP_LOGI(TAG, "Partition erased successfully");
+    // ESP_LOGI(TAG, "Partition erased successfully");
 
     return ESP_OK;
 }

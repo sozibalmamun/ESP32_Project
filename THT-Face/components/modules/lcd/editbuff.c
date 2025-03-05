@@ -36,25 +36,25 @@ void editDisplayBuff(camera_fb_t **buff){
 
             if( xTaskGetTickCount()-animationTime< 20){
                 
-                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+12,WIFI_WIDTH,WIFI_HEIGHT-6,&wifiIcn,WHITE,*buff);//wifi 1
+                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn01,WHITE,*buff);//wifi 4
 
             }else if(xTaskGetTickCount()-animationTime>= 20 && xTaskGetTickCount()-animationTime<= 50){
                 
                 if(!ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-10,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
-                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+8,WIFI_WIDTH,WIFI_HEIGHT-5,&wifiIcn,WHITE,*buff);//wifi 2
+                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn02,WHITE,*buff);//wifi 4
 
             }else if(xTaskGetTickCount()-animationTime>= 50 && xTaskGetTickCount()-animationTime<= 80){
 
             // if(!ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
 
-                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y+3,WIFI_WIDTH,WIFI_HEIGHT-4,&wifiIcn,WHITE,*buff);//wifi 3 
+                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn03,WHITE,*buff);//wifi 4
 
             }else if(xTaskGetTickCount()-animationTime>= 80 && xTaskGetTickCount()-animationTime<= 150){
 
             if(!ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-10,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
 
-                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn,WHITE,*buff);//wifi 4
-                icnPrint(NETWORK_ICON_POSS_X+13,NETWORK_ICON_POSS_Y+8,7,7 ,&noWifiIcon,RED,*buff);//+9//
+                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn04,WHITE,*buff);//wifi 4
+                // icnPrint(NETWORK_ICON_POSS_X+13,NETWORK_ICON_POSS_Y+8,7,7 ,&noWifiIcon,RED,*buff);//+9//
 
             }
             // else if(xTaskGetTickCount()-animationTime>= 150){
@@ -110,10 +110,16 @@ void editDisplayBuff(camera_fb_t **buff){
                 
             }
 
-            icnPrint(NETWORK_ICON_POSS_X, NETWORK_ICON_POSS_Y, WIFI_WIDTH, WIFI_HEIGHT,&wifiIcn,WHITE ,*buff);
+            icnPrint(NETWORK_ICON_POSS_X, NETWORK_ICON_POSS_Y, WIFI_WIDTH, WIFI_HEIGHT,&wifiIcn04,WHITE ,*buff);
             
+
             if(networkStatus==WSS_CONNECTED){//WSS_CONNECTED
-                icnPrint(NETWORK_ICON_POSS_X+11,NETWORK_ICON_POSS_Y+5,7,7 ,&connectedIcon,GREEN,*buff);//+8
+
+                icnPrint(NETWORK_ICON_POSS_X+12,NETWORK_ICON_POSS_Y+5,4,4 ,&upload,  (DataupDoun & 0x01)==1?GREEN: WHITE,*buff);//+8
+                DataupDoun &= ~(1<<0);
+                icnPrint(NETWORK_ICON_POSS_X+12,NETWORK_ICON_POSS_Y+8,4,4 ,&download,((DataupDoun>>1)& 0x01)==1?GREEN: WHITE,*buff);//+8
+                DataupDoun &= ~(1<<1);
+
             }else{
                 icnPrint(NETWORK_ICON_POSS_X+13,NETWORK_ICON_POSS_Y+7,2,7,&disconnectedIcon,RED,*buff);//+9
             }
@@ -141,13 +147,13 @@ void editDisplayBuff(camera_fb_t **buff){
         tempBlvl=6;
     }
 
-    icnPrint(NETWORK_ICON_POSS_X+19, NETWORK_ICON_POSS_Y+9-tempBlvl, BATTERY_WIDTH, tempBlvl-1,&betterybar, tempBlvl<=2?RED:WHITE ,*buff);
-    icnPrint(NETWORK_ICON_POSS_X+20, NETWORK_ICON_POSS_Y, BATTERY_WIDTH, BATTERY_HEIGHT,&betteryIcn,tempBlvl<2?RED:WHITE ,*buff);
+    icnPrint(NETWORK_ICON_POSS_X+16, NETWORK_ICON_POSS_Y+9-tempBlvl, BATTERY_WIDTH, tempBlvl-1,&betterybar, tempBlvl<=2?RED:WHITE ,*buff);
+    icnPrint(NETWORK_ICON_POSS_X+17, NETWORK_ICON_POSS_Y, BATTERY_WIDTH, BATTERY_HEIGHT,&betteryIcn,tempBlvl<2?RED:WHITE ,*buff);
     // ----------------------------------------------------------------------
 
     if(dataAvailable ){
     
-        icnPrint(networkStatus==0?NETWORK_ICON_POSS_X-26: NETWORK_ICON_POSS_X-15 , NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,RED ,*buff);
+        icnPrint(networkStatus==0?NETWORK_ICON_POSS_X-26: NETWORK_ICON_POSS_X-15 , NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,WHITE ,*buff);
     }
 
 

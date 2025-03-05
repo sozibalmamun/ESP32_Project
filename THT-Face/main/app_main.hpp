@@ -33,5 +33,6 @@ SemaphoreHandle_t musicShiftSemaphore= NULL;
 
 extern uint8_t music;
 
-void reInt(void);
+
+void enter_deep_sleep(void);
 

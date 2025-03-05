@@ -295,7 +295,7 @@ static void task_process_handler(void *arg)
 
                         if (detect_results.size() == 1){
 
-                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_3000_MS){// enter enroll case
+                            if(xTaskGetTickCount()>TimeOut+TIMEOUT_3_S){// enter enroll case
 
                                 is_detected = true;
                                 _gEvent=ENROLL;
@@ -304,7 +304,7 @@ static void task_process_handler(void *arg)
 
                             }else { // loading
 
-                                float percentage_float = ((TIMEOUT_3000_MS-((TimeOut + TIMEOUT_3000_MS)- xTaskGetTickCount())) /(float)TIMEOUT_3000_MS) * 100;
+                                float percentage_float = ((TIMEOUT_3_S-((TimeOut + TIMEOUT_3_S)- xTaskGetTickCount())) /(float)TIMEOUT_3_S) * 100;
 
                                 fillRect(frame, 0, 235, 320, 5, 0xFFFF);
                                 fillRect(frame, 0, 235, (uint16_t)(percentage_float*3.2), 5, RGB565_MASK_BLUE);
@@ -365,7 +365,7 @@ static void task_process_handler(void *arg)
 
                             unrecognitionCount=0;
                             faceDetectTimeOut= xTaskGetTickCount(); 
-                            if(xTaskGetTickCount()>sleepEnable+TIMEOUT_3000_MS){
+                            if(xTaskGetTickCount()>sleepEnable+TIMEOUT_30_S){
                                 shiftOutData.bitset.LED=0;      //q3
                                 shiftOutData.bitset.IRLED=0;    //q7
                                 if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
@@ -380,7 +380,7 @@ static void task_process_handler(void *arg)
                         is_detected = true;
 
 
-                        if (xTaskGetTickCount()-enrolTimeOut> TIMEOUT_5000_MS ){
+                        if (xTaskGetTickCount()-enrolTimeOut> TIMEOUT_5_S ){
                             CmdEvent = SYNC_ERROR;
                             key_state= KEY_IDLE;
                             delete_face_data(enrolFrame->id,SYNC_DIR);               
@@ -512,7 +512,7 @@ static void task_process_handler(void *arg)
                                     
                                     // printf("validCount: %d\n",validCount);
                                     CPUBgflag=1;
-                                    if(xTaskGetTickCount()>TimeOut+TIMEOUT_5000_MS)StopMultipleAttaneId=0;
+                                    if(xTaskGetTickCount()>TimeOut+TIMEOUT_5_S)StopMultipleAttaneId=0;
 
                                     if(StopMultipleAttaneId!=recognize_result.id){
 
@@ -704,7 +704,7 @@ static void task_process_handler(void *arg)
                             frame_show_state = SHOW_STATE_IDLE;
                         }
                         else if( frame_show_state==SHOW_STATE_RECOGNIZE){
-                            if(frame_count>2)
+                            if(frame_count>FRAME_DELAY_NUM-12)
                                 frame_count = 0;
 
                             frame_show_state = SHOW_STATE_IDLE;
@@ -784,7 +784,6 @@ static void task_process_handler(void *arg)
             if (xQueueResult && is_detected)
             {
                 xQueueSend(xQueueResult, &recognize_result, portMAX_DELAY);
-
 
             }
 

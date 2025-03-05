@@ -6,7 +6,7 @@
 uint16_t batVoltage;
 uint8_t chargeState=0;
 uint8_t music=0;
-TaskHandle_t sensorsHandeler = NULL;
+TaskHandle_t shiftMusicHandeler = NULL;
 
 esp_adc_cal_characteristics_t *adc_chars_battery = NULL;
 esp_adc_cal_characteristics_t *adc_chars_pir = NULL;
@@ -155,8 +155,18 @@ void reduce_cpu_frequency() {
     if (recognitionTaskHandler) vTaskSuspend(recognitionTaskHandler);
     if (recognitioneventTaskHandler) vTaskSuspend(recognitioneventTaskHandler);
     if (lcdTaskHandler) vTaskSuspend(lcdTaskHandler);
-    if (sensorsHandeler) vTaskSuspend(sensorsHandeler);
+    vTaskDelay(pdMS_TO_TICKS(5));
+    if (shiftMusicHandeler) vTaskSuspend(shiftMusicHandeler);
   
+    vTaskDelete(cameraTaskHandler);
+    vTaskDelete(eventTaskHandler);
+    vTaskDelete(recognitionTaskHandler); 
+    vTaskDelete(recognitioneventTaskHandler);
+    vTaskDelete(lcdTaskHandler);
+    vTaskDelete(shiftMusicHandeler);
+
+
+
 
 
     // ESP_LOGE("Frequency", "delete all task");
@@ -214,7 +224,7 @@ void restore_cpu_frequency() {
     if (recognitionTaskHandler) vTaskResume(recognitionTaskHandler);
     if (recognitioneventTaskHandler) vTaskResume(recognitioneventTaskHandler);
     if (lcdTaskHandler) vTaskResume(lcdTaskHandler);
-    if (sensorsHandeler) vTaskResume(sensorsHandeler);
+    if (shiftMusicHandeler) vTaskResume(shiftMusicHandeler);
 
 
 }
@@ -248,19 +258,6 @@ void enter_light_sleep(void) {
     sleepEnable = WAKEUP;  // Disable sleep mode after waking up
 }
 
-
-void enter_deep_sleep(void){
-
-    ESP_LOGI("DEEP_SLEEP", "Going to deep sleep...");
-    // Enable wake-up on button press (when GPIO is LOW)
-    // gpio_pullup_en(PIR);  // Enable pull-up resistor
-    esp_sleep_enable_ext0_wakeup(PIR, 0); // Wake-up when button is pressed (LOW)
-    // Enter deep sleep
-    esp_deep_sleep_start();
-    // This line will **never execute** because ESP restarts after wake-up
-    // ESP_LOGI("DEEP_SLEEP", "Woke up!");
-    // sleepEnable = WAKEUP;  // Disable sleep mode after waking up
-}
 //------------------------------------------------------------------------------
 
 
@@ -286,8 +283,16 @@ void fetchBatteryPirStatus() {
 
 
     if(PIR_STATE==0){
-        printf("PIR 0\n");
-        // sleepTimeOut = xTaskGetTickCount();// imediate wake if display in sleep mode
+        ESP_LOGW("PIR"," Person Detected\n");
+        shiftOutData.bitset.IRLED=1;
+        if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore);
+        sleepTimeOut = xTaskGetTickCount();
+    }else{
+
+        if(xTaskGetTickCount()-sleepTimeOut>TIMEOUT_5_S  && sleepEnable == WAKEUP){
+            shiftOutData.bitset.IRLED=0;
+            if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore);
+        }
     }
 
     if (adc_chars_battery != NULL) {
@@ -307,9 +312,9 @@ void fetchBatteryPirStatus() {
             shiftOutData.bitset.CAMPDWN=1;
             shiftOutData.bitset.UVOFF=1;
             if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
-            ESP_LOGI("BATTERY", "LOW VOLTAGE");
+            ESP_LOGW("BATTERY", "LOW VOLTAGE");
         }
-        printf("Battery Voltage: %d mV\n", batVoltage);
+        ESP_LOGI("BATTERY", "Voltage: %d mV\n", batVoltage);
     }
 
 }
@@ -327,7 +332,7 @@ void pirRead() {
         adc_reading /= NO_OF_SAMPLES;
 
         uint16_t pirVal = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars_pir); // Return voltage in mV
-        printf("pirVal : %d mV\n", pirVal);
+        // printf("pirVal : %d mV\n", pirVal);
     }
 
 }
@@ -521,7 +526,7 @@ static void musicShiftreg(void *arg)
 
 void manageMusicShiftreg()
 {
-    xTaskCreatePinnedToCore(musicShiftreg, "sensor", 4 * 1024, NULL, 5, &sensorsHandeler, 1);//priority 5
+    xTaskCreatePinnedToCore(musicShiftreg, "sensor", 4 * 1024, NULL, 5, &shiftMusicHandeler, 1);//priority 5
 }
 
 

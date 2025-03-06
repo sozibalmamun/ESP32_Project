@@ -18,7 +18,7 @@
 
 int8_t percentage=0;
 int8_t maxTry=0;
-uint8_t DataupDoun=0;
+uint8_t DataUpDoun=0;
 
 
 bool sendToWss(uint8_t *buff, size_t buffLen) {
@@ -26,7 +26,7 @@ bool sendToWss(uint8_t *buff, size_t buffLen) {
     uint16_t currentIndex = 0;
 
     // ESP_LOGW(TAG_WSS, "Total stompS length: %d", buffLen);
-    DataupDoun |= 1<<0;
+    DataUpDoun |= 1<<0;
     while (buffLen > 0) {
         // Prepare the chunk data
         memset(tempFrame, 0, sizeof(tempFrame));
@@ -315,7 +315,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
             }else{
 
                 ESP_LOGI(TAG, "Received: ");
-                DataupDoun |= 1<<1;
+                DataUpDoun |= 1<<1;
 
                 vTaskDelay(50);
 

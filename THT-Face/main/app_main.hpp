@@ -18,8 +18,9 @@
 #include "timeLib.h"
 #include "CloudDataHandle.h"
 
-//--------fatfs-------------------
-#include "FATFS/fs.h"
+//--------Storage-------------------
+#include "Storage/fs.h"
+#include "Storage/mynvs.h"
 #include "gpioControl.h"
 
 
@@ -30,9 +31,7 @@ static QueueHandle_t xQueueLCDFrame = NULL;
 static QueueHandle_t xQueueEventLogic = NULL;
 static QueueHandle_t xQueueCloud = NULL;
 SemaphoreHandle_t musicShiftSemaphore= NULL;
-
 extern uint8_t music;
-
 
 void enter_deep_sleep(void);
 

@@ -6,9 +6,6 @@ void app_main()
 
     ESP_LOGE(TAG, "Starting app_main");
     gpioInt();
-    //-----------time int here-------------------------------------
-    RtcInit();
-    //--------------------------------------------------------------
     init_adc();
     //-------------------------
 
@@ -32,7 +29,7 @@ void app_main()
     shiftOutData.bitset.CAMPDWN=0;
     shiftOutData.bitset.ADC_EN=1;
     shiftOutData.bitset.LCDEN=1;
-    if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
+    if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); 
     vTaskDelay(pdMS_TO_TICKS(10));
 
     // Initialize Conectivity---------------------------
@@ -50,6 +47,9 @@ void app_main()
         create_directories();
         
     }
+    //-----------time int here-------------------------------------
+    RtcInit();
+    //--------------------------------------------------------------
 
     shiftOutData.bitset.LED=0;  //q4
     if(checkMusicEnable())music=TURN_ON_MUSIC;
@@ -60,7 +60,7 @@ void app_main()
 
     while(true){
 
-        if(xTaskGetTickCount()-sleepTimeOut>TIMEOUT_30_S  && sleepEnable == WAKEUP){
+        if(xTaskGetTickCount()-sleepTimeOut>TIMEOUT_30_S  && sleepEnable == WAKEUP && CPUBgflag==0){
             
             sleepEnable=SLEEP;
             welcomeMusic(false);
@@ -80,7 +80,7 @@ void app_main()
         }else {
             ensureLogDelivery();
             fetchBatteryPirStatus();
-            vTaskDelay(pdMS_TO_TICKS(100));
+            // vTaskDelay(pdMS_TO_TICKS(100));
         }
 
     }

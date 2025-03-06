@@ -115,10 +115,8 @@ void editDisplayBuff(camera_fb_t **buff){
 
             if(networkStatus==WSS_CONNECTED){//WSS_CONNECTED
 
-                icnPrint(NETWORK_ICON_POSS_X+12,NETWORK_ICON_POSS_Y+5,4,4 ,&upload,  (DataupDoun & 0x01)==1?GREEN: WHITE,*buff);//+8
-                DataupDoun &= ~(1<<0);
-                icnPrint(NETWORK_ICON_POSS_X+12,NETWORK_ICON_POSS_Y+8,4,4 ,&download,((DataupDoun>>1)& 0x01)==1?GREEN: WHITE,*buff);//+8
-                DataupDoun &= ~(1<<1);
+                icnPrint(NETWORK_ICON_POSS_X+12,NETWORK_ICON_POSS_Y+5,4,4 ,&upload,  (DataUpDoun & 0x01)==1?GREEN: WHITE,*buff);//+8
+                icnPrint(NETWORK_ICON_POSS_X+12,NETWORK_ICON_POSS_Y+8,4,4 ,&download,((DataUpDoun>>1)& 0x01)==1?GREEN: WHITE,*buff);//+8
 
             }else{
                 icnPrint(NETWORK_ICON_POSS_X+13,NETWORK_ICON_POSS_Y+7,2,7,&disconnectedIcon,RED,*buff);//+9
@@ -131,6 +129,9 @@ void editDisplayBuff(camera_fb_t **buff){
 
 
     // charging level & animatio --------------------------------------------
+
+
+
     uint8_t tempBlvl = calculate_battery_level(batVoltage);
     if(xTaskGetTickCount()-animationTime> 150){
         animationTime = xTaskGetTickCount();
@@ -148,7 +149,15 @@ void editDisplayBuff(camera_fb_t **buff){
     }
 
     icnPrint(NETWORK_ICON_POSS_X+16, NETWORK_ICON_POSS_Y+9-tempBlvl, BATTERY_WIDTH, tempBlvl-1,&betterybar, tempBlvl<=2?RED:WHITE ,*buff);
+
+    if(CHARGING_STATE)icnPrint(NETWORK_ICON_POSS_X+17, NETWORK_ICON_POSS_Y+3, BATTERY_WIDTH, BATTERY_HEIGHT-5 ,&chargeIcon,BLACK ,*buff);
+
     icnPrint(NETWORK_ICON_POSS_X+17, NETWORK_ICON_POSS_Y, BATTERY_WIDTH, BATTERY_HEIGHT,&betteryIcn,tempBlvl<2?RED:WHITE ,*buff);
+
+
+
+
+
     // ----------------------------------------------------------------------
 
     if(dataAvailable ){
@@ -156,7 +165,7 @@ void editDisplayBuff(camera_fb_t **buff){
         icnPrint(networkStatus==0?NETWORK_ICON_POSS_X-26: NETWORK_ICON_POSS_X-15 , NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,WHITE ,*buff);
     }
 
-
+    DataUpDoun &= ~(3<<0);
 
     // }
 }
@@ -879,9 +888,6 @@ uint8_t calculate_battery_level(uint32_t voltage) {
     else if (voltage <= 2148) return 6;  // Level 6 //4.2 voltage
 
     else return 0;  // Out of range, return Level 0
-
-
-
 
 }
 

@@ -20,19 +20,20 @@ void ensureLogDelivery(){
         if(CPUBgflag==0){
 
             if(CmdEvent!=IDLE_EVENT)eventFeedback();
-
+            vTaskDelay(100 / portTICK_PERIOD_MS);
+            
             if(!pendingData()){
 
                 dataAvailable = false;
 
             }else {
-                vTaskDelay(100 / portTICK_PERIOD_MS);
-                printf("pending data\n");
+                // printf("pending data\n");
                 if(networkStatus==WSS_CONNECTED){
 
                     if(CPUBgflag==0){
                         CPUBgflag=1;
                         if(lisence)process_attendance_files();
+                        else ESP_LOGE(TAG, "Lisence not found");
                         CPUBgflag=0;
                         
                     }

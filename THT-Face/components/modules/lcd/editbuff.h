@@ -17,7 +17,7 @@ extern key_state_t key_state;
 extern uint8_t CPUBgflag;
 extern bool dataAvailable;
 extern bool dspTimeFormet;
-extern uint8_t DataupDoun;
+extern uint8_t DataUpDoun;
 // extern uint8_t mac[6];
 
 

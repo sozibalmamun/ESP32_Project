@@ -17,6 +17,7 @@
 #include "globalScope.h"
 #include "CloudDataHandle.h"
 #include "timeLib.h"
+// #include "NVS.h"
 
 
 extern uint8_t CPUBgflag;
@@ -58,9 +59,24 @@ extern bool sendToWss(uint8_t *buff, size_t buffLen);
 extern void format_fatfs(void);
 extern void create_directories(void);
 
+
+extern void save_time_format(bool is_12_hour);
+extern void saveSubscription(bool enable);
+
+extern void welcomeMusic(bool enable);
+extern bool checkMusicEnable();
+
+
+
+
+
+
 uint16_t crc16(const char *buf, size_t len);
 void process_command(const char* buffer);
 bool process_and_send_faces(uint16_t id);
+
+
+
 
 
 #ifdef __cplusplus

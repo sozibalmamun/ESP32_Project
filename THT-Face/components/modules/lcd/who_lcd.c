@@ -349,6 +349,9 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
     app_lcd_draw_wallpaper();
     vTaskDelay(pdMS_TO_TICKS(5));
     PwmInt((gpio_num_t)LCE_BL);
+    
+    // HALT
+
     dispON(false);
 
 
@@ -359,6 +362,7 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
     // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
 
     dispON(true);
+
 
     return ESP_OK;
 }

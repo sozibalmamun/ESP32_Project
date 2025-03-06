@@ -979,7 +979,7 @@ bool pendingData() {
     // Iterate through all entries in FACE_DIRECTORY
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_REG) {  // Only process regular files
-            ESP_LOGI("Face", "File available: %s", entry->d_name);
+            // ESP_LOGI("Face", "File available: %s", entry->d_name);
             dAvailable = true;
         }
     }

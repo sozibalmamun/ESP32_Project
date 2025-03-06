@@ -8,8 +8,7 @@
 #include "esp_log.h"
 #include "driver/ledc.h"
 
-#include "nvs_flash.h"
-#include "nvs.h"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,7 +39,7 @@ extern "C" {
 ***/
 
 // Define delays
-#define testTime 50//10
+#define testTime 10//10
 #define DelayRST    testTime
 #define DelayIO     testTime
 #define CLK_DELAY   testTime
@@ -120,20 +119,6 @@ void RtcDataRead(uint8_t eRtcDataType);
 
 
 
-static const char *NVS_NAMESPACE = "Config";
-static const char *TIME_FORMAT_KEY = "Format";
-
-static const char *NVS_SUBCRIP_NAME_SPACE = "con";
-static const char *NVS_SUBCRIP_NAME_SPACE_FORMAT_KEY = "Sub";
-
-
-
-static const char *NVS_MUSIC_NAME_SPACE = "mcon";
-static const char *NVS_MUSIC_NAME_SPACE_FORMAT_KEY = "mSub";
-
-
-
-
 
 
 // Time structure
@@ -164,11 +149,15 @@ void time_library_init(time_library_time_t *initial_time ,bool rtcUpdate);
 void  time_library_set_time(time_library_time_t *time ,bool rtcUpdate);
 // Function to get the current time
 void time_library_get_time(time_library_time_t *time);
-void save_time_format(bool is_12_hour);
-void saveSubscription(bool enable);
 
-void welcomeMusic(bool enable);
-bool checkMusicEnable();
+// void save_time_format(bool is_12_hour);
+// void saveSubscription(bool enable);
+
+// void welcomeMusic(bool enable);
+// bool checkMusicEnable();
+
+extern void intTimeFormet(void);
+extern void checkSubscription(void);
 
 #ifdef __cplusplus
 }

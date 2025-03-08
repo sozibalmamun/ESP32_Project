@@ -56,7 +56,7 @@ static void task_process_handler(void *arg)
 {
     camera_fb_t *frame = NULL;
 
-    const TickType_t xDelay = pdMS_TO_TICKS(50);  // Run every 100 ms
+    const TickType_t xDelay = pdMS_TO_TICKS(50);  // Run every 50 ms
     const TickType_t queueTimeout = pdMS_TO_TICKS(100);  // Queue receive timeout ms
 
     while (true)
@@ -125,21 +125,21 @@ static void task_process_handler(void *arg)
                 free(frame);
             }
         }
-        else
-        {
-            // If no frame received, log and delay
-            // vTaskDelay(xDelay);  // Delay task execution if no frame was received
+        // else
+        // {
+        //     // If no frame received, log and delay
+        //     vTaskDelay(xDelay);  // Delay task execution if no frame was received
 
-            // if(sleepEnable!=WAKEUP){
+        //     if(sleepEnable!=WAKEUP){
 
-            //     // printf("dsp sleep\n");
-            //     time_library_time_t current_time;
-            //     sleepTimeDate(frame,current_time);
-            //     g_lcd.draw_bitmap(0, 0, frame->width, frame->height, (uint16_t *)frame->buf);
+        //         // printf("dsp sleep\n");
+        //         time_library_time_t current_time;
+        //         sleepTimeDate(frame,current_time);
+        //         g_lcd.draw_bitmap(0, 0, frame->width, frame->height, (uint16_t *)frame->buf);
 
-            // }
+        //     }
 
-        }
+        // }
 
         
     }
@@ -290,6 +290,7 @@ void scaleImageTo320x240(camera_fb_t *src, camera_fb_t *dst)
 
 esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o, const bool return_fb)
 {
+    
     spi_config_t bus_conf = {
         .miso_io_num = BOARD_LCD_MISO,
         .mosi_io_num = BOARD_LCD_MOSI,
@@ -328,9 +329,9 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
         .height = 320,
 
 #if defined GC9306
-        .rotate = SCR_DIR_TBLR,           // SCR_DIR_TBLR, /**< From top to bottom then from left to right */ GC9306
+        .rotate = SCR_DIR_TBLR,           ///**< From top to bottom then from left to right change by sozib due to flip the display */ GC9306
 #else
-        .rotate = SCR_DIR_BTLR,  //  h miror lcd . st7789
+        .rotate = SCR_DIR_BTLR,  //  h miror lcd . st7789 change by sozib due to flip the display
        // .rotate = SCR_DIR_TBRL,/**< From top to bottom then from right to left change by sozib due to flip the display*/
 #endif
 
@@ -349,7 +350,7 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
     app_lcd_draw_wallpaper();
     vTaskDelay(pdMS_TO_TICKS(5));
     PwmInt((gpio_num_t)LCE_BL);
-    
+
     // HALT
 
     dispON(false);

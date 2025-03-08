@@ -68,11 +68,19 @@ void register_camera(const pixformat_t pixel_fromat,
     config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
 
     // camera init
-    esp_err_t err = esp_camera_init(&config);
-    if (err != ESP_OK)
+    // esp_err_t err = esp_camera_init(&config);
+    // if (err != ESP_OK)
+    // {
+    //     ESP_LOGE(TAG, "Camera init failed with error 0x%x", err);
+
+    //     return;
+    // }
+
+
+    while(esp_camera_init(&config) != ESP_OK)
     {
-        // ESP_LOGE(TAG, "Camera init failed with error 0x%x", err);
-        return;
+        // ESP_LOGE(TAG, "Camera init failed");
+        // vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 
     sensor_t *s = esp_camera_sensor_get();

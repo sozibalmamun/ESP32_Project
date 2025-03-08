@@ -447,6 +447,7 @@ void musicArrayPlay(uint8_t *musicP ,uint8_t len){
                 musicPlay(0);
                 return;
             }  
+            
         }
     }
     musicPlay(0);

@@ -875,19 +875,21 @@ uint8_t calculate_battery_level(uint32_t voltage) {
 
     if (voltage < 1650) return 0;  // Level 0// 3.3 voltage 
 
-    else if (voltage < 1733) return 1;  // Level 1
+    else if (voltage < 1728) return 1;  // Level 1
 
-    else if (voltage < 1816) return 2;  // Level 2
+    else if (voltage < 1806) return 2;  // Level 2
 
-    else if (voltage < 1899) return 3;  // Level 3
+    else if (voltage < 1884) return 3;  // Level 3
 
-    else if (voltage < 1982) return 4;  // Level 4
+    else if (voltage < 1962) return 4;  // Level 4
 
-    else if (voltage < 2056) return 5;  // Level 5
+    else if (voltage < 2040) return 5;  // Level 5
 
-    else if (voltage <= 2148) return 6;  // Level 6 //4.2 voltage
+    else if (voltage <= 2110 ||  voltage > 2110   ) return 6;  // Level 6 //4.2 voltage
 
-    else return 0;  // Out of range, return Level 0
+
+
+    // else return 0;  // Out of range, return Level 0
 
 }
 

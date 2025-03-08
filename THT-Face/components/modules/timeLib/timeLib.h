@@ -77,13 +77,13 @@ extern "C" {
 
 #define  RTC_WR_TCS_ADDR        0x90    // Trickle Charge Control Register 0xaf:0.45mA3.6V 0xa0:0mA	or Hardware 3mA
 #define  RTC_RD_TCS_ADDR        0x91
-#define  RTC_TCS_0_DNRN		0xa0 // no	// 0xa0~0xa3 or 0xac~0xaf
-#define  RTC_TCS_1_D2R8K	0xab // 450	uA
-#define  RTC_TCS_2_D1R8K	0xa7 // 525	uA
-#define  RTC_TCS_3_D2R4K	0xaa // 900	uA
-#define  RTC_TCS_4_D1R4K	0xa6 // 1050uA
-#define  RTC_TCS_5_D2R2K	0xa9 // 1800uA
-#define  RTC_TCS_6_D1R2K	0xa5 // 2100uA
+#define  RTC_TCS_0_DNRN		    0xa0 // no	// 0xa0~0xa3 or 0xac~0xaf
+#define  RTC_TCS_1_D2R8K	    0xab // 450	uA
+#define  RTC_TCS_2_D1R8K	    0xa7 // 525	uA
+#define  RTC_TCS_3_D2R4K	    0xaa // 900	uA
+#define  RTC_TCS_4_D1R4K	    0xa6 // 1050uA
+#define  RTC_TCS_5_D2R2K	    0xa9 // 1800uA
+#define  RTC_TCS_6_D1R2K	    0xa5 // 2100uA
 
 #define  RTC_WR_CLK_BURST_ADDR  0xBE    // Clock Burst Mode 31 bytes
 #define  RTC_RD_CLK_BURST_ADDR  0xBF
@@ -100,15 +100,15 @@ extern "C" {
 #define RTC_RD_RAM_BURST_ADDR   0xFF
 
 // GPIO control macros
-#define RTC_DATA_WRITE_MODE {gpio_set_direction(DS1302_IO_PIN, GPIO_MODE_OUTPUT); }
-#define RTC_DATA_READ_MODE  {gpio_set_direction(DS1302_IO_PIN, GPIO_MODE_INPUT); }
-#define RTC_CLK_HIGH        {gpio_set_level(DS1302_SCLK_PIN, 1); }
-#define RTC_CLK_LOW         {gpio_set_level(DS1302_SCLK_PIN, 0); }
-#define RTC_CS_HIGH         {gpio_set_level(DS1302_CE_PIN, 1); }
-#define RTC_CS_LOW          {gpio_set_level(DS1302_CE_PIN, 0); }
-#define RTC_DATA_HIGH       {gpio_set_level(DS1302_IO_PIN, 1);}
-#define RTC_DATA_LOW        {gpio_set_level(DS1302_IO_PIN, 0);}
-#define RTC_DATA_READ       gpio_get_level(DS1302_IO_PIN)
+#define RTC_DATA_WRITE_MODE     {gpio_set_direction(DS1302_IO_PIN, GPIO_MODE_OUTPUT); }
+#define RTC_DATA_READ_MODE      {gpio_set_direction(DS1302_IO_PIN, GPIO_MODE_INPUT); }
+#define RTC_CLK_HIGH            {gpio_set_level(DS1302_SCLK_PIN, 1); }
+#define RTC_CLK_LOW             {gpio_set_level(DS1302_SCLK_PIN, 0); }
+#define RTC_CS_HIGH             {gpio_set_level(DS1302_CE_PIN, 1); }
+#define RTC_CS_LOW              {gpio_set_level(DS1302_CE_PIN, 0); }
+#define RTC_DATA_HIGH           {gpio_set_level(DS1302_IO_PIN, 1);}
+#define RTC_DATA_LOW            {gpio_set_level(DS1302_IO_PIN, 0);}
+#define RTC_DATA_READ           gpio_get_level(DS1302_IO_PIN)
 
 //rtc 
 void RtcInit(void);
@@ -142,7 +142,6 @@ uint8_t calculate_day_of_week(uint16_t year, uint8_t month, uint8_t day);
 uint32_t time_library_elapsed_time_ms(uint32_t start_time);
 // Function to get the current time in milliseconds
 uint32_t time_library_get_time_ms(void);
-
 // Function to initialize the time library
 void time_library_init(time_library_time_t *initial_time ,bool rtcUpdate);
 // Function to set the current time manually
@@ -150,11 +149,7 @@ void  time_library_set_time(time_library_time_t *time ,bool rtcUpdate);
 // Function to get the current time
 void time_library_get_time(time_library_time_t *time);
 
-// void save_time_format(bool is_12_hour);
-// void saveSubscription(bool enable);
 
-// void welcomeMusic(bool enable);
-// bool checkMusicEnable();
 
 extern void intTimeFormet(void);
 extern void checkSubscription(void);

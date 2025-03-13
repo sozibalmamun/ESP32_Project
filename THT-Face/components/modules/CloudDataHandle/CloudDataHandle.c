@@ -9,6 +9,8 @@ uint8_t CPUBgflag;
 bool dataAvailable = false;
 
 extern  volatile uint8_t CmdEvent;
+extern volatile TickType_t sleepTimeOut; 
+
 
 static QueueHandle_t xQueueCloudI = NULL;
 TaskHandle_t detectionFaceProcesingTaskHandler=NULL;
@@ -30,12 +32,11 @@ void ensureLogDelivery(){
                 // printf("pending data\n");
                 if(networkStatus==WSS_CONNECTED){
 
-                    if(CPUBgflag==0){
+                    if(CPUBgflag == 0){
                         CPUBgflag=1;
                         if(lisence)process_attendance_files();
                         else ESP_LOGE(TAG, "Lisence not found");
-                        CPUBgflag=0;
-                        
+                        CPUBgflag = 0;
                     }
                 }
             }
@@ -46,6 +47,13 @@ void ensureLogDelivery(){
         CPUBgflag=0;
         if(pendingData())dataAvailable = true;
 
+    }else if(networkStatus==WIFI_CONNECTED){
+
+
+       if( xTaskGetTickCount()-sleepTimeOut>TIMEOUT_10_S && xTaskGetTickCount()-sleepTimeOut<TIMEOUT_12_S ){
+            wssReset();
+       }
+       
     }
     if(CPUBgflag==0){
         vTaskDelay(500 / portTICK_PERIOD_MS); //Delay before retry

@@ -115,8 +115,8 @@ void editDisplayBuff(camera_fb_t **buff){
 
             if(networkStatus==WSS_CONNECTED){//WSS_CONNECTED
 
-                icnPrint(NETWORK_ICON_POSS_X+12,NETWORK_ICON_POSS_Y+5,4,4 ,&upload,  (DataUpDoun & 0x01)==1?GREEN: WHITE,*buff);//+8
-                icnPrint(NETWORK_ICON_POSS_X+12,NETWORK_ICON_POSS_Y+8,4,4 ,&download,((DataUpDoun>>1)& 0x01)==1?GREEN: WHITE,*buff);//+8
+                icnPrint(NETWORK_ICON_POSS_X+12,NETWORK_ICON_POSS_Y+5,4,4 ,&upload,  (DataUpDoun & 0x01)==1?BLACK: WHITE,*buff);//+8
+                icnPrint(NETWORK_ICON_POSS_X+12,NETWORK_ICON_POSS_Y+8,4,4 ,&download,((DataUpDoun>>1)& 0x01)==1?BLACK: WHITE,*buff);//+8
 
             }else{
                 icnPrint(NETWORK_ICON_POSS_X+13,NETWORK_ICON_POSS_Y+7,2,7,&disconnectedIcon,RED,*buff);//+9
@@ -195,11 +195,12 @@ void iconPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,char* l
 
 void icnPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,uint16_t* logobuff,uint16_t color ,camera_fb_t *buff){
     // Ensure logo fits within the buffer dimensions
-    if (x_offset + w > buff->width || y_offset + h > buff->height) {
-        // printf("Logo position out of bounds\n");
+    
+    // if (x_offset + w > buff->width || y_offset + h > buff->height) {
+    //     // printf("Logo position out of bounds\n");
         
-        return;
-    }
+    //     return;
+    // }
     for (int y = h; y >= 0; y--) {
         for (int x = 0; x < w; x++) {
             int logo_index = y * w + x;

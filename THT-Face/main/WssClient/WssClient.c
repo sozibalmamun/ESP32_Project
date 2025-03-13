@@ -352,10 +352,11 @@ void wssReset(void){
     // ESP_LOGI(TAG, "❌ esp_websocket_client_stop");
     client = NULL;
     
-    }            
-    vTaskDelay(50);
+    }      
+    ESP_LOGI(TAG, "wssReset");
+    vTaskDelay(500 / portTICK_PERIOD_MS);
     wssClientInt();
-    // ESP_LOGI(TAG, "wssAppStart");
+    vTaskDelay(1500 / portTICK_PERIOD_MS);
 
 }
 // 🟢 Perform SSL Handshake with mbedTLS**
@@ -639,80 +640,4 @@ void wssClientInt(void) {
 //     esp_websocket_client_start(client);
 
 // }
-
-
-
-// void wssAppStart(void)
-// {
-
-//     stompInfo_cfg_t stompInfo ={
-//         .uri = THT,
-//         .host = HOST,
-//         .port = PORT,
-//         .path = PATH
-//     };
-//     wss_client_int(stompInfo);
-// }
-
-// void wss_client_int( stompInfo_cfg_t stompSetup ) {
-   
-//     esp_websocket_client_config_t websocket_cfg = {};
-
-//     // char socket[100];
-//     // snprintf(socket, sizeof(socket), "%s", stompSetup.uri);
-
-
-//     // int random1 = esp_random() % 999; // Generates a random number between 0 and 999
-//     // int random2 = esp_random() % 999999; // Generates a random number between 0 and 999999
-//     // snprintf(socket + strlen(socket), sizeof(socket) - strlen(socket), "%d/%d/websocket", random1, random2);
-
-
-//     websocket_cfg.uri = (const char*)THT;
-//     websocket_cfg.cert_pem = echo_org_ssl_ca_cert;  
-//     websocket_cfg.pingpong_timeout_sec=10;
-
-
-//     // char uinqeheaders[14];
-//     // snprintf(uinqeheaders, sizeof(uinqeheaders), "%s%08llu",DEVICE_VERSION_ID, generate_unique_id());
-//     // printf("\nheadr:  %s",uinqeheaders);
-
-//     // websocket_cfg.headers = (const char*)uinqeheaders;
-
-//     // memset(socket,0,strlen(socket));
-
-//     // snprintf(socket, sizeof(socket), "%s", stompSetup.path);
-//     // snprintf(socket + strlen(socket), sizeof(socket) - strlen(socket), "%d/%d/websocket", random1, random2);
-    
-//     // websocket_cfg.path = (const char*)socket;// path
-//     // websocket_cfg.port = stompSetup.port;
-//     // websocket_cfg.host = (const char*)stompSetup.host;
-
-//     // websocket_cfg.use_global_ca_store = false;// try 
-//     // websocket_cfg.skip_cert_common_name_check = false;
-//     // websocket_cfg.disable_auto_reconnect = false;
-
-//     websocket_cfg.use_global_ca_store = true;// ok 
-//     websocket_cfg.skip_cert_common_name_check = true;
-//     websocket_cfg.disable_auto_reconnect = false;
-//     websocket_cfg.task_stack = 1024*4;  // Increased stack size
-//     websocket_cfg.task_prio =10;      // Set an appropriate task priority
-
-
-//     // ESP_LOGI(TAG, "Constructed WebSocket URL: %s", websocket_cfg.uri);
-//     // ESP_LOGI(TAG, "Constructed WebSocket PATH: %s", websocket_cfg.path);
-
-
-//     // ESP_LOGI(TAG, "Initializing global CA store...");
-//     ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));
-
-
-//     client = esp_websocket_client_init(&websocket_cfg);
-//     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
-//     esp_websocket_client_start(client);
-// }
-
-
-
-
-
 

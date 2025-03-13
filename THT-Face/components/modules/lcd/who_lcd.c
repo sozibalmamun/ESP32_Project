@@ -56,8 +56,9 @@ static void task_process_handler(void *arg)
 {
     camera_fb_t *frame = NULL;
 
-    const TickType_t xDelay = pdMS_TO_TICKS(50);  // Run every 50 ms
+    // const TickType_t xDelay = pdMS_TO_TICKS(50);  // Run every 50 ms
     const TickType_t queueTimeout = pdMS_TO_TICKS(100);  // Queue receive timeout ms
+    volatile TickType_t dispEdit= xTaskGetTickCount(); 
 
     while (true)
     {
@@ -108,7 +109,10 @@ static void task_process_handler(void *arg)
         //     heap_caps_free(resized_frame);
         //     //----------------------------------------------------
 
-            editDisplayBuff(&frame);
+            if(xTaskGetTickCount()-dispEdit>TIMEOUT_2_S){
+                editDisplayBuff(&frame);
+            }
+
             g_lcd.draw_bitmap(0, 0, frame->width, frame->height, (uint16_t *)frame->buf);
 
 

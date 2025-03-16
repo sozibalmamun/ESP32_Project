@@ -22,75 +22,20 @@ void editDisplayBuff(camera_fb_t **buff){
 
     uint8_t clockType = get_time(&current_time, dspTimeFormet);
 
-    // if(sleepEnable==SLEEP){// sleep time display
-
-    //     sleepTimeDate(*buff,current_time);
-
-    // }else {// wekup time display
-
     if(networkIntDone){
 
         if(networkStatus==WIFI_DISS){
 
-            // if(ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-10,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
-
             if( xTaskGetTickCount()-animationTime< 20){
-                
-                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn01,WHITE,*buff);//wifi 4
-
+                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn01,WHITE,*buff);//wifi 1
             }else if(xTaskGetTickCount()-animationTime>= 20 && xTaskGetTickCount()-animationTime<= 50){
-                
-                // if(!ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-10,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
-                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn02,WHITE,*buff);//wifi 4
-
+                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn02,WHITE,*buff);//wifi 2
             }else if(xTaskGetTickCount()-animationTime>= 50 && xTaskGetTickCount()-animationTime<= 80){
-
-            // if(!ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-15,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
-
-                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn03,WHITE,*buff);//wifi 4
-
+                icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn03,WHITE,*buff);//wifi 3
             }else if(xTaskGetTickCount()-animationTime>= 80 && xTaskGetTickCount()-animationTime<= 150){
-
-            // if(!ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-10,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
-
                 icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn04,WHITE,*buff);//wifi 4
-                // icnPrint(NETWORK_ICON_POSS_X+13,NETWORK_ICON_POSS_Y+8,7,7 ,&noWifiIcon,RED,*buff);//+9//
-
             }
-            // else if(xTaskGetTickCount()-animationTime>= 150){
-            //     animationTime = xTaskGetTickCount();
-            // }
-            // icnPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+6,7,7 ,&noWifiIcon,RED,*buff);//+9
-
-            // for (uint8_t y = qrInfo.yOfset-3; y < qrInfo.yOfset-3 + qrInfo.erase_size; y++)
-            // {
-            //     for (uint16_t x = qrInfo.xOfset-3; x < qrInfo.xOfset-3 + qrInfo.erase_size; x++)
-            //     {
-            //         int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
-
-            //         (*buff)->buf[index] = 0xff;
-            //         (*buff)->buf[index + 1] = 0xff;
-                
-            //     }
-            // }
-
-            // // char tempFrame[15] ;
-            // // snprintf(tempFrame, sizeof(tempFrame), "%09llu", generate_unique_id());//uniqueId
-            // // createQrcode(tempFrame , *buff);
-            // // writeSn(*buff);
-            // // uint64_t Id= generate_unique_id();
-
-            // char tempFrame[30] ;
-
-            // uint8_t mac[6];
-            // esp_read_mac(mac, ESP_MAC_BT);
-
-            // snprintf(tempFrame, sizeof(tempFrame), "%s-%02x:%02x:%02x:%02x:%02x:%02x",DEVICE_VERSION_ID,mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);//uniqueId
-            // createQrcode(tempFrame , *buff);
-            // writeSn(*buff, generate_unique_id());
-
-        }
-        else 
+        }else 
         {
 
             if(networkStatus==WSS_CONNECTED && key_state== KEY_IDLE ){
@@ -155,7 +100,6 @@ void editDisplayBuff(camera_fb_t **buff){
     writedateTime(*buff , current_time, clockType);
 
     // charging level & animatio --------------------------------------------
-
     uint8_t tempBlvl = calculate_battery_level(batVoltage);
     if(xTaskGetTickCount()-animationTime> 150){
         animationTime = xTaskGetTickCount();
@@ -177,6 +121,7 @@ void editDisplayBuff(camera_fb_t **buff){
     if(CHARGING_STATE)icnPrint(NETWORK_ICON_POSS_X+17, NETWORK_ICON_POSS_Y+3, BATTERY_WIDTH, BATTERY_HEIGHT-5 ,&chargeIcon,BLACK ,*buff);
 
     icnPrint(NETWORK_ICON_POSS_X+17, NETWORK_ICON_POSS_Y, BATTERY_WIDTH, BATTERY_HEIGHT,&betteryIcn,tempBlvl<2?RED:WHITE ,*buff);
+
 // painding data---------------------
     if(dataAvailable ){
         icnPrint(ble_is_connected?NETWORK_ICON_POSS_X-26: NETWORK_ICON_POSS_X-14 , NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,WHITE ,*buff);
@@ -184,7 +129,6 @@ void editDisplayBuff(camera_fb_t **buff){
 //-----------------------------------
     DataUpDoun &= ~(3<<0);
 
-    // }
 }
 
 void iconPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,char* logobuff,uint16_t color ,camera_fb_t *buff) {
@@ -473,7 +417,7 @@ void writeSn(camera_fb_t *buff ,uint64_t id){
 
 void writedateTime(camera_fb_t *buff ,time_library_time_t current_time,uint8_t clockType){
 
-//2024-08-10 03.07 PM
+    // 2024-08-10  03.07 PM
 
     char tempFrame[30] ;
     snprintf(tempFrame, sizeof(tempFrame), "%d-%02d-%02d   %02d.%02d %s",current_time.year,current_time.month,current_time.day, 

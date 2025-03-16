@@ -115,6 +115,7 @@ extern bool ble_is_connected;
 extern void blufi_security_deinit(void);
 extern void blufiAddStart(void);
 extern esp_err_t blufi_security_init(void);
+extern void send_custom_data_to_app(const char *data);
 //-----------------------------------------
 extern uint64_t generate_unique_id(void);
 extern void process_command(const char* buffer);

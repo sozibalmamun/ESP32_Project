@@ -131,7 +131,7 @@ static bool example_wifi_reconnect(void)
 }
 
 
-static void send_custom_data_to_app(const char *data)
+void send_custom_data_to_app(const char *data)
 {
     if (ble_is_connected) {
         esp_err_t ret = esp_blufi_send_custom_data((uint8_t *)data, strlen(data));
@@ -366,7 +366,7 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
 
 
         if(networkStatus==WSS_CONNECTED ){
-            
+
             config=QR_CODE_SKIP;
             esp_blufi_adv_stop();
             blufi_security_init();

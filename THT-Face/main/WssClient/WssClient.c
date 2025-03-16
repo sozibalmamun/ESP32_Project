@@ -2,7 +2,9 @@
 #include "timeLib.h"
 #include <math.h>
 #include "esp_wifi.h"
+
 #include "esp_blufi.h"
+
 #include "esp_log.h"
 #include "esp_tls.h"
 #include "esp_system.h"
@@ -227,11 +229,14 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     case WEBSOCKET_EVENT_CONNECTED:
         ESP_LOGW(TAG, "WSS_CONNECTED");
         networkStatus=WSS_CONNECTED;
-        config=QR_CODE_SKIP;
-        
+        send_custom_data_to_app("WSSCS"); // Send feedback to application over BLE
+
         if(!ble_is_connected){
+
+            config=QR_CODE_SKIP;
             esp_blufi_adv_stop();
             blufi_security_init();
+
         }
 
 
@@ -274,6 +279,7 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
         blufi_security_deinit();
         blufiAddStart();
+        
         break;
     case WEBSOCKET_EVENT_DATA:
 

@@ -69,6 +69,7 @@ static uint8_t example_wifi_retry = 0;
 
 /* store the station info for send back to phone */
 uint8_t networkStatus=0;
+uint8_t config=0x00;
 static bool gl_sta_got_ip = false;
 bool ble_is_connected = false;
 static uint8_t gl_sta_bssid[6];
@@ -77,7 +78,6 @@ static int gl_sta_ssid_len;
 // static wifi_sta_list_t gl_sta_list;
 static bool gl_sta_is_connecting = false;
 static esp_blufi_extra_info_t gl_sta_conn_info;
-// uint8_t mac[6]={0x00,0x00,0x00,0x00,0x00,0x00};
 
 
 
@@ -265,8 +265,8 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
         memcpy(gl_sta_ssid, event->ssid, event->ssid_len);
         gl_sta_ssid_len = event->ssid_len;
 
-        esp_blufi_adv_stop();
-        blufi_security_init();
+        // esp_blufi_adv_stop();
+        // blufi_security_init();
 
         break;
     }
@@ -286,9 +286,9 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
 
         example_wifi_connect();
         vTaskDelay(1);
-        blufi_security_deinit();
-        blufiAddStart();
-        vTaskDelay(2);
+        // blufi_security_deinit();
+        // blufiAddStart();
+        // vTaskDelay(2);
         send_custom_data_to_app("try");// wifi connection feedback to application over BLE( wifi connect success)
 
 
@@ -363,8 +363,25 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
     case ESP_BLUFI_EVENT_BLE_DISCONNECT:
         BLUFI_INFO("BLUFI ble disconnect\n");
         ble_is_connected = false;
-        blufi_security_deinit();
-        blufiAddStart();
+
+
+        if(networkStatus==WSS_CONNECTED ){
+            
+            config=QR_CODE_SKIP;
+            esp_blufi_adv_stop();
+            blufi_security_init();
+
+        }else{
+
+            blufi_security_deinit();
+            blufiAddStart();
+
+        }
+
+
+
+
+
         valid_password = false;
 
 

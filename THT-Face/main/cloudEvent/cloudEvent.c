@@ -3,6 +3,9 @@
 #include "cloudEvent.h"
 #include "who_button.h"
 #include "st7789.h"
+#include "esp_blufi.h"
+
+
 
 
 #define     TAG_ENROL       "ENROL"
@@ -361,6 +364,30 @@ void process_command(const char* buffer ) {
         lisence = buffer[6]==1 ? 1 : 0 ;
         CmdEvent = LISENCE_UPDATE;
         saveSubscription(lisence);
+
+
+    }else if(strncmp(buffer,"config", strlen("config"))==0){
+
+
+        if(buffer[7]==1){
+
+            ESP_LOGW(TAG_ENROL, "blufiAddStart");
+            blufi_security_deinit();
+            blufiAddStart();
+            vTaskDelay(20);
+            config=0x00;
+
+
+        }else{
+
+            ESP_LOGW(TAG_ENROL, "esp_blufi_adv_stop");
+            esp_blufi_disconnect();
+            vTaskDelay(20);
+            esp_blufi_adv_stop();
+            blufi_security_init();
+            config=0x01;
+        }
+
 
 
     }

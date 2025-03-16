@@ -20,7 +20,7 @@
 // #include "NVS.h"
 
 
-extern uint8_t CPUBgflag;
+
 
 const DATA_FLASH uint16_t crc16_table[256] = 
 {
@@ -47,6 +47,8 @@ const DATA_FLASH uint16_t crc16_table[256] =
 extern  uint8_t sleepEnable;
 extern volatile TickType_t sleepTimeOut; 
 extern bool dspTimeFormet;
+extern uint8_t CPUBgflag;
+extern uint8_t config;
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,6 +67,13 @@ extern void saveSubscription(bool enable);
 
 extern void welcomeMusic(bool enable);
 extern bool checkMusicEnable();
+// ble
+extern void blufi_security_deinit(void);
+extern void blufiAddStart(void);
+extern esp_err_t blufi_security_init(void);
+
+
+
 
 
 

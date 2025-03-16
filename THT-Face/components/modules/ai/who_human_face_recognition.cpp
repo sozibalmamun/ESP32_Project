@@ -164,7 +164,7 @@ static int rgb_printf(camera_fb_t *fb, uint32_t color, const char *format, ...)
 bool copy_rectangle(const camera_fb_t *src, imageData_t **dst, int16_t x_start, int16_t x_end, int16_t y_start, int16_t y_end) {
     // Validate rectangle dimensions
     if (x_start >= x_end || y_start >= y_end) {
-        printf("Invalid rectangle dimensions\n");
+        // printf("Invalid rectangle dimensions\n");
         return false;
     }
     // Calculate rectangle dimensions
@@ -320,7 +320,7 @@ static void task_process_handler(void *arg)
                                 key_state= KEY_IDLE;
                                 vTaskDelay(10);
                                 shiftOutData.bitset.LED=0;  //q3
-                                shiftOutData.bitset.IRLED=0;  //q7
+                                // shiftOutData.bitset.IRLED=0;  //q7
                                 if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
 
                             } 
@@ -367,7 +367,7 @@ static void task_process_handler(void *arg)
                             faceDetectTimeOut= xTaskGetTickCount(); 
                             if(xTaskGetTickCount()>sleepEnable+TIMEOUT_30_S){
                                 shiftOutData.bitset.LED=0;      //q3
-                                shiftOutData.bitset.IRLED=0;    //q7
+                                // shiftOutData.bitset.IRLED=0;    //q7
                                 if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
 
                             }
@@ -464,6 +464,7 @@ static void task_process_handler(void *arg)
                             recognizer->enroll_id((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint, personName, true);// due to add name
                             enrolFrame->id = recognizer->get_enrolled_ids().back().id;
                             enrolFrame->Name = personName;
+                            
 
                             //-------------------------pass value to struc via task----------------------------
                             if(detectionFaceProcesingTaskHandler==NULL){
@@ -658,7 +659,7 @@ static void task_process_handler(void *arg)
                             personId=recognizer->get_enrolled_ids().back().id;
                             // rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id);
                             shiftOutData.bitset.LED=0;  //q3
-                            shiftOutData.bitset.IRLED=0;  //q7
+                            // shiftOutData.bitset.IRLED=0;  //q7
                             if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
 
 
@@ -669,7 +670,7 @@ static void task_process_handler(void *arg)
 
                             rgb_printf(frame, RGB565_MASK_RED, "Duplicate Enrol%s","!"); 
                             shiftOutData.bitset.LED=0;  //q3
-                            shiftOutData.bitset.IRLED=0;  //q7
+                            // shiftOutData.bitset.IRLED=0;  //q7
                             if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
 
                             break;
@@ -689,7 +690,7 @@ static void task_process_handler(void *arg)
                         case SHOW_ALINE:
 
                             enrolTimeOut= xTaskGetTickCount();// incrise 15000ms enrolment time
-                            rgb_printf(frame, RGB565_MASK_RED, "Aline Face");// at invalid face
+                            rgb_printf(frame, RGB565_MASK_RED, "Center Your Face");// at invalid face
                             key_state= KEY_SHORT_PRESS;// back to enroling
 
                             break;

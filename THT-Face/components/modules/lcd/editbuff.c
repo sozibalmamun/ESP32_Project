@@ -32,7 +32,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
         if(networkStatus==WIFI_DISS){
 
-            if(ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-10,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
+            // if(ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-10,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
 
             if( xTaskGetTickCount()-animationTime< 20){
                 
@@ -40,7 +40,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
             }else if(xTaskGetTickCount()-animationTime>= 20 && xTaskGetTickCount()-animationTime<= 50){
                 
-                if(!ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-10,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
+                // if(!ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-10,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
                 icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn02,WHITE,*buff);//wifi 4
 
             }else if(xTaskGetTickCount()-animationTime>= 50 && xTaskGetTickCount()-animationTime<= 80){
@@ -51,7 +51,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
             }else if(xTaskGetTickCount()-animationTime>= 80 && xTaskGetTickCount()-animationTime<= 150){
 
-            if(!ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-10,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
+            // if(!ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-10,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
 
                 icnPrint(NETWORK_ICON_POSS_X,NETWORK_ICON_POSS_Y,WIFI_WIDTH,WIFI_HEIGHT,&wifiIcn04,WHITE,*buff);//wifi 4
                 // icnPrint(NETWORK_ICON_POSS_X+13,NETWORK_ICON_POSS_Y+8,7,7 ,&noWifiIcon,RED,*buff);//+9//
@@ -62,34 +62,35 @@ void editDisplayBuff(camera_fb_t **buff){
             // }
             // icnPrint(NETWORK_ICON_POSS_X+15,NETWORK_ICON_POSS_Y+6,7,7 ,&noWifiIcon,RED,*buff);//+9
 
-            for (uint8_t y = qrInfo.yOfset-3; y < qrInfo.yOfset-3 + qrInfo.erase_size; y++)
-            {
-                for (uint16_t x = qrInfo.xOfset-3; x < qrInfo.xOfset-3 + qrInfo.erase_size; x++)
-                {
-                    int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
+            // for (uint8_t y = qrInfo.yOfset-3; y < qrInfo.yOfset-3 + qrInfo.erase_size; y++)
+            // {
+            //     for (uint16_t x = qrInfo.xOfset-3; x < qrInfo.xOfset-3 + qrInfo.erase_size; x++)
+            //     {
+            //         int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
 
-                    (*buff)->buf[index] = 0xff;
-                    (*buff)->buf[index + 1] = 0xff;
+            //         (*buff)->buf[index] = 0xff;
+            //         (*buff)->buf[index + 1] = 0xff;
                 
-                }
-            }
+            //     }
+            // }
 
-            // char tempFrame[15] ;
-            // snprintf(tempFrame, sizeof(tempFrame), "%09llu", generate_unique_id());//uniqueId
+            // // char tempFrame[15] ;
+            // // snprintf(tempFrame, sizeof(tempFrame), "%09llu", generate_unique_id());//uniqueId
+            // // createQrcode(tempFrame , *buff);
+            // // writeSn(*buff);
+            // // uint64_t Id= generate_unique_id();
+
+            // char tempFrame[30] ;
+
+            // uint8_t mac[6];
+            // esp_read_mac(mac, ESP_MAC_BT);
+
+            // snprintf(tempFrame, sizeof(tempFrame), "%s-%02x:%02x:%02x:%02x:%02x:%02x",DEVICE_VERSION_ID,mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);//uniqueId
             // createQrcode(tempFrame , *buff);
-            // writeSn(*buff);
-            // uint64_t Id= generate_unique_id();
-
-            char tempFrame[30] ;
-
-            uint8_t mac[6];
-            esp_read_mac(mac, ESP_MAC_BT);
-
-            snprintf(tempFrame, sizeof(tempFrame), "%s-%02x:%02x:%02x:%02x:%02x:%02x",DEVICE_VERSION_ID,mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);//uniqueId
-            createQrcode(tempFrame , *buff);
             // writeSn(*buff, generate_unique_id());
 
-        }else 
+        }
+        else 
         {
 
             if(networkStatus==WSS_CONNECTED && key_state== KEY_IDLE ){
@@ -123,14 +124,37 @@ void editDisplayBuff(camera_fb_t **buff){
             }
             // animationTime = xTaskGetTickCount();
         }
+
+        if(ble_is_connected)icnPrint(NETWORK_ICON_POSS_X-10,NETWORK_ICON_POSS_Y,BLE_W,BLE_H,&bleIcn,WHITE,*buff);
+        else {
+
+            if(networkStatus<WSS_CONNECTED|| config==QR_CODE_SCANING){
+                char tempFrame[30] ;
+                uint8_t mac[6];
+    
+                for (uint8_t y = qrInfo.yOfset-3; y < qrInfo.yOfset-3 + qrInfo.erase_size; y++)
+                {
+                    for (uint16_t x = qrInfo.xOfset-3; x < qrInfo.xOfset-3 + qrInfo.erase_size; x++)
+                    {
+                        int index = (y * (*buff)->width + x) * 2; // Assuming 2 bytes per pixel
+    
+                        (*buff)->buf[index] = 0xff;
+                        (*buff)->buf[index + 1] = 0xff;
+                    
+                    }
+                }
+                esp_read_mac(mac, ESP_MAC_BT);
+                snprintf(tempFrame, sizeof(tempFrame), "%s-%02x:%02x:%02x:%02x:%02x:%02x",DEVICE_VERSION_ID,mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);//uniqueId
+                createQrcode(tempFrame , *buff);
+            }
+            
+        }
+
     }
 
     writedateTime(*buff , current_time, clockType);
 
-
     // charging level & animatio --------------------------------------------
-
-
 
     uint8_t tempBlvl = calculate_battery_level(batVoltage);
     if(xTaskGetTickCount()-animationTime> 150){
@@ -153,18 +177,11 @@ void editDisplayBuff(camera_fb_t **buff){
     if(CHARGING_STATE)icnPrint(NETWORK_ICON_POSS_X+17, NETWORK_ICON_POSS_Y+3, BATTERY_WIDTH, BATTERY_HEIGHT-5 ,&chargeIcon,BLACK ,*buff);
 
     icnPrint(NETWORK_ICON_POSS_X+17, NETWORK_ICON_POSS_Y, BATTERY_WIDTH, BATTERY_HEIGHT,&betteryIcn,tempBlvl<2?RED:WHITE ,*buff);
-
-
-
-
-
-    // ----------------------------------------------------------------------
-
+// painding data---------------------
     if(dataAvailable ){
-    
-        icnPrint(networkStatus==0?NETWORK_ICON_POSS_X-26: NETWORK_ICON_POSS_X-15 , NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,WHITE ,*buff);
+        icnPrint(ble_is_connected?NETWORK_ICON_POSS_X-26: NETWORK_ICON_POSS_X-14 , NETWORK_ICON_POSS_Y, 11, 11,&cloudePending,WHITE ,*buff);
     }
-
+//-----------------------------------
     DataUpDoun &= ~(3<<0);
 
     // }

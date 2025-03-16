@@ -31,7 +31,10 @@ static QueueHandle_t xQueueLCDFrame = NULL;
 static QueueHandle_t xQueueEventLogic = NULL;
 static QueueHandle_t xQueueCloud = NULL;
 SemaphoreHandle_t musicShiftSemaphore= NULL;
+
 extern uint8_t music;
+extern bool ble_is_connected;
+
 
 void enter_deep_sleep(void);
 

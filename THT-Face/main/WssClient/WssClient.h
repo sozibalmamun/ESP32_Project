@@ -59,14 +59,6 @@ extern "C" {
 #endif
 
 
-
-// typedef struct {
-//     const char                  *uri;                       /*!< Websocket URI, the information on the URI can be overrides the other fields below, if any */
-//     const char                  *host;                      /*!< Domain or IP as string */
-//     int                         port;                       /*!< Port to connect, default depend on esp_websocket_transport_t (80 or 443) */
-//     const char                  *path;                       /*!< Websocket URI, the information on the URI can be overrides the other fields below, if any */
-// } stompInfo_cfg_t;
-
 esp_websocket_client_handle_t client;
 
 
@@ -115,7 +107,15 @@ extern uint8_t networkStatus;
 extern const char* day_names[];
 extern bool dspTimeFormet;
 extern uint16_t batVoltage;
+extern uint8_t config;
 
+//ble
+extern bool ble_is_connected;
+
+extern void blufi_security_deinit(void);
+extern void blufiAddStart(void);
+extern esp_err_t blufi_security_init(void);
+//-----------------------------------------
 extern uint64_t generate_unique_id(void);
 extern void process_command(const char* buffer);
 extern void dataHandele(const char *rx_buffer);
@@ -123,7 +123,10 @@ extern bool imagesent(uint8_t *buff, uint16_t buffLen, uint8_t h, uint8_t w ,cha
 extern uint16_t crc16(const char *buf, size_t len);
 uint8_t wifi_rssi_to_percentage(int32_t rssi);
 
-// void wss_client_int( stompInfo_cfg_t stompSetup );
+
+
+
+
 // int perform_mbedtls_handshake();
 void wssClientInt(void);
 void wssReset(void);

@@ -18,7 +18,7 @@ extern uint8_t CPUBgflag;
 extern bool dataAvailable;
 extern bool dspTimeFormet;
 extern uint8_t DataUpDoun;
-// extern uint8_t mac[6];
+extern uint8_t config;
 
 
 

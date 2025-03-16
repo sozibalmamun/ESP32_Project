@@ -134,7 +134,10 @@
 #define     WSS_CONNECTED       0x02
 // #define     STOMP_CONNECTED     0x03
 //--------------------------------------------------------------
-
+//
+#define     QR_CODE_SCANING     0x00
+#define     QR_CODE_SCANNED     0x01
+#define     QR_CODE_SKIP        0x02
 //-------------------------------------------------------------
 #define     IMAGE_CHANK_SIZE      900 //512//760//256 //128
 #define     CHANK_SIZE            1000 //512//760//256 //128

@@ -2,7 +2,7 @@
 #include "timeLib.h"
 #include <math.h>
 #include "esp_wifi.h"
-
+#include "esp_blufi.h"
 #include "esp_log.h"
 #include "esp_tls.h"
 #include "esp_system.h"
@@ -227,6 +227,13 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
     case WEBSOCKET_EVENT_CONNECTED:
         ESP_LOGW(TAG, "WSS_CONNECTED");
         networkStatus=WSS_CONNECTED;
+        config=QR_CODE_SKIP;
+        
+        if(!ble_is_connected){
+            esp_blufi_adv_stop();
+            blufi_security_init();
+        }
+
 
 
         time_library_time_t current_time;
@@ -259,14 +266,14 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
         sendToWss(time, sizeof(time));
 
 
-
         break;
     case WEBSOCKET_EVENT_DISCONNECTED:
         // ESP_LOGI(TAG, "WSS_DISCONNECTED");
 
         networkStatus=WIFI_CONNECTED;
 
-
+        blufi_security_deinit();
+        blufiAddStart();
         break;
     case WEBSOCKET_EVENT_DATA:
 
@@ -359,6 +366,31 @@ void wssReset(void){
     vTaskDelay(1500 / portTICK_PERIOD_MS);
 
 }
+
+// old setup
+void wssClientInt(void) {
+   
+    esp_websocket_client_config_t websocket_cfg = {};
+
+    websocket_cfg.uri = (const char*)THT;
+    websocket_cfg.cert_pem = echo_org_ssl_ca_cert; 
+    websocket_cfg.ping_interval_sec= 5; 
+    websocket_cfg.pingpong_timeout_sec=10;
+    websocket_cfg.use_global_ca_store = true;
+    websocket_cfg.skip_cert_common_name_check = true;
+    websocket_cfg.disable_auto_reconnect = false;
+    websocket_cfg.task_stack = 1024*5;//4
+    websocket_cfg.task_prio =10; 
+    // ESP_LOGI(TAG, "Initializing global CA store...");
+    ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));
+
+    client = esp_websocket_client_init(&websocket_cfg);
+    esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
+    esp_websocket_client_start(client);
+
+}
+
+/*
 // 🟢 Perform SSL Handshake with mbedTLS**
 static int perform_mbedtls_handshake() {
    
@@ -548,7 +580,8 @@ static int perform_mbedtls_handshake() {
 
     return 0;
 }
-
+*/
+/*
 void wssClientInt(void) {
     ESP_LOGI(TAG, "🔗 Initializing WebSocket...");
 
@@ -601,43 +634,6 @@ void wssClientInt(void) {
     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
     esp_websocket_client_start(client);
 
-
-
-
-
-
-
-
 }
-
-
-
-// old setup
-// void wssClientInt(void) {
-   
-
-
-//     esp_websocket_client_config_t websocket_cfg = {};
-
-
-//     websocket_cfg.uri = (const char*)THT;
-//     websocket_cfg.cert_pem = echo_org_ssl_ca_cert; 
-//     websocket_cfg.ping_interval_sec= 5; 
-//     websocket_cfg.pingpong_timeout_sec=10;
-//     websocket_cfg.use_global_ca_store = true;
-//     websocket_cfg.skip_cert_common_name_check = true;
-//     websocket_cfg.disable_auto_reconnect = false;
-//     websocket_cfg.task_stack = 1024*8;//4
-//     websocket_cfg.task_prio =10; 
-
-//     // ESP_LOGI(TAG, "Initializing global CA store...");
-//     ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));
-
-    
-
-//     client = esp_websocket_client_init(&websocket_cfg);
-//     esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)client);
-//     esp_websocket_client_start(client);
-
-// }
+    */
 

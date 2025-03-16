@@ -280,8 +280,6 @@ void init_adc() {
 // Function to read ADC and calculate voltage
 void fetchBatteryPirStatus() {
 
-
-
     if(PIR_STATE==0){
         ESP_LOGW("PIR"," Person Detected\n");
         shiftOutData.bitset.IRLED=1;
@@ -289,7 +287,7 @@ void fetchBatteryPirStatus() {
         sleepTimeOut = xTaskGetTickCount();
     }else{
 
-        if(xTaskGetTickCount()-sleepTimeOut>TIMEOUT_5_S  && sleepEnable == WAKEUP){
+        if(xTaskGetTickCount()-sleepTimeOut>TIMEOUT_3_S  && sleepEnable == WAKEUP){
             shiftOutData.bitset.IRLED=0;
             if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore);
         }
@@ -311,7 +309,7 @@ void fetchBatteryPirStatus() {
             shiftOutData.bitset.CAMEN=0;  
             shiftOutData.bitset.CAMPDWN=1;
             shiftOutData.bitset.UVOFF=1;
-            if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
+            if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore);
             ESP_LOGW("BATTERY", "LOW VOLTAGE");
         }
         ESP_LOGI("BATTERY", "Voltage: %d mV\n", batVoltage);

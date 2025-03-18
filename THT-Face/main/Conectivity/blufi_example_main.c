@@ -53,9 +53,8 @@ static wifi_config_t sta_config;
 static wifi_config_t ap_config;
 esp_netif_t *sta_netif= NULL;
 
-bool  networkIntDone = false;
+// bool  networkIntDone = false;
 static bool valid_password = false;
-
 
 /* FreeRTOS event group to signal when we are connected & ready to make a request */
 static EventGroupHandle_t wifi_event_group;
@@ -526,17 +525,19 @@ void bluFiStart(void)
 
     ret = esp_bt_controller_enable(ESP_BT_MODE_BLE);
     if (ret) {
-        // BLUFI_ERROR("%s enable bt controller failed: %s\n", __func__, esp_err_to_name(ret));
+        BLUFI_ERROR("%s enable bt controller failed: %s\n", __func__, esp_err_to_name(ret));
+        // bluFiStart();
         return;
     }
 
     ret = esp_blufi_host_and_cb_init(&example_callbacks);
     if (ret) {
-        // BLUFI_ERROR("%s initialise failed: %s\n", __func__, esp_err_to_name(ret));
+        BLUFI_ERROR("%s initialise failed: %s\n", __func__, esp_err_to_name(ret));
+        // bluFiStart();
         return;
     }
 
-    networkIntDone =true;
+    // networkIntDone =true;
 
 }
 

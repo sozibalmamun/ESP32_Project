@@ -35,7 +35,7 @@ void ensureLogDelivery(){
                     if(CPUBgflag == 0){
                         CPUBgflag=1;
                         if(lisence)process_attendance_files();
-                        else ESP_LOGE(TAG, "Lisence not found");
+                       else ESP_LOGE(TAG, "Lisence not found");
                         CPUBgflag = 0;
                     }
                 }
@@ -49,8 +49,7 @@ void ensureLogDelivery(){
 
     }else if(networkStatus==WIFI_CONNECTED){
 
-
-       if( xTaskGetTickCount()-sleepTimeOut>TIMEOUT_10_S && xTaskGetTickCount()-sleepTimeOut<TIMEOUT_12_S ){
+       if( xTaskGetTickCount()-sleepTimeOut>TIMEOUT_7_S && xTaskGetTickCount()-sleepTimeOut<TIMEOUT_10_S ){
             wssReset();
        }
        

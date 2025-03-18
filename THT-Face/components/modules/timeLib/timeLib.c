@@ -64,7 +64,7 @@ void time_library_set_time(time_library_time_t *initial_time, bool rtcUpdate) {
 
     if(rtcUpdate){
         RtcSetTime(reference_time.second, reference_time.minute, reference_time.hour); // Set time: 12:45:30
-        RtcSetDate(reference_time.day, reference_time.month, reference_time.weekday, reference_time.year); // Set date: 23rd Oct, 2024, Weekday = 4 (Wednesday)
+        RtcSetDate(reference_time.day, reference_time.month, reference_time.weekday, reference_time.year-2000); // Set date: 23rd Oct, 2024, Weekday = 4 (Wednesday)
     }
 	
 }

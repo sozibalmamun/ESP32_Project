@@ -1,7 +1,0 @@
-Removed Pin From Net: NetName=MBSY Pin=U2-2
-Removed Pin From Net: NetName=MSCL Pin=U2-3
-Removed Pin From Net: NetName=BAT Pin=U8-
-Added Pin To Net: NetName=GND Pin=Q4-1
-Added Pin To Net: NetName=MSCL Pin=U2-2
-Added Pin To Net: NetName=MBSY Pin=U2-3
-Add Pin To Net: Unknown Pin: Pin U8-3

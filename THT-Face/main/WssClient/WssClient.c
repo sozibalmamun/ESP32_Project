@@ -357,20 +357,18 @@ static void websocket_event_handler(void *handler_args, esp_event_base_t base, i
 
 void wssReset(void){
 
-
-
-    if (client != NULL) {
-    esp_websocket_client_stop(client);
-    esp_websocket_client_destroy(client);
-    // ESP_LOGI(TAG, "❌ esp_websocket_client_stop");
-    client = NULL;
+    if (client != NULL && networkStatus != WSS_CONNECTED) {
+        esp_websocket_client_stop(client);
+        esp_websocket_client_destroy(client);
+        ESP_LOGI(TAG, "❌ websocket_client_stop & wssReset");
+        client = NULL;
+        // ESP_LOGI(TAG, "wssReset");
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+        wssClientInt();
+        vTaskDelay(1500 / portTICK_PERIOD_MS);
     
     }      
-    ESP_LOGI(TAG, "wssReset");
-    vTaskDelay(500 / portTICK_PERIOD_MS);
-    wssClientInt();
-    vTaskDelay(1500 / portTICK_PERIOD_MS);
-
+    
 }
 
 // old setup

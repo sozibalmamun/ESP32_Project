@@ -1,9 +1,0 @@
-Removed Pin From Net: NetName=ANT Pin=R33-2
-Removed Member From Class: ClassName=U_microcontroller Member=R33
-Removed Member From Class: ClassName=50Ohm Member=NetANT1_1
-Removed Member From Class: ClassName=50Ohm Member=NetANT2_2
-Added Pin To Net: NetName=ANT Pin=ANT2-2
-Added Pin To Net: NetName=GND Pin=C9-2
-Added Pin To Net: NetName=NetQ4_1 Pin=Q4-1
-Added Member To Class: ClassName=U_Regulators Member=Component U8 ME6211C28M5G-N
-Added Member To Class: ClassName=50Ohm Member=Wire ANT

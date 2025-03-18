@@ -1,6 +1,0 @@
-Removed Pin From Net: NetName=NetC15_1 Pin=X2-1
-Removed Pin From Net: NetName=XTALN Pin=X2-3
-Added Pin To Net: NetName=GND Pin=Q4-1
-Added Pin To Net: NetName=XTALN Pin=X2-1
-Added Pin To Net: NetName=NetC15_1 Pin=X2-3
-Added Member To Class: ClassName=U_microcontroller Member=Component L4 1-2nH2

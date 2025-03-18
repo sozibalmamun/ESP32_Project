@@ -1,5 +1,0 @@
-Removed Pin From Net: NetName=XTALN Pin=X2-1
-Removed Pin From Net: NetName=NetC15_1 Pin=X2-3
-Added Pin To Net: NetName=NetQ4_1 Pin=Q4-1
-Added Pin To Net: NetName=NetC15_1 Pin=X2-1
-Added Pin To Net: NetName=XTALN Pin=X2-3

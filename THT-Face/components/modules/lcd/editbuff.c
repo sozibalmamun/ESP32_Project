@@ -9,7 +9,7 @@
 
 
 extern uint16_t batVoltage;
-extern bool networkIntDone;
+// extern bool networkIntDone;
 uint8_t sleepEnable=WAKEUP;
 volatile TickType_t sleepTimeOut=0; 
 uint8_t bBar=1;
@@ -22,7 +22,7 @@ void editDisplayBuff(camera_fb_t **buff){
 
     uint8_t clockType = get_time(&current_time, dspTimeFormet);
 
-    if(networkIntDone){
+    // if(networkIntDone){
 
         if(networkStatus==WIFI_DISS){
 
@@ -95,7 +95,7 @@ void editDisplayBuff(camera_fb_t **buff){
             
         }
 
-    }
+    // }
 
     writedateTime(*buff , current_time, clockType);
 

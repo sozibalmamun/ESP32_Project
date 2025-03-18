@@ -39,10 +39,15 @@ void app_main()
     shiftOutData.bitset.LCDEN=1;
     if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); 
 
+    //-----------time int here-------------------------------------
+    RtcInit();
+    //--------------------------------------------------------------
+
+    register_lcd(xQueueLCDFrame, NULL, true);// core 0
     register_camera(PIXFORMAT_RGB565, FRAMESIZE_QVGA, 2, xQueueAIFrame);//core 1    //  FRAMESIZE_QVGA 320*240  //FRAMESIZE_VGA 640x480
     register_event(xQueueEventLogic);//core 1
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false); //core 1+1
-    register_lcd(xQueueLCDFrame, NULL, true);// core 0
+    // register_lcd(xQueueLCDFrame, NULL, true);// core 0
 
     //-------------------------
     // Initialize and mount FATFS
@@ -59,9 +64,7 @@ void app_main()
 
     // Initialize Conectivity---------------------------
     bluFiStart();
-    //-----------time int here-------------------------------------
-    RtcInit();
-    //--------------------------------------------------------------
+
     ESP_LOGE(TAG, "finished");
 
 
@@ -84,6 +87,11 @@ void app_main()
             enter_deep_sleep();
 
         }else {
+
+            // int stac =uxTaskGetStackHighWaterMark(NULL);
+            // printf("stack %d\n",stac);
+
+
             ensureLogDelivery();
             fetchBatteryPirStatus();
             vTaskDelay(pdMS_TO_TICKS(100));

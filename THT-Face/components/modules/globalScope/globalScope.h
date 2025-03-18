@@ -98,13 +98,13 @@
 #define TIMEOUT_200_MS        (20)
 #define TIMEOUT_300_MS        (30)
 #define TIMEOUT_500_MS        (50)
-#define TIMEOUT_1_S       (100)
-#define TIMEOUT_2_S       (200)
-#define TIMEOUT_3_S       (300)
-#define TIMEOUT_4_S       (400)
-#define TIMEOUT_5_S       (500)
-#define TIMEOUT_6_S       (600)
-#define TIMEOUT_7_S       (700)
+#define TIMEOUT_1_S           (100)
+#define TIMEOUT_2_S           (200)
+#define TIMEOUT_3_S           (300)
+#define TIMEOUT_4_S           (400)
+#define TIMEOUT_5_S           (500)
+#define TIMEOUT_6_S           (600)
+#define TIMEOUT_7_S           (700)
 #define TIMEOUT_9_S           (900)
 #define TIMEOUT_10_S          (1000)
 #define TIMEOUT_12_S          (1200)
@@ -132,9 +132,8 @@
 #define     WIFI_DISS           0x00
 #define     WIFI_CONNECTED      0x01
 #define     WSS_CONNECTED       0x02
-// #define     STOMP_CONNECTED     0x03
 //--------------------------------------------------------------
-//
+
 #define     QR_CODE_SCANING     0x00
 #define     QR_CODE_SCANNED     0x01
 #define     QR_CODE_SKIP        0x02
@@ -164,8 +163,6 @@
 //-------------------------------------------------------------------------------------------
 // variable padding--------------------------------------------------------------------------
 #define PACKED_STRUCT __attribute__((packed))
-
-
 
 
 

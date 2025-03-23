@@ -348,7 +348,7 @@ static void task_process_handler(void *arg)
                         }else{ 
                             unrecognitionCount=0;
                             faceDetectTimeOut= xTaskGetTickCount(); 
-                            if(xTaskGetTickCount()>ledTimeout+TIMEOUT_5_S  && shiftOutData.bitset.LED==1 ){
+                            if(xTaskGetTickCount()>ledTimeout+TIMEOUT_5_S  &&  shiftOutData.bitset.LED==1){
                                 // printf("light off\n");
                                 shiftOutData.bitset.LED=0;      //q3
                                 shiftOutData.bitset.IRLED=0;    //q7

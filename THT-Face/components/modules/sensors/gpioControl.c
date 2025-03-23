@@ -285,14 +285,13 @@ void fetchBatteryPirStatus() {
         shiftOutData.bitset.IRLED=1;
         if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore);
         sleepTimeOut = xTaskGetTickCount();
-    }
-    // else{
+    }else{
 
-    //     if(xTaskGetTickCount()-sleepTimeOut>TIMEOUT_3_S  && sleepEnable == WAKEUP){
-    //         // shiftOutData.bitset.IRLED=0;
-    //         // if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore);
-    //     }
-    // }
+        if(xTaskGetTickCount()-sleepTimeOut>TIMEOUT_3_S  && shiftOutData.bitset.IRLED==1){
+            shiftOutData.bitset.IRLED=0;
+            if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore);
+        }
+    }
 
     if (adc_chars_battery != NULL) {
 

@@ -157,11 +157,10 @@ void iconPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,char* l
 void icnPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,uint16_t* logobuff,uint16_t color ,camera_fb_t *buff){
     // Ensure logo fits within the buffer dimensions
     
-    // if (x_offset + w > buff->width || y_offset + h > buff->height) {
-    //     // printf("Logo position out of bounds\n");
-        
-    //     return;
-    // }
+    if (x_offset + w > buff->width || y_offset + h > buff->height) {
+        // printf("Logo position out of bounds\n");
+        return;
+    }
     for (int y = h; y >= 0; y--) {
         for (int x = 0; x < w; x++) {
             int logo_index = y * w + x;

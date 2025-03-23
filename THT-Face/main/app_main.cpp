@@ -50,18 +50,16 @@ void app_main()
     register_human_face_recognition(xQueueAIFrame, xQueueEventLogic, NULL, xQueueLCDFrame,xQueueCloud ,false); //core 1+1
     register_lcd(xQueueLCDFrame, NULL, true);// core 0
 
-
-
     shiftOutData.bitset.LED=0;  //q4
     if(checkMusicEnable())music=TURN_ON_MUSIC;
     else welcomeMusic(true);
-    
+
     if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); 
 
     //Initialize Conectivity---------------------------
     bluFiStart();
 
-    ESP_LOGE(TAG, "finished");
+    ESP_LOGE(TAG, "Finished");
     vTaskDelay(pdMS_TO_TICKS(4000));
 
     while(true){

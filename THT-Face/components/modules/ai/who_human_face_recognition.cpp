@@ -676,17 +676,17 @@ static void task_process_handler(void *arg)
                             break;
                         }
 
-                        if (++frame_count > FRAME_DELAY_NUM-6)
+                        if (++frame_count > FRAME_DELAY_NUM-10)
                         {
                             frame_count = 0;
                             frame_show_state = SHOW_STATE_IDLE;
                         }
-                        // else if( frame_show_state==SHOW_STATE_RECOGNIZE){
-                        //     if(frame_count>FRAME_DELAY_NUM-12)
-                        //         frame_count = 0;
+                        else if( frame_show_state==SHOW_ALINE){
+                            if(frame_count>FRAME_DELAY_NUM-12)
+                                frame_count = 0;
 
-                        //     frame_show_state = SHOW_STATE_IDLE;
-                        // }
+                            frame_show_state = SHOW_STATE_IDLE;
+                        }
                     }
 
                     if (detect_results.size())

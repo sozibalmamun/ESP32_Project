@@ -3,7 +3,7 @@
 
 #define MUSIC_PLAY_TIME TIMEOUT_500_MS
 
-uint16_t batVoltage;
+uint16_t batVoltage=0;
 uint8_t chargeState=0;
 uint8_t music=0;
 TaskHandle_t shiftMusicHandeler = NULL;
@@ -466,8 +466,8 @@ static void musicShiftreg(void *arg)
     gpio_pad_select_gpio(SER_LAT);
     gpio_set_direction((gpio_num_t)SER_LAT, GPIO_MODE_OUTPUT);
 
-    uint8_t welcomeMusic[12] = {1, 2, 1, 2, 0, 2, 1, 2, 0, 2, 1, 2};
-    uint8_t unregisterd[2] = {1, 5};
+    uint8_t welcomeMusic[12] = {1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1};
+    uint8_t unregisterd[2] = {0, 1};
     #define TAG_MUSIC "MUSIC"
 
     uint8_t tempOld = 0;

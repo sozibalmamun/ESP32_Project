@@ -51,8 +51,8 @@ void app_main()
     register_lcd(xQueueLCDFrame, NULL, true);// core 0
 
     shiftOutData.bitset.LED=0;  //q4
-    if(checkMusicEnable())music=TURN_ON_MUSIC;
-    else welcomeMusic(true);
+    // if(checkMusicEnable())music=TURN_ON_MUSIC;
+    // else welcomeMusic(true);
 
     if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); 
 

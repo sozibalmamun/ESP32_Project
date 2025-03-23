@@ -12,7 +12,7 @@ extern uint16_t batVoltage;
 // extern bool networkIntDone;
 uint8_t sleepEnable=WAKEUP;
 volatile TickType_t sleepTimeOut=0; 
-uint8_t bBar=1;
+uint8_t bBar=5;
 
 void editDisplayBuff(camera_fb_t **buff){
 
@@ -101,12 +101,14 @@ void editDisplayBuff(camera_fb_t **buff){
 
     // charging level & animatio --------------------------------------------
     uint8_t tempBlvl = calculate_battery_level(batVoltage);
+
+
+
     if(xTaskGetTickCount()-animationTime> 150){
         animationTime = xTaskGetTickCount();
 
         if(tempBlvl<=6 && CHARGING_STATE){
             bBar++;
-            // printf("bBar %d\n",bBar);
         }else bBar=0;
 
     }
@@ -115,8 +117,7 @@ void editDisplayBuff(camera_fb_t **buff){
         bBar=0;
         tempBlvl=6;
     }
-
-    icnPrint(NETWORK_ICON_POSS_X+16, NETWORK_ICON_POSS_Y+9-tempBlvl, BATTERY_WIDTH, tempBlvl-1,&betterybar, tempBlvl<=2?RED:WHITE ,*buff);
+    icnPrint(NETWORK_ICON_POSS_X+16, NETWORK_ICON_POSS_Y+8-tempBlvl, BATTERY_WIDTH, tempBlvl ,&betterybar, tempBlvl<=2?RED:WHITE ,*buff);
 
     if(CHARGING_STATE)icnPrint(NETWORK_ICON_POSS_X+17, NETWORK_ICON_POSS_Y+3, BATTERY_WIDTH, BATTERY_HEIGHT-5 ,&chargeIcon,BLACK ,*buff);
 
@@ -157,10 +158,10 @@ void iconPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,char* l
 void icnPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,uint16_t* logobuff,uint16_t color ,camera_fb_t *buff){
     // Ensure logo fits within the buffer dimensions
     
-    if (x_offset + w > buff->width || y_offset + h > buff->height) {
-        // printf("Logo position out of bounds\n");
-        return;
-    }
+    // if (x_offset + w > buff->width || y_offset + h > buff->height) {
+    //     printf("Logo position out of bounds x: %d  y %d \n ",x_offset,y_offset);
+    //     return;
+    // }
     for (int y = h; y >= 0; y--) {
         for (int x = 0; x < w; x++) {
             int logo_index = y * w + x;

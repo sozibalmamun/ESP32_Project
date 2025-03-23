@@ -501,6 +501,7 @@ void blufiAddStart(void){
     esp_ble_gap_set_device_name(tempFrame);
     esp_blufi_adv_start();
 }
+
 void bluFiStart(void)
 {
     esp_err_t ret;

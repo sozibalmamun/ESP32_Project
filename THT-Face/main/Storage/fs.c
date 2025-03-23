@@ -15,10 +15,10 @@ esp_err_t init_fatfs(void) {
     // Mount FATFS partition
     ret = esp_vfs_fat_spiflash_mount(MOUNT_POINT, "storage", &mount_config, &s_wl_handle);
     if (ret != ESP_OK) {
-        ESP_LOGE("init_fatfs", "Failed to mount FATFS (%s)", esp_err_to_name(ret));
+        // ESP_LOGE("init_fatfs", "Failed to mount FATFS (%s)", esp_err_to_name(ret));
         return ret;
     }
-    ESP_LOGI("init_fatfs", "FATFS mounted successfully");
+    // ESP_LOGI("init_fatfs", "FATFS mounted successfully");
 
 
     return ESP_OK;
@@ -26,7 +26,7 @@ esp_err_t init_fatfs(void) {
 
 void create_directories(void) {
 
-    vTaskDelay(pdMS_TO_TICKS(30));
+    // vTaskDelay(pdMS_TO_TICKS(30));
 
     struct stat st;
     if (stat(BASE_PATH "/log", &st) == 0) {
@@ -37,6 +37,7 @@ void create_directories(void) {
         }
     } else {
 
+        
         // If the directory does not exist, try to create it
         int res = mkdir(BASE_PATH "/log", 0777);
         if (res != 0 && errno != EEXIST) {
@@ -49,7 +50,7 @@ void create_directories(void) {
         }
     }
 
-    vTaskDelay(pdMS_TO_TICKS(30));
+    // vTaskDelay(pdMS_TO_TICKS(30));
 
     if (stat(BASE_PATH "/faces", &st) == 0) {
         if (S_ISDIR(st.st_mode)) {
@@ -58,6 +59,9 @@ void create_directories(void) {
             ESP_LOGE("FAT", "/faces exists but is not a directory");
         }
     } else {
+
+        vTaskDelay(pdMS_TO_TICKS(30));
+
         // If the directory does not exist, try to create it
         int res = mkdir(BASE_PATH "/faces", 0777);
         if (res != 0 && errno != EEXIST) {
@@ -69,7 +73,7 @@ void create_directories(void) {
         }
     }
 
-    vTaskDelay(pdMS_TO_TICKS(50));
+    // vTaskDelay(pdMS_TO_TICKS(50));
 
     if (stat(BASE_PATH "/sync", &st) == 0) {
         if (S_ISDIR(st.st_mode)) {
@@ -78,6 +82,9 @@ void create_directories(void) {
             ESP_LOGE("FAT", "/sync exists but is not a directory");
         }
     } else {
+
+        vTaskDelay(pdMS_TO_TICKS(50));
+
         // If the directory does not exist, try to create it
         int res = mkdir(BASE_PATH "/sync", 0777);
         if (res != 0 && errno != EEXIST) {
@@ -87,29 +94,17 @@ void create_directories(void) {
         } else {
             ESP_LOGI("FAT", "Directory /sync created");
         }
+        
+        vTaskDelay(pdMS_TO_TICKS(30));
+
     }
 
-    vTaskDelay(pdMS_TO_TICKS(30));
+    // vTaskDelay(pdMS_TO_TICKS(30));
 
 
 }
 
 void print_memory_status() {
-    // FATFS *fs;
-    // DWORD fre_clust, fre_sect, tot_sect;
-
-    // if (f_getfree("/storage", &fre_clust, &fs) == FR_OK) {
-    //     tot_sect = (fs->n_fatent - 2) * fs->csize * 512;
-    //     fre_sect = fre_clust * fs->csize * 512;
-
-    //     ESP_LOGI("FAT ", "Total Space: %" PRIu32 " bytes", (uint32_t)tot_sect);
-    //     ESP_LOGI("FAT ", "Free  Space: %" PRIu32 " bytes", (uint32_t)fre_sect);
-    //     ESP_LOGE("FAT ", "Used  Space: %" PRIu32 " bytes", (uint32_t)(tot_sect - fre_sect));
-
-    // } else {
-    //     ESP_LOGE("FAT", "Failed to get FATFS free space info");
-    // }
-
 
     FATFS *fs;
     DWORD fre_clust, fre_sect, tot_sect;

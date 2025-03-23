@@ -351,19 +351,21 @@ esp_err_t register_lcd(const QueueHandle_t frame_i, const QueueHandle_t frame_o,
     // ESP_LOGI(TAG, "Screen name:%s | width:%d | height:%d", g_lcd_info.name, g_lcd_info.width, g_lcd_info.height);
 
     app_lcd_set_color(0x0000);
-    app_lcd_draw_wallpaper();
-    vTaskDelay(pdMS_TO_TICKS(5));
-    PwmInt((gpio_num_t)LCE_BL);
+
+    // if(checkMusicEnable()){
+
+        app_lcd_draw_wallpaper();
+        vTaskDelay(pdMS_TO_TICKS(5));
+        PwmInt((gpio_num_t)LCE_BL);
+        dispON(false);
+
+    // }
 
     // HALT
-
-    dispON(false);
-
-
     xQueueFrameI = frame_i;
     xQueueFrameO = frame_o;
     gReturnFB = return_fb;
-    xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, &lcdTaskHandler, 0);//4*1024
+    xTaskCreatePinnedToCore(task_process_handler, TAG, 5 * 1024, NULL, 5, &lcdTaskHandler, 0);//4*1024
     // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
 
     dispON(true);

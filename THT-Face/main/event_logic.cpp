@@ -31,8 +31,12 @@ void event_generate(void *arg) {
 
         switch (key_state) {
 
-            case KEY_SHORT_PRESS:
+            case KEY_SHORT_PRESS:{
+                shiftOutData.bitset.LED=1;  //q3
+                shiftOutData.bitset.IRLED=1;  //q7
+                if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
                 recognizer_state = ENROLING;
+            }
 
                 break;
 

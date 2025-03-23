@@ -86,6 +86,7 @@ void process_command(const char* buffer ) {
             memcpy(personName,Name,strlen(Name));
             sleepTimeOut = xTaskGetTickCount();
             sleepEnable=WAKEUP;
+            
             key_state=KEY_SHORT_PRESS;
 
             return;
@@ -161,6 +162,7 @@ void process_command(const char* buffer ) {
         if (calculated_crc == rxCrc) {
 
             key_state = KEY_DOUBLE_CLICK;
+          
             strncpy(personName, Name, strlen(Name));
             personName[strlen(Name)] = '\0'; // Null terminate the name string
             personId = tempId; // for test delete person by their ID

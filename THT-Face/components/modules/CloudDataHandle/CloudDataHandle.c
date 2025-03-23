@@ -30,12 +30,12 @@ void ensureLogDelivery(){
 
             }else {
                 // printf("pending data\n");
-                if(networkStatus==WSS_CONNECTED){
+                if(networkStatus==WSS_CONNECTED &&(xTaskGetTickCount()-sleepTimeOut>TIMEOUT_2_S)){
 
                     if(CPUBgflag == 0){
                         CPUBgflag=1;
-                        if(lisence)process_attendance_files();
-                       else ESP_LOGE(TAG, "Lisence not found");
+                        if(lisence )process_attendance_files();
+                        else ESP_LOGE(TAG, "Lisence not found");
                         CPUBgflag = 0;
                     }
                 }

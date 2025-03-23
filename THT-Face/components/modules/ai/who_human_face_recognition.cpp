@@ -57,7 +57,6 @@ uint16_t personId;
 //---------------time flag--------------------
 extern  uint8_t sleepEnable;
 extern volatile TickType_t sleepTimeOut; 
-TickType_t TimeOut,faceDetectTimeOut;
 TickType_t enrolTimeOut;
 extern uint8_t music;
 
@@ -242,9 +241,9 @@ static void task_process_handler(void *arg)
     recognizer_state_t _gEvent;
     recognizer->set_partition(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "fr");
     int partition_result = recognizer->set_ids_from_flash();
-
-
-
+    TickType_t TimeOut=xTaskGetTickCount();
+    TickType_t faceDetectTimeOut=xTaskGetTickCount();
+    TickType_t ledTimeout=xTaskGetTickCount();
 
     while (true)
     {
@@ -308,8 +307,7 @@ static void task_process_handler(void *arg)
 
                                 fillRect(frame, 0, 235, 320, 5, 0xFFFF);
                                 fillRect(frame, 0, 235, (uint16_t)(percentage_float*3.2), 5, RGB565_MASK_BLUE);
-
-
+                                ledTimeout=xTaskGetTickCount();
                             }
 
                         }else {
@@ -319,22 +317,11 @@ static void task_process_handler(void *arg)
                                 CmdEvent = ENROLMENT_TIMEOUT;
                                 key_state= KEY_IDLE;
                                 vTaskDelay(10);
-                                shiftOutData.bitset.LED=0;  //q3
-                                // shiftOutData.bitset.IRLED=0;  //q7
-                                if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
-
                             } 
                             rgb_printf(frame, RGB565_MASK_BLUE, "Start Enroling");// debug due to display name
                             sleepTimeOut = TimeOut;
                             sleepEnable=WAKEUP;// sleep out when enroll event is genareted
-                            shiftOutData.bitset.LED=1;  //q3
-                            shiftOutData.bitset.IRLED=1;  //q7
-                            if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
-
-
-
-
-
+                            ledTimeout=xTaskGetTickCount();
                         }
 
                     }else if(_gEvent==DETECT  &&  CmdEvent!=ENROLING_EVENT ){// enroling is the 1st priority
@@ -348,11 +335,8 @@ static void task_process_handler(void *arg)
                                 _gEvent=RECOGNIZE;
                                 shiftOutData.bitset.LED=1;  //q3
                                 shiftOutData.bitset.IRLED=1;  //q7
+                                ledTimeout=xTaskGetTickCount();
                                 if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
-
-
-
-
 
                             }else {
 
@@ -362,12 +346,12 @@ static void task_process_handler(void *arg)
                             }                                  
                                     
                         }else{ 
-
                             unrecognitionCount=0;
                             faceDetectTimeOut= xTaskGetTickCount(); 
-                            if(xTaskGetTickCount()>sleepEnable+TIMEOUT_30_S){
+                            if(xTaskGetTickCount()>ledTimeout+TIMEOUT_5_S  && shiftOutData.bitset.LED==1 ){
+                                // printf("light off\n");
                                 shiftOutData.bitset.LED=0;      //q3
-                                // shiftOutData.bitset.IRLED=0;    //q7
+                                shiftOutData.bitset.IRLED=0;    //q7
                                 if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
 
                             }
@@ -658,20 +642,13 @@ static void task_process_handler(void *arg)
                             if(validCount==ID_VALID)rgb_printf(frame, RGB565_MASK_BLUE, "Welcome %s", personName); 
                             personId=recognizer->get_enrolled_ids().back().id;
                             // rgb_printf(frame, RGB565_MASK_BLUE, "Enroll: ID %d", recognizer->get_enrolled_ids().back().id);
-                            shiftOutData.bitset.LED=0;  //q3
-                            // shiftOutData.bitset.IRLED=0;  //q7
-                            if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
-
-
-
+                        
                             break;
                         }
                         case SHOW_DUPLICATE_ENROLL:{
 
                             rgb_printf(frame, RGB565_MASK_RED, "Duplicate Enrol%s","!"); 
-                            shiftOutData.bitset.LED=0;  //q3
-                            // shiftOutData.bitset.IRLED=0;  //q7
-                            if(musicShiftSemaphore)xSemaphoreGive(musicShiftSemaphore); // Notify the sensor task
+                           
 
                             break;
                         }
@@ -699,17 +676,17 @@ static void task_process_handler(void *arg)
                             break;
                         }
 
-                        if (++frame_count > FRAME_DELAY_NUM)
+                        if (++frame_count > FRAME_DELAY_NUM-6)
                         {
                             frame_count = 0;
                             frame_show_state = SHOW_STATE_IDLE;
                         }
-                        else if( frame_show_state==SHOW_STATE_RECOGNIZE){
-                            if(frame_count>FRAME_DELAY_NUM-12)
-                                frame_count = 0;
+                        // else if( frame_show_state==SHOW_STATE_RECOGNIZE){
+                        //     if(frame_count>FRAME_DELAY_NUM-12)
+                        //         frame_count = 0;
 
-                            frame_show_state = SHOW_STATE_IDLE;
-                        }
+                        //     frame_show_state = SHOW_STATE_IDLE;
+                        // }
                     }
 
                     if (detect_results.size())
@@ -845,5 +822,5 @@ void register_human_face_recognition(const QueueHandle_t frame_i,
     // xTaskCreatePinnedToCore(task_process_handler, TAG, 4 * 1024, NULL, 5, NULL, 1);
 
     if (xQueueEvent)
-        xTaskCreatePinnedToCore(task_event_handler, TAG, 1 * 1024, NULL,5, &recognitioneventTaskHandler, 1);
+        xTaskCreatePinnedToCore(task_event_handler, TAG, 2 * 1024, NULL,5, &recognitioneventTaskHandler, 1);//1
 }

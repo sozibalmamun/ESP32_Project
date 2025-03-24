@@ -476,18 +476,13 @@ static void task_process_handler(void *arg)
                             sleepEnable=WAKEUP;
 
                             recognize_result = recognizer->recognize((uint16_t *)frame->buf, {(int)frame->height, (int)frame->width, 3}, detect_results.front().keypoint);
-                            // print_detection_result(detect_results);
                             if (recognize_result.id > 0){
 
-                                // CPUBgflag=1;
                                 // ESP_LOGI("RECOGNIZE", "Similarity: %f, Match Name: %s", recognize_result.similarity, recognize_result.name.c_str());
 
                                 recognitionCount[stateCounter>(ID_VALID-1)?stateCounter=0:stateCounter++]=recognize_result.id;// save id in array
 
                                 if(stateCounter>=ID_VALID){
-
-                                    // if(music!=MUSIC_IDLE)music= MUSIC_IMMEDIATE_STOP;// stop music for play next recongnition  music
-                                    // printf("MUSIC_IMMEDIATE_STOP :in face \n");
 
                                    for(uint8_t i=0; i<ID_VALID;i++){
                                         if(recognitionCount[i]== recognize_result.id)validCount++;// check all array id is same or not
@@ -495,7 +490,6 @@ static void task_process_handler(void *arg)
                                 }
                                 if(validCount==ID_VALID){
                                     
-                                    // printf("validCount: %d\n",validCount);
                                     CPUBgflag=1;
                                     if(xTaskGetTickCount()>TimeOut+TIMEOUT_5_S)StopMultipleAttaneId=0;
 
@@ -543,14 +537,10 @@ static void task_process_handler(void *arg)
                                 break;
 
                             }
-                            // ESP_LOGE("RECOGNIZE", "Similarity: %f, Match ID: %d", recognize_result.similarity, recognize_result.id);
-                            // frame_show_state = SHOW_STATE_RECOGNIZE;
-                            // break;
                             break;
 
                         }
                         case DELETE:{
-                            // vTaskDelay(10);
                             // recognizer->delete_id(true);
                             if(recognizer->delete_id(personId,true)== -1 ){// invalide id if "-1"// custom id delete logic
 
@@ -676,17 +666,17 @@ static void task_process_handler(void *arg)
                             break;
                         }
 
-                        if (++frame_count > FRAME_DELAY_NUM-10)
+                        if (++frame_count > FRAME_DELAY_NUM-14)
                         {
                             frame_count = 0;
                             frame_show_state = SHOW_STATE_IDLE;
                         }
-                        else if( frame_show_state==SHOW_ALINE){
-                            if(frame_count>FRAME_DELAY_NUM-12)
-                                frame_count = 0;
+                        // else if( frame_show_state==SHOW_ALINE ){
+                        //     if(frame_count>FRAME_DELAY_NUM-12)
+                        //         frame_count = 0;
 
-                            frame_show_state = SHOW_STATE_IDLE;
-                        }
+                        //     frame_show_state = SHOW_STATE_IDLE;
+                        // }
                     }
 
                     if (detect_results.size())

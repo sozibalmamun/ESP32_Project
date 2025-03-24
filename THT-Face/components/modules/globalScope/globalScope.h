@@ -154,10 +154,10 @@
 #define WEB_SERVER      "grozziieget.zjweiting.com"
 #define WEB_PORT        "3091"
 #define WEB_PATH        "/WebSocket-Binary/ws"
-
-
-//-------------------------------------------------------------------------------------------
-
+//SSL_FETCHER-------------------------------------------
+#define SERVER_HOST "grozziieget.zjweiting.com"
+#define SERVER_PORT 3091
+//------------------------------------------------------
 //--------------flash addr for store big array-----------------------------------------------
 #define DATA_FLASH __attribute__((section(".rodata")))
 //-------------------------------------------------------------------------------------------

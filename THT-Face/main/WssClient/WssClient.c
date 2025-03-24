@@ -10,11 +10,6 @@
 #include "esp_system.h"
 
 
-#define TAG "SSL_FETCHER"
-#define SERVER_HOST "grozziieget.zjweiting.com"
-#define SERVER_PORT 3091  // Your WebSocket server port
-
-
 #define     TAG             "WSS"
 #define     TAG_WSS        "WSS_CLIENT"
 
@@ -384,7 +379,8 @@ void wssClientInt(void) {
     websocket_cfg.skip_cert_common_name_check = true;
     websocket_cfg.disable_auto_reconnect = false;
     websocket_cfg.task_stack = 1024*5;//4
-    websocket_cfg.task_prio =10; 
+    websocket_cfg.task_prio =10;
+
     // ESP_LOGI(TAG, "Initializing global CA store...");
     ESP_ERROR_CHECK(esp_tls_set_global_ca_store((const unsigned char *)echo_org_ssl_ca_cert, sizeof(echo_org_ssl_ca_cert)));
 
@@ -639,5 +635,5 @@ void wssClientInt(void) {
     esp_websocket_client_start(client);
 
 }
-    */
+*/
 

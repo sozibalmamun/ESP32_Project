@@ -86,8 +86,6 @@ void app_main()
     }
 }
 
-
-
 void enter_deep_sleep(void){
 
     ESP_LOGI("DEEP_SLEEP", "Going to deep sleep...");

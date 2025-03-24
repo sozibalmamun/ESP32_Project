@@ -159,7 +159,7 @@ void icnPrint(uint16_t x_offset, uint8_t y_offset, uint8_t w, uint8_t h,uint16_t
     // Ensure logo fits within the buffer dimensions
     
     // if (x_offset + w > buff->width || y_offset + h > buff->height) {
-    //     printf("Logo position out of bounds x: %d  y %d \n ",x_offset,y_offset);
+    //     // printf("Logo position out of bounds x: %d  y %d \n ",x_offset,y_offset);
     //     return;
     // }
     for (int y = h; y >= 0; y--) {

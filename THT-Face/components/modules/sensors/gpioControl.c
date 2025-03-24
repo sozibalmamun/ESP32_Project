@@ -425,9 +425,8 @@ void musicArrayPlay(uint8_t *musicP ,uint8_t len){
     for (size_t j = 0; j < len;j+=2)
     {
 
-        // printf("loop no %d " ,j);
+        // printf("loop no %d ",j);
         // musicPlay(musicP[j]);
-
 
         for (size_t i = 0; i <=musicP[j]; i++)
         {
@@ -467,7 +466,11 @@ static void musicShiftreg(void *arg)
     gpio_set_direction((gpio_num_t)SER_LAT, GPIO_MODE_OUTPUT);
 
     uint8_t welcomeMusic[12] = {1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1};
-    uint8_t unregisterd[2] = {0, 1};
+    uint8_t unregisterd[2] = {1, 0};
+    uint8_t registerd[6] = {1, 1,1,1,1,1};
+
+
+
     #define TAG_MUSIC "MUSIC"
 
     uint8_t tempOld = 0;
@@ -491,6 +494,7 @@ static void musicShiftreg(void *arg)
             {
             case WELCOME:
                 ESP_LOGI(TAG_MUSIC, "✅ WELCOME");
+                musicArrayPlay(&registerd, 6);
                 music = MUSIC_IDLE;
                 break;
 
